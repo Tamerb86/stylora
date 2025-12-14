@@ -71,8 +71,7 @@ export async function notifyOwner(
   console.warn("[Notification] Manus notification system disabled. Configure alternative notification service.");
   return false;
   
-  // Original implementation (commented out):
-  /*
+  /* Original implementation (commented out):
   const { title, content } = validatePayload(payload);
 
   if (!ENV.forgeApiUrl) {
