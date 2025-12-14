@@ -1,0 +1,691 @@
+import { useState } from "react";
+import DashboardLayout from "@/components/DashboardLayout";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { 
+  MessageSquare, 
+  Mail, 
+  Send, 
+  Clock, 
+  CheckCircle2, 
+  XCircle, 
+  TrendingUp,
+  Settings,
+  FileText,
+  Zap,
+  Bell,
+  Calendar
+} from "lucide-react";
+import { toast } from "sonner";
+
+export function Communications() {
+  // SMS Settings State
+  const [smsEnabled, setSmsEnabled] = useState(true);
+  const [smsProvider, setSmsProvider] = useState("twilio");
+  const [smsApiKey, setSmsApiKey] = useState("");
+  const [smsFrom, setSmsFrom] = useState("");
+  const [smsReminderEnabled, setSmsReminderEnabled] = useState(true);
+  const [smsReminderTime, setSmsReminderTime] = useState("24");
+  const [smsConfirmationEnabled, setSmsConfirmationEnabled] = useState(true);
+  
+  // Email Settings State
+  const [emailEnabled, setEmailEnabled] = useState(true);
+  const [smtpHost, setSmtpHost] = useState("");
+  const [smtpPort, setSmtpPort] = useState("587");
+  const [smtpUsername, setSmtpUsername] = useState("");
+  const [smtpPassword, setSmtpPassword] = useState("");
+  const [emailFrom, setEmailFrom] = useState("");
+  const [emailFromName, setEmailFromName] = useState("");
+  const [emailReminderEnabled, setEmailReminderEnabled] = useState(true);
+  const [emailReminderTime, setEmailReminderTime] = useState("24");
+  
+  // Templates State
+  const [smsReminderTemplate, setSmsReminderTemplate] = useState(
+    "Hei {customer_name}! Påminnelse om din time hos {salon_name} i morgen kl {time}. Mvh {salon_name}"
+  );
+  const [smsConfirmationTemplate, setSmsConfirmationTemplate] = useState(
+    "Hei {customer_name}! Din time er bekreftet hos {salon_name} den {date} kl {time}. Mvh {salon_name}"
+  );
+  const [emailReminderTemplate, setEmailReminderTemplate] = useState(
+    "Hei {customer_name},\n\nDette er en påminnelse om din time hos {salon_name}.\n\nDetaljer:\nDato: {date}\nTid: {time}\nTjeneste: {service}\n\nVi gleder oss til å se deg!\n\nMed vennlig hilsen,\n{salon_name}"
+  );
+
+  // Statistics (mock data)
+  const stats = {
+    sms: {
+      sent: 1247,
+      delivered: 1198,
+      failed: 49,
+      pending: 12
+    },
+    email: {
+      sent: 856,
+      delivered: 823,
+      failed: 33,
+      pending: 8
+    }
+  };
+
+  const handleSaveSmsSettings = () => {
+    toast.success("SMS-innstillinger lagret!");
+  };
+
+  const handleSaveEmailSettings = () => {
+    toast.success("E-postinnstillinger lagret!");
+  };
+
+  const handleTestSms = () => {
+    if (!smsFrom) {
+      toast.error("Vennligst fyll inn avsendernummer");
+      return;
+    }
+    toast.success("Test-SMS sendt!");
+  };
+
+  const handleTestEmail = () => {
+    if (!smtpHost || !emailFrom) {
+      toast.error("Vennligst fyll inn SMTP-innstillinger");
+      return;
+    }
+    toast.success("Test-e-post sendt!");
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Kommunikasjon
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Administrer SMS og e-post kommunikasjon med kunder
+          </p>
+        </div>
+
+        {/* Statistics Cards */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">SMS Sendt</CardTitle>
+              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.sms.sent}</div>
+              <p className="text-xs text-muted-foreground">
+                {stats.sms.delivered} levert, {stats.sms.failed} feilet
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">E-post Sendt</CardTitle>
+              <Mail className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.email.sent}</div>
+              <p className="text-xs text-muted-foreground">
+                {stats.email.delivered} levert, {stats.email.failed} feilet
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Leveringsrate SMS</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {((stats.sms.delivered / stats.sms.sent) * 100).toFixed(1)}%
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Siste 30 dager
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Leveringsrate E-post</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {((stats.email.delivered / stats.email.sent) * 100).toFixed(1)}%
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Siste 30 dager
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Tabs */}
+        <Tabs defaultValue="sms" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="sms">
+              <MessageSquare className="h-4 w-4 mr-2" />
+              SMS
+            </TabsTrigger>
+            <TabsTrigger value="email">
+              <Mail className="h-4 w-4 mr-2" />
+              E-post
+            </TabsTrigger>
+            <TabsTrigger value="automation">
+              <Zap className="h-4 w-4 mr-2" />
+              Automatisering
+            </TabsTrigger>
+            <TabsTrigger value="history">
+              <Clock className="h-4 w-4 mr-2" />
+              Historikk
+            </TabsTrigger>
+          </TabsList>
+
+          {/* SMS Tab */}
+          <TabsContent value="sms" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  SMS-innstillinger
+                </CardTitle>
+                <CardDescription>
+                  Konfigurer SMS-leverandør og generelle innstillinger
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Aktiver SMS</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Slå på/av SMS-funksjonalitet
+                    </p>
+                  </div>
+                  <Switch checked={smsEnabled} onCheckedChange={setSmsEnabled} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sms-provider">SMS-leverandør</Label>
+                  <Select value={smsProvider} onValueChange={setSmsProvider}>
+                    <SelectTrigger id="sms-provider">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="twilio">Twilio</SelectItem>
+                      <SelectItem value="link-mobility">Link Mobility</SelectItem>
+                      <SelectItem value="pswin">PSWin</SelectItem>
+                      <SelectItem value="custom">Egendefinert</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sms-api-key">API-nøkkel</Label>
+                  <Input
+                    id="sms-api-key"
+                    type="password"
+                    value={smsApiKey}
+                    onChange={(e) => setSmsApiKey(e.target.value)}
+                    placeholder="Din API-nøkkel"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sms-from">Avsendernummer / Navn</Label>
+                  <Input
+                    id="sms-from"
+                    value={smsFrom}
+                    onChange={(e) => setSmsFrom(e.target.value)}
+                    placeholder="+4712345678 eller SalonNavn"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Noen leverandører tillater alfanumerisk avsendernavn (maks 11 tegn)
+                  </p>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button onClick={handleSaveSmsSettings}>
+                    Lagre innstillinger
+                  </Button>
+                  <Button variant="outline" onClick={handleTestSms}>
+                    <Send className="h-4 w-4 mr-2" />
+                    Send test-SMS
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  Automatiske påminnelser
+                </CardTitle>
+                <CardDescription>
+                  Konfigurer automatiske SMS-påminnelser for avtaler
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>SMS-påminnelser</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Send automatiske påminnelser før avtaler
+                    </p>
+                  </div>
+                  <Switch checked={smsReminderEnabled} onCheckedChange={setSmsReminderEnabled} />
+                </div>
+
+                {smsReminderEnabled && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="sms-reminder-time">Send påminnelse</Label>
+                      <Select value={smsReminderTime} onValueChange={setSmsReminderTime}>
+                        <SelectTrigger id="sms-reminder-time">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1 time før</SelectItem>
+                          <SelectItem value="2">2 timer før</SelectItem>
+                          <SelectItem value="4">4 timer før</SelectItem>
+                          <SelectItem value="24">24 timer før</SelectItem>
+                          <SelectItem value="48">48 timer før</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="sms-reminder-template">Mal for påminnelse</Label>
+                      <Textarea
+                        id="sms-reminder-template"
+                        value={smsReminderTemplate}
+                        onChange={(e) => setSmsReminderTemplate(e.target.value)}
+                        rows={4}
+                        placeholder="SMS-mal"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Tilgjengelige variabler: {"{customer_name}"}, {"{salon_name}"}, {"{date}"}, {"{time}"}, {"{service}"}
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Bekreftelse ved booking</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Send SMS-bekreftelse når kunde booker time
+                    </p>
+                  </div>
+                  <Switch checked={smsConfirmationEnabled} onCheckedChange={setSmsConfirmationEnabled} />
+                </div>
+
+                {smsConfirmationEnabled && (
+                  <div className="space-y-2">
+                    <Label htmlFor="sms-confirmation-template">Mal for bekreftelse</Label>
+                    <Textarea
+                      id="sms-confirmation-template"
+                      value={smsConfirmationTemplate}
+                      onChange={(e) => setSmsConfirmationTemplate(e.target.value)}
+                      rows={4}
+                      placeholder="SMS-mal"
+                    />
+                  </div>
+                )}
+
+                <Button onClick={handleSaveSmsSettings}>
+                  Lagre påminnelsesinnstillinger
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Email Tab */}
+          <TabsContent value="email" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  E-postinnstillinger
+                </CardTitle>
+                <CardDescription>
+                  Konfigurer SMTP-server og e-postinnstillinger
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Aktiver e-post</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Slå på/av e-postfunksjonalitet
+                    </p>
+                  </div>
+                  <Switch checked={emailEnabled} onCheckedChange={setEmailEnabled} />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="smtp-host">SMTP-server</Label>
+                    <Input
+                      id="smtp-host"
+                      value={smtpHost}
+                      onChange={(e) => setSmtpHost(e.target.value)}
+                      placeholder="smtp.gmail.com"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="smtp-port">Port</Label>
+                    <Input
+                      id="smtp-port"
+                      value={smtpPort}
+                      onChange={(e) => setSmtpPort(e.target.value)}
+                      placeholder="587"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="smtp-username">Brukernavn</Label>
+                    <Input
+                      id="smtp-username"
+                      value={smtpUsername}
+                      onChange={(e) => setSmtpUsername(e.target.value)}
+                      placeholder="din@epost.no"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="smtp-password">Passord</Label>
+                    <Input
+                      id="smtp-password"
+                      type="password"
+                      value={smtpPassword}
+                      onChange={(e) => setSmtpPassword(e.target.value)}
+                      placeholder="••••••••"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="email-from">Avsender e-post</Label>
+                    <Input
+                      id="email-from"
+                      type="email"
+                      value={emailFrom}
+                      onChange={(e) => setEmailFrom(e.target.value)}
+                      placeholder="noreply@salong.no"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email-from-name">Avsendernavn</Label>
+                    <Input
+                      id="email-from-name"
+                      value={emailFromName}
+                      onChange={(e) => setEmailFromName(e.target.value)}
+                      placeholder="Min Salong"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button onClick={handleSaveEmailSettings}>
+                    Lagre innstillinger
+                  </Button>
+                  <Button variant="outline" onClick={handleTestEmail}>
+                    <Send className="h-4 w-4 mr-2" />
+                    Send test-e-post
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  Automatiske e-poster
+                </CardTitle>
+                <CardDescription>
+                  Konfigurer automatiske e-poster for avtaler
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>E-postpåminnelser</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Send automatiske påminnelser før avtaler
+                    </p>
+                  </div>
+                  <Switch checked={emailReminderEnabled} onCheckedChange={setEmailReminderEnabled} />
+                </div>
+
+                {emailReminderEnabled && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="email-reminder-time">Send påminnelse</Label>
+                      <Select value={emailReminderTime} onValueChange={setEmailReminderTime}>
+                        <SelectTrigger id="email-reminder-time">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">1 time før</SelectItem>
+                          <SelectItem value="2">2 timer før</SelectItem>
+                          <SelectItem value="4">4 timer før</SelectItem>
+                          <SelectItem value="24">24 timer før</SelectItem>
+                          <SelectItem value="48">48 timer før</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="email-reminder-template">Mal for påminnelse</Label>
+                      <Textarea
+                        id="email-reminder-template"
+                        value={emailReminderTemplate}
+                        onChange={(e) => setEmailReminderTemplate(e.target.value)}
+                        rows={8}
+                        placeholder="E-postmal"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Tilgjengelige variabler: {"{customer_name}"}, {"{salon_name}"}, {"{date}"}, {"{time}"}, {"{service}"}
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                <Button onClick={handleSaveEmailSettings}>
+                  Lagre påminnelsesinnstillinger
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Automation Tab */}
+          <TabsContent value="automation" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5" />
+                  Automatiseringsregler
+                </CardTitle>
+                <CardDescription>
+                  Sett opp automatiske meldinger basert på hendelser
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        <p className="font-medium">Ny avtale booket</p>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Send bekreftelse når kunde booker ny time
+                      </p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Bell className="h-4 w-4" />
+                        <p className="font-medium">Påminnelse 24t før</p>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Send påminnelse 24 timer før avtale
+                      </p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Bell className="h-4 w-4" />
+                        <p className="font-medium">Påminnelse 2t før</p>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Send påminnelse 2 timer før avtale
+                      </p>
+                    </div>
+                    <Switch />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-4 w-4" />
+                        <p className="font-medium">Avtale fullført</p>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Send takkemelding etter fullført avtale
+                      </p>
+                    </div>
+                    <Switch />
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <XCircle className="h-4 w-4" />
+                        <p className="font-medium">Avtale kansellert</p>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Send bekreftelse når avtale kanselleres
+                      </p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                </div>
+
+                <Button>Lagre automatiseringsregler</Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* History Tab */}
+          <TabsContent value="history" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Meldingshistorikk
+                </CardTitle>
+                <CardDescription>
+                  Oversikt over sendte meldinger
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex gap-2">
+                    <Input placeholder="Søk etter kunde eller melding..." />
+                    <Select defaultValue="all">
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Alle meldinger</SelectItem>
+                        <SelectItem value="sms">Kun SMS</SelectItem>
+                        <SelectItem value="email">Kun e-post</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    {/* Sample message history */}
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <MessageSquare className="h-4 w-4 text-blue-500" />
+                        <div>
+                          <p className="font-medium">Påminnelse sendt til Ola Nordmann</p>
+                          <p className="text-sm text-muted-foreground">
+                            I dag kl 10:30 • SMS
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                        Levert
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Mail className="h-4 w-4 text-purple-500" />
+                        <div>
+                          <p className="font-medium">Bekreftelse sendt til Kari Hansen</p>
+                          <p className="text-sm text-muted-foreground">
+                            I går kl 15:45 • E-post
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                        <CheckCircle2 className="h-3 w-3 mr-1" />
+                        Levert
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <MessageSquare className="h-4 w-4 text-blue-500" />
+                        <div>
+                          <p className="font-medium">Påminnelse sendt til Per Olsen</p>
+                          <p className="text-sm text-muted-foreground">
+                            I går kl 12:00 • SMS
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                        <XCircle className="h-3 w-3 mr-1" />
+                        Feilet
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <div className="text-center text-sm text-muted-foreground py-4">
+                    Viser de siste 50 meldingene
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </DashboardLayout>
+  );
+}
