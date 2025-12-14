@@ -113,10 +113,25 @@ SES_FROM_EMAIL=noreply@yourdomain.com
 
 ## 🚀 النشر - Deployment
 
-راجع [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) للحصول على دليل شامل للنشر على:
-- Vercel + PlanetScale
-- Railway
-- DigitalOcean
+### خيارات النشر:
+
+1. **Railway** (موصى به للمبتدئين) - راجع [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md)
+2. **Docker** (للتحكم الكامل) - راجع [DOCKER_GUIDE.md](./DOCKER_GUIDE.md)
+3. **Vercel + PlanetScale** - راجع [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
+4. **DigitalOcean** - راجع [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
+
+### البدء السريع مع Docker:
+
+```bash
+# نسخ وتعديل ملف البيئة
+cp .env.example .env
+
+# تشغيل التطبيق
+docker-compose up -d
+
+# عرض logs
+docker-compose logs -f app
+```
 
 ---
 
@@ -213,16 +228,22 @@ pnpm format           # تنسيق الكود
 
 ## ⚠️ ملاحظات أمنية - Security Notes
 
-### نظام المصادقة الحالي:
+### نظام المصادقة:
 
-الكود الحالي يستخدم نظام JWT بسيط **للتطوير فقط**. قبل الإنتاج:
+المشروع يدعم نظامين للمصادقة:
 
-1. أضف تشفير كلمات المرور (bcrypt)
-2. أضف email verification
-3. أضف password reset
-4. أو استخدم OAuth provider (Supabase, Auth0, etc.)
+1. **Supabase Auth** (موصى به للإنتاج):
+   - تشفير كلمات المرور مع bcrypt
+   - Email verification
+   - Password reset
+   - OAuth providers (Google, GitHub, etc.)
+   - استخدم `registerSupabaseAuthRoutes` في `server/_core/index.ts`
 
-راجع [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) للتفاصيل.
+2. **Simple JWT Auth** (للتطوير فقط):
+   - نظام بسيط للاختبار السريع
+   - استخدم `registerAuthRoutes` في `server/_core/index.ts`
+
+راجع [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) و [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md) للتفاصيل.
 
 ---
 

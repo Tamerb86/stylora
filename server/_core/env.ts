@@ -26,4 +26,8 @@ export const ENV = {
   awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "",
   awsRegion: process.env.AWS_REGION ?? "eu-north-1",
   awsSesFromEmail: process.env.AWS_SES_FROM_EMAIL ?? "",
+  // Supabase Auth
+  supabaseUrl: process.env.SUPABASE_URL ?? "",
+  supabaseAnonKey: process.env.SUPABASE_ANON_KEY ?? "",
+  supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY ?? "",
 };

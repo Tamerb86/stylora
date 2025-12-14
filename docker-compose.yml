@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: barbertime-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: barbertime_root_password
+      MYSQL_DATABASE: barbertime
+      MYSQL_USER: barbertime_user
+      MYSQL_PASSWORD: barbertime_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # BarberTime Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: barbertime-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Database
+      DATABASE_URL: mysql://barbertime_user:barbertime_password@db:3306/barbertime
+      
+      # JWT
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      
+      # App
+      VITE_APP_ID: barbertime
+      VITE_APP_TITLE: BarberTime
+      NODE_ENV: production
+      PORT: 3000
+      
+      # Owner
+      OWNER_OPEN_ID: admin@example.com
+      
+      # Supabase (add your keys)
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
+      
+      # Stripe (add your keys)
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      VITE_STRIPE_PUBLISHABLE_KEY: ${VITE_STRIPE_PUBLISHABLE_KEY}
+      
+      # AWS (optional)
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      AWS_SES_FROM_EMAIL: ${AWS_SES_FROM_EMAIL}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  mysql_data:
+    driver: local
