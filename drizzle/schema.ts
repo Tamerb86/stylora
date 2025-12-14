@@ -42,6 +42,8 @@ export const tenants = mysqlTable("tenants", {
   trialEndsAt: timestamp("trialEndsAt"),
   emailVerified: boolean("emailVerified").default(false).notNull(),
   emailVerifiedAt: timestamp("emailVerifiedAt"),
+  emailVerificationToken: varchar("emailVerificationToken", { length: 255 }),
+  emailVerificationExpires: timestamp("emailVerificationExpires"),
   // Onboarding Wizard
   onboardingCompleted: boolean("onboardingCompleted").default(false).notNull(),
   onboardingStep: mysqlEnum("onboardingStep", ["welcome", "service", "employee", "hours", "complete"]).default("welcome"),
@@ -70,6 +72,9 @@ export const users = mysqlTable("users", {
   email: varchar("email", { length: 320 }),
   name: text("name"),
   phone: varchar("phone", { length: 20 }),
+  passwordHash: varchar("passwordHash", { length: 255 }), // bcrypt hash
+  passwordResetToken: varchar("passwordResetToken", { length: 255 }),
+  passwordResetExpires: timestamp("passwordResetExpires"),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["owner", "admin", "employee"]).notNull(),
   pin: varchar("pin", { length: 6 }), // 4-6 digit PIN for time clock

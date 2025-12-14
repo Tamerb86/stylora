@@ -4505,3 +4505,22 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Check if other loyalty tables are missing
 - [ ] Push missing tables to database
 - [ ] Verify loyalty page loads without errors
+
+## Phase 21: Authentication Pages & Salon Management
+- [x] Fix /api/auth/login route (404 error)
+- [x] Create login page UI (/login)
+- [x] Create register page UI (/register)
+- [x] Integrate Supabase authentication in login/register
+- [x] Add password reset page
+- [x] Update navigation to show login/register for unauthenticated users
+- [x] Add password fields to database schema (passwordHash, passwordResetToken)
+- [x] Add email verification fields to tenants schema
+- [x] Create tRPC auth procedures (login, register, requestPasswordReset)
+- [x] Get Supabase API keys from MCP
+- [ ] Add Supabase environment variables to Railway
+- [ ] Create salon creation page (/dashboard/salons/new)
+- [ ] Create salon list page (/dashboard/salons)
+- [ ] Create salon edit page (/dashboard/salons/:id/edit)
+- [ ] Add salon selection/switching in dashboard
+- [ ] Test complete authentication flow
+- [ ] Deploy authentication changes to Railway
