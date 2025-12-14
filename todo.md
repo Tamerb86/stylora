@@ -4524,3 +4524,18 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Add salon selection/switching in dashboard
 - [ ] Test complete authentication flow
 - [ ] Deploy authentication changes to Railway
+
+## Phase 22: Demo Account System
+- [x] Create demo tenant with sample data
+- [x] Create demo user account (email: demo@barbertime.no, password: demo123)
+- [x] Add sample services (haircut, beard trim, coloring, etc.)
+- [x] Add sample customers (5-10 customers with realistic Norwegian names)
+- [x] Add sample appointments (past, today, upcoming)
+- [x] Add sample employees (2-3 employees)
+- [x] Add "Prøv Demo" (Try Demo) button to homepage
+- [x] Implement auto-login for demo account
+- [x] Create seed script (scripts/seed-demo-account.mjs)
+- [x] Add /demo route with auto-login page
+- [ ] Run seed script on Railway database
+- [ ] Test complete demo flow on production
+- [ ] Deploy demo account to Railway

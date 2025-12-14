@@ -55,6 +55,7 @@ import SignUp from "./pages/SignUp";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
+import Demo from "./pages/Demo";
 import Contact from "./pages/Contact";
 import { VerifyEmail } from "./pages/VerifyEmail";
 import EmailVerificationRequired from "./pages/EmailVerificationRequired";
@@ -75,6 +76,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/demo" component={Demo} />
       <Route path="/signup" component={SignUp} />
       <Route path="/verify-email" component={VerifyEmail} />
       <Route path="/email-verification-required" component={EmailVerificationRequired} />
