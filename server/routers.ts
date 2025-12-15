@@ -606,6 +606,7 @@ export const appRouter = router({
         salonName: z.string().min(2, "Salon name must be at least 2 characters"),
         ownerEmail: z.string().email("Invalid email address"),
         ownerPhone: z.string().min(8, "Phone number must be at least 8 digits"),
+        password: z.string().min(6, "Password must be at least 6 characters").optional(),
         address: z.string().optional(),
         orgNumber: z.string().optional(),
       }))
@@ -671,6 +672,14 @@ export const appRouter = router({
 
         // Create owner user with unique openId
         const ownerOpenId = `owner-${tenantId}-${nanoid()}`;
+        
+        // Hash password if provided
+        let passwordHash = null;
+        if (input.password) {
+          const bcrypt = await import("bcrypt");
+          passwordHash = await bcrypt.hash(input.password, 10);
+        }
+        
         await dbInstance.insert(users).values({
           tenantId,
           openId: ownerOpenId,
@@ -679,6 +688,7 @@ export const appRouter = router({
           phone: input.ownerPhone,
           role: "owner",
           loginMethod: "email",
+          passwordHash,
           isActive: true,
         });
 

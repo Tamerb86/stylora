@@ -411,6 +411,46 @@ export function registerAuthRoutes(app: Express) {
     }
   });
 
+  // Forgot password endpoint
+  app.post("/api/auth/forgot-password", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        res.status(400).json({ error: "E-post er påkrevd" });
+        return;
+      }
+      
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        res.status(500).json({ error: "Database ikke tilgjengelig" });
+        return;
+      }
+      
+      // Check if user exists
+      const [user] = await dbInstance
+        .select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+      
+      // Always return success to prevent email enumeration
+      // In production, you would send an email here
+      if (user) {
+        console.log(`[Auth] Password reset requested for ${email}`);
+        // TODO: Send password reset email
+      }
+      
+      res.json({ 
+        success: true, 
+        message: "Hvis e-postadressen finnes i systemet, vil du motta en e-post med instruksjoner." 
+      });
+    } catch (error) {
+      console.error("[Auth] Forgot password error:", error);
+      res.status(500).json({ error: "Noe gikk galt" });
+    }
+  });
+
   // Logout endpoint
   app.post("/api/auth/logout", async (req: Request, res: Response) => {
     const cookieOptions = getSessionCookieOptions(req);

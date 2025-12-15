@@ -26,6 +26,8 @@ export default function SignUp() {
     ownerName: "",
     ownerEmail: "",
     ownerPhone: "",
+    password: "",
+    confirmPassword: "",
     
     // Step 3: Plan Selection
     selectedPlan: "pro", // start, pro, enterprise
@@ -84,6 +86,14 @@ export default function SignUp() {
           toast.error("Vennligst fyll inn en gyldig e-postadresse");
           return false;
         }
+        if (!formData.password || formData.password.length < 6) {
+          toast.error("Passord må være minst 6 tegn");
+          return false;
+        }
+        if (formData.password !== formData.confirmPassword) {
+          toast.error("Passordene må være like");
+          return false;
+        }
         return true;
       case 3:
         return true;
@@ -114,6 +124,7 @@ export default function SignUp() {
       salonName: formData.salonName,
       ownerEmail: formData.ownerEmail,
       ownerPhone: formData.ownerPhone,
+      password: formData.password,
       address: formData.address,
       orgNumber: formData.orgNumber,
     });
@@ -335,6 +346,34 @@ export default function SignUp() {
                       placeholder="+47 123 45 678"
                       value={formData.ownerPhone}
                       onChange={(e) => handleChange("ownerPhone", e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="password">
+                      Passord <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Minst 6 tegn"
+                      value={formData.password}
+                      onChange={(e) => handleChange("password", e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">
+                      Bekreft passord <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="Skriv passordet på nytt"
+                      value={formData.confirmPassword}
+                      onChange={(e) => handleChange("confirmPassword", e.target.value)}
                       required
                     />
                   </div>

@@ -4536,3 +4536,23 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add password hash to demo user
 - [x] Test authentication flow locally
 - [ ] Deploy to Railway and verify authentication works
+
+## Deploy and Auth Improvements
+- [ ] Create forgot password page
+- [ ] Update signup page to work with new auth system
+- [ ] Push code to Railway via GitHub
+- [ ] Run seed script on Railway database
+- [ ] Test all authentication flows on production
+
+
+## Phase: Email/Password Authentication (Completed)
+- [x] Add passwordHash column to users table
+- [x] Create simple JWT-based authentication system
+- [x] Create Login page with email/password form (Norwegian)
+- [x] Create Demo page for auto-login to demo account
+- [x] Create ForgotPassword page
+- [x] Update SignUp page with password fields
+- [x] Update auth routes to use email/password instead of OAuth
+- [x] Push code to Railway via GitHub
+- [x] Run seed script on Railway database
+- [x] Test authentication flows on production

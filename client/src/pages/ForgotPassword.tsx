@@ -1,18 +1,16 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, LogIn, ArrowLeft } from "lucide-react";
+import { Loader2, Mail, ArrowLeft, CheckCircle } from "lucide-react";
 import { Link } from "wouter";
 
-export default function Login() {
-  const [, setLocation] = useLocation();
+export default function ForgotPassword() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,22 +19,20 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-        credentials: "include",
+        body: JSON.stringify({ email }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Innlogging feilet");
+        setError(data.error || "Noe gikk galt");
         return;
       }
 
-      // Redirect to dashboard on success
-      setLocation("/dashboard");
+      setSuccess(true);
     } catch (err) {
       setError("Noe gikk galt. Prøv igjen.");
     } finally {
@@ -44,23 +40,56 @@ export default function Login() {
     }
   };
 
+  if (success) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Card className="shadow-lg border-0">
+            <CardHeader className="space-y-1 pb-4">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-8 h-8 text-green-600" />
+                </div>
+              </div>
+              <CardTitle className="text-2xl text-center">Sjekk e-posten din</CardTitle>
+              <CardDescription className="text-center">
+                Vi har sendt instruksjoner for å tilbakestille passordet til <strong>{email}</strong>
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-slate-600 text-center">
+                Hvis du ikke mottar e-posten innen noen minutter, sjekk søppelpost-mappen din.
+              </p>
+              <Link href="/login">
+                <Button variant="outline" className="w-full">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Tilbake til innlogging
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <Link href="/" className="inline-flex items-center text-sm text-slate-600 hover:text-slate-900 mb-6">
+          <Link href="/login" className="inline-flex items-center text-sm text-slate-600 hover:text-slate-900 mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Tilbake til forsiden
+            Tilbake til innlogging
           </Link>
           <h1 className="text-3xl font-bold text-slate-900">Stylora</h1>
-          <p className="text-slate-600 mt-2">Logg inn på din salong</p>
+          <p className="text-slate-600 mt-2">Glemt passord?</p>
         </div>
 
         <Card className="shadow-lg border-0">
           <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-2xl text-center">Logg inn</CardTitle>
+            <CardTitle className="text-2xl text-center">Tilbakestill passord</CardTitle>
             <CardDescription className="text-center">
-              Skriv inn e-post og passord for å fortsette
+              Skriv inn e-postadressen din, så sender vi deg en lenke for å tilbakestille passordet
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -84,24 +113,6 @@ export default function Login() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Passord</Label>
-                  <Link href="/forgot-password" className="text-sm text-primary hover:underline">
-                    Glemt passord?
-                  </Link>
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                />
-              </div>
-
               <Button
                 type="submit"
                 className="w-full"
@@ -110,12 +121,12 @@ export default function Login() {
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Logger inn...
+                    Sender...
                   </>
                 ) : (
                   <>
-                    <LogIn className="w-4 h-4 mr-2" />
-                    Logg inn
+                    <Mail className="w-4 h-4 mr-2" />
+                    Send tilbakestillingslenke
                   </>
                 )}
               </Button>
@@ -123,36 +134,14 @@ export default function Login() {
 
             <div className="mt-6 text-center text-sm">
               <p className="text-slate-600">
-                Har du ikke konto?{" "}
-                <Link href="/signup" className="text-primary font-medium hover:underline">
-                  Registrer deg gratis
+                Husker du passordet?{" "}
+                <Link href="/login" className="text-primary font-medium hover:underline">
+                  Logg inn
                 </Link>
               </p>
             </div>
-
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200"></div>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-slate-500">eller</span>
-              </div>
-            </div>
-
-            <Link href="/demo">
-              <Button variant="outline" className="w-full">
-                Prøv demo-konto
-              </Button>
-            </Link>
           </CardContent>
         </Card>
-
-        <p className="text-center text-xs text-slate-500 mt-6">
-          Ved å logge inn godtar du våre{" "}
-          <a href="#" className="underline hover:text-slate-700">vilkår</a>
-          {" "}og{" "}
-          <a href="#" className="underline hover:text-slate-700">personvernregler</a>
-        </p>
       </div>
     </div>
   );

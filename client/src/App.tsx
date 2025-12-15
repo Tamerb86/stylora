@@ -66,12 +66,14 @@ import RefundManagement from "./pages/RefundManagement";
 import POSFinancialReports from "./pages/POSFinancialReports";
 import Login from "./pages/Login";
 import Demo from "./pages/Demo";
+import ForgotPassword from "./pages/ForgotPassword";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
+      <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/demo" component={Demo} />
       <Route path="/signup" component={SignUp} />
       <Route path="/verify-email" component={VerifyEmail} />
