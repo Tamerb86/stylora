@@ -4505,3 +4505,8 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Check if other loyalty tables are missing
 - [ ] Push missing tables to database
 - [ ] Verify loyalty page loads without errors
+
+## Phase 24: Recreate Seed Script
+- [x] Recreate scripts/seed-demo-account.mjs (lost during git conflict)
+- [ ] Save checkpoint with seed script
+- [ ] User pulls latest code and runs script on Railway
