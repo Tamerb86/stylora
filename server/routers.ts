@@ -7212,15 +7212,190 @@ export const appRouter = router({
       }
 
       const { subscriptionPlans } = await import("../drizzle/schema");
-      const { eq } = await import("drizzle-orm");
 
       const plans = await dbInstance
         .select()
-        .from(subscriptionPlans)
-        .where(eq(subscriptionPlans.isActive, true));
+        .from(subscriptionPlans);
 
       return plans;
     }),
+
+    /**
+     * Create a new subscription plan
+     */
+    createSubscriptionPlan: platformAdminProcedure
+      .input(z.object({
+        name: z.string().min(1),
+        displayNameNo: z.string().min(1),
+        displayNameEn: z.string().optional(),
+        priceMonthly: z.number().min(0),
+        priceYearly: z.number().min(0).optional(),
+        maxEmployees: z.number().min(0).optional(),
+        maxCustomers: z.number().min(0).optional(),
+        maxAppointmentsPerMonth: z.number().min(0).optional(),
+        features: z.string().optional(),
+        isActive: z.boolean().default(true),
+      }))
+      .mutation(async ({ input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { subscriptionPlans } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+
+        // Check if plan name already exists
+        const [existing] = await dbInstance
+          .select()
+          .from(subscriptionPlans)
+          .where(eq(subscriptionPlans.name, input.name));
+
+        if (existing) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Plan name already exists" });
+        }
+
+        // Create new plan
+        const [newPlan] = await dbInstance
+          .insert(subscriptionPlans)
+          .values({
+            name: input.name,
+            displayNameNo: input.displayNameNo,
+            priceMonthly: String(input.priceMonthly),
+            maxEmployees: input.maxEmployees || null,
+            features: input.features ? JSON.parse(`["${input.features.split(',').map((f: string) => f.trim()).join('","')}"]`) : null,
+            isActive: input.isActive,
+          })
+          .$returningId();
+
+        return {
+          success: true,
+          planId: newPlan.id,
+          message: "Plan created successfully",
+        };
+      }),
+
+    /**
+     * Update an existing subscription plan
+     */
+    updateSubscriptionPlan: platformAdminProcedure
+      .input(z.object({
+        planId: z.number(),
+        name: z.string().min(1).optional(),
+        displayNameNo: z.string().min(1).optional(),
+        displayNameEn: z.string().optional(),
+        priceMonthly: z.number().min(0).optional(),
+        priceYearly: z.number().min(0).optional(),
+        maxEmployees: z.number().min(0).nullable().optional(),
+        maxCustomers: z.number().min(0).nullable().optional(),
+        maxAppointmentsPerMonth: z.number().min(0).nullable().optional(),
+        features: z.string().nullable().optional(),
+        isActive: z.boolean().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { subscriptionPlans } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+
+        // Check if plan exists
+        const [existing] = await dbInstance
+          .select()
+          .from(subscriptionPlans)
+          .where(eq(subscriptionPlans.id, input.planId));
+
+        if (!existing) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Plan not found" });
+        }
+
+        // Check if new name conflicts with another plan
+        if (input.name && input.name !== existing.name) {
+          const [conflict] = await dbInstance
+            .select()
+            .from(subscriptionPlans)
+            .where(eq(subscriptionPlans.name, input.name));
+
+          if (conflict) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Plan name already exists" });
+          }
+        }
+
+        // Build update object
+        const updateData: Record<string, any> = {};
+        if (input.name !== undefined) updateData.name = input.name;
+        if (input.displayNameNo !== undefined) updateData.displayNameNo = input.displayNameNo;
+        if (input.displayNameEn !== undefined) updateData.displayNameEn = input.displayNameEn;
+        if (input.priceMonthly !== undefined) updateData.priceMonthly = input.priceMonthly;
+        if (input.priceYearly !== undefined) updateData.priceYearly = input.priceYearly;
+        if (input.maxEmployees !== undefined) updateData.maxEmployees = input.maxEmployees;
+        if (input.maxCustomers !== undefined) updateData.maxCustomers = input.maxCustomers;
+        if (input.maxAppointmentsPerMonth !== undefined) updateData.maxAppointmentsPerMonth = input.maxAppointmentsPerMonth;
+        if (input.features !== undefined) updateData.features = input.features;
+        if (input.isActive !== undefined) updateData.isActive = input.isActive;
+
+        // Update plan
+        await dbInstance
+          .update(subscriptionPlans)
+          .set(updateData)
+          .where(eq(subscriptionPlans.id, input.planId));
+
+        return {
+          success: true,
+          message: "Plan updated successfully",
+        };
+      }),
+
+    /**
+     * Delete a subscription plan (soft delete by setting isActive to false)
+     */
+    deleteSubscriptionPlan: platformAdminProcedure
+      .input(z.object({ planId: z.number() }))
+      .mutation(async ({ input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { subscriptionPlans, tenantSubscriptions } = await import("../drizzle/schema");
+        const { eq, sql } = await import("drizzle-orm");
+
+        // Check if plan exists
+        const [existing] = await dbInstance
+          .select()
+          .from(subscriptionPlans)
+          .where(eq(subscriptionPlans.id, input.planId));
+
+        if (!existing) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Plan not found" });
+        }
+
+        // Check if any tenants are using this plan
+        const [activeSubscriptions] = await dbInstance
+          .select({ count: sql<number>`COUNT(*)` })
+          .from(tenantSubscriptions)
+          .where(eq(tenantSubscriptions.planId, input.planId));
+
+        if (Number(activeSubscriptions?.count || 0) > 0) {
+          throw new TRPCError({ 
+            code: "BAD_REQUEST", 
+            message: `Cannot delete plan. ${activeSubscriptions?.count} tenant(s) are using this plan.` 
+          });
+        }
+
+        // Soft delete by setting isActive to false
+        await dbInstance
+          .update(subscriptionPlans)
+          .set({ isActive: false })
+          .where(eq(subscriptionPlans.id, input.planId));
+
+        return {
+          success: true,
+          message: "Plan deleted successfully",
+        };
+      }),
 
     /**
      * Impersonate a tenant (platform owner only)

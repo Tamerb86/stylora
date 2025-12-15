@@ -78,6 +78,72 @@ export default function SaasAdminSubscriptions() {
   const { data: plans, isLoading: plansLoading, refetch: refetchPlans } = trpc.saasAdmin.getSubscriptionPlans.useQuery();
   const { data: tenants } = trpc.saasAdmin.listTenants.useQuery({ page: 1, pageSize: 1000 });
 
+  // Mutations for creating and updating plans
+  const createPlanMutation = trpc.saasAdmin.createSubscriptionPlan.useMutation({
+    onSuccess: () => {
+      toast.success("Plan opprettet!");
+      setNewPlanDialog(false);
+      resetPlanForm();
+      refetchPlans();
+    },
+    onError: (error) => {
+      toast.error(`Feil: ${error.message}`);
+    },
+  });
+
+  const updatePlanMutation = trpc.saasAdmin.updateSubscriptionPlan.useMutation({
+    onSuccess: () => {
+      toast.success("Plan oppdatert!");
+      setEditPlanDialog({ open: false, plan: null });
+      refetchPlans();
+    },
+    onError: (error) => {
+      toast.error(`Feil: ${error.message}`);
+    },
+  });
+
+  const deletePlanMutation = trpc.saasAdmin.deleteSubscriptionPlan.useMutation({
+    onSuccess: () => {
+      toast.success("Plan slettet!");
+      refetchPlans();
+    },
+    onError: (error) => {
+      toast.error(`Feil: ${error.message}`);
+    },
+  });
+
+  const handleCreatePlan = () => {
+    createPlanMutation.mutate({
+      name: planForm.name,
+      displayNameNo: planForm.displayNameNo,
+      displayNameEn: planForm.displayNameEn || undefined,
+      priceMonthly: planForm.priceMonthly,
+      priceYearly: planForm.priceYearly || undefined,
+      maxEmployees: planForm.maxEmployees || undefined,
+      maxCustomers: planForm.maxCustomers || undefined,
+      maxAppointmentsPerMonth: planForm.maxAppointmentsPerMonth || undefined,
+      features: planForm.features || undefined,
+      isActive: planForm.isActive,
+    });
+  };
+
+  const handleUpdatePlan = () => {
+    if (!editPlanDialog.plan) return;
+    updatePlanMutation.mutate({
+      planId: editPlanDialog.plan.id,
+      name: planForm.name,
+      displayNameNo: planForm.displayNameNo,
+      displayNameEn: planForm.displayNameEn || undefined,
+      priceMonthly: planForm.priceMonthly,
+      priceYearly: planForm.priceYearly || undefined,
+      maxEmployees: planForm.maxEmployees || null,
+      maxCustomers: planForm.maxCustomers || null,
+      maxAppointmentsPerMonth: planForm.maxAppointmentsPerMonth || null,
+      features: planForm.features || null,
+      isActive: planForm.isActive,
+    });
+  };
+
   // Calculate subscription statistics
   const stats = {
     totalActive: tenants?.items.filter(t => t.status === "active").length || 0,
@@ -488,12 +554,14 @@ export default function SaasAdminSubscriptions() {
             </Button>
             <Button 
               className="bg-gradient-to-r from-blue-600 to-purple-600"
-              onClick={() => {
-                toast.success("Plan oppdatert!");
-                setEditPlanDialog({ open: false, plan: null });
-              }}
+              onClick={handleUpdatePlan}
+              disabled={updatePlanMutation.isPending}
             >
-              Lagre endringer
+              {updatePlanMutation.isPending ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Lagrer...</>
+              ) : (
+                "Lagre endringer"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -594,13 +662,14 @@ export default function SaasAdminSubscriptions() {
             </Button>
             <Button 
               className="bg-gradient-to-r from-blue-600 to-purple-600"
-              onClick={() => {
-                toast.success("Plan opprettet!");
-                setNewPlanDialog(false);
-                resetPlanForm();
-              }}
+              onClick={handleCreatePlan}
+              disabled={createPlanMutation.isPending || !planForm.name || !planForm.displayNameNo}
             >
-              Opprett plan
+              {createPlanMutation.isPending ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Oppretter...</>
+              ) : (
+                "Opprett plan"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

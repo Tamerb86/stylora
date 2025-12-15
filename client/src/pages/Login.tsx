@@ -52,7 +52,7 @@ export default function Login() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Tilbake til forsiden
           </Link>
-          <h1 className="text-3xl font-bold text-slate-900">BarberTime</h1>
+          <h1 className="text-3xl font-bold text-slate-900">Stylora</h1>
           <p className="text-slate-600 mt-2">Logg inn på din salong</p>
         </div>
 

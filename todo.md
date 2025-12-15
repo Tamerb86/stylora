@@ -4571,3 +4571,10 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Add backend API for salon activation
 - [ ] Add backend API for subscription management
 
+
+## Phase 26: Backend API for Subscription Plans
+- [x] Change branding back to Stylora in Login page
+- [x] Add backend API for creating subscription plans
+- [x] Add backend API for updating subscription plans
+- [x] Connect frontend to new backend APIs
+
