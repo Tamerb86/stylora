@@ -4510,3 +4510,9 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Recreate scripts/seed-demo-account.mjs (lost during git conflict)
 - [ ] Save checkpoint with seed script
 - [ ] User pulls latest code and runs script on Railway
+
+## Phase 25: Fix Stripe Error
+- [x] Make Stripe initialization optional in server/stripe.ts
+- [x] Remove throw error for missing STRIPE_SECRET_KEY
+- [x] Test locally - dev server works!
+- [ ] Push to GitHub and deploy to Railway
