@@ -20,7 +20,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, ArrowLeft, LogIn, Eye } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Search, ArrowLeft, LogIn, Eye, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function SaasAdminTenants() {
   const [, setLocation] = useLocation();
@@ -29,24 +38,64 @@ export default function SaasAdminTenants() {
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
-  const { data, isLoading } = trpc.saasAdmin.listTenants.useQuery({
+  // Activation dialog state
+  const [activationDialog, setActivationDialog] = useState<{
+    open: boolean;
+    tenantId: string;
+    tenantName: string;
+    action: "activate" | "suspend";
+  }>({ open: false, tenantId: "", tenantName: "", action: "activate" });
+
+  const { data, isLoading, refetch } = trpc.saasAdmin.listTenants.useQuery({
     search: search || undefined,
     status,
     page,
     pageSize,
   });
 
+  const { data: plans } = trpc.saasAdmin.getSubscriptionPlans.useQuery();
+
   const impersonateMutation = trpc.saasAdmin.impersonateTenant.useMutation({
     onSuccess: (result) => {
       setLocation(result.redirectUrl);
     },
     onError: (error) => {
-      alert(`Feil: ${error.message}`);
+      toast.error(`Feil: ${error.message}`);
+    },
+  });
+
+  const updateMutation = trpc.saasAdmin.updateTenantPlanAndStatus.useMutation({
+    onSuccess: () => {
+      toast.success(activationDialog.action === "activate" ? "Salong aktivert!" : "Salong suspendert!");
+      setActivationDialog({ open: false, tenantId: "", tenantName: "", action: "activate" });
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(`Feil: ${error.message}`);
     },
   });
 
   const handleImpersonate = (tenantId: string) => {
     impersonateMutation.mutate({ tenantId });
+  };
+
+  const handleQuickActivate = (tenantId: string, tenantName: string) => {
+    setActivationDialog({ open: true, tenantId, tenantName, action: "activate" });
+  };
+
+  const handleQuickSuspend = (tenantId: string, tenantName: string) => {
+    setActivationDialog({ open: true, tenantId, tenantName, action: "suspend" });
+  };
+
+  const confirmActivation = () => {
+    // Get the first available plan (Basic) for activation
+    const basicPlan = plans?.find((p: any) => p.name === "basic") || plans?.[0];
+    
+    updateMutation.mutate({
+      tenantId: activationDialog.tenantId,
+      status: activationDialog.action === "activate" ? "active" : "suspended",
+      planId: activationDialog.action === "activate" ? basicPlan?.id : null,
+    });
   };
 
   return (
@@ -68,11 +117,18 @@ export default function SaasAdminTenants() {
             </p>
           </div>
         </div>
-        <Link href="/saas-admin/tenants/new">
-          <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-            Opprett ny salong
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/saas-admin/subscriptions">
+            <Button variant="outline">
+              Abonnementer
+            </Button>
+          </Link>
+          <Link href="/saas-admin/tenants/new">
+            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              Opprett ny salong
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}
@@ -204,6 +260,29 @@ export default function SaasAdminTenants() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {/* Quick Activate/Suspend Button */}
+                          {tenant.status === "trial" || tenant.status === "suspended" ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleQuickActivate(tenant.id, tenant.name)}
+                              className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Aktiver
+                            </Button>
+                          ) : tenant.status === "active" ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleQuickSuspend(tenant.id, tenant.name)}
+                              className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                            >
+                              <XCircle className="h-4 w-4 mr-1" />
+                              Suspender
+                            </Button>
+                          ) : null}
+                          
                           <Link href={`/saas-admin/tenants/${tenant.id}`}>
                             <Button variant="outline" size="sm">
                               <Eye className="h-4 w-4 mr-1" />
@@ -262,6 +341,65 @@ export default function SaasAdminTenants() {
           )}
         </div>
       </Card>
+
+      {/* Activation Confirmation Dialog */}
+      <Dialog open={activationDialog.open} onOpenChange={(open) => setActivationDialog(prev => ({ ...prev, open }))}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {activationDialog.action === "activate" ? "Aktiver salong" : "Suspender salong"}
+            </DialogTitle>
+            <DialogDescription>
+              {activationDialog.action === "activate" ? (
+                <>
+                  Er du sikker på at du vil aktivere <strong>{activationDialog.tenantName}</strong>?
+                  <br /><br />
+                  Salongen vil få tilgang til alle funksjoner og vil bli satt til "Basic" plan.
+                </>
+              ) : (
+                <>
+                  Er du sikker på at du vil suspendere <strong>{activationDialog.tenantName}</strong>?
+                  <br /><br />
+                  Salongen vil miste tilgang til systemet inntil den aktiveres igjen.
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setActivationDialog(prev => ({ ...prev, open: false }))}
+            >
+              Avbryt
+            </Button>
+            <Button
+              onClick={confirmActivation}
+              disabled={updateMutation.isPending}
+              className={activationDialog.action === "activate" 
+                ? "bg-green-600 hover:bg-green-700" 
+                : "bg-orange-600 hover:bg-orange-700"
+              }
+            >
+              {updateMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Behandler...
+                </>
+              ) : activationDialog.action === "activate" ? (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Aktiver
+                </>
+              ) : (
+                <>
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Suspender
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

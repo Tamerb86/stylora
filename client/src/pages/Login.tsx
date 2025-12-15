@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, LogIn, ArrowLeft } from "lucide-react";
+import { Loader2, LogIn, ArrowLeft, Shield } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Login() {
@@ -52,7 +52,7 @@ export default function Login() {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Tilbake til forsiden
           </Link>
-          <h1 className="text-3xl font-bold text-slate-900">Stylora</h1>
+          <h1 className="text-3xl font-bold text-slate-900">BarberTime</h1>
           <p className="text-slate-600 mt-2">Logg inn på din salong</p>
         </div>
 
@@ -142,6 +142,23 @@ export default function Login() {
             <Link href="/demo">
               <Button variant="outline" className="w-full">
                 Prøv demo-konto
+              </Button>
+            </Link>
+
+            {/* SaaS Admin Login Button */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200"></div>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-slate-500">Admin</span>
+              </div>
+            </div>
+
+            <Link href="/saas-admin">
+              <Button variant="ghost" className="w-full text-slate-500 hover:text-slate-700 hover:bg-slate-100">
+                <Shield className="w-4 h-4 mr-2" />
+                SaaS Admin Panel
               </Button>
             </Link>
           </CardContent>

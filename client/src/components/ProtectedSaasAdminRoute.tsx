@@ -11,16 +11,20 @@ export default function ProtectedSaasAdminRoute({ children }: ProtectedSaasAdmin
   const [, setLocation] = useLocation();
   const { data: user, isLoading } = trpc.auth.me.useQuery();
 
+  // Check if user is platform owner by checking tenantId
+  // Platform owner has tenantId = "platform-admin-tenant"
+  const isPlatformOwner = user && user.tenantId === "platform-admin-tenant";
+
   useEffect(() => {
     // If not logged in, redirect to login page
     if (!isLoading && !user) {
       setLocation("/saas-admin/login");
     }
-    // If logged in but not owner, redirect to login page (will show access denied)
-    else if (!isLoading && user && user.openId !== import.meta.env.VITE_OWNER_OPEN_ID) {
+    // If logged in but not platform owner, redirect to login page (will show access denied)
+    else if (!isLoading && user && !isPlatformOwner) {
       setLocation("/saas-admin/login");
     }
-  }, [user, isLoading, setLocation]);
+  }, [user, isLoading, setLocation, isPlatformOwner]);
 
   // Show loading while checking auth
   if (isLoading) {
@@ -34,11 +38,11 @@ export default function ProtectedSaasAdminRoute({ children }: ProtectedSaasAdmin
     );
   }
 
-  // If not logged in or not owner, don't render children (will redirect)
-  if (!user || user.openId !== import.meta.env.VITE_OWNER_OPEN_ID) {
+  // If not logged in or not platform owner, don't render children (will redirect)
+  if (!user || !isPlatformOwner) {
     return null;
   }
 
-  // User is logged in and is owner, render protected content
+  // User is logged in and is platform owner, render protected content
   return <>{children}</>;
 }

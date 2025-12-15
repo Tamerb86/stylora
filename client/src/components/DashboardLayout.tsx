@@ -535,7 +535,7 @@ function DashboardLayoutContent({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                {user?.openId === import.meta.env.VITE_OWNER_OPEN_ID && (
+                {user?.tenantId === "platform-admin-tenant" && (
                   <DropdownMenuItem
                     onClick={() => setLocation("/saas-admin")}
                     className="cursor-pointer"

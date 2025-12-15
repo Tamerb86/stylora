@@ -14,12 +14,16 @@ export default function SaasAdminLogin() {
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Check if user is platform owner by checking tenantId
+  // Platform owner has tenantId = "platform-admin-tenant"
+  const isPlatformOwner = user && user.tenantId === "platform-admin-tenant";
+
   useEffect(() => {
     // If user is logged in and is platform owner, redirect to /saas-admin
-    if (user && user.openId === import.meta.env.VITE_OWNER_OPEN_ID) {
+    if (user && isPlatformOwner) {
       setLocation("/saas-admin");
     }
-  }, [user, setLocation]);
+  }, [user, setLocation, isPlatformOwner]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,9 +73,8 @@ export default function SaasAdminLogin() {
     );
   }
 
-  // If logged in but not owner, show access denied
-  const isOwner = user && user.openId === import.meta.env.VITE_OWNER_OPEN_ID;
-  const showAccessDenied = user && !isOwner;
+  // If logged in but not platform owner, show access denied
+  const showAccessDenied = user && !isPlatformOwner;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-4">
@@ -82,7 +85,7 @@ export default function SaasAdminLogin() {
             <Shield className="h-10 w-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-            Stylora
+            BarberTime
           </h1>
           <p className="text-xl font-semibold text-gray-700">Platform Admin</p>
         </div>
@@ -183,7 +186,7 @@ export default function SaasAdminLogin() {
           )}
         </div>
 
-        {/* Footer - removed Manus OAuth text */}
+        {/* Footer */}
         <div className="text-center mt-6">
           <p className="text-sm text-gray-500">
             Sikker innlogging med kryptert tilkobling

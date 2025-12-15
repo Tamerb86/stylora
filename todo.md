@@ -4556,3 +4556,18 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Push code to Railway via GitHub
 - [x] Run seed script on Railway database
 - [x] Test authentication flows on production
+
+
+## Fix SaaS Admin Access Issue
+- [ ] Change owner check from VITE_ build-time variable to runtime API check
+- [ ] Update ProtectedSaasAdminRoute to use backend verification
+- [ ] Update SaasAdminLogin to use backend verification
+- [ ] Push changes to GitHub and redeploy
+
+## Phase 25: SaaS Admin Enhancements
+- [x] Add SaaS Admin login button to Login page
+- [x] Add manual salon activation button in SaaS Admin
+- [x] Create complete subscription management page
+- [ ] Add backend API for salon activation
+- [ ] Add backend API for subscription management
+

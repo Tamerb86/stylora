@@ -50,6 +50,7 @@ import SaasAdminOverview from "./pages/SaasAdmin/SaasAdminOverview";
 import SaasAdminTenants from "./pages/SaasAdmin/SaasAdminTenants";
 import SaasAdminTenantDetails from "./pages/SaasAdmin/SaasAdminTenantDetails";
 import SaasAdminTenantOnboarding from "./pages/SaasAdminTenantOnboarding";
+import SaasAdminSubscriptions from "./pages/SaasAdmin/SaasAdminSubscriptions";
 import ProtectedSaasAdminRoute from "./components/ProtectedSaasAdminRoute";
 import SignUp from "./pages/SignUp";
 import Contact from "./pages/Contact";
@@ -124,6 +125,11 @@ function Router() {
       <Route path="/saas-admin/tenants">
         <ProtectedSaasAdminRoute>
           <SaasAdminTenants />
+        </ProtectedSaasAdminRoute>
+      </Route>
+      <Route path="/saas-admin/subscriptions">
+        <ProtectedSaasAdminRoute>
+          <SaasAdminSubscriptions />
         </ProtectedSaasAdminRoute>
       </Route>
       <Route path="/dashboard" component={Dashboard} />
