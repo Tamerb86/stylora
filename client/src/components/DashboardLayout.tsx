@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, Calendar, Scissors, UserCog, Package, BarChart3, Settings as SettingsIcon, Bell, Gift, DollarSign, TrendingUp, Clock, ShoppingCart, Receipt, Search, RefreshCw, Plane, CalendarCheck, Database, Building2, CreditCard, History, ChevronDown, MessageCircle, Send, UserCheck, Mail } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, Calendar, Scissors, UserCog, Package, BarChart3, Settings as SettingsIcon, Bell, Gift, DollarSign, TrendingUp, Clock, ShoppingCart, Receipt, Search, RefreshCw, Plane, CalendarCheck, Database, Building2, CreditCard, History, ChevronDown, MessageCircle, Send, UserCheck, Mail, Shield } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -535,12 +535,21 @@ function DashboardLayoutContent({
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
+                {user?.openId === import.meta.env.VITE_OWNER_OPEN_ID && (
+                  <DropdownMenuItem
+                    onClick={() => setLocation("/saas-admin")}
+                    className="cursor-pointer"
+                  >
+                    <Shield className="mr-2 h-4 w-4" />
+                    <span>SaaS Admin</span>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem
                   onClick={logout}
                   className="cursor-pointer text-destructive focus:text-destructive"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sign out</span>
+                  <span>Logg ut</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

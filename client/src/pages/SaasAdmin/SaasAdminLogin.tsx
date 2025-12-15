@@ -1,12 +1,18 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Shield, AlertCircle, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function SaasAdminLogin() {
   const [, setLocation] = useLocation();
-  const { data: user, isLoading } = trpc.auth.me.useQuery();
+  const { data: user, isLoading, refetch } = trpc.auth.me.useQuery();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     // If user is logged in and is platform owner, redirect to /saas-admin
@@ -15,9 +21,40 @@ export default function SaasAdminLogin() {
     }
   }, [user, setLocation]);
 
-  const handleLogin = () => {
-    const loginUrl = `${import.meta.env.VITE_OAUTH_PORTAL_URL}?app_id=${import.meta.env.VITE_APP_ID}&redirect_uri=${encodeURIComponent(window.location.origin + "/saas-admin")}`;
-    window.location.href = loginUrl;
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !password) {
+      toast.error("Vennligst fyll inn e-post og passord");
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast.success("Innlogget!");
+        await refetch();
+        // Check if user is platform owner after login
+        setTimeout(() => {
+          window.location.href = "/saas-admin";
+        }, 500);
+      } else {
+        toast.error(data.error || "Innlogging feilet");
+      }
+    } catch (error) {
+      toast.error("Noe gikk galt. Prøv igjen.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Show loading while checking auth status
@@ -74,9 +111,8 @@ export default function SaasAdminLogin() {
                   Gå til hjemmesiden
                 </Button>
                 <Button
-                  onClick={() => {
-                    // Logout and redirect to login
-                    document.cookie = "session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+                  onClick={async () => {
+                    await fetch("/api/auth/logout", { method: "POST" });
                     window.location.href = "/saas-admin/login";
                   }}
                   variant="ghost"
@@ -88,37 +124,69 @@ export default function SaasAdminLogin() {
             </div>
           ) : (
             // Login Form
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <form onSubmit={handleLogin} className="space-y-4">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
                 Velkommen tilbake
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-600 mb-6 text-center">
                 Logg inn for å administrere alle salonger i plattformen
               </p>
 
-              <div className="space-y-4">
-                <Button
-                  onClick={handleLogin}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-6 text-lg shadow-lg hover:shadow-xl transition-all duration-200"
-                >
-                  <Shield className="mr-2 h-5 w-5" />
-                  Logg inn som plattformeier
-                </Button>
-
-                <div className="pt-4 border-t border-gray-200">
-                  <p className="text-sm text-gray-500">
-                    Kun plattformeieren har tilgang til dette området
-                  </p>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">E-post</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="admin@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
-            </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Passord</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-6 text-lg shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Logger inn...
+                  </>
+                ) : (
+                  <>
+                    <Shield className="mr-2 h-5 w-5" />
+                    Logg inn som plattformeier
+                  </>
+                )}
+              </Button>
+
+              <div className="pt-4 border-t border-gray-200">
+                <p className="text-sm text-gray-500 text-center">
+                  Kun plattformeieren har tilgang til dette området
+                </p>
+              </div>
+            </form>
           )}
         </div>
 
-        {/* Footer */}
+        {/* Footer - removed Manus OAuth text */}
         <div className="text-center mt-6">
           <p className="text-sm text-gray-500">
-            Sikret med Manus OAuth
+            Sikker innlogging med kryptert tilkobling
           </p>
         </div>
       </div>
