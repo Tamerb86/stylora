@@ -22,6 +22,12 @@ import { sendAppointmentConfirmationIfPossible } from "./notifications-appointme
  * @param res Express response
  */
 export async function handleStripeWebhook(req: Request, res: Response) {
+  // Check if Stripe is configured
+  if (!stripe) {
+    console.error("[Stripe Webhook] Stripe is not configured");
+    return res.status(503).send("Stripe is not configured");
+  }
+
   const sig = req.headers["stripe-signature"];
 
   if (!sig || Array.isArray(sig)) {

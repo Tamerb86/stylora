@@ -73,6 +73,7 @@ export const users = mysqlTable("users", {
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["owner", "admin", "employee"]).notNull(),
   pin: varchar("pin", { length: 6 }), // 4-6 digit PIN for time clock
+  passwordHash: varchar("passwordHash", { length: 255 }), // bcrypt hashed password for email/password login
   isActive: boolean("isActive").default(true),
   deactivatedAt: timestamp("deactivatedAt"),
   commissionType: mysqlEnum("commissionType", ["percentage", "fixed", "tiered"]).default("percentage"),

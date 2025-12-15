@@ -4516,3 +4516,23 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Remove throw error for missing STRIPE_SECRET_KEY
 - [x] Test locally - dev server works!
 - [ ] Push to GitHub and deploy to Railway
+
+## Phase 26: Full Integration Check
+- [x] Check database connection and schema status - CRITICAL: Tables don't exist!
+- [x] Verify backend API endpoints and tRPC setup - Working but needs DB
+- [x] Check frontend-backend integration - Frontend OK
+- [x] Verify authentication flow - Needs DB
+- [x] Check environment variables on Railway - OK
+- [ ] Push database schema to Railway: `railway run pnpm db:push`
+- [ ] Create demo data: `railway run node scripts/seed-demo-account.mjs`
+
+
+## Replace Manus OAuth with Email/Password Authentication
+- [x] Add passwordHash column to users table in schema
+- [x] Create simple JWT-based authentication system
+- [x] Create Login page with email/password form
+- [x] Create Demo page for auto-login to demo account
+- [x] Update auth routes to use email/password instead of OAuth
+- [x] Add password hash to demo user
+- [x] Test authentication flow locally
+- [ ] Deploy to Railway and verify authentication works

@@ -64,11 +64,15 @@ import WalkInQueue from "./pages/WalkInQueue";
 import QueueDisplay from "./pages/QueueDisplay";
 import RefundManagement from "./pages/RefundManagement";
 import POSFinancialReports from "./pages/POSFinancialReports";
+import Login from "./pages/Login";
+import Demo from "./pages/Demo";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/login" component={Login} />
+      <Route path="/demo" component={Demo} />
       <Route path="/signup" component={SignUp} />
       <Route path="/verify-email" component={VerifyEmail} />
       <Route path="/email-verification-required" component={EmailVerificationRequired} />

@@ -1,6 +1,6 @@
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import type { User } from "../../drizzle/schema";
-import { supabaseAuthService } from "./auth-supabase";
+import { authService } from "./auth-simple";
 import { getDb } from "../db";
 import { users } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
@@ -22,7 +22,7 @@ export async function createContext(
   let impersonatedTenantId: string | null = null;
 
   try {
-    const result = await supabaseAuthService.authenticateRequest(opts.req);
+    const result = await authService.authenticateRequest(opts.req);
     if (result) {
       user = result.user;
       impersonatedTenantId = result.impersonatedTenantId;

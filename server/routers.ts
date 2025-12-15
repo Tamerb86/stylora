@@ -4707,6 +4707,12 @@ export const appRouter = router({
 
         // Create Stripe Checkout Session
         const { stripe } = await import("./stripe");
+        if (!stripe) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "Stripe is not configured. Please add STRIPE_SECRET_KEY to enable payments.",
+          });
+        }
         const session = await stripe.checkout.sessions.create({
           mode: "payment",
           currency: "nok",
@@ -5505,6 +5511,12 @@ export const appRouter = router({
 
         // 2) Create Stripe Checkout Session
         const { stripe } = await import("./stripe");
+        if (!stripe) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "Stripe is not configured. Please add STRIPE_SECRET_KEY to enable payments.",
+          });
+        }
         const session = await stripe.checkout.sessions.create({
           mode: "payment",
           currency: "nok",

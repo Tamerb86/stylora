@@ -1,12 +1,6 @@
 /**
- * Simple JWT-based authentication system
- * Replaces Manus OAuth for external deployment
- * 
- * This is a basic implementation. For production, consider:
- * - Adding password hashing with bcrypt
- * - Implementing refresh tokens
- * - Adding rate limiting
- * - Using a proper OAuth provider (Auth0, Supabase, etc.)
+ * Simple email/password authentication system
+ * Uses bcrypt for password hashing and JWT for sessions
  */
 
 import { SignJWT, jwtVerify } from "jose";
@@ -16,6 +10,10 @@ import { parse as parseCookieHeader } from "cookie";
 import * as db from "../db";
 import { ENV } from "./env";
 import { getSessionCookieOptions } from "./cookies";
+import bcrypt from "bcrypt";
+import { users, tenants } from "../../drizzle/schema";
+import { eq } from "drizzle-orm";
+import { nanoid } from "nanoid";
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.length > 0;
@@ -28,6 +26,8 @@ export type SessionPayload = {
   impersonatedTenantId?: string | null;
 };
 
+const SALT_ROUNDS = 10;
+
 /**
  * Simple authentication service
  */
@@ -35,6 +35,20 @@ class AuthService {
   private getSessionSecret() {
     const secret = ENV.cookieSecret;
     return new TextEncoder().encode(secret);
+  }
+
+  /**
+   * Hash password using bcrypt
+   */
+  async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, SALT_ROUNDS);
+  }
+
+  /**
+   * Verify password against hash
+   */
+  async verifyPassword(password: string, hash: string): Promise<boolean> {
+    return bcrypt.compare(password, hash);
   }
 
   /**
@@ -68,7 +82,6 @@ class AuthService {
     cookieValue: string | undefined | null
   ): Promise<SessionPayload | null> {
     if (!cookieValue) {
-      console.warn("[Auth] Missing session cookie");
       return null;
     }
 
@@ -84,7 +97,6 @@ class AuthService {
         !isNonEmptyString(appId) ||
         !isNonEmptyString(name)
       ) {
-        console.warn("[Auth] Session payload missing required fields");
         return null;
       }
 
@@ -137,7 +149,6 @@ class AuthService {
     }
 
     if (!user) {
-      console.warn("[Auth] User not found in database");
       return null;
     }
 
@@ -159,54 +170,52 @@ class AuthService {
 export const authService = new AuthService();
 
 /**
- * Register simple authentication routes
- * 
- * IMPORTANT: This is a placeholder implementation.
- * For production, you should implement:
- * 1. Email/password registration
- * 2. Email verification
- * 3. Password reset
- * 4. Or integrate with a proper OAuth provider (Google, GitHub, etc.)
+ * Register authentication routes
  */
 export function registerAuthRoutes(app: Express) {
-  // Simple login endpoint (for testing only)
-  // In production, replace this with proper authentication
+  // Login endpoint - email/password
   app.post("/api/auth/login", async (req: Request, res: Response) => {
     try {
-      const { email, password, name } = req.body;
+      const { email, password } = req.body;
 
       if (!email || !password) {
-        res.status(400).json({ error: "Email and password are required" });
+        res.status(400).json({ error: "E-post og passord er påkrevd" });
         return;
       }
 
-      // TODO: Implement proper password verification
-      // For now, this is a placeholder that accepts any credentials
-      console.warn("[Auth] WARNING: Using placeholder authentication - implement proper auth before production!");
-
-      // Generate a unique openId (in production, this would come from your auth provider)
-      const openId = `user_${email.replace('@', '_').replace('.', '_')}`;
-
-      // Check if user exists or create new user
-      let user = await db.getUserByOpenId(openId);
-      
-      if (!user) {
-        // Create new user
-        await db.upsertUser({
-          openId,
-          tenantId: 'default-tenant', // TODO: Implement proper tenant selection
-          role: 'employee',
-          name: name || email.split('@')[0],
-          email,
-          loginMethod: 'email',
-          lastSignedIn: new Date(),
-        });
-        
-        user = await db.getUserByOpenId(openId);
+      // Get user from database
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        res.status(500).json({ error: "Database ikke tilgjengelig" });
+        return;
       }
 
+      const [user] = await dbInstance
+        .select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+
       if (!user) {
-        res.status(500).json({ error: "Failed to create user" });
+        res.status(401).json({ error: "Ugyldig e-post eller passord" });
+        return;
+      }
+
+      // Check password
+      if (!user.passwordHash) {
+        res.status(401).json({ error: "Ugyldig e-post eller passord" });
+        return;
+      }
+
+      const isValidPassword = await authService.verifyPassword(password, user.passwordHash);
+      if (!isValidPassword) {
+        res.status(401).json({ error: "Ugyldig e-post eller passord" });
+        return;
+      }
+
+      // Check if user is active
+      if (!user.isActive) {
+        res.status(403).json({ error: "Kontoen er deaktivert" });
         return;
       }
 
@@ -231,11 +240,174 @@ export function registerAuthRoutes(app: Express) {
           name: user.name,
           email: user.email,
           role: user.role,
+          tenantId: user.tenantId,
         }
       });
     } catch (error) {
       console.error("[Auth] Login failed", error);
-      res.status(500).json({ error: "Login failed" });
+      res.status(500).json({ error: "Innlogging feilet" });
+    }
+  });
+
+  // Demo login endpoint - auto-login to demo account
+  app.post("/api/auth/demo-login", async (req: Request, res: Response) => {
+    try {
+      const DEMO_EMAIL = "demo@barbertime.no";
+      
+      // Get demo user from database
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        res.status(500).json({ error: "Database ikke tilgjengelig" });
+        return;
+      }
+
+      const [user] = await dbInstance
+        .select()
+        .from(users)
+        .where(eq(users.email, DEMO_EMAIL))
+        .limit(1);
+
+      if (!user) {
+        res.status(404).json({ error: "Demo-konto ikke funnet" });
+        return;
+      }
+
+      // Create session token
+      const sessionToken = await authService.createSessionToken({
+        openId: user.openId,
+        appId: ENV.appId,
+        name: user.name || "Demo User",
+        email: user.email || undefined,
+      }, {
+        expiresInMs: ONE_YEAR_MS,
+      });
+
+      // Set cookie
+      const cookieOptions = getSessionCookieOptions(req);
+      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+
+      res.json({ 
+        success: true,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          tenantId: user.tenantId,
+        }
+      });
+    } catch (error) {
+      console.error("[Auth] Demo login failed", error);
+      res.status(500).json({ error: "Demo-innlogging feilet" });
+    }
+  });
+
+  // Register endpoint
+  app.post("/api/auth/register", async (req: Request, res: Response) => {
+    try {
+      const { email, password, name, salonName, phone } = req.body;
+
+      if (!email || !password) {
+        res.status(400).json({ error: "E-post og passord er påkrevd" });
+        return;
+      }
+
+      if (password.length < 6) {
+        res.status(400).json({ error: "Passordet må være minst 6 tegn" });
+        return;
+      }
+
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        res.status(500).json({ error: "Database ikke tilgjengelig" });
+        return;
+      }
+
+      // Check if email already exists
+      const [existingUser] = await dbInstance
+        .select()
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
+
+      if (existingUser) {
+        res.status(400).json({ error: "E-postadressen er allerede registrert" });
+        return;
+      }
+
+      // Create tenant
+      const tenantId = `tenant-${nanoid(12)}`;
+      const subdomain = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') + '-' + nanoid(6);
+      
+      await dbInstance.insert(tenants).values({
+        id: tenantId,
+        name: salonName || `${name || email.split('@')[0]}'s Salong`,
+        subdomain,
+        email,
+        phone: phone || null,
+        status: 'trial',
+        trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days trial
+        emailVerified: true, // Auto-verify for simplicity
+        emailVerifiedAt: new Date(),
+        onboardingCompleted: false,
+        onboardingStep: 'welcome',
+      });
+
+      // Hash password and create user
+      const passwordHash = await authService.hashPassword(password);
+      const openId = `user-${nanoid(16)}`;
+
+      await dbInstance.insert(users).values({
+        tenantId,
+        openId,
+        email,
+        name: name || email.split('@')[0],
+        phone: phone || null,
+        passwordHash,
+        role: 'owner',
+        loginMethod: 'email',
+        isActive: true,
+        commissionType: 'percentage',
+        commissionRate: '50.00',
+        uiMode: 'advanced',
+        onboardingCompleted: false,
+      });
+
+      // Get the created user
+      const [newUser] = await dbInstance
+        .select()
+        .from(users)
+        .where(eq(users.openId, openId))
+        .limit(1);
+
+      // Create session token
+      const sessionToken = await authService.createSessionToken({
+        openId,
+        appId: ENV.appId,
+        name: name || email.split('@')[0],
+        email,
+      }, {
+        expiresInMs: ONE_YEAR_MS,
+      });
+
+      // Set cookie
+      const cookieOptions = getSessionCookieOptions(req);
+      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+
+      res.json({ 
+        success: true,
+        message: "Registrering vellykket!",
+        user: {
+          id: newUser?.id,
+          name: newUser?.name,
+          email: newUser?.email,
+          role: newUser?.role,
+          tenantId: newUser?.tenantId,
+        }
+      });
+    } catch (error) {
+      console.error("[Auth] Registration failed", error);
+      res.status(500).json({ error: "Registrering feilet" });
     }
   });
 
@@ -252,7 +424,7 @@ export function registerAuthRoutes(app: Express) {
       const result = await authService.authenticateRequest(req);
       
       if (!result) {
-        res.status(401).json({ error: "Not authenticated" });
+        res.status(401).json({ error: "Ikke autentisert" });
         return;
       }
 
@@ -268,7 +440,7 @@ export function registerAuthRoutes(app: Express) {
       });
     } catch (error) {
       console.error("[Auth] Get user failed", error);
-      res.status(500).json({ error: "Failed to get user" });
+      res.status(500).json({ error: "Kunne ikke hente bruker" });
     }
   });
 }

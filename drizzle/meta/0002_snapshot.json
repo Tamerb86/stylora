@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "36e36c98-c203-478a-98c2-6324de275926",
-  "prevId": "d194945b-3ef1-4f2f-b801-615142f19c4c",
+  "id": "30df8c1a-67a2-43a2-a5d0-65daf548466b",
+  "prevId": "36e36c98-c203-478a-98c2-6324de275926",
   "tables": {
     "appointmentServices": {
       "name": "appointmentServices",
@@ -5946,6 +5946,13 @@
         "pin": {
           "name": "pin",
           "type": "varchar(6)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "passwordHash": {
+          "name": "passwordHash",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
