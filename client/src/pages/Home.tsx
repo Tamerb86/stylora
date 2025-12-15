@@ -312,12 +312,6 @@ export default function Home() {
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild variant="outline" className="hidden md:inline-flex border-2 hover:bg-gray-50">
-              <Link to="/demo">
-                <Sparkles className="mr-2 h-4 w-4" />
-                Prøv Demo
-              </Link>
-            </Button>
 
             {/* Mobile Menu Button */}
             <Button

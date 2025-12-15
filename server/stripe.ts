@@ -1,12 +1,10 @@
 import Stripe from "stripe";
 import { ENV } from "./_core/env";
 
-// Stripe is optional - only initialize if key is provided
-export const stripe = ENV.stripeSecretKey
-  ? new Stripe(ENV.stripeSecretKey, {
-      apiVersion: "2025-11-17.clover",
-    })
-  : null;
+if (!ENV.stripeSecretKey) {
+  throw new Error("Missing STRIPE_SECRET_KEY in environment");
+}
 
-// Helper to check if Stripe is enabled
-export const isStripeEnabled = () => stripe !== null;
+export const stripe = new Stripe(ENV.stripeSecretKey, {
+  apiVersion: "2025-11-17.clover",
+});

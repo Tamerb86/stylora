@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "e676bfd4-8633-47c3-a316-c8bd413e1143",
-  "prevId": "36e36c98-c203-478a-98c2-6324de275926",
+  "id": "36e36c98-c203-478a-98c2-6324de275926",
+  "prevId": "d194945b-3ef1-4f2f-b801-615142f19c4c",
   "tables": {
     "appointmentServices": {
       "name": "appointmentServices",
@@ -5098,20 +5098,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "emailVerificationToken": {
-          "name": "emailVerificationToken",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "emailVerificationExpires": {
-          "name": "emailVerificationExpires",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "onboardingCompleted": {
           "name": "onboardingCompleted",
           "type": "boolean",
@@ -5939,27 +5925,6 @@
         "phone": {
           "name": "phone",
           "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "passwordHash": {
-          "name": "passwordHash",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "passwordResetToken": {
-          "name": "passwordResetToken",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "passwordResetExpires": {
-          "name": "passwordResetExpires",
-          "type": "timestamp",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
