@@ -4636,3 +4636,9 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Set up staging environment separate from production
 - [ ] Document backup and restore procedures
 - [ ] Document staging vs production workflow
+
+## Bug Fix: Employee Leave Blocking Bookings
+- [x] Bug: Employee leaves not blocking bookings - approved leaves should prevent customer bookings
+- [x] Display employee leaves in calendar view
+- [x] Block time slots during approved leave periods in public booking
+

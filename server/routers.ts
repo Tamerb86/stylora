@@ -2684,6 +2684,7 @@ export const appRouter = router({
         const { eq, and, lte, gte, or } = await import("drizzle-orm");
         
         const conditions = [
+          eq(employeeLeaves.tenantId, ctx.tenantId),
           eq(employeeLeaves.status, "approved"),
           or(
             and(
@@ -4558,8 +4559,8 @@ export const appRouter = router({
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
 
-        const { appointments, services, users } = await import("../drizzle/schema");
-        const { eq, and } = await import("drizzle-orm");
+        const { appointments, services, users, employeeLeaves } = await import("../drizzle/schema");
+        const { eq, and, lte, gte, inArray } = await import("drizzle-orm");
 
         // Get service duration
         const [service] = await dbInstance
@@ -4585,6 +4586,34 @@ export const appRouter = router({
               )
             );
           employeeIds = employees.map((e) => e.id);
+        }
+
+        // Get approved employee leaves that overlap with the requested date
+        const requestedDate = new Date(input.date);
+        const approvedLeaves = employeeIds.length > 0 ? await dbInstance
+          .select({
+            employeeId: employeeLeaves.employeeId,
+            startDate: employeeLeaves.startDate,
+            endDate: employeeLeaves.endDate,
+          })
+          .from(employeeLeaves)
+          .where(
+            and(
+              eq(employeeLeaves.tenantId, input.tenantId),
+              eq(employeeLeaves.status, "approved"),
+              lte(employeeLeaves.startDate, requestedDate),
+              gte(employeeLeaves.endDate, requestedDate),
+              inArray(employeeLeaves.employeeId, employeeIds)
+            )
+          ) : [];
+
+        // Filter out employees who are on leave
+        const employeesOnLeave = new Set(approvedLeaves.map(l => l.employeeId));
+        const availableEmployeeIds = employeeIds.filter(id => !employeesOnLeave.has(id));
+
+        // If no employees available (all on leave), return empty slots
+        if (availableEmployeeIds.length === 0) {
+          return [];
         }
 
         // Get existing appointments for the date
@@ -4618,9 +4647,9 @@ export const appRouter = router({
             const endMinute = endMinutes % 60;
             const endTimeStr = `${endHour.toString().padStart(2, "0")}:${endMinute.toString().padStart(2, "0")}:00`;
 
-            // Check if any employee is available
+            // Check if any employee is available (excluding those on leave)
             let availableEmployeeId: number | undefined;
-            for (const empId of employeeIds) {
+            for (const empId of availableEmployeeIds) {
               const hasConflict = existingAppointments.some((appt) => {
                 if (appt.employeeId !== empId) return false;
                 // Check for time overlap
