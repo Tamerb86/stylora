@@ -1634,6 +1634,160 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    // GDPR: Complete data deletion (Right to Erasure)
+    gdprDelete: tenantProcedure
+      .input(z.object({ 
+        customerId: z.number(),
+        confirmationCode: z.string().min(1), // Customer must confirm with their phone number
+        reason: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        const { customers, appointments, appointmentServices, payments, loyaltyPoints, loyaltyTransactions, loyaltyRedemptions, auditLogs } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+
+        // Get customer to verify
+        const [customer] = await dbInstance
+          .select()
+          .from(customers)
+          .where(and(
+            eq(customers.id, input.customerId),
+            eq(customers.tenantId, ctx.tenantId)
+          ))
+          .limit(1);
+
+        if (!customer) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Kunde ikke funnet" });
+        }
+
+        // Verify confirmation code matches phone number (last 4 digits)
+        const lastFourDigits = customer.phone.replace(/\D/g, '').slice(-4);
+        if (input.confirmationCode !== lastFourDigits) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Feil bekreftelseskode. Bruk de siste 4 sifrene i kundens telefonnummer." });
+        }
+
+        // Log the GDPR deletion request before deleting
+        await dbInstance.insert(auditLogs).values({
+          tenantId: ctx.tenantId,
+          userId: ctx.user.id,
+          action: "gdpr_data_deletion",
+          entityType: "customer",
+          entityId: input.customerId,
+          beforeValue: {
+            firstName: customer.firstName,
+            lastName: customer.lastName,
+            phone: customer.phone,
+            email: customer.email,
+          },
+          afterValue: { deleted: true, reason: input.reason || "GDPR request" },
+          ipAddress: ctx.req.ip || null,
+          userAgent: ctx.req.headers["user-agent"] || null,
+        });
+
+        // Delete loyalty data
+        await dbInstance.delete(loyaltyRedemptions)
+          .where(eq(loyaltyRedemptions.customerId, input.customerId));
+        
+        await dbInstance.delete(loyaltyTransactions)
+          .where(eq(loyaltyTransactions.customerId, input.customerId));
+        
+        await dbInstance.delete(loyaltyPoints)
+          .where(eq(loyaltyPoints.customerId, input.customerId));
+
+        // Anonymize appointments (keep for business records but remove personal data)
+        await dbInstance.update(appointments)
+          .set({ 
+            notes: "[GDPR - Data slettet]",
+          })
+          .where(eq(appointments.customerId, input.customerId));
+
+        // Permanently delete customer record
+        await dbInstance.delete(customers)
+          .where(eq(customers.id, input.customerId));
+
+        return { 
+          success: true, 
+          message: "Alle kundedata er permanent slettet i henhold til GDPR." 
+        };
+      }),
+
+    // GDPR: Export customer data (Right to Data Portability)
+    gdprExport: tenantProcedure
+      .input(z.object({ customerId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        const { customers, appointments, appointmentServices, services, payments, loyaltyPoints, loyaltyTransactions } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+
+        // Get customer
+        const [customer] = await dbInstance
+          .select()
+          .from(customers)
+          .where(and(
+            eq(customers.id, input.customerId),
+            eq(customers.tenantId, ctx.tenantId)
+          ))
+          .limit(1);
+
+        if (!customer) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Kunde ikke funnet" });
+        }
+
+        // Get appointments
+        const customerAppointments = await dbInstance
+          .select()
+          .from(appointments)
+          .where(eq(appointments.customerId, input.customerId));
+
+        // Get loyalty data
+        const [loyalty] = await dbInstance
+          .select()
+          .from(loyaltyPoints)
+          .where(eq(loyaltyPoints.customerId, input.customerId))
+          .limit(1);
+
+        const transactions = await dbInstance
+          .select()
+          .from(loyaltyTransactions)
+          .where(eq(loyaltyTransactions.customerId, input.customerId));
+
+        return {
+          exportDate: new Date().toISOString(),
+          customer: {
+            firstName: customer.firstName,
+            lastName: customer.lastName,
+            phone: customer.phone,
+            email: customer.email,
+            dateOfBirth: customer.dateOfBirth,
+            address: customer.address,
+            notes: customer.notes,
+            marketingSmsConsent: customer.marketingSmsConsent,
+            marketingEmailConsent: customer.marketingEmailConsent,
+            consentTimestamp: customer.consentTimestamp,
+            createdAt: customer.createdAt,
+          },
+          appointments: customerAppointments.map(a => ({
+            date: a.startTime,
+            status: a.status,
+            notes: a.notes,
+          })),
+          loyalty: loyalty ? {
+            currentPoints: loyalty.currentPoints,
+            lifetimePoints: loyalty.lifetimePoints,
+            transactions: transactions.map(t => ({
+              type: t.type,
+              points: t.points,
+              reason: t.reason,
+              createdAt: t.createdAt,
+            })),
+          } : null,
+        };
+      }),
+
     getNoShowInfo: tenantProcedure
       .input(z.object({ customerId: z.number().int() }))
       .query(async ({ ctx, input }) => {

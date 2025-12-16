@@ -70,6 +70,8 @@ import POSFinancialReports from "./pages/POSFinancialReports";
 import Login from "./pages/Login";
 import Demo from "./pages/Demo";
 import ForgotPassword from "./pages/ForgotPassword";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 
 function Router() {
   return (
@@ -88,6 +90,8 @@ function Router() {
       <Route path="/about" component={AboutUs} />
       <Route path="/testimonials" component={Testimonials} />
       <Route path="/contact" component={Contact} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/privacy" component={Privacy} />
       <Route path="/timeclock" component={TimeClock} />
       <Route path="/timeclock-admin" component={TimeClockAdmin} />
       <Route path="/attendance" component={AttendanceReport} />

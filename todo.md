@@ -4596,3 +4596,10 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add backend API to delete tenant
 - [x] Add suspend/delete buttons in SaaS Admin tenant details
 - [x] Add confirmation dialogs for dangerous actions
+
+## Phase 30: Legal Pages & GDPR Compliance
+- [x] Create Terms of Service page (Vilkår for bruk)
+- [x] Create Privacy Policy page (Personvernerklæring)
+- [x] Add GDPR data deletion API endpoint
+- [x] Add GDPR data deletion UI for customers
+- [x] Add routes and footer links
