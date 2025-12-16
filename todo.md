@@ -4590,3 +4590,9 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add Visma API integration
 - [x] Add Tripletex API integration
 - [x] Create accountant export report page (Excel/PDF)
+
+## Phase 29: SaaS Admin Tenant Management
+- [x] Add backend API to suspend tenant
+- [x] Add backend API to delete tenant
+- [x] Add suspend/delete buttons in SaaS Admin tenant details
+- [x] Add confirmation dialogs for dangerous actions

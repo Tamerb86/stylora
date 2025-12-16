@@ -4,6 +4,8 @@ import { trpc } from "@/lib/trpc";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -11,7 +13,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, LogIn, Save, Users, Calendar, ShoppingCart, DollarSign } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { ArrowLeft, LogIn, Save, Users, Calendar, ShoppingCart, DollarSign, Pause, Play, Trash2, AlertTriangle, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function SaasAdminTenantDetails() {
   const [match, params] = useRoute("/saas-admin/tenants/:tenantId");
@@ -23,6 +44,13 @@ export default function SaasAdminTenantDetails() {
 
   const [selectedStatus, setSelectedStatus] = useState<"trial" | "active" | "suspended" | "canceled">("active");
   const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
+  
+  // Dialog states
+  const [showSuspendDialog, setShowSuspendDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showPermanentDeleteDialog, setShowPermanentDeleteDialog] = useState(false);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
+  const [permanentDeleteConfirm, setPermanentDeleteConfirm] = useState("");
 
   const { data: details, isLoading, refetch } = trpc.saasAdmin.getTenantDetails.useQuery(
     { tenantId },
@@ -36,17 +64,60 @@ export default function SaasAdminTenantDetails() {
       setLocation(result.redirectUrl);
     },
     onError: (error) => {
-      alert(`Feil: ${error.message}`);
+      toast.error(`Feil: ${error.message}`);
     },
   });
 
   const updateMutation = trpc.saasAdmin.updateTenantPlanAndStatus.useMutation({
     onSuccess: () => {
-      alert("Oppdatert!");
+      toast.success("Oppdatert!");
       refetch();
     },
     onError: (error) => {
-      alert(`Feil: ${error.message}`);
+      toast.error(`Feil: ${error.message}`);
+    },
+  });
+
+  const suspendMutation = trpc.saasAdmin.suspendTenant.useMutation({
+    onSuccess: (result) => {
+      toast.success(result.message);
+      setShowSuspendDialog(false);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(`Feil: ${error.message}`);
+    },
+  });
+
+  const reactivateMutation = trpc.saasAdmin.reactivateTenant.useMutation({
+    onSuccess: (result) => {
+      toast.success(result.message);
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(`Feil: ${error.message}`);
+    },
+  });
+
+  const deleteMutation = trpc.saasAdmin.deleteTenant.useMutation({
+    onSuccess: (result) => {
+      toast.success(result.message);
+      setShowDeleteDialog(false);
+      setLocation("/saas-admin/tenants");
+    },
+    onError: (error) => {
+      toast.error(`Feil: ${error.message}`);
+    },
+  });
+
+  const permanentDeleteMutation = trpc.saasAdmin.permanentlyDeleteTenant.useMutation({
+    onSuccess: (result) => {
+      toast.success(result.message);
+      setShowPermanentDeleteDialog(false);
+      setLocation("/saas-admin/tenants");
+    },
+    onError: (error) => {
+      toast.error(`Feil: ${error.message}`);
     },
   });
 
@@ -65,6 +136,38 @@ export default function SaasAdminTenantDetails() {
       tenantId,
       status: selectedStatus,
       planId: selectedPlanId,
+    });
+  };
+
+  const handleSuspend = () => {
+    suspendMutation.mutate({ tenantId });
+  };
+
+  const handleReactivate = () => {
+    reactivateMutation.mutate({ tenantId });
+  };
+
+  const handleDelete = () => {
+    if (deleteConfirmName !== details?.tenant.name) {
+      toast.error("Navnet stemmer ikke. Skriv inn nøyaktig salongnavn.");
+      return;
+    }
+    deleteMutation.mutate({ tenantId, confirmName: deleteConfirmName });
+  };
+
+  const handlePermanentDelete = () => {
+    if (deleteConfirmName !== details?.tenant.name) {
+      toast.error("Navnet stemmer ikke. Skriv inn nøyaktig salongnavn.");
+      return;
+    }
+    if (permanentDeleteConfirm !== "DELETE PERMANENTLY") {
+      toast.error("Skriv 'DELETE PERMANENTLY' for å bekrefte.");
+      return;
+    }
+    permanentDeleteMutation.mutate({ 
+      tenantId, 
+      confirmName: deleteConfirmName,
+      confirmPermanent: "DELETE PERMANENTLY"
     });
   };
 
@@ -358,6 +461,241 @@ export default function SaasAdminTenantDetails() {
           </div>
         </div>
       </Card>
+
+      {/* Danger Zone */}
+      <Card className="p-6 border-0 shadow-lg border-red-200 bg-red-50/50 dark:bg-red-950/10">
+        <h2 className="text-xl font-bold mb-4 text-red-600 flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5" />
+          Faresone
+        </h2>
+        <p className="text-muted-foreground mb-6">
+          Disse handlingene kan ikke angres. Vær forsiktig.
+        </p>
+        
+        <div className="space-y-4">
+          {/* Suspend/Reactivate */}
+          {tenant.status === "suspended" ? (
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-white dark:bg-gray-900">
+              <div>
+                <h3 className="font-semibold">Reaktiver salong</h3>
+                <p className="text-sm text-muted-foreground">
+                  Gjenopprett tilgang for denne salongen
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                className="border-green-500 text-green-600 hover:bg-green-50"
+                onClick={handleReactivate}
+                disabled={reactivateMutation.isPending}
+              >
+                {reactivateMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Play className="h-4 w-4 mr-2" />
+                )}
+                Reaktiver
+              </Button>
+            </div>
+          ) : tenant.status !== "canceled" && (
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-white dark:bg-gray-900">
+              <div>
+                <h3 className="font-semibold">Suspender salong</h3>
+                <p className="text-sm text-muted-foreground">
+                  Midlertidig deaktiver tilgang for denne salongen
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                onClick={() => setShowSuspendDialog(true)}
+              >
+                <Pause className="h-4 w-4 mr-2" />
+                Suspender
+              </Button>
+            </div>
+          )}
+
+          {/* Soft Delete */}
+          {tenant.status !== "canceled" && (
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-white dark:bg-gray-900">
+              <div>
+                <h3 className="font-semibold">Slett salong</h3>
+                <p className="text-sm text-muted-foreground">
+                  Deaktiver salongen og alle brukere. Data beholdes.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                className="border-red-500 text-red-600 hover:bg-red-50"
+                onClick={() => {
+                  setDeleteConfirmName("");
+                  setShowDeleteDialog(true);
+                }}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Slett
+              </Button>
+            </div>
+          )}
+
+          {/* Permanent Delete */}
+          <div className="flex items-center justify-between p-4 border-2 border-red-300 rounded-lg bg-white dark:bg-gray-900">
+            <div>
+              <h3 className="font-semibold text-red-600">Slett permanent</h3>
+              <p className="text-sm text-muted-foreground">
+                Slett salongen og ALL data permanent. Kan ikke angres!
+              </p>
+            </div>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setDeleteConfirmName("");
+                setPermanentDeleteConfirm("");
+                setShowPermanentDeleteDialog(true);
+              }}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Slett permanent
+            </Button>
+          </div>
+        </div>
+      </Card>
+
+      {/* Suspend Dialog */}
+      <AlertDialog open={showSuspendDialog} onOpenChange={setShowSuspendDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Suspender salong?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Dette vil midlertidig deaktivere tilgang for "{tenant.name}". 
+              Alle brukere vil bli logget ut og kan ikke logge inn igjen før salongen reaktiveres.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSuspend}
+              className="bg-orange-600 hover:bg-orange-700"
+              disabled={suspendMutation.isPending}
+            >
+              {suspendMutation.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Pause className="h-4 w-4 mr-2" />
+              )}
+              Suspender
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-red-600">Slett salong</DialogTitle>
+            <DialogDescription>
+              Dette vil deaktivere salongen "{tenant.name}" og alle brukere. 
+              Data vil bli bevart, men salongen kan ikke brukes.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="confirmName">
+                Skriv inn salongnavnet for å bekrefte: <strong>{tenant.name}</strong>
+              </Label>
+              <Input
+                id="confirmName"
+                value={deleteConfirmName}
+                onChange={(e) => setDeleteConfirmName(e.target.value)}
+                placeholder="Skriv salongnavnet her"
+                className="mt-2"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Avbryt
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending || deleteConfirmName !== tenant.name}
+            >
+              {deleteMutation.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4 mr-2" />
+              )}
+              Slett salong
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Permanent Delete Dialog */}
+      <Dialog open={showPermanentDeleteDialog} onOpenChange={setShowPermanentDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-red-600 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Permanent sletting
+            </DialogTitle>
+            <DialogDescription>
+              <strong className="text-red-600">ADVARSEL:</strong> Dette vil permanent slette salongen "{tenant.name}" 
+              og ALL tilknyttet data inkludert kunder, ansatte, timer, ordre, og betalinger. 
+              Denne handlingen kan IKKE angres!
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="confirmNamePerm">
+                Skriv inn salongnavnet: <strong>{tenant.name}</strong>
+              </Label>
+              <Input
+                id="confirmNamePerm"
+                value={deleteConfirmName}
+                onChange={(e) => setDeleteConfirmName(e.target.value)}
+                placeholder="Skriv salongnavnet her"
+                className="mt-2"
+              />
+            </div>
+            <div>
+              <Label htmlFor="confirmPerm">
+                Skriv <strong>DELETE PERMANENTLY</strong> for å bekrefte:
+              </Label>
+              <Input
+                id="confirmPerm"
+                value={permanentDeleteConfirm}
+                onChange={(e) => setPermanentDeleteConfirm(e.target.value)}
+                placeholder="DELETE PERMANENTLY"
+                className="mt-2"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPermanentDeleteDialog(false)}>
+              Avbryt
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handlePermanentDelete}
+              disabled={
+                permanentDeleteMutation.isPending || 
+                deleteConfirmName !== tenant.name || 
+                permanentDeleteConfirm !== "DELETE PERMANENTLY"
+              }
+            >
+              {permanentDeleteMutation.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4 mr-2" />
+              )}
+              Slett permanent
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

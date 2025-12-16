@@ -7709,6 +7709,225 @@ export const appRouter = router({
           });
         }
       }),
+
+    /**
+     * Suspend a tenant (set status to suspended)
+     */
+    suspendTenant: platformAdminProcedure
+      .input(z.object({
+        tenantId: z.string(),
+        reason: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { tenants } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+
+        // Check if tenant exists
+        const [tenant] = await dbInstance
+          .select()
+          .from(tenants)
+          .where(eq(tenants.id, input.tenantId));
+
+        if (!tenant) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Tenant not found" });
+        }
+
+        // Update tenant status to suspended
+        await dbInstance
+          .update(tenants)
+          .set({ status: "suspended" })
+          .where(eq(tenants.id, input.tenantId));
+
+        return {
+          success: true,
+          message: `Tenant "${tenant.name}" has been suspended`,
+        };
+      }),
+
+    /**
+     * Reactivate a suspended tenant
+     */
+    reactivateTenant: platformAdminProcedure
+      .input(z.object({
+        tenantId: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { tenants } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+
+        // Check if tenant exists
+        const [tenant] = await dbInstance
+          .select()
+          .from(tenants)
+          .where(eq(tenants.id, input.tenantId));
+
+        if (!tenant) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Tenant not found" });
+        }
+
+        // Update tenant status to active
+        await dbInstance
+          .update(tenants)
+          .set({ status: "active" })
+          .where(eq(tenants.id, input.tenantId));
+
+        return {
+          success: true,
+          message: `Tenant "${tenant.name}" has been reactivated`,
+        };
+      }),
+
+    /**
+     * Delete a tenant (soft delete by setting status to canceled)
+     */
+    deleteTenant: platformAdminProcedure
+      .input(z.object({
+        tenantId: z.string(),
+        confirmName: z.string(), // User must type tenant name to confirm
+      }))
+      .mutation(async ({ input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { tenants, users, customers, appointments, services } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+
+        // Check if tenant exists
+        const [tenant] = await dbInstance
+          .select()
+          .from(tenants)
+          .where(eq(tenants.id, input.tenantId));
+
+        if (!tenant) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Tenant not found" });
+        }
+
+        // Verify confirmation name matches
+        if (input.confirmName !== tenant.name) {
+          throw new TRPCError({ 
+            code: "BAD_REQUEST", 
+            message: "Confirmation name does not match. Please type the exact salon name to confirm deletion." 
+          });
+        }
+
+        // Soft delete: set status to canceled
+        await dbInstance
+          .update(tenants)
+          .set({ status: "canceled" })
+          .where(eq(tenants.id, input.tenantId));
+
+        // Deactivate all users
+        await dbInstance
+          .update(users)
+          .set({ isActive: false })
+          .where(eq(users.tenantId, input.tenantId));
+
+        return {
+          success: true,
+          message: `Tenant "${tenant.name}" has been deleted`,
+        };
+      }),
+
+    /**
+     * Permanently delete a tenant and all its data (hard delete)
+     */
+    permanentlyDeleteTenant: platformAdminProcedure
+      .input(z.object({
+        tenantId: z.string(),
+        confirmName: z.string(),
+        confirmPermanent: z.literal("DELETE PERMANENTLY"),
+      }))
+      .mutation(async ({ input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { tenants, users, customers, appointments, services, products, orders, payments, notifications, auditLogs, employeeSchedules, timesheets, expenses, loyaltyPoints, loyaltyTransactions, tenantSubscriptions } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+
+        // Check if tenant exists
+        const [tenant] = await dbInstance
+          .select()
+          .from(tenants)
+          .where(eq(tenants.id, input.tenantId));
+
+        if (!tenant) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Tenant not found" });
+        }
+
+        // Verify confirmation name matches
+        if (input.confirmName !== tenant.name) {
+          throw new TRPCError({ 
+            code: "BAD_REQUEST", 
+            message: "Confirmation name does not match" 
+          });
+        }
+
+        // Delete all related data in order (respecting foreign keys)
+        try {
+          // Delete timesheets
+          await dbInstance.delete(timesheets).where(eq(timesheets.tenantId, input.tenantId));
+          
+          // Delete loyalty data
+          await dbInstance.delete(loyaltyTransactions).where(eq(loyaltyTransactions.tenantId, input.tenantId));
+          await dbInstance.delete(loyaltyPoints).where(eq(loyaltyPoints.tenantId, input.tenantId));
+          
+          // Delete financial data
+          await dbInstance.delete(expenses).where(eq(expenses.tenantId, input.tenantId));
+          await dbInstance.delete(payments).where(eq(payments.tenantId, input.tenantId));
+          await dbInstance.delete(orders).where(eq(orders.tenantId, input.tenantId));
+          
+          // Delete appointments
+          await dbInstance.delete(appointments).where(eq(appointments.tenantId, input.tenantId));
+          
+          // Delete schedules - employeeSchedules doesn't have tenantId, need to delete via employee IDs
+          // This is handled by cascade when users are deleted
+          
+          // Delete products and services
+          await dbInstance.delete(products).where(eq(products.tenantId, input.tenantId));
+          await dbInstance.delete(services).where(eq(services.tenantId, input.tenantId));
+          
+          // Delete customers
+          await dbInstance.delete(customers).where(eq(customers.tenantId, input.tenantId));
+          
+          // Delete notifications and audit logs
+          await dbInstance.delete(notifications).where(eq(notifications.tenantId, input.tenantId));
+          await dbInstance.delete(auditLogs).where(eq(auditLogs.tenantId, input.tenantId));
+          
+          // Delete users
+          await dbInstance.delete(users).where(eq(users.tenantId, input.tenantId));
+          
+          // Delete subscription
+          await dbInstance.delete(tenantSubscriptions).where(eq(tenantSubscriptions.tenantId, input.tenantId));
+          
+          // Finally delete tenant
+          await dbInstance.delete(tenants).where(eq(tenants.id, input.tenantId));
+
+          return {
+            success: true,
+            message: `Tenant "${tenant.name}" and all its data have been permanently deleted`,
+          };
+        } catch (error) {
+          console.error("Error permanently deleting tenant:", error);
+          throw new TRPCError({ 
+            code: "INTERNAL_SERVER_ERROR", 
+            message: "Failed to delete tenant. Some data may remain." 
+          });
+        }
+      }),
   }),
 
   // ============================================================================
