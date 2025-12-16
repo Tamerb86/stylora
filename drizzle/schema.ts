@@ -717,15 +717,7 @@ export const salonSettings = mysqlTable("salonSettings", {
     welcomeSubtitle: string;
     showStaffSection: boolean;
     showSummaryCard: boolean;
-  }>().default({
-    logoUrl: null,
-    primaryColor: "#2563eb",
-    accentColor: "#ea580c",
-    welcomeTitle: "Velkommen!",
-    welcomeSubtitle: "Bestill din time på nett.",
-    showStaffSection: true,
-    showSummaryCard: true,
-  }),
+  }>(),
   printSettings: json("printSettings").$type<{
     fontSize: "small" | "medium" | "large";
     showLogo: boolean;
@@ -736,13 +728,7 @@ export const salonSettings = mysqlTable("salonSettings", {
     bankAccount?: string;
     website?: string;
     businessHours?: string;
-  }>().default({
-    fontSize: "medium",
-    showLogo: true,
-    customFooterText: "Takk for besøket! Velkommen tilbake!",
-    autoPrintReceipt: false,
-    autoOpenCashDrawer: false,
-  }),
+  }>(),
   receiptLogoUrl: text("receiptLogoUrl"),
   // Time Clock Auto Clock-Out
   autoClockOutTime: time("autoClockOutTime").default("17:00"), // Default end of shift time for auto clock-out

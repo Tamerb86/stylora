@@ -4629,3 +4629,10 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Backend API: getTenantOwner procedure
 - [x] Backend API: updateTenantOwnerCredentials procedure (email, name, phone, password)
 - [x] Password hashing with bcrypt for owner password updates
+
+## Phase 34: Production Safety - Backup & Staging
+- [ ] Research Railway automatic backup options
+- [ ] Implement automatic database backup system
+- [ ] Set up staging environment separate from production
+- [ ] Document backup and restore procedures
+- [ ] Document staging vs production workflow
