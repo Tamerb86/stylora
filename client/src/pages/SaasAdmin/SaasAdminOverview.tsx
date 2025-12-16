@@ -10,7 +10,9 @@ import {
   ShoppingCart,
   DollarSign,
   Building2,
+  LogOut,
 } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function SaasAdminOverview() {
   const { data: overview, isLoading } = trpc.saasAdmin.getOverview.useQuery();
@@ -91,11 +93,25 @@ export default function SaasAdminOverview() {
             Plattformadministrasjon for Stylora
           </p>
         </div>
-        <Link href="/saas-admin/tenants">
-          <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600">
-            Se alle salonger
+        <div className="flex items-center gap-3">
+          <Link href="/saas-admin/tenants">
+            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600">
+              Se alle salonger
+            </Button>
+          </Link>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => {
+              localStorage.removeItem("saas_admin_token");
+              window.location.href = "/login";
+            }}
+            className="border-red-200 text-red-600 hover:bg-red-50"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Logg ut
           </Button>
-        </Link>
+        </div>
       </div>
 
       {/* Stats Cards */}

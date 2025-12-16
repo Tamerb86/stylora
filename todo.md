@@ -4612,3 +4612,20 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 
 ## Phase 32: Bug Fix - Employee Creation
 - [ ] Fix employee creation not working
+
+## Phase 33: SaaS Admin - Edit Salon Credentials
+- [ ] Add backend API for updating salon owner credentials
+- [ ] Add UI section in SaaS Admin tenant details page
+- [ ] Add SaaS Admin logout button
+
+## Phase 28: SaaS Admin Enhancements (December 2024)
+- [x] Add logout button to SaaS Admin Overview page
+- [x] Add logout button to SaaS Admin Tenants page
+- [x] Add logout button to SaaS Admin Subscriptions page
+- [x] Add logout button to SaaS Admin Tenant Details page
+- [x] Add owner credentials section in Tenant Details page
+- [x] Display owner name, email, phone in Tenant Details
+- [x] Add edit owner credentials dialog
+- [x] Backend API: getTenantOwner procedure
+- [x] Backend API: updateTenantOwnerCredentials procedure (email, name, phone, password)
+- [x] Password hashing with bcrypt for owner password updates

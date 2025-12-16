@@ -49,7 +49,8 @@ import {
   Users,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  LogOut
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -216,13 +217,26 @@ export default function SaasAdminSubscriptions() {
             </p>
           </div>
         </div>
-        <Button 
-          onClick={openNewPlan}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Ny plan
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={openNewPlan}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Ny plan
+          </Button>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              await fetch("/api/auth/logout", { method: "POST" });
+              window.location.href = "/login";
+            }}
+            className="border-red-200 text-red-600 hover:bg-red-50"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Logg ut
+          </Button>
+        </div>
       </div>
 
       {/* Statistics Cards */}

@@ -28,7 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Search, ArrowLeft, LogIn, Eye, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Search, ArrowLeft, LogIn, Eye, CheckCircle, XCircle, Loader2, LogOut } from "lucide-react";
 import { toast } from "sonner";
 
 export default function SaasAdminTenants() {
@@ -128,6 +128,17 @@ export default function SaasAdminTenants() {
               Opprett ny salong
             </Button>
           </Link>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              await fetch("/api/auth/logout", { method: "POST" });
+              window.location.href = "/login";
+            }}
+            className="border-red-200 text-red-600 hover:bg-red-50"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Logg ut
+          </Button>
         </div>
       </div>
 

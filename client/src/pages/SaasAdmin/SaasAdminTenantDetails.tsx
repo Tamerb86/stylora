@@ -31,7 +31,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, LogIn, Save, Users, Calendar, ShoppingCart, DollarSign, Pause, Play, Trash2, AlertTriangle, Loader2 } from "lucide-react";
+import { ArrowLeft, LogIn, Save, Users, Calendar, ShoppingCart, DollarSign, Pause, Play, Trash2, AlertTriangle, Loader2, Key, Mail, Phone, User, LogOut } from "lucide-react";
 import { toast } from "sonner";
 
 export default function SaasAdminTenantDetails() {
@@ -51,6 +51,13 @@ export default function SaasAdminTenantDetails() {
   const [showPermanentDeleteDialog, setShowPermanentDeleteDialog] = useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const [permanentDeleteConfirm, setPermanentDeleteConfirm] = useState("");
+  
+  // Owner credentials state
+  const [showEditOwnerDialog, setShowEditOwnerDialog] = useState(false);
+  const [ownerEmail, setOwnerEmail] = useState("");
+  const [ownerName, setOwnerName] = useState("");
+  const [ownerPhone, setOwnerPhone] = useState("");
+  const [ownerNewPassword, setOwnerNewPassword] = useState("");
 
   const { data: details, isLoading, refetch } = trpc.saasAdmin.getTenantDetails.useQuery(
     { tenantId },
@@ -120,6 +127,43 @@ export default function SaasAdminTenantDetails() {
       toast.error(`Feil: ${error.message}`);
     },
   });
+
+  // Owner credentials queries and mutations
+  const { data: ownerData, refetch: refetchOwner } = trpc.saasAdmin.getTenantOwner.useQuery(
+    { tenantId },
+    { enabled: !!tenantId }
+  );
+
+  const updateOwnerMutation = trpc.saasAdmin.updateTenantOwnerCredentials.useMutation({
+    onSuccess: () => {
+      toast.success("Eierinformasjon oppdatert!");
+      setShowEditOwnerDialog(false);
+      setOwnerNewPassword("");
+      refetchOwner();
+    },
+    onError: (error) => {
+      toast.error(`Feil: ${error.message}`);
+    },
+  });
+
+  // Initialize owner form when data loads
+  useEffect(() => {
+    if (ownerData) {
+      setOwnerEmail(ownerData.email || "");
+      setOwnerName(ownerData.name || "");
+      setOwnerPhone(ownerData.phone || "");
+    }
+  }, [ownerData]);
+
+  const handleUpdateOwner = () => {
+    updateOwnerMutation.mutate({
+      tenantId,
+      email: ownerEmail || undefined,
+      name: ownerName || undefined,
+      phone: ownerPhone || undefined,
+      newPassword: ownerNewPassword || undefined,
+    });
+  };
 
   // Initialize form values when data loads
   useEffect(() => {
@@ -226,15 +270,29 @@ export default function SaasAdminTenantDetails() {
             </p>
           </div>
         </div>
-        <Button
-          onClick={() => impersonateMutation.mutate({ tenantId })}
-          disabled={impersonateMutation.isPending}
-          size="lg"
-          className="bg-gradient-to-r from-blue-600 to-purple-600"
-        >
-          <LogIn className="h-4 w-4 mr-2" />
-          Logg inn som denne salongen
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => impersonateMutation.mutate({ tenantId })}
+            disabled={impersonateMutation.isPending}
+            size="lg"
+            className="bg-gradient-to-r from-blue-600 to-purple-600"
+          >
+            <LogIn className="h-4 w-4 mr-2" />
+            Logg inn som denne salongen
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={async () => {
+              await fetch("/api/auth/logout", { method: "POST" });
+              window.location.href = "/login";
+            }}
+            className="border-red-200 text-red-600 hover:bg-red-50"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Logg ut
+          </Button>
+        </div>
       </div>
 
       {/* Basic Info */}
@@ -292,6 +350,55 @@ export default function SaasAdminTenantDetails() {
             </div>
           )}
         </div>
+      </Card>
+
+      {/* Owner Credentials */}
+      <Card className="p-6 border-0 shadow-lg">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">Eier innlogging</h2>
+          <Button
+            variant="outline"
+            onClick={() => setShowEditOwnerDialog(true)}
+          >
+            <Key className="h-4 w-4 mr-2" />
+            Rediger innlogging
+          </Button>
+        </div>
+        
+        {ownerData ? (
+          <div className="grid gap-4 md:grid-cols-2 p-4 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-3">
+              <User className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Navn</label>
+                <p className="font-medium">{ownerData.name || "Ikke angitt"}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Mail className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">E-post</label>
+                <p className="font-medium">{ownerData.email || "Ikke angitt"}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Phone className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Telefon</label>
+                <p className="font-medium">{ownerData.phone || "Ikke angitt"}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Key className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">Passord</label>
+                <p className="font-medium text-muted-foreground">••••••••</p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="text-muted-foreground">Laster eierinformasjon...</p>
+        )}
       </Card>
 
       {/* Subscription Management */}
@@ -628,6 +735,83 @@ export default function SaasAdminTenantDetails() {
                 <Trash2 className="h-4 w-4 mr-2" />
               )}
               Slett salong
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Owner Credentials Dialog */}
+      <Dialog open={showEditOwnerDialog} onOpenChange={setShowEditOwnerDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rediger eier innlogging</DialogTitle>
+            <DialogDescription>
+              Oppdater innloggingsinformasjon for salongeier.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="ownerName">Navn</Label>
+              <Input
+                id="ownerName"
+                value={ownerName}
+                onChange={(e) => setOwnerName(e.target.value)}
+                placeholder="Fullt navn"
+                className="mt-2"
+              />
+            </div>
+            <div>
+              <Label htmlFor="ownerEmail">E-post</Label>
+              <Input
+                id="ownerEmail"
+                type="email"
+                value={ownerEmail}
+                onChange={(e) => setOwnerEmail(e.target.value)}
+                placeholder="epost@eksempel.no"
+                className="mt-2"
+              />
+            </div>
+            <div>
+              <Label htmlFor="ownerPhone">Telefon</Label>
+              <Input
+                id="ownerPhone"
+                type="tel"
+                value={ownerPhone}
+                onChange={(e) => setOwnerPhone(e.target.value)}
+                placeholder="+47 xxx xx xxx"
+                className="mt-2"
+              />
+            </div>
+            <div>
+              <Label htmlFor="ownerPassword">Nytt passord (valgfritt)</Label>
+              <Input
+                id="ownerPassword"
+                type="password"
+                value={ownerNewPassword}
+                onChange={(e) => setOwnerNewPassword(e.target.value)}
+                placeholder="La stå tom for å beholde nåværende"
+                className="mt-2"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Fyll kun inn hvis du vil endre passordet
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditOwnerDialog(false)}>
+              Avbryt
+            </Button>
+            <Button
+              onClick={handleUpdateOwner}
+              disabled={updateOwnerMutation.isPending}
+              className="bg-gradient-to-r from-blue-600 to-purple-600"
+            >
+              {updateOwnerMutation.isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              Lagre endringer
             </Button>
           </DialogFooter>
         </DialogContent>

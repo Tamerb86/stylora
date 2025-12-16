@@ -8082,6 +8082,108 @@ export const appRouter = router({
           });
         }
       }),
+
+    // Get tenant owner details for editing
+    getTenantOwner: platformAdminProcedure
+      .input(z.object({ tenantId: z.string() }))
+      .query(async ({ input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        
+        const { users } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+
+        const [owner] = await dbInstance
+          .select({
+            id: users.id,
+            email: users.email,
+            name: users.name,
+            phone: users.phone,
+          })
+          .from(users)
+          .where(and(
+            eq(users.tenantId, input.tenantId),
+            eq(users.role, "owner")
+          ))
+          .limit(1);
+
+        if (!owner) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Tenant owner not found" });
+        }
+
+        return owner;
+      }),
+
+    // Update tenant owner credentials
+    updateTenantOwnerCredentials: platformAdminProcedure
+      .input(z.object({
+        tenantId: z.string(),
+        email: z.string().email().optional(),
+        name: z.string().min(1).optional(),
+        phone: z.string().optional(),
+        newPassword: z.string().min(6).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        
+        const { users } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+
+        // Find the owner
+        const [owner] = await dbInstance
+          .select()
+          .from(users)
+          .where(and(
+            eq(users.tenantId, input.tenantId),
+            eq(users.role, "owner")
+          ))
+          .limit(1);
+
+        if (!owner) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Tenant owner not found" });
+        }
+
+        // Check if email is being changed and if it's already in use
+        if (input.email && input.email !== owner.email) {
+          const [existingUser] = await dbInstance
+            .select()
+            .from(users)
+            .where(eq(users.email, input.email))
+            .limit(1);
+
+          if (existingUser) {
+            throw new TRPCError({ code: "CONFLICT", message: "E-postadressen er allerede i bruk" });
+          }
+        }
+
+        // Build update object
+        const updateData: Record<string, unknown> = {};
+        if (input.email) updateData.email = input.email;
+        if (input.name) updateData.name = input.name;
+        if (input.phone !== undefined) updateData.phone = input.phone;
+
+        // Hash new password if provided
+        if (input.newPassword) {
+          const bcrypt = await import("bcrypt");
+          updateData.passwordHash = await bcrypt.hash(input.newPassword, 10);
+        }
+
+        if (Object.keys(updateData).length === 0) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "No changes provided" });
+        }
+
+        // Update the owner
+        await dbInstance
+          .update(users)
+          .set(updateData)
+          .where(eq(users.id, owner.id));
+
+        return {
+          success: true,
+          message: "Brukerinformasjon oppdatert",
+        };
+      }),
   }),
 
   // ============================================================================
