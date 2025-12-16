@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, email, name, role, isActive, passwordHash FROM users;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute SELECT id, email, name, role, isActive, passwordHash FROM users;",
+  "rows": [
+    {
+      "id": "1",
+      "email": "demo@barbertime.no",
+      "name": "Demo Owner",
+      "role": "owner",
+      "isActive": "1",
+      "passwordHash": "$2b$10$w/WtbsamE.82sb.X.bKyJ.lttmdmn8ezLUSFMjki1WW7o2TPflaVK"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tname\trole\tisActive\tpasswordHash\n1\tdemo@barbertime.no\tDemo Owner\towner\t1\t$2b$10$w/WtbsamE.82sb.X.bKyJ.lttmdmn8ezLUSFMjki1WW7o2TPflaVK\n",
+  "stderr": "",
+  "execution_time_ms": 133
+}

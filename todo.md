@@ -4584,3 +4584,9 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add missing links for accounting integrations (Unimicro, Fiken)
 - [x] Add missing links for attendance/time clock reports
 - [x] Verify all features are accessible from dashboard
+
+## Phase 28: Accounting Enhancements
+- [x] Remove advancedOnly from accounting features in sidebar
+- [x] Add Visma API integration
+- [x] Add Tripletex API integration
+- [x] Create accountant export report page (Excel/PDF)

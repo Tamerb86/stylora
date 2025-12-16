@@ -46,6 +46,7 @@ import Backups from "@/pages/Backups";
 import UnimicroSettings from "@/pages/UnimicroSettings";
 import FikenSettings from "./pages/FikenSettings";
 import AccountingIntegrations from "./pages/AccountingIntegrations";
+import AccountantExport from "./pages/AccountantExport";
 import SaasAdminLogin from "./pages/SaasAdmin/SaasAdminLogin";
 import SaasAdminOverview from "./pages/SaasAdmin/SaasAdminOverview";
 import SaasAdminTenants from "./pages/SaasAdmin/SaasAdminTenants";
@@ -103,6 +104,7 @@ function Router() {
       <Route path="/unimicro" component={UnimicroSettings} />
       <Route path="/fiken" component={FikenSettings} />
       <Route path="/accounting" component={AccountingIntegrations} />
+      <Route path="/accountant-export" component={AccountantExport} />
       <Route path="/pos-payment" component={POSPayment} />
       <Route path="/payment-history" component={PaymentHistory} />
       <Route path="/payment-providers" component={PaymentProviders} />

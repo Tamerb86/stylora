@@ -75,8 +75,9 @@ const menuItems = [
     { icon: Mail, label: "E-postmaler", path: "/email-templates" },
   ] },
   { icon: Database, label: "Sikkerhetskopier", path: "/backups", adminOnly: true, advancedOnly: true },
-  { icon: Building2, label: "Regnskap", path: "/accounting", adminOnly: true, advancedOnly: true, submenu: [
+  { icon: Building2, label: "Regnskap", path: "/accounting", adminOnly: true, submenu: [
     { icon: Building2, label: "Alle integrasjoner", path: "/accounting" },
+    { icon: Building2, label: "Eksport til regnskapsfører", path: "/accountant-export" },
     { icon: Building2, label: "Unimicro", path: "/unimicro" },
     { icon: Building2, label: "Fiken", path: "/fiken" },
   ] },

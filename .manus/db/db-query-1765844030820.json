@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO users (tenantId, openId, email, name, role, passwordHash, isActive, createdAt, updatedAt, lastSignedIn) VALUES ('f921d60d-bce8-4163-a1c2-4761ee1d85c7', 'tamerb86-owner-001', 'Tamerb86@gmail.com', 'Tamer', 'owner', '$2b$10$slfnPEl62KDaHD/OmWRl/uJDu5zNxJZ5ol.4tuADcc16Zg3ojvNSC', 1, NOW(), NOW(), NOW());",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute INSERT INTO users (tenantId, openId, email, name, role, passwordHash, isActive, createdAt, updatedAt, lastSignedIn) VALUES ('f921d60d-bce8-4163-a1c2-4761ee1d85c7', 'tamerb86-owner-001', 'Tamerb86@gmail.com', 'Tamer', 'owner', '$2b$10$slfnPEl62KDaHD/OmWRl/uJDu5zNxJZ5ol.4tuADcc16Zg3ojvNSC', 1, NOW(), NOW(), NOW());",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 71
+}

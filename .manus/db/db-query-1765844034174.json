@@ -1,0 +1,17 @@
+{
+  "query": "SELECT id, email, name, role, isActive FROM users WHERE email = 'Tamerb86@gmail.com';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute SELECT id, email, name, role, isActive FROM users WHERE email = 'Tamerb86@gmail.com';",
+  "rows": [
+    {
+      "id": "3",
+      "email": "Tamerb86@gmail.com",
+      "name": "Tamer",
+      "role": "owner",
+      "isActive": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\temail\tname\trole\tisActive\n3\tTamerb86@gmail.com\tTamer\towner\t1\n",
+  "stderr": "",
+  "execution_time_ms": 79
+}
