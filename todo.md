@@ -4578,3 +4578,9 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add backend API for updating subscription plans
 - [x] Connect frontend to new backend APIs
 
+
+## Phase 27: Dashboard Navigation Audit
+- [x] Audit existing pages and dashboard navigation
+- [x] Add missing links for accounting integrations (Unimicro, Fiken)
+- [x] Add missing links for attendance/time clock reports
+- [x] Verify all features are accessible from dashboard
