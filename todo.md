@@ -4603,3 +4603,9 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add GDPR data deletion API endpoint
 - [x] Add GDPR data deletion UI for customers
 - [x] Add routes and footer links
+
+## Phase 31: Security - Rate Limiting
+- [x] Install express-rate-limit package
+- [x] Configure rate limiting middleware for API
+- [x] Add different limits for auth vs general endpoints
+- [x] Add Helmet for HTTP security headers

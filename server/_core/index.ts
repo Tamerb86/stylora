@@ -3,6 +3,8 @@ import express from "express";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import { rateLimit } from "express-rate-limit";
+import helmet from "helmet";
 import { registerAuthRoutes } from "./auth-simple";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
@@ -10,6 +12,50 @@ import { serveStatic, setupVite } from "./vite";
 import { startNotificationScheduler } from "../notificationScheduler";
 import { handleStripeWebhook } from "../stripe-webhook";
 import { handleVippsCallback } from "../vipps-callback";
+
+// ============================================================================
+// RATE LIMITING CONFIGURATION
+// ============================================================================
+
+// General API rate limiter - 100 requests per 15 minutes
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: {
+    error: "For mange forespørsler. Vennligst vent litt før du prøver igjen.",
+    retryAfter: "15 minutter",
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  skip: (req) => {
+    // Skip rate limiting for webhooks
+    return req.path.includes("/webhook") || req.path.includes("/callback");
+  },
+});
+
+// Strict rate limiter for authentication - 5 requests per 15 minutes
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 login attempts per windowMs
+  message: {
+    error: "For mange innloggingsforsøk. Vennligst vent 15 minutter.",
+    retryAfter: "15 minutter",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Public booking rate limiter - 20 requests per minute
+const bookingLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20, // Limit each IP to 20 requests per minute
+  message: {
+    error: "For mange bookingforespørsler. Vennligst vent litt.",
+    retryAfter: "1 minutt",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -33,6 +79,34 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+
+  // ============================================================================
+  // SECURITY MIDDLEWARE
+  // ============================================================================
+  
+  // Helmet for HTTP security headers
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com", "https://maps.googleapis.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        imgSrc: ["'self'", "data:", "blob:", "https:"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        connectSrc: ["'self'", "https://api.stripe.com", "https://maps.googleapis.com", "wss:", "ws:"],
+        frameSrc: ["'self'", "https://js.stripe.com", "https://hooks.stripe.com"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: process.env.NODE_ENV === "production" ? [] : null,
+      },
+    },
+    crossOriginEmbedderPolicy: false, // Allow embedding for Stripe
+    crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow cross-origin resources
+  }));
+
+  // Apply rate limiting to API routes
+  app.use("/api/auth", authLimiter); // Strict limit for auth
+  app.use("/api/trpc/publicBooking", bookingLimiter); // Moderate limit for public booking
+  app.use("/api", generalLimiter); // General limit for all API
   
   // Stripe webhook must receive raw body for signature verification
   // Register this route BEFORE the JSON body parser
