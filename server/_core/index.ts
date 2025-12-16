@@ -80,25 +80,17 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
+  // Trust proxy for rate limiting behind reverse proxy
+  app.set('trust proxy', 1);
+
   // ============================================================================
   // SECURITY MIDDLEWARE
   // ============================================================================
   
   // Helmet for HTTP security headers
+  // Disable CSP in development to avoid blocking React scripts
   app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://js.stripe.com", "https://maps.googleapis.com"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        imgSrc: ["'self'", "data:", "blob:", "https:"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        connectSrc: ["'self'", "https://api.stripe.com", "https://maps.googleapis.com", "wss:", "ws:"],
-        frameSrc: ["'self'", "https://js.stripe.com", "https://hooks.stripe.com"],
-        objectSrc: ["'none'"],
-        upgradeInsecureRequests: process.env.NODE_ENV === "production" ? [] : null,
-      },
-    },
+    contentSecurityPolicy: false, // Disabled - React needs inline scripts
     crossOriginEmbedderPolicy: false, // Allow embedding for Stripe
     crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow cross-origin resources
   }));
