@@ -4651,3 +4651,8 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] UI: Monthly hours summary with totals
 - [ ] UI: Export work hours report to CSV/PDF
 
+
+## Bug Fixes Needed
+- [ ] Bug: Arbeidstidsrapport not showing in sidebar menu
+- [ ] Bug: Leave system date picker not working
+
