@@ -102,32 +102,42 @@ export default function POS() {
     const customerId = params.get('customerId');
     const customerName = params.get('customerName');
 
-    if (serviceId && price && services.length > 0) {
+    if (serviceId && price) {
+      // Wait for services to load
+      if (services.length === 0) return;
+      
       const service = services.find(s => s.id === Number(serviceId));
       if (service) {
-        // Add service to cart
-        setCart(prev => ({
-          ...prev,
-          customerId: customerId ? Number(customerId) : undefined,
-          customerName: customerName ? decodeURIComponent(customerName) : undefined,
-          items: [
-            ...prev.items,
-            {
-              id: service.id,
-              itemType: 'service',
-              name: service.name,
-              quantity: 1,
-              unitPrice: Number(price),
-              vatRate: service.vatRate || 25,
-            },
-          ],
-        }));
-        toast.success(`${service.name} lagt til i handlekurv`);
+        // Check if item already added to avoid duplicates
+        const alreadyAdded = cart.items.some(item => 
+          item.id === service.id && item.itemType === 'service'
+        );
+        
+        if (!alreadyAdded) {
+          // Add service to cart
+          setCart(prev => ({
+            ...prev,
+            customerId: customerId ? Number(customerId) : undefined,
+            customerName: customerName ? decodeURIComponent(customerName) : undefined,
+            items: [
+              ...prev.items,
+              {
+                id: service.id,
+                itemType: 'service',
+                name: service.name,
+                quantity: 1,
+                unitPrice: Number(price),
+                vatRate: service.vatRate || 25,
+              },
+            ],
+          }));
+          toast.success(`${service.name} lagt til i handlekurv`);
+        }
         // Clear URL parameters
         window.history.replaceState({}, '', '/pos');
       }
     }
-  }, [services]);
+  }, [services, cart.items]);
 
   // Mutations
   const createOrder = trpc.pos.createOrder.useMutation();

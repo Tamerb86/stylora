@@ -16,6 +16,7 @@ import { nb } from "date-fns/locale";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function WalkInQueue() {
+  const [, setLocation] = useLocation();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editPriorityDialog, setEditPriorityDialog] = useState<{ open: boolean; queueId: number | null; currentPriority: string; currentReason: string }>({
     open: false,
@@ -70,11 +71,17 @@ export function WalkInQueue() {
 
   const startService = trpc.walkInQueue.startService.useMutation({
     onSuccess: (data) => {
-      toast.success("Tjeneste startet");
+      toast.success("Tjeneste startet - Går til kasse...");
       refetch();
       // Redirect to POS with pre-selected service
       if (data.serviceId && data.servicePrice) {
-        window.location.href = `/pos?serviceId=${data.serviceId}&price=${data.servicePrice}&customerId=${data.customerId || ''}&customerName=${encodeURIComponent(data.customerName || '')}`;
+        const params = new URLSearchParams({
+          serviceId: String(data.serviceId),
+          price: String(data.servicePrice),
+          ...(data.customerId && { customerId: String(data.customerId) }),
+          ...(data.customerName && { customerName: data.customerName }),
+        });
+        setLocation(`/pos?${params.toString()}`);
       }
     },
     onError: (error: any) => {

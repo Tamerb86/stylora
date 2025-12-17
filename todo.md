@@ -4681,3 +4681,4 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add delete functionality for customers (already exists)
 - [x] Show order history in customer detail page
 - [x] Show previous notes in customer detail page
+- [x] Fix Walk-in to POS redirect issue (improved navigation and duplicate prevention)
