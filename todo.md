@@ -4682,3 +4682,4 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Show order history in customer detail page
 - [x] Show previous notes in customer detail page
 - [x] Fix Walk-in to POS redirect issue (improved navigation and duplicate prevention)
+- [x] Remove all Arabic text and use Norwegian only
