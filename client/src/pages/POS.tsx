@@ -94,6 +94,41 @@ export default function POS() {
     }
   }, []);
 
+  // Handle URL parameters for pre-selecting service from Walk-in
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const serviceId = params.get('serviceId');
+    const price = params.get('price');
+    const customerId = params.get('customerId');
+    const customerName = params.get('customerName');
+
+    if (serviceId && price && services.length > 0) {
+      const service = services.find(s => s.id === Number(serviceId));
+      if (service) {
+        // Add service to cart
+        setCart(prev => ({
+          ...prev,
+          customerId: customerId ? Number(customerId) : undefined,
+          customerName: customerName ? decodeURIComponent(customerName) : undefined,
+          items: [
+            ...prev.items,
+            {
+              id: service.id,
+              itemType: 'service',
+              name: service.name,
+              quantity: 1,
+              unitPrice: Number(price),
+              vatRate: service.vatRate || 25,
+            },
+          ],
+        }));
+        toast.success(`${service.name} lagt til i handlekurv`);
+        // Clear URL parameters
+        window.history.replaceState({}, '', '/pos');
+      }
+    }
+  }, [services]);
+
   // Mutations
   const createOrder = trpc.pos.createOrder.useMutation();
   const recordCashPayment = trpc.pos.recordCashPayment.useMutation();

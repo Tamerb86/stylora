@@ -69,9 +69,13 @@ export function WalkInQueue() {
   });
 
   const startService = trpc.walkInQueue.startService.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Tjeneste startet");
       refetch();
+      // Redirect to POS with pre-selected service
+      if (data.serviceId && data.servicePrice) {
+        window.location.href = `/pos?serviceId=${data.serviceId}&price=${data.servicePrice}&customerId=${data.customerId || ''}&customerName=${encodeURIComponent(data.customerName || '')}`;
+      }
     },
     onError: (error: any) => {
       toast.error(error.message || "Kunne ikke starte tjeneste");

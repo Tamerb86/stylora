@@ -4668,3 +4668,4 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Fix: Timeregistrering submenu not expanding/showing
 - [ ] Fix: Exclude weekends (Saturday & Sunday) from leave calculation
 
+- [x] Restore POS redirect after completing Walk-in service with pre-selected service and price
