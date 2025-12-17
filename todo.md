@@ -4656,3 +4656,6 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Bug: Arbeidstidsrapport not showing in sidebar menu
 - [ ] Bug: Leave system date picker not working
 
+
+- [x] UI: Move 'Innstemplet nå' section to the right for better visibility
+
