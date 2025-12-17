@@ -4659,3 +4659,8 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 
 - [x] UI: Move 'Innstemplet nå' section to the right for better visibility
 
+
+## Urgent Fixes
+- [ ] Bug: Arbeidstidsrapport not showing in menu after deployment
+- [x] Bug: Leave calculation includes Sundays (should exclude weekends)
+

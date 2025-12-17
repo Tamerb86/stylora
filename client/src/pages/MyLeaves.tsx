@@ -95,8 +95,20 @@ export default function MyLeaves() {
   };
 
   const calculateDays = (start: Date, end: Date) => {
-    const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-    return days;
+    let count = 0;
+    const current = new Date(start);
+    const endDate = new Date(end);
+    
+    while (current <= endDate) {
+      const dayOfWeek = current.getDay();
+      // Exclude Sundays (0 = Sunday)
+      if (dayOfWeek !== 0) {
+        count++;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+    
+    return count;
   };
 
   return (
