@@ -7,11 +7,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Scissors, Clock, CalendarPlus, ShoppingCart } from "lucide-react";
+import { Plus, Scissors, Clock, CalendarPlus, ShoppingCart, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Services() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -37,12 +39,63 @@ export default function Services() {
     },
   });
 
+  const updateService = trpc.services.update.useMutation({
+    onSuccess: () => {
+      toast.success("Tjeneste oppdatert!");
+      setIsEditDialogOpen(false);
+      refetch();
+      setSelectedService(null);
+    },
+    onError: (error) => {
+      toast.error(`Feil: ${error.message}`);
+    },
+  });
+
+  const deleteService = trpc.services.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Tjeneste slettet!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(`Feil: ${error.message}`);
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     createService.mutate({
       ...formData,
       durationMinutes: parseInt(formData.durationMinutes),
     });
+  };
+
+  const handleEdit = (service: any) => {
+    setSelectedService(service);
+    setFormData({
+      name: service.name,
+      description: service.description || "",
+      durationMinutes: String(service.durationMinutes),
+      price: service.price,
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedService) return;
+    updateService.mutate({
+      id: selectedService.id,
+      name: formData.name,
+      description: formData.description,
+      durationMinutes: parseInt(formData.durationMinutes),
+      price: formData.price,
+    });
+  };
+
+  const handleDelete = (service: any) => {
+    if (confirm(`Er du sikker på at du vil slette ${service.name}?`)) {
+      deleteService.mutate({ id: service.id });
+    }
   };
 
   return (
@@ -129,6 +182,78 @@ export default function Services() {
               </form>
             </DialogContent>
           </Dialog>
+
+          {/* Edit Dialog */}
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Rediger tjeneste</DialogTitle>
+                <DialogDescription>
+                  Oppdater informasjon om tjenesten
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleUpdate} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-name">Navn *</Label>
+                  <Input
+                    id="edit-name"
+                    required
+                    placeholder="F.eks. Herreklipp"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-description">Beskrivelse</Label>
+                  <Textarea
+                    id="edit-description"
+                    placeholder="Kort beskrivelse av tjenesten"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-duration">Varighet (minutter) *</Label>
+                    <Input
+                      id="edit-duration"
+                      type="number"
+                      required
+                      min="5"
+                      step="5"
+                      value={formData.durationMinutes}
+                      onChange={(e) => setFormData({ ...formData, durationMinutes: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-price">Pris (NOK) *</Label>
+                    <Input
+                      id="edit-price"
+                      type="number"
+                      required
+                      min="0"
+                      step="0.01"
+                      placeholder="299.00"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                    Avbryt
+                  </Button>
+                  <Button type="submit" disabled={updateService.isPending}>
+                    {updateService.isPending ? "Oppdaterer..." : "Oppdater tjeneste"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {isLoading ? (
@@ -167,19 +292,17 @@ export default function Services() {
                       size="sm"
                       variant="outline"
                       className="flex-1"
-                      onClick={() => window.location.href = "/appointments"}
+                      onClick={() => handleEdit(service)}
                     >
-                      <CalendarPlus className="h-3 w-3 mr-1" />
-                      Book
+                      <Pencil className="h-3 w-3 mr-1" />
+                      Rediger
                     </Button>
                     <Button
                       size="sm"
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => window.location.href = "/pos"}
+                      variant="destructive"
+                      onClick={() => handleDelete(service)}
                     >
-                      <ShoppingCart className="h-3 w-3 mr-1" />
-                      Kasse
+                      <Trash2 className="h-3 w-3" />
                     </Button>
                   </div>
                 </CardContent>

@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { trpc } from "@/lib/trpc";
-import { Package, Plus, Minus, Pencil, ShoppingCart } from "lucide-react";
+import { Package, Plus, Minus, Pencil, ShoppingCart, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -65,6 +65,16 @@ export default function Products() {
     },
     onError: (error) => {
       toast.error("Kunne ikke oppdatere produkt: " + error.message);
+    },
+  });
+
+  const deleteMutation = trpc.products.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Produkt slettet!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Kunne ikke slette produkt: " + error.message);
     },
   });
 
@@ -239,6 +249,17 @@ export default function Products() {
                           onClick={() => openStockDialog(product.id)}
                         >
                           Juster lager
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => {
+                            if (confirm(`Er du sikker på at du vil slette ${product.name}?`)) {
+                              deleteMutation.mutate({ productId: product.id });
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
                       <Button

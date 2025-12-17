@@ -1887,6 +1887,31 @@ export const appRouter = router({
 
         return { success: true };
       }),
+
+    delete: adminProcedure
+      .input(z.object({
+        id: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        const { services } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        
+        // Soft delete by setting isActive to false
+        await dbInstance
+          .update(services)
+          .set({ isActive: false })
+          .where(
+            and(
+              eq(services.id, input.id),
+              eq(services.tenantId, ctx.tenantId)
+            )
+          );
+
+        return { success: true };
+      }),
   }),
 
   // ============================================================================
@@ -3114,6 +3139,31 @@ export const appRouter = router({
           .update(products)
           .set(updateData)
           .where(eq(products.id, input.productId));
+
+        return { success: true };
+      }),
+
+    delete: tenantProcedure
+      .input(z.object({
+        productId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        const { products } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        
+        // Soft delete by setting isActive to false
+        await dbInstance
+          .update(products)
+          .set({ isActive: false })
+          .where(
+            and(
+              eq(products.id, input.productId),
+              eq(products.tenantId, ctx.tenantId)
+            )
+          );
 
         return { success: true };
       }),

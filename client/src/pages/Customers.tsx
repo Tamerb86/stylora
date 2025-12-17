@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Search, Phone, Mail, Calendar, Users, Gift, CalendarPlus, Receipt } from "lucide-react";
+import { Plus, Search, Phone, Mail, Calendar, Users, Gift, CalendarPlus, Receipt, Eye } from "lucide-react";
 import { toast } from "sonner";
 
 function CustomerLoyaltyPoints({ customerId }: { customerId: number }) {
@@ -282,19 +282,19 @@ export default function Customers() {
                       size="sm"
                       variant="outline"
                       className="flex-1 gap-2"
-                      onClick={() => setLocation("/appointments")}
+                      onClick={() => setLocation(`/customers/${customer.id}`)}
                     >
-                      <CalendarPlus className="h-4 w-4" />
-                      Book avtale
+                      <Eye className="h-4 w-4" />
+                      Detaljer
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       className="flex-1 gap-2"
-                      onClick={() => setLocation("/orders")}
+                      onClick={() => setLocation("/appointments")}
                     >
-                      <Receipt className="h-4 w-4" />
-                      Se kjøpshistorikk
+                      <CalendarPlus className="h-4 w-4" />
+                      Book
                     </Button>
                   </div>
                 </CardContent>

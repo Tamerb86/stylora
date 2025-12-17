@@ -4669,3 +4669,15 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Fix: Exclude weekends (Saturday & Sunday) from leave calculation
 
 - [x] Restore POS redirect after completing Walk-in service with pre-selected service and price
+
+## New Feature Requests
+- [x] Add edit functionality for products
+- [x] Add delete functionality for products
+- [x] Add edit functionality for services
+- [x] Add delete functionality for services
+- [x] Add edit functionality for employees (already exists)
+- [x] Add delete functionality for employees (deactivate exists)
+- [x] Add edit functionality for customers (already exists)
+- [x] Add delete functionality for customers (already exists)
+- [x] Show order history in customer detail page
+- [x] Show previous notes in customer detail page
