@@ -101,8 +101,8 @@ export default function MyLeaves() {
     
     while (current <= endDate) {
       const dayOfWeek = current.getDay();
-      // Exclude Sundays (0 = Sunday)
-      if (dayOfWeek !== 0) {
+      // Exclude weekends (0 = Sunday, 6 = Saturday)
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
         count++;
       }
       current.setDate(current.getDate() + 1);

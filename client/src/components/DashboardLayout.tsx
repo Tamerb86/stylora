@@ -218,6 +218,7 @@ function DashboardLayoutContent({
   const [isVacationExpanded, setIsVacationExpanded] = useState(true);
   const [isReportsExpanded, setIsReportsExpanded] = useState(true);
   const [isPaymentsExpanded, setIsPaymentsExpanded] = useState(true);
+  const [expandedSubmenus, setExpandedSubmenus] = useState<Record<string, boolean>>({});
 
   // Fetch badge counts
   const { data: badgeCounts } = trpc.dashboard.badgeCounts.useQuery(undefined, {
@@ -357,11 +358,20 @@ function DashboardLayoutContent({
                     badgeCount = badgeCounts.unreadNotifications;
                   }
 
+                  const hasSubmenu = item.submenu && item.submenu.length > 0;
+                  const isExpanded = expandedSubmenus[item.path] ?? false;
+
                   return (
                     <SidebarMenuItem key={item.path}>
                         <SidebarMenuButton
                         isActive={isActive}
-                        onClick={() => setLocation(item.path)}
+                        onClick={() => {
+                          if (hasSubmenu) {
+                            setExpandedSubmenus(prev => ({ ...prev, [item.path]: !prev[item.path] }));
+                          } else {
+                            setLocation(item.path);
+                          }
+                        }}
                         tooltip={item.label}
                         className={`h-9 transition-all font-normal`}
                         data-tour={tourAttr}
@@ -377,7 +387,34 @@ function DashboardLayoutContent({
                             </Badge>
                           )}
                         </span>
+                        {hasSubmenu && (
+                          <ChevronDown 
+                            className={`h-3 w-3 transition-transform duration-200 ${isExpanded ? 'rotate-0' : '-rotate-90'}`}
+                          />
+                        )}
                       </SidebarMenuButton>
+                      
+                      {hasSubmenu && isExpanded && (
+                        <SidebarMenuSub>
+                          {item.submenu!.filter(subItem => {
+                            if (subItem.adminOnly && user?.role !== "admin" && user?.role !== "owner") return false;
+                            return true;
+                          }).map(subItem => {
+                            const isSubActive = location === subItem.path;
+                            return (
+                              <SidebarMenuSubItem key={subItem.path}>
+                                <SidebarMenuSubButton
+                                  isActive={isSubActive}
+                                  onClick={() => setLocation(subItem.path)}
+                                >
+                                  <subItem.icon className="h-4 w-4" />
+                                  <span>{subItem.label}</span>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            );
+                          })}
+                        </SidebarMenuSub>
+                      )}
                     </SidebarMenuItem>
                   );
                 })}

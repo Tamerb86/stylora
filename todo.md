@@ -4664,3 +4664,7 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Bug: Arbeidstidsrapport not showing in menu after deployment
 - [x] Bug: Leave calculation includes Sundays (should exclude weekends)
 
+
+- [ ] Fix: Timeregistrering submenu not expanding/showing
+- [ ] Fix: Exclude weekends (Saturday & Sunday) from leave calculation
+
