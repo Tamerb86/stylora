@@ -65,6 +65,7 @@ const menuItems = [
     { icon: Clock, label: "Innstemplingsterminal", path: "/timeclock" },
     { icon: UserCog, label: "Administrer vakter", path: "/timeclock-admin", adminOnly: true },
     { icon: BarChart3, label: "Fremmøterapport", path: "/attendance" },
+    { icon: BarChart3, label: "Arbeidstidsrapport", path: "/work-hours", adminOnly: true },
   ] },
   { icon: Bell, label: "Varsler", path: "/notifications", advancedOnly: true },
   { icon: Gift, label: "Lojalitet", path: "/loyalty", advancedOnly: true },

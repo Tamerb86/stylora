@@ -5536,6 +5536,155 @@ export const appRouter = router({
 
         return { success: true };
       }),
+
+    // Get weekly summary for all employees
+    getWeeklySummary: adminProcedure
+      .input(z.object({
+        year: z.number(),
+        month: z.number(), // 1-12
+      }))
+      .query(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) return [];
+
+        const { timesheets, users } = await import("../drizzle/schema");
+        const { eq, and, sql } = await import("drizzle-orm");
+
+        // Get first and last day of the month
+        const firstDay = new Date(input.year, input.month - 1, 1);
+        const lastDay = new Date(input.year, input.month, 0);
+
+        const result = await dbInstance.execute(
+          sql`SELECT 
+            t.employeeId,
+            u.name as employeeName,
+            WEEK(t.workDate, 1) as weekNumber,
+            MIN(t.workDate) as weekStart,
+            MAX(t.workDate) as weekEnd,
+            COALESCE(SUM(CAST(t.totalHours AS DECIMAL(10,2))), 0) as totalHours,
+            COUNT(*) as shiftCount
+          FROM timesheets t
+          LEFT JOIN users u ON t.employeeId = u.id
+          WHERE t.tenantId = ${ctx.tenantId}
+            AND t.workDate >= ${firstDay.toISOString().split('T')[0]}
+            AND t.workDate <= ${lastDay.toISOString().split('T')[0]}
+          GROUP BY t.employeeId, u.name, WEEK(t.workDate, 1)
+          ORDER BY t.employeeId, weekNumber`
+        );
+
+        return result[0] as Array<{
+          employeeId: number;
+          employeeName: string;
+          weekNumber: number;
+          weekStart: string;
+          weekEnd: string;
+          totalHours: string;
+          shiftCount: number;
+        }>;
+      }),
+
+    // Get monthly summary for all employees
+    getMonthlySummary: adminProcedure
+      .input(z.object({
+        year: z.number(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) return [];
+
+        const { timesheets, users } = await import("../drizzle/schema");
+        const { eq, and, sql } = await import("drizzle-orm");
+
+        const result = await dbInstance.execute(
+          sql`SELECT 
+            t.employeeId,
+            u.name as employeeName,
+            MONTH(t.workDate) as month,
+            COALESCE(SUM(CAST(t.totalHours AS DECIMAL(10,2))), 0) as totalHours,
+            COUNT(*) as shiftCount,
+            COUNT(DISTINCT t.workDate) as daysWorked
+          FROM timesheets t
+          LEFT JOIN users u ON t.employeeId = u.id
+          WHERE t.tenantId = ${ctx.tenantId}
+            AND YEAR(t.workDate) = ${input.year}
+          GROUP BY t.employeeId, u.name, MONTH(t.workDate)
+          ORDER BY t.employeeId, month`
+        );
+
+        return result[0] as Array<{
+          employeeId: number;
+          employeeName: string;
+          month: number;
+          totalHours: string;
+          shiftCount: number;
+          daysWorked: number;
+        }>;
+      }),
+
+    // Get detailed employee work hours report
+    getEmployeeWorkReport: adminProcedure
+      .input(z.object({
+        employeeId: z.number().optional(),
+        startDate: z.string(),
+        endDate: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) return { employees: [], summary: { totalHours: "0", totalShifts: 0, averageHoursPerDay: "0" } };
+
+        const { timesheets, users } = await import("../drizzle/schema");
+        const { eq, and, sql } = await import("drizzle-orm");
+
+        // Build employee filter
+        const employeeFilter = input.employeeId 
+          ? sql`AND t.employeeId = ${input.employeeId}` 
+          : sql``;
+
+        const result = await dbInstance.execute(
+          sql`SELECT 
+            t.employeeId,
+            u.name as employeeName,
+            COALESCE(SUM(CAST(t.totalHours AS DECIMAL(10,2))), 0) as totalHours,
+            COUNT(*) as shiftCount,
+            COUNT(DISTINCT t.workDate) as daysWorked,
+            MIN(t.workDate) as firstDay,
+            MAX(t.workDate) as lastDay,
+            AVG(CAST(t.totalHours AS DECIMAL(10,2))) as avgHoursPerShift
+          FROM timesheets t
+          LEFT JOIN users u ON t.employeeId = u.id
+          WHERE t.tenantId = ${ctx.tenantId}
+            AND t.workDate >= ${input.startDate}
+            AND t.workDate <= ${input.endDate}
+            ${employeeFilter}
+          GROUP BY t.employeeId, u.name
+          ORDER BY totalHours DESC`
+        );
+
+        const employees = result[0] as Array<{
+          employeeId: number;
+          employeeName: string;
+          totalHours: string;
+          shiftCount: number;
+          daysWorked: number;
+          firstDay: string;
+          lastDay: string;
+          avgHoursPerShift: string;
+        }>;
+
+        // Calculate overall summary
+        const totalHours = employees.reduce((sum, e) => sum + parseFloat(e.totalHours || "0"), 0);
+        const totalShifts = employees.reduce((sum, e) => sum + e.shiftCount, 0);
+        const totalDays = employees.reduce((sum, e) => sum + e.daysWorked, 0);
+
+        return {
+          employees,
+          summary: {
+            totalHours: totalHours.toFixed(2),
+            totalShifts,
+            averageHoursPerDay: totalDays > 0 ? (totalHours / totalDays).toFixed(2) : "0",
+          },
+        };
+      }),
   }),
 
   // ============================================================================

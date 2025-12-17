@@ -4642,3 +4642,12 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Display employee leaves in calendar view
 - [x] Block time slots during approved leave periods in public booking
 
+
+## Phase: Employee Work Hours Report
+- [x] API: Get employee work hours summary (daily, weekly, monthly)
+- [x] API: Calculate total hours per employee for date range
+- [x] UI: Employee work hours report page
+- [x] UI: Weekly hours summary with totals
+- [x] UI: Monthly hours summary with totals
+- [ ] UI: Export work hours report to CSV/PDF
+
