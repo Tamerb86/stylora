@@ -8,9 +8,13 @@
 import crypto from 'crypto';
 
 // iZettle OAuth Configuration
-const IZETTLE_CLIENT_ID = '3209d1a8-4c06-48bd-8c88-f5bc0bf473bc';
-const IZETTLE_CLIENT_SECRET = 'IZSEC422729de-4f98-476e-914f-0419447026c7';
-const IZETTLE_REDIRECT_URI = process.env.IZETTLE_REDIRECT_URI || 'https://barbertime-production-5d35.up.railway.app/api/izettle/callback';
+const IZETTLE_CLIENT_ID = process.env.IZETTLE_CLIENT_ID || '';
+const IZETTLE_CLIENT_SECRET = process.env.IZETTLE_CLIENT_SECRET || '';
+const IZETTLE_REDIRECT_URI = process.env.IZETTLE_REDIRECT_URI || '';
+
+if (!IZETTLE_CLIENT_ID || !IZETTLE_CLIENT_SECRET || !IZETTLE_REDIRECT_URI) {
+  console.warn('[iZettle] Missing environment variables. iZettle integration will not work.');
+}
 
 // iZettle API Endpoints
 const IZETTLE_AUTH_URL = 'https://oauth.zettle.com/authorize';
