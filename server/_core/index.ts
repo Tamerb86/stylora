@@ -162,45 +162,58 @@ async function startServer() {
         const { eq, and } = await import("drizzle-orm");
         
         // Check if provider already exists
-        const [existing] = await dbInstance
-          .select()
-          .from(paymentProviders)
-          .where(
-            and(
-              eq(paymentProviders.tenantId, tenantId),
-              eq(paymentProviders.providerType, "izettle")
+        let existing;
+        try {
+          console.log("[iZettle Callback] Querying existing provider for tenant:", tenantId);
+          [existing] = await dbInstance
+            .select()
+            .from(paymentProviders)
+            .where(
+              and(
+                eq(paymentProviders.tenantId, tenantId),
+                eq(paymentProviders.providerType, "izettle")
+              )
             )
-          )
-          .limit(1);
+            .limit(1);
+          console.log("[iZettle Callback] Query result:", existing ? "found" : "not found");
+        } catch (dbError: any) {
+          console.error("[iZettle Callback] Database query failed:", dbError.message);
+          return res.redirect("/izettle/callback?izettle=error&message=" + encodeURIComponent("Database connection error. Please try again."));
+        }
         
         const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);
         
-        if (existing) {
-          // Update existing
-          console.log("[iZettle Callback] Updating existing provider:", existing.id);
-          await dbInstance
-            .update(paymentProviders)
-            .set({
+        try {
+          if (existing) {
+            // Update existing
+            console.log("[iZettle Callback] Updating existing provider:", existing.id);
+            await dbInstance
+              .update(paymentProviders)
+              .set({
+                accessToken: encryptToken(tokens.access_token),
+                refreshToken: encryptToken(tokens.refresh_token),
+                tokenExpiresAt: expiresAt,
+                isActive: true,
+                updatedAt: new Date(),
+              })
+              .where(eq(paymentProviders.id, existing.id));
+            console.log("[iZettle Callback] Provider updated successfully");
+          } else {
+            // Insert new
+            console.log("[iZettle Callback] Creating new provider entry");
+            await dbInstance.insert(paymentProviders).values({
+              tenantId,
+              providerType: "izettle",
               accessToken: encryptToken(tokens.access_token),
               refreshToken: encryptToken(tokens.refresh_token),
               tokenExpiresAt: expiresAt,
               isActive: true,
-              updatedAt: new Date(),
-            })
-            .where(eq(paymentProviders.id, existing.id));
-          console.log("[iZettle Callback] Provider updated successfully");
-        } else {
-          // Insert new
-          console.log("[iZettle Callback] Creating new provider entry");
-          await dbInstance.insert(paymentProviders).values({
-            tenantId,
-            providerType: "izettle",
-            accessToken: encryptToken(tokens.access_token),
-            refreshToken: encryptToken(tokens.refresh_token),
-            tokenExpiresAt: expiresAt,
-            isActive: true,
-          });
-          console.log("[iZettle Callback] Provider created successfully");
+            });
+            console.log("[iZettle Callback] Provider created successfully");
+          }
+        } catch (dbError: any) {
+          console.error("[iZettle Callback] Database save failed:", dbError.message);
+          return res.redirect("/izettle/callback?izettle=error&message=" + encodeURIComponent("Failed to save connection. Please try again."));
         }
       }
       

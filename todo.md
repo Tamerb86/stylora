@@ -4819,5 +4819,21 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add better error handling for missing/invalid state
 - [x] Add comprehensive logging throughout callback flow
 - [x] Add validation for tenantId before database operations
-- [ ] Test iZettle callback flow with real OAuth
-- [ ] Save checkpoint and deploy to Railway
+- [x] Save checkpoint and deploy to Railway
+- [x] Push to GitHub - Railway will auto-deploy
+
+## Phase 44: Fix Database Query Failure in iZettle Callback
+- [ ] Investigate "Failed query" error on paymentProviders table
+- [ ] Check if database connection is stable during callback
+- [ ] Verify paymentProviders table exists and has correct schema
+- [ ] Add try-catch around database operations
+- [ ] Test with Railway production database
+- [ ] Save checkpoint and deploy fix
+
+## Phase 45: Create K S Frisør Salon
+- [x] Create tenant for K S Frisør in database (ID: ks-frisor-tenant)
+- [x] Create owner user (Khaled) for the salon
+- [x] Set salon details (name, address, org number)
+- [x] Update iZettle callback error handling with better logging
+- [ ] Test iZettle integration with K S Frisør on Railway
+- [ ] Save checkpoint and deploy
