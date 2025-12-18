@@ -4651,3 +4651,17 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Show only enabled payment methods on booking page
 - [ ] Create guide for configuring Vipps payment
 - [ ] Create guide for configuring Stripe payment
+
+## Phase 26: Payment Methods on Booking Page
+- [x] Update booking page to fetch payment settings from API
+- [x] Show only enabled payment methods (Vipps/card/cash/pay-at-salon)
+- [x] Hide disabled payment methods from selection
+- [x] Update payment step UI to match enabled methods
+- [ ] Test booking flow with different payment configurations
+
+## Phase 27: Vipps Configuration Guide
+- [x] Create comprehensive Vipps setup guide
+- [x] Add step-by-step instructions for getting API keys
+- [x] Include screenshots and examples
+- [x] Add troubleshooting section
+- [ ] Link guide from Settings page

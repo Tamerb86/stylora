@@ -36,6 +36,7 @@ export default function PublicBooking() {
   const { data: salonInfo } = trpc.publicBooking.getSalonInfo.useQuery({ tenantId: TENANT_ID });
   const { data: services = [], isLoading: servicesLoading } = trpc.publicBooking.getAvailableServices.useQuery({ tenantId: TENANT_ID });
   const { data: employees = [], isLoading: employeesLoading } = trpc.publicBooking.getAvailableEmployees.useQuery({ tenantId: TENANT_ID });
+  const { data: paymentSettings } = (trpc as any).paymentSettings.getPublic.useQuery({ tenantId: TENANT_ID });
   
   const { data: timeSlots = [], isLoading: timeSlotsLoading } = trpc.publicBooking.getAvailableTimeSlots.useQuery(
     {
@@ -681,55 +682,115 @@ export default function PublicBooking() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Stripe Option */}
-                        <Card
-                          className={`cursor-pointer service-card-hover border-2 ${
-                            paymentMethod === "stripe" 
-                              ? "ring-4 ring-[var(--booking-accent)]/30 border-[var(--booking-accent)] shadow-xl" 
-                              : "hover:shadow-lg hover:border-gray-300"
-                          }`}
-                          onClick={() => setPaymentMethod("stripe")}
-                        >
-                          <CardContent className="p-6">
-                            <div className="flex items-center gap-4">
-                              <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                                <CreditCard className="h-7 w-7 text-white" />
+                        {/* Stripe/Card Option - Only show if enabled */}
+                        {paymentSettings?.cardEnabled && (
+                          <Card
+                            className={`cursor-pointer service-card-hover border-2 ${
+                              paymentMethod === "stripe" 
+                                ? "ring-4 ring-[var(--booking-accent)]/30 border-[var(--booking-accent)] shadow-xl" 
+                                : "hover:shadow-lg hover:border-gray-300"
+                            }`}
+                            onClick={() => setPaymentMethod("stripe")}
+                          >
+                            <CardContent className="p-6">
+                              <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                                  <CreditCard className="h-7 w-7 text-white" />
+                                </div>
+                                <div className="flex-1">
+                                  <h3 className="font-bold text-lg mb-1">Kort</h3>
+                                  <p className="text-sm text-gray-600">Visa, Mastercard, Amex</p>
+                                </div>
+                                {paymentMethod === "stripe" && (
+                                  <Check className="h-6 w-6 text-[var(--booking-accent)]" />
+                                )}
                               </div>
-                              <div className="flex-1">
-                                <h3 className="font-bold text-lg mb-1">Kort</h3>
-                                <p className="text-sm text-gray-600">Visa, Mastercard, Amex</p>
-                              </div>
-                              {paymentMethod === "stripe" && (
-                                <Check className="h-6 w-6 text-[var(--booking-accent)]" />
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
+                            </CardContent>
+                          </Card>
+                        )}
 
-                        {/* Vipps Option */}
-                        <Card
-                          className={`cursor-pointer service-card-hover border-2 ${
-                            paymentMethod === "vipps" 
-                              ? "ring-4 ring-[var(--booking-accent)]/30 border-[var(--booking-accent)] shadow-xl" 
-                              : "hover:shadow-lg hover:border-gray-300"
-                          }`}
-                          onClick={() => setPaymentMethod("vipps")}
-                        >
-                          <CardContent className="p-6">
-                            <div className="flex items-center gap-4">
-                              <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
-                                <Smartphone className="h-7 w-7 text-white" />
+                        {/* Vipps Option - Only show if enabled */}
+                        {paymentSettings?.vippsEnabled && (
+                          <Card
+                            className={`cursor-pointer service-card-hover border-2 ${
+                              paymentMethod === "vipps" 
+                                ? "ring-4 ring-[var(--booking-accent)]/30 border-[var(--booking-accent)] shadow-xl" 
+                                : "hover:shadow-lg hover:border-gray-300"
+                            }`}
+                            onClick={() => setPaymentMethod("vipps")}
+                          >
+                            <CardContent className="p-6">
+                              <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+                                  <Smartphone className="h-7 w-7 text-white" />
+                                </div>
+                                <div className="flex-1">
+                                  <h3 className="font-bold text-lg mb-1">Vipps</h3>
+                                  <p className="text-sm text-gray-600">Norges mest brukte app</p>
+                                </div>
+                                {paymentMethod === "vipps" && (
+                                  <Check className="h-6 w-6 text-[var(--booking-accent)]" />
+                                )}
                               </div>
-                              <div className="flex-1">
-                                <h3 className="font-bold text-lg mb-1">Vipps</h3>
-                                <p className="text-sm text-gray-600">Norges mest brukte app</p>
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {/* Cash Option - Only show if enabled */}
+                        {paymentSettings?.cashEnabled && (
+                          <Card
+                            className={`cursor-pointer service-card-hover border-2 ${
+                              paymentMethod === "cash" 
+                                ? "ring-4 ring-[var(--booking-accent)]/30 border-[var(--booking-accent)] shadow-xl" 
+                                : "hover:shadow-lg hover:border-gray-300"
+                            }`}
+                            onClick={() => setPaymentMethod("cash" as any)}
+                          >
+                            <CardContent className="p-6">
+                              <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                                  <svg className="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="width" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                </div>
+                                <div className="flex-1">
+                                  <h3 className="font-bold text-lg mb-1">Kontant</h3>
+                                  <p className="text-sm text-gray-600">Betal med kontanter</p>
+                                </div>
+                                {paymentMethod === "cash" && (
+                                  <Check className="h-6 w-6 text-[var(--booking-accent)]" />
+                                )}
                               </div>
-                              {paymentMethod === "vipps" && (
-                                <Check className="h-6 w-6 text-[var(--booking-accent)]" />
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {/* Pay at Salon Option - Only show if enabled */}
+                        {paymentSettings?.payAtSalonEnabled && (
+                          <Card
+                            className={`cursor-pointer service-card-hover border-2 ${
+                              paymentMethod === "pay_at_salon" 
+                                ? "ring-4 ring-[var(--booking-accent)]/30 border-[var(--booking-accent)] shadow-xl" 
+                                : "hover:shadow-lg hover:border-gray-300"
+                            }`}
+                            onClick={() => setPaymentMethod("pay_at_salon" as any)}
+                          >
+                            <CardContent className="p-6">
+                              <div className="flex items-center gap-4">
+                                <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+                                  <MapPin className="h-7 w-7 text-white" />
+                                </div>
+                                <div className="flex-1">
+                                  <h3 className="font-bold text-lg mb-1">Betal på salong</h3>
+                                  <p className="text-sm text-gray-600">Betal etter behandling</p>
+                                </div>
+                                {paymentMethod === "pay_at_salon" && (
+                                  <Check className="h-6 w-6 text-[var(--booking-accent)]" />
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        )}
                       </div>
 
                       {/* Payment Summary */}

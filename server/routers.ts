@@ -11028,6 +11028,7 @@ export const appRouter = router({
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
         }
 
+        const { paymentProviders } = await import("../drizzle/schema");
         const [provider] = await dbInstance
           .select()
           .from(paymentProviders)
@@ -11065,6 +11066,7 @@ export const appRouter = router({
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
         }
 
+        const { paymentProviders } = await import("../drizzle/schema");
         await dbInstance
           .update(paymentProviders)
           .set({
@@ -11097,6 +11099,7 @@ export const appRouter = router({
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
         }
 
+        const { paymentProviders } = await import("../drizzle/schema");
         // Get iZettle provider
         const [provider] = await dbInstance
           .select()
@@ -11202,6 +11205,7 @@ export const appRouter = router({
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
         }
 
+        const { paymentProviders } = await import("../drizzle/schema");
         const [provider] = await dbInstance
           .select()
           .from(paymentProviders)
