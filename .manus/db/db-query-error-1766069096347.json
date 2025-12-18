@@ -1,0 +1,8 @@
+{
+  "query": "INSERT INTO tenants (id, name, subdomain, phone, email, address, city, postalCode, country, emailVerified, trialEndsAt, createdAt) VALUES ('test-salon-123', 'Test Salon', 'test-salon', '+47 12345678', 'test@salon.no', 'Test Address 1', 'Oslo', '0123', 'Norway', 1, DATE_ADD(NOW(), INTERVAL 30 DAY), NOW());",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute INSERT INTO tenants (id, name, subdomain, phone, email, address, city, postalCode, country, emailVerified, trialEndsAt, createdAt) VALUES ('test-salon-123', 'Test Salon', 'test-salon', '+47 12345678', 'test@salon.no', 'Test Address 1', 'Oslo', '0123', 'Norway', 1, DATE_ADD(NOW(), INTERVAL 30 DAY), NOW());",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'city' in 'field list'"
+  ]
+}

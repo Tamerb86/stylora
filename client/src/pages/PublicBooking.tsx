@@ -9,14 +9,52 @@ import { Check, ChevronLeft, ChevronRight, Clock, MapPin, Phone, Mail, User, Sci
 import { format, addDays } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
-
-// For demo purposes, using a hardcoded tenant ID
-// In production, this would come from subdomain or URL parameter
-const TENANT_ID = "goeasychargeco@gmail.com";
+import { useMemo } from "react";
 
 type BookingStep = "service" | "employee" | "datetime" | "info" | "payment" | "confirmation";
 
 export default function PublicBooking() {
+  // Extract subdomain from URL or use tenant ID from URL parameter
+  // Priority: 1. URL parameter (?tenantId=xxx), 2. Subdomain extraction, 3. Fallback
+  const subdomain = useMemo(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tenantIdParam = urlParams.get('tenantId');
+    
+    // If tenantId is provided in URL, use it directly
+    if (tenantIdParam) {
+      console.log('[Booking] Using tenantId from URL parameter:', tenantIdParam);
+      return tenantIdParam;
+    }
+    
+    const hostname = window.location.hostname;
+    console.log('[Booking] Hostname:', hostname);
+    
+    // Check if it's a development/Manus URL (contains manusvm or localhost)
+    if (hostname.includes('manusvm') || hostname.includes('localhost') || hostname.includes('railway')) {
+      // In development, require tenantId parameter
+      console.warn('[Booking] Development environment detected. Please provide ?tenantId=xxx parameter.');
+      return null; // Return null to show error message
+    }
+    
+    // Production: Extract subdomain from hostname (e.g., demo-barbertime.barbertime.no)
+    const parts = hostname.split('.');
+    if (parts.length >= 3) {
+      const extractedSubdomain = parts[0];
+      console.log('[Booking] Extracted subdomain:', extractedSubdomain);
+      return extractedSubdomain;
+    }
+    
+    console.warn('[Booking] Could not extract subdomain from hostname');
+    return null;
+  }, []);
+
+  // Get tenant ID from subdomain
+  const { data: tenantData, isLoading: tenantLoading } = trpc.publicBooking.getTenantBySubdomain.useQuery(
+    { subdomain },
+    { enabled: !!subdomain }
+  );
+
+  const TENANT_ID = tenantData?.id || '';
   
   const [currentStep, setCurrentStep] = useState<BookingStep>("service");
   const [selectedService, setSelectedService] = useState<number | null>(null);
@@ -32,11 +70,26 @@ export default function PublicBooking() {
   const [bookingId, setBookingId] = useState<number | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"stripe" | "vipps" | null>(null);
 
-  const { data: branding } = trpc.publicBooking.getBranding.useQuery({ tenantId: TENANT_ID });
-  const { data: salonInfo } = trpc.publicBooking.getSalonInfo.useQuery({ tenantId: TENANT_ID });
-  const { data: services = [], isLoading: servicesLoading } = trpc.publicBooking.getAvailableServices.useQuery({ tenantId: TENANT_ID });
-  const { data: employees = [], isLoading: employeesLoading } = trpc.publicBooking.getAvailableEmployees.useQuery({ tenantId: TENANT_ID });
-  const { data: paymentSettings } = (trpc as any).paymentSettings.getPublic.useQuery({ tenantId: TENANT_ID });
+  const { data: branding } = trpc.publicBooking.getBranding.useQuery(
+    { tenantId: TENANT_ID },
+    { enabled: !!TENANT_ID }
+  );
+  const { data: salonInfo } = trpc.publicBooking.getSalonInfo.useQuery(
+    { tenantId: TENANT_ID },
+    { enabled: !!TENANT_ID }
+  );
+  const { data: services = [], isLoading: servicesLoading } = trpc.publicBooking.getAvailableServices.useQuery(
+    { tenantId: TENANT_ID },
+    { enabled: !!TENANT_ID }
+  );
+  const { data: employees = [], isLoading: employeesLoading } = trpc.publicBooking.getAvailableEmployees.useQuery(
+    { tenantId: TENANT_ID },
+    { enabled: !!TENANT_ID }
+  );
+  const { data: paymentSettings } = (trpc as any).paymentSettings.getPublic.useQuery(
+    { tenantId: TENANT_ID },
+    { enabled: !!TENANT_ID }
+  );
   
   const { data: timeSlots = [], isLoading: timeSlotsLoading } = trpc.publicBooking.getAvailableTimeSlots.useQuery(
     {
@@ -46,7 +99,7 @@ export default function PublicBooking() {
       employeeId: selectedEmployee || undefined,
     },
     {
-      enabled: !!selectedDate && !!selectedService,
+      enabled: !!selectedDate && !!selectedService && !!TENANT_ID,
     }
   );
 
@@ -187,6 +240,53 @@ export default function PublicBooking() {
     payment: "Betaling",
     confirmation: "Bekreftelse",
   };
+
+  // Show loading state while fetching tenant
+  if (tenantLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/40 to-purple-50/30 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">Laster bookingside...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error if tenant not found
+  if (!tenantData && !tenantLoading) {
+    const isDevEnvironment = window.location.hostname.includes('manusvm') || 
+                            window.location.hostname.includes('localhost') || 
+                            window.location.hostname.includes('railway');
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/40 to-purple-50/30 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-8">
+          <div className="text-6xl mb-4">😕</div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Salong ikke funnet</h1>
+          
+          {isDevEnvironment && !subdomain ? (
+            <>
+              <p className="text-gray-600 mb-4">
+                Dette er utviklingsmiljøet. Vennligst legg til <code className="bg-gray-200 px-2 py-1 rounded">?tenantId=xxx</code> i URL-en.
+              </p>
+              <p className="text-sm text-gray-500 mb-2">Eksempel:</p>
+              <code className="text-xs bg-gray-100 p-2 rounded block mb-4">
+                {window.location.origin}/book?tenantId=demo-tenant-barbertime
+              </code>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-600 mb-4">
+                Vi kunne ikke finne salongen du leter etter. Vennligst sjekk URL-en eller kontakt salongen direkte.
+              </p>
+              <p className="text-sm text-gray-500">Subdomain: {subdomain || 'ikke funnet'}</p>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

@@ -2882,6 +2882,7 @@ export const appRouter = router({
           role: input.role,
           commissionType: input.commissionType || "percentage",
           commissionRate: input.commissionRate || null,
+          isActive: true, // Set employee as active by default
         });
 
         return { success: true };
@@ -4478,7 +4479,7 @@ export const appRouter = router({
   // PUBLIC BOOKING
   // ============================================================================
   publicBooking: router({
-    // Get tenant ID from subdomain
+    // Get tenant ID from subdomain or direct ID
     getTenantBySubdomain: publicProcedure
       .input(z.object({ subdomain: z.string() }))
       .query(async ({ input }) => {
@@ -4486,8 +4487,9 @@ export const appRouter = router({
         if (!dbInstance) return null;
 
         const { tenants } = await import("../drizzle/schema");
-        const { eq } = await import("drizzle-orm");
+        const { eq, or } = await import("drizzle-orm");
 
+        // Search by subdomain OR by ID (to support both ?tenantId=xxx and subdomain.domain.com)
         const [tenant] = await dbInstance
           .select({
             id: tenants.id,
@@ -4495,7 +4497,13 @@ export const appRouter = router({
             name: tenants.name,
           })
           .from(tenants)
-          .where(eq(tenants.subdomain, input.subdomain));
+          .where(
+            or(
+              eq(tenants.subdomain, input.subdomain),
+              eq(tenants.id, input.subdomain)
+            )
+          )
+          .limit(1);
 
         return tenant || null;
       }),

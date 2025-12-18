@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO tenants (id, name, subdomain, phone, email, address, emailVerified, trialEndsAt, createdAt) VALUES ('test-salon-123', 'Test Salon', 'test-salon', '+47 12345678', 'test@salon.no', 'Test Address 1, Oslo', 1, DATE_ADD(NOW(), INTERVAL 30 DAY), NOW());",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute INSERT INTO tenants (id, name, subdomain, phone, email, address, emailVerified, trialEndsAt, createdAt) VALUES ('test-salon-123', 'Test Salon', 'test-salon', '+47 12345678', 'test@salon.no', 'Test Address 1, Oslo', 1, DATE_ADD(NOW(), INTERVAL 30 DAY), NOW());",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 64
+}

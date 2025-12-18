@@ -4738,3 +4738,16 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add total spent and visit count
 - [x] Test customer history functionality
 - [ ] Save checkpoint and push to GitHub
+
+## Phase 37: Fix Booking System Issues
+- [x] Investigate subdomain-tenant mapping in booking page
+- [x] Check how PublicBooking component gets tenant from subdomain
+- [x] Fix tenant lookup to use correct subdomain (not platform-admin)
+- [x] Investigate employee creation issue (employees not showing after creation)
+- [x] Fix employee list refresh after creation (added isActive: true on creation)
+- [x] Update PublicBooking to extract subdomain/tenantId from URL dynamically
+- [x] Add loading and error states with helpful messages
+- [x] Update getTenantBySubdomain API to support both subdomain and ID lookup
+- [x] Test booking page with test tenant - working correctly
+- [ ] Save checkpoint and push to GitHub
+- [ ] Test on Railway production after deployment
