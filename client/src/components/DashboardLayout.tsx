@@ -64,7 +64,6 @@ const menuItems = [
   { icon: Clock, label: "Timeregistrering", path: "/timeclock", submenu: [
     { icon: Clock, label: "Innstemplingsterminal", path: "/timeclock" },
     { icon: UserCog, label: "Administrer vakter", path: "/timeclock-admin", adminOnly: true },
-    { icon: BarChart3, label: "Fremmøterapport", path: "/attendance" },
   ] },
   { icon: Bell, label: "Varsler", path: "/notifications", advancedOnly: true },
   { icon: Gift, label: "Lojalitet", path: "/loyalty", advancedOnly: true },
@@ -96,6 +95,7 @@ const paymentsMenuItems = [
 
 const reportsMenuItems = [
   { icon: BarChart3, label: "Rapporter", path: "/reports", advancedOnly: true },
+  { icon: BarChart3, label: "Fremmøterapport", path: "/attendance", advancedOnly: true },
   { icon: DollarSign, label: "Økonomi", path: "/financial", advancedOnly: true },
   { icon: TrendingUp, label: "Analyse", path: "/analytics", advancedOnly: true },
   { icon: TrendingUp, label: "Avanserte rapporter", path: "/advanced-reports", advancedOnly: true },

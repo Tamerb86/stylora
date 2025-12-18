@@ -1,0 +1,15 @@
+{
+  "query": "SELECT id, name, subdomain FROM tenants LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute SELECT id, name, subdomain FROM tenants LIMIT 1;",
+  "rows": [
+    {
+      "id": "demo-tenant-001",
+      "name": "Stylora Demo Salong",
+      "subdomain": "demo"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tsubdomain\ndemo-tenant-001\tStylora Demo Salong\tdemo\n",
+  "stderr": "",
+  "execution_time_ms": 297
+}

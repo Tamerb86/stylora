@@ -4696,3 +4696,27 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Fix attendance report visibility in sidebar menu
 - [ ] Ensure Fremmøterapport appears in Rapporter section
 - [ ] Test booking flow end-to-end
+
+## Phase 32: Fix Reported Issues
+- [ ] Make Fremmøterapport more visible (move out of submenu or expand by default)
+- [ ] Add seed data script for demo services
+- [ ] Ensure booking page shows services
+- [ ] Test all features on dev server
+- [ ] Deploy to Railway and verify all works
+
+## Phase 33: Comprehensive Review and Fixes
+- [x] Review all issues discussed today
+- [x] Fix Fremmøterapport visibility in sidebar (moved to Rapporter section)
+- [ ] Add demo services to database for testing booking (user needs to add manually)
+- [ ] Add demo employee with working hours for testing booking (user needs to add manually)
+- [ ] Test booking page with services and employees
+- [x] Verify payment settings work correctly
+- [x] Verify iZettle integration works
+- [x] Test all navigation links
+- [x] Ensure all features from yesterday are present
+- [ ] Push all changes to GitHub
+- [ ] Trigger Railway redeploy
+
+## Phase 34: Time Clock Widget in Right Sidebar (CANCELLED - broke the site)
+- [x] Reverted changes to fix broken site
+- [ ] Need to investigate why it broke before retrying
