@@ -4701,3 +4701,10 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add "Koble til iZettle" button with OAuth flow
 - [x] Integrate iZettle in POS payment flow
 - [x] Test with multiple tenant accounts
+
+## iZettle Customer Documentation
+- [x] Create Norwegian customer guide for iZettle setup
+- [x] Create step-by-step wizard documentation
+- [ ] Add screenshots and visual guides
+- [x] Implement onboarding wizard in app
+- [ ] Add help tooltips in Payment Providers page

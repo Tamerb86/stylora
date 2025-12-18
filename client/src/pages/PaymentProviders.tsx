@@ -19,7 +19,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, CreditCard, Banknote, Smartphone, Settings, Trash2, Edit, CheckCircle2, XCircle } from "lucide-react";
+import { Plus, CreditCard, Banknote, Smartphone, Settings, Trash2, Edit, CheckCircle2, XCircle, HelpCircle } from "lucide-react";
+import { IZettleSetupWizard } from "@/components/IZettleSetupWizard";
 
 type ProviderType = "stripe_terminal" | "vipps" | "nets" | "manual_card" | "cash" | "generic";
 
@@ -369,6 +370,7 @@ export default function PaymentProviders() {
 
   // iZettle integration
   const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
+  const [showIZettleWizard, setShowIZettleWizard] = useState(false);
   const { data: iZettleStatus, refetch: refetchIZettle } = trpc.izettle.getStatus.useQuery();
   const { data: authUrlData } = trpc.izettle.getAuthUrl.useQuery();
   const disconnectIZettle = trpc.izettle.disconnect.useMutation({
@@ -488,13 +490,23 @@ export default function PaymentProviders() {
                 </ul>
               </div>
 
-              <Button
-                onClick={handleConnectIZettle}
-                className="w-full"
-                size="lg"
-              >
-                Koble til iZettle
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleConnectIZettle}
+                  className="flex-1"
+                  size="lg"
+                >
+                  Koble til iZettle
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setShowIZettleWizard(true)}
+                >
+                  <HelpCircle className="h-4 w-4 mr-2" />
+                  Hjelp
+                </Button>
+              </div>
 
               <p className="text-xs text-muted-foreground text-center">
                 Du vil bli sendt til iZettle for å autorisere tilkoblingen.
@@ -585,6 +597,13 @@ export default function PaymentProviders() {
         title="Rediger terminal"
       />
     </div>
+
+      {/* iZettle Setup Wizard */}
+      <IZettleSetupWizard
+        open={showIZettleWizard}
+        onClose={() => setShowIZettleWizard(false)}
+        onStartConnection={handleConnectIZettle}
+      />
 
       {/* iZettle Disconnect Confirmation Dialog */}
       <AlertDialog open={disconnectDialogOpen} onOpenChange={setDisconnectDialogOpen}>
