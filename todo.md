@@ -4708,3 +4708,18 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Add screenshots and visual guides
 - [x] Implement onboarding wizard in app
 - [ ] Add help tooltips in Payment Providers page
+
+## iZettle OAuth Redirect URI Fix
+- [ ] Diagnose redirect URI mismatch issue
+- [ ] Verify current redirect URI configuration in code
+- [ ] Check iZettle developer portal settings
+- [ ] Update redirect URI to match requirements
+- [ ] Test OAuth flow end-to-end
+- [ ] Document correct configuration
+
+## Customer Booking Documentation
+- [ ] Review current public booking page functionality
+- [x] Create customer booking guide (Arabic/Norwegian)
+- [x] Document booking flow step-by-step
+- [ ] Create visual guide with screenshots
+- [ ] Add booking instructions for salon owners to share with customers
