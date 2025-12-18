@@ -24,6 +24,8 @@ export default function PaymentHistory() {
         return <CreditCard className="h-4 w-4" />;
       case "vipps":
         return <Smartphone className="h-4 w-4" />;
+      case "izettle":
+        return <CreditCard className="h-4 w-4 text-blue-600" />;
       default:
         return <CreditCard className="h-4 w-4" />;
     }

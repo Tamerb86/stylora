@@ -4673,3 +4673,11 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add to navigation menu
 - [ ] Test OAuth flow and payment integration
 - [ ] Create iZettle configuration guide
+
+## Phase 29: iZettle UI/UX Improvements
+- [x] Fix iZettle connection button functionality
+- [x] Improve UI/UX design with better layout and styling
+- [x] Add loading states and error handling
+- [x] Create iZettle configuration guide (similar to Vipps)
+- [x] Add iZettle payment history to Payment History page
+- [ ] Test complete iZettle integration flow
