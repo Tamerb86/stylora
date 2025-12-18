@@ -4835,5 +4835,42 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Create owner user (Khaled) for the salon
 - [x] Set salon details (name, address, org number)
 - [x] Update iZettle callback error handling with better logging
-- [ ] Test iZettle integration with K S Frisør on Railway
-- [ ] Save checkpoint and deploy
+- [x] Save checkpoint and deploy to GitHub
+- [ ] Test iZettle integration with K S Frisør on Railway after deployment
+
+## Phase 46: Fix Database Connection Error in iZettle Callback
+- [ ] User tested iZettle OAuth - got "Database connection error"
+- [ ] Check Railway database connection status
+- [ ] Verify DATABASE_URL environment variable in Railway
+- [ ] Add more detailed logging to identify exact failure point
+- [ ] Check if database connection pool is exhausted
+- [ ] Test database query directly on Railway
+- [ ] Fix connection issue and redeploy
+- [ ] Test complete iZettle OAuth flow again
+
+## Phase 47: Fix Database Connection and Organize Pages
+- [x] User confirmed: Everything on Railway (MySQL), no Supabase
+- [x] Check database configuration in server/db - ALREADY USES MYSQL!
+- [x] server/db.ts uses drizzle-orm/mysql2 and DATABASE_URL
+- [x] Check payment-providers pages - Only ONE route: /payment-providers → PaymentProviders.tsx
+- [x] No duplicate payment-providers pages found
+- [x] PaymentHistory.tsx and POSPayment.tsx are different pages (not duplicates)
+- [ ] Issue: DATABASE_URL connection failing in Railway production
+- [ ] Solution: Verify DATABASE_URL format in Railway
+- [ ] Test iZettle OAuth after fixing connection
+
+## Phase 48: Investigate Payment Pages and Fix Railway MySQL Connection
+- [x] DATABASE_URL confirmed: mysql://root:***@mysql.railway.internal:3306/railway
+- [x] Issue found: App uses DATABASE_URL but Railway provides MYSQL_URL
+- [x] Railway MySQL is in same project (App-Stylora)
+- [x] Railway MySQL service is running (Online)
+- [x] Review /payment-providers page → PaymentProviders.tsx (Payment terminals management)
+- [x] Review /izettle-settings page → IZettleSettings.tsx (iZettle OAuth settings)
+- [x] Review /reader-management page → ReaderManagement.tsx (Stripe Terminal readers)
+- [x] All pages serve different purposes - NO DUPLICATES ✅
+- [x] Solution: Add Variable Reference in barbertime service: DATABASE_URL = ${{MySQL.MYSQL_URL}}
+- [ ] User is adding the variable now in Railway dashboard
+- [ ] Wait for Railway to redeploy automatically
+- [ ] Deploy and test database connection from production
+- [ ] Fix iZettle OAuth callback database error
+- [ ] Test complete iZettle OAuth flow end-to-end
