@@ -50,6 +50,7 @@ import FikenSettings from "./pages/FikenSettings";
 import AccountingIntegrations from "./pages/AccountingIntegrations";
 import IZettleSettings from "@/pages/IZettleSettings";
 import IZettleCallback from "@/pages/IZettleCallback";
+import IZettle from "@/pages/IZettle";
 import AccountantExport from "./pages/AccountantExport";
 import SaasAdminLogin from "./pages/SaasAdmin/SaasAdminLogin";
 import SaasAdminOverview from "./pages/SaasAdmin/SaasAdminOverview";
@@ -114,6 +115,7 @@ function Router() {
       <Route path="/fiken" component={FikenSettings} />
       <Route path="/accounting" component={AccountingIntegrations} />
       <Route path="/accountant-export" component={AccountantExport} />
+      <Route path="/izettle" component={IZettle} />
       <Route path="/izettle-settings" component={IZettleSettings} />
       <Route path="/izettle/callback" component={IZettleCallback} />
       <Route path="/pos-payment" component={POSPayment} />
