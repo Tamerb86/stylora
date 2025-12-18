@@ -180,11 +180,11 @@ async function startServer() {
         }
       }
       
-      // Redirect to settings page with success message
-      res.redirect("/payment-providers?izettle=connected");
+      // Redirect to confirmation page with success message
+      res.redirect("/izettle/callback?izettle=connected");
     } catch (error: any) {
       console.error("iZettle callback error:", error);
-      res.redirect("/payment-providers?izettle=error&message=" + encodeURIComponent(error.message));
+      res.redirect("/izettle/callback?izettle=error&message=" + encodeURIComponent(error.message));
     }
   });
   

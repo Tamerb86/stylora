@@ -4780,4 +4780,18 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Save tokens to database (paymentProviders table)
 - [x] Redirect user to payment-providers page after success
 - [x] Restart server to apply changes
+- [x] Save checkpoint and deploy to Railway
+
+## Phase 40: Improve iZettle Integration UX
+- [x] Wait for Railway deployment (2-3 minutes)
+- [x] Create connection confirmation page component (IZettleCallback.tsx)
+- [x] Add success/error states to confirmation page
+- [x] Add route for /izettle/callback in App.tsx
+- [x] Update callback redirect to use confirmation page
+- [x] Add better error messages for token exchange failures
+- [x] Add better error messages for token refresh failures
+- [x] Add user-friendly Norwegian error messages
+- [x] Add retry mechanism UI in confirmation page
+- [x] Fix TypeScript error in App.tsx (restarted server)
+- [x] Test complete iZettle flow with confirmation page
 - [ ] Save checkpoint and deploy to Railway

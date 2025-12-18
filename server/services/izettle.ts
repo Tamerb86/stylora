@@ -52,8 +52,26 @@ export async function exchangeCodeForToken(code: string): Promise<{
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`iZettle token exchange failed: ${error}`);
+    const errorText = await response.text();
+    let errorMessage = "Token exchange failed";
+    
+    try {
+      const errorData = JSON.parse(errorText);
+      errorMessage = errorData.error_description || errorData.error || errorMessage;
+    } catch {
+      errorMessage = errorText || errorMessage;
+    }
+    
+    // Provide user-friendly error messages
+    if (response.status === 400) {
+      throw new Error(`Ugyldig autorisasjonskode. Vennligst prøv å koble til på nytt.`);
+    } else if (response.status === 401) {
+      throw new Error(`Autentisering mislyktes. Sjekk dine iZettle-legitimasjoner.`);
+    } else if (response.status === 403) {
+      throw new Error(`Ingen tilgang. Kontroller at du har riktige tillatelser i iZettle.`);
+    } else {
+      throw new Error(`iZettle-tilkobling mislyktes: ${errorMessage}`);
+    }
   }
 
   return response.json();
@@ -81,8 +99,22 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
   });
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`iZettle token refresh failed: ${error}`);
+    const errorText = await response.text();
+    let errorMessage = "Token refresh failed";
+    
+    try {
+      const errorData = JSON.parse(errorText);
+      errorMessage = errorData.error_description || errorData.error || errorMessage;
+    } catch {
+      errorMessage = errorText || errorMessage;
+    }
+    
+    // Provide user-friendly error messages
+    if (response.status === 400 || response.status === 401) {
+      throw new Error(`Din iZettle-økt har utløpt. Vennligst koble til på nytt.`);
+    } else {
+      throw new Error(`Kunne ikke fornye iZettle-tilkobling: ${errorMessage}`);
+    }
   }
 
   return response.json();
