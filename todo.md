@@ -4869,8 +4869,21 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Review /reader-management page → ReaderManagement.tsx (Stripe Terminal readers)
 - [x] All pages serve different purposes - NO DUPLICATES ✅
 - [x] Solution: Add Variable Reference in barbertime service: DATABASE_URL = ${{MySQL.MYSQL_URL}}
-- [ ] User is adding the variable now in Railway dashboard
+- [x] Documentation pushed to GitHub (RAILWAY_DATABASE_FIX.md, PAYMENT_PAGES_STRUCTURE.md)
+- [ ] User adds DATABASE_URL variable in Railway dashboard
 - [ ] Wait for Railway to redeploy automatically
 - [ ] Deploy and test database connection from production
 - [ ] Fix iZettle OAuth callback database error
 - [ ] Test complete iZettle OAuth flow end-to-end
+
+## Phase 49: Comprehensive iZettle OAuth Fix (Deep Analysis)
+- [x] User still getting "Database connection error" after adding DATABASE_URL
+- [x] Analyzed complete OAuth callback flow in server/_core/index.ts
+- [x] Fixed database connection - now uses mysql2.createConnection() properly
+- [x] Added connection.ping() to test connection before use
+- [x] Verified paymentProviders table exists (test passed)
+- [x] Implemented proper MySQL connection with mysql2/promise
+- [x] Added comprehensive error logging with stack traces
+- [x] Created database-connection.test.ts with 5 tests (all passing)
+- [x] Added null check for database before OAuth operations
+- [x] Implemented complete solution with proper error handling

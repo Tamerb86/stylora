@@ -1,5 +1,6 @@
 import { eq, and, isNull, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import mysql from 'mysql2/promise';
 import { 
   InsertUser, 
   users, 
@@ -11,18 +12,41 @@ import {
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
+let _connection: mysql.Connection | null = null;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
-    } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
+      console.log("[Database] Connecting to:", process.env.DATABASE_URL?.replace(/:\/\/.*@/, "://***@"));
+      
+      // Create MySQL connection
+      _connection = await mysql.createConnection(process.env.DATABASE_URL);
+      
+      // Test connection
+      await _connection.ping();
+      console.log("[Database] Connection successful!");
+      
+      // Create Drizzle instance with the connection
+      _db = drizzle(_connection);
+    } catch (error: any) {
+      console.error("[Database] Failed to connect:", error.message);
+      console.error("[Database] Stack:", error.stack);
       _db = null;
+      _connection = null;
     }
   }
   return _db;
+}
+
+// Graceful shutdown
+export async function closeDb() {
+  if (_connection) {
+    await _connection.end();
+    _connection = null;
+    _db = null;
+    console.log("[Database] Connection closed");
+  }
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {

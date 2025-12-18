@@ -157,7 +157,12 @@ async function startServer() {
       const dbInstance = await getDb();
       console.log("[iZettle Callback] Database instance:", dbInstance ? "connected" : "null");
       
-      if (dbInstance) {
+      if (!dbInstance) {
+        console.error("[iZettle Callback] Database not available!");
+        return res.redirect("/izettle/callback?izettle=error&message=" + encodeURIComponent("Database connection failed. Please contact support."));
+      }
+      
+      try {
         const { paymentProviders } = await import("../../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
         
@@ -213,8 +218,13 @@ async function startServer() {
           }
         } catch (dbError: any) {
           console.error("[iZettle Callback] Database save failed:", dbError.message);
+          console.error("[iZettle Callback] Database error stack:", dbError.stack);
           return res.redirect("/izettle/callback?izettle=error&message=" + encodeURIComponent("Failed to save connection. Please try again."));
         }
+      } catch (dbError: any) {
+        console.error("[iZettle Callback] Database operation failed:", dbError.message);
+        console.error("[iZettle Callback] Error stack:", dbError.stack);
+        return res.redirect("/izettle/callback?izettle=error&message=" + encodeURIComponent("Database error. Please try again."));
       }
       
       // Redirect to confirmation page with success message
