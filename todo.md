@@ -4769,4 +4769,15 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Test complete reschedule flow
 - [x] Test cancellation policy enforcement
 - [ ] Add management link to email/SMS notifications (future enhancement)
+- [x] Save checkpoint and deploy to Railway
+
+## Phase 39: Fix iZettle Payment Callback 404 Error
+- [x] Investigate iZettle callback endpoint (/api/izettle/callback)
+- [x] Check if endpoint exists in server routes - NOT FOUND
+- [x] Verify iZettle OAuth configuration
+- [x] Create callback endpoint handler in server/_core/index.ts
+- [x] Handle OAuth token exchange after callback
+- [x] Save tokens to database (paymentProviders table)
+- [x] Redirect user to payment-providers page after success
+- [x] Restart server to apply changes
 - [ ] Save checkpoint and deploy to Railway

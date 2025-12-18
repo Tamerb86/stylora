@@ -115,6 +115,79 @@ async function startServer() {
   // Vipps callback endpoint (must be registered before JSON parser)
   app.post("/api/vipps/callback", express.json(), handleVippsCallback);
   
+  // iZettle OAuth callback endpoint
+  app.get("/api/izettle/callback", async (req, res) => {
+    try {
+      const code = req.query.code as string;
+      const state = req.query.state as string;
+      
+      if (!code || !state) {
+        return res.status(400).send("Missing code or state parameter");
+      }
+      
+      // Decode state to get tenantId
+      const stateData = JSON.parse(Buffer.from(state, "base64").toString());
+      const tenantId = stateData.tenantId;
+      
+      // Exchange code for tokens
+      const { exchangeCodeForToken, encryptToken } = await import("../services/izettle");
+      const tokens = await exchangeCodeForToken(code);
+      
+      // Save tokens to database
+      const { getDb } = await import("../db");
+      const dbInstance = await getDb();
+      
+      if (dbInstance) {
+        const { paymentProviders } = await import("../../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        
+        // Check if provider already exists
+        const [existing] = await dbInstance
+          .select()
+          .from(paymentProviders)
+          .where(
+            and(
+              eq(paymentProviders.tenantId, tenantId),
+              eq(paymentProviders.providerType, "izettle")
+            )
+          )
+          .limit(1);
+        
+        const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);
+        
+        if (existing) {
+          // Update existing
+          await dbInstance
+            .update(paymentProviders)
+            .set({
+              accessToken: encryptToken(tokens.access_token),
+              refreshToken: encryptToken(tokens.refresh_token),
+              tokenExpiresAt: expiresAt,
+              isActive: true,
+              updatedAt: new Date(),
+            })
+            .where(eq(paymentProviders.id, existing.id));
+        } else {
+          // Insert new
+          await dbInstance.insert(paymentProviders).values({
+            tenantId,
+            providerType: "izettle",
+            accessToken: encryptToken(tokens.access_token),
+            refreshToken: encryptToken(tokens.refresh_token),
+            tokenExpiresAt: expiresAt,
+            isActive: true,
+          });
+        }
+      }
+      
+      // Redirect to settings page with success message
+      res.redirect("/payment-providers?izettle=connected");
+    } catch (error: any) {
+      console.error("iZettle callback error:", error);
+      res.redirect("/payment-providers?izettle=error&message=" + encodeURIComponent(error.message));
+    }
+  });
+  
   // Storage upload endpoint
   app.post("/api/storage/upload", express.raw({ type: "*/*", limit: "10mb" }), async (req, res) => {
     try {
