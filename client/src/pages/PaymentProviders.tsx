@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, CreditCard, Banknote, Smartphone, Settings, Trash2, Edit, CheckCircle2, XCircle } from "lucide-react";
+import { Plus, CreditCard, Banknote, Smartphone, Settings, Trash2, Edit, CheckCircle2, XCircle, Loader2, ExternalLink, AlertCircle, RefreshCw } from "lucide-react";
 
 type ProviderType = "stripe_terminal" | "vipps" | "nets" | "manual_card" | "cash" | "generic";
 
@@ -46,6 +46,20 @@ export default function PaymentProviders() {
   const updateProvider = trpc.paymentTerminal.updateProvider.useMutation();
   const deleteProvider = trpc.paymentTerminal.deleteProvider.useMutation();
   const testConnection = trpc.paymentTerminal.testConnection.useMutation();
+
+  // iZettle integration
+  const [isConnectingIZettle, setIsConnectingIZettle] = useState(false);
+  const { data: iZettleStatus, refetch: refetchIZettle } = (trpc as any).izettle.getStatus.useQuery();
+  const getIZettleAuthUrl = (trpc as any).izettle.getAuthUrl.useQuery(undefined, { enabled: false });
+  const disconnectIZettle = (trpc as any).izettle.disconnect.useMutation({
+    onSuccess: () => {
+      toast.success("iZettle frakoblet");
+      refetchIZettle();
+    },
+    onError: (error: any) => {
+      toast.error("Feil ved frakobling", { description: error.message });
+    },
+  });
 
   const handleAddProvider = async () => {
     if (!providerName.trim()) {
@@ -375,6 +389,116 @@ export default function PaymentProviders() {
           Legg til terminal
         </Button>
       </div>
+
+      {/* iZettle Integration Card */}
+      <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                <CreditCard className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-xl">iZettle-integrasjon</CardTitle>
+                <CardDescription>
+                  Koble til din iZettle-konto for å akseptere betalinger
+                </CardDescription>
+              </div>
+            </div>
+            {iZettleStatus?.connected && (
+              <Badge variant="default" className="bg-green-500 text-white px-4 py-2">
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                Tilkoblet
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {iZettleStatus?.connected ? (
+            <>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
+                <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-semibold text-green-900">iZettle er tilkoblet og klar til bruk</p>
+                  <p className="text-sm text-green-700 mt-1">
+                    Din iZettle-konto er koblet til og du kan nå akseptere betalinger via iZettle-terminaler.
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    if (confirm("Er du sikker på at du vil koble fra iZettle?")) {
+                      disconnectIZettle.mutate();
+                    }
+                  }}
+                  disabled={disconnectIZettle.isPending}
+                >
+                  {disconnectIZettle.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Kobler fra...
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Koble fra
+                    </>
+                  )}
+                </Button>
+                <Button variant="outline" onClick={() => refetchIZettle()}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Oppdater status
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-semibold text-amber-900">iZettle er ikke tilkoblet</p>
+                  <p className="text-sm text-amber-700 mt-1">
+                    Koble til din iZettle-konto for å akseptere betalinger via iZettle-terminaler.
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={async () => {
+                  try {
+                    setIsConnectingIZettle(true);
+                    const result = await getIZettleAuthUrl.refetch();
+                    if (result.data?.url) {
+                      window.location.href = result.data.url;
+                    } else {
+                      toast.error("Kunne ikke hente autorisasjons-URL");
+                      setIsConnectingIZettle(false);
+                    }
+                  } catch (error: any) {
+                    toast.error("Feil ved tilkobling", { description: error.message });
+                    setIsConnectingIZettle(false);
+                  }
+                }}
+                disabled={isConnectingIZettle}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {isConnectingIZettle ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Kobler til...
+                  </>
+                ) : (
+                  <>
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Koble til iZettle
+                  </>
+                )}
+              </Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4">
         {!providers || providers.length === 0 ? (

@@ -4887,3 +4887,15 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Created database-connection.test.ts with 5 tests (all passing)
 - [x] Added null check for database before OAuth operations
 - [x] Implemented complete solution with proper error handling
+
+## Phase 50: Move iZettle to Payment Terminals Page
+- [x] User wants iZettle settings moved to Betalingsterminaler page
+- [x] Reviewed current PaymentProviders.tsx (Betalingsterminaler)
+- [x] Reviewed current IZettleSettings.tsx
+- [x] Integrated iZettle OAuth connection into PaymentProviders page
+- [x] Added iZettle card at top of payment terminals page
+- [x] iZettle card shows connection status and connect/disconnect buttons
+- [ ] Remove separate /izettle-settings route from App.tsx
+- [ ] Update navigation to remove iZettle menu item
+- [ ] Test iZettle connection from Payment Terminals page
+- [ ] Verify all payment providers show in one unified page
