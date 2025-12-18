@@ -10,14 +10,30 @@ import { format, addDays } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
 
-// For demo purposes, using a hardcoded tenant ID
-// In production, this would come from subdomain or URL parameter
-const TENANT_ID = "goeasychargeco@gmail.com";
+// Get tenant ID from subdomain or URL parameter
+function getTenantId(): string {
+  // Try to get from URL parameter first
+  const urlParams = new URLSearchParams(window.location.search);
+  const tenantParam = urlParams.get('tenant');
+  if (tenantParam) return tenantParam;
+
+  // Try to get from subdomain
+  const hostname = window.location.hostname;
+  // Extract subdomain from hostname (e.g., "platform-admin" from "platform-admin.barbertime.no")
+  const parts = hostname.split('.');
+  if (parts.length >= 3) {
+    // subdomain.barbertime.no or subdomain.railway.app
+    return parts[0];
+  }
+
+  // Fallback for development/localhost
+  return "goeasychargeco@gmail.com";
+}
 
 type BookingStep = "service" | "employee" | "datetime" | "info" | "payment" | "confirmation";
 
 export default function PublicBooking() {
-  
+  const [tenantId] = useState(() => getTenantId());
   const [currentStep, setCurrentStep] = useState<BookingStep>("service");
   const [selectedService, setSelectedService] = useState<number | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<number | null>(null);
@@ -32,14 +48,14 @@ export default function PublicBooking() {
   const [bookingId, setBookingId] = useState<number | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"stripe" | "vipps" | null>(null);
 
-  const { data: branding } = trpc.publicBooking.getBranding.useQuery({ tenantId: TENANT_ID });
-  const { data: salonInfo } = trpc.publicBooking.getSalonInfo.useQuery({ tenantId: TENANT_ID });
-  const { data: services = [], isLoading: servicesLoading } = trpc.publicBooking.getAvailableServices.useQuery({ tenantId: TENANT_ID });
-  const { data: employees = [], isLoading: employeesLoading } = trpc.publicBooking.getAvailableEmployees.useQuery({ tenantId: TENANT_ID });
+  const { data: branding } = trpc.publicBooking.getBranding.useQuery({ tenantId });
+  const { data: salonInfo } = trpc.publicBooking.getSalonInfo.useQuery({ tenantId });
+  const { data: services = [], isLoading: servicesLoading } = trpc.publicBooking.getAvailableServices.useQuery({ tenantId });
+  const { data: employees = [], isLoading: employeesLoading } = trpc.publicBooking.getAvailableEmployees.useQuery({ tenantId });
   
   const { data: timeSlots = [], isLoading: timeSlotsLoading } = trpc.publicBooking.getAvailableTimeSlots.useQuery(
     {
-      tenantId: TENANT_ID,
+      tenantId,
       date: selectedDate ? format(selectedDate, "yyyy-MM-dd") : "",
       serviceId: selectedService || 0,
       employeeId: selectedEmployee || undefined,
@@ -138,7 +154,7 @@ export default function PublicBooking() {
     }
 
     const bookingData = {
-      tenantId: TENANT_ID,
+      tenantId,
       serviceId: selectedService,
       employeeId: selectedEmployee,
       date: format(selectedDate, "yyyy-MM-dd"),
@@ -339,6 +355,32 @@ export default function PublicBooking() {
                         </Card>
                       ))}
                     </div>
+                  ) : services.length === 0 ? (
+                    <Card className="shadow-lg border-2 border-dashed border-gray-300">
+                      <CardContent className="p-12 text-center">
+                        <div className="flex flex-col items-center gap-4">
+                          <div className="h-20 w-20 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                            <Scissors className="h-10 w-10 text-gray-400" />
+                          </div>
+                          <div>
+                            <h3 className="text-2xl font-bold text-gray-700 mb-2">Ingen tjenester tilgjengelig</h3>
+                            <p className="text-gray-500 max-w-md mx-auto">
+                              Det er for øyeblikket ingen tjenester tilgjengelig for booking. Vennligst kontakt salongen direkte eller prøv igjen senere.
+                            </p>
+                          </div>
+                          {salonInfo?.phone && (
+                            <Button
+                              variant="outline"
+                              className="mt-4"
+                              onClick={() => window.location.href = `tel:${salonInfo.phone}`}
+                            >
+                              <Phone className="h-4 w-4 mr-2" />
+                              Ring {salonInfo.phone}
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {services.map((service) => (

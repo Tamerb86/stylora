@@ -4723,3 +4723,10 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Document booking flow step-by-step
 - [ ] Create visual guide with screenshots
 - [ ] Add booking instructions for salon owners to share with customers
+
+## Public Booking Page Issues
+- [x] Diagnose why services are not displaying
+- [x] Fix service loading issue
+- [x] Improve empty state messaging
+- [ ] Test complete booking flow
+- [ ] Add loading states and error handling
