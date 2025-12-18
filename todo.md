@@ -4681,3 +4681,18 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Create iZettle configuration guide (similar to Vipps)
 - [x] Add iZettle payment history to Payment History page
 - [ ] Test complete iZettle integration flow
+
+## Phase 30: Restore Missing Pages
+- [x] Pull latest changes from GitHub
+- [x] Restore TimeClock page (already exists at /timeclock)
+- [x] Restore TimeClockAdmin page (already exists at /timeclock-admin)
+- [x] Restore AttendanceReport page (already exists at /attendance)
+- [x] Verify all routes are working
+- [x] Test site performance
+
+## Phase 31: Fix Booking and Attendance Report
+- [ ] Investigate why booking page shows no services
+- [ ] Check if services exist in database
+- [ ] Fix attendance report visibility in sidebar menu
+- [ ] Ensure Fremmøterapport appears in Rapporter section
+- [ ] Test booking flow end-to-end
