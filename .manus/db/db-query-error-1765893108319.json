@@ -1,0 +1,8 @@
+{
+  "query": "INSERT INTO employeeSchedules (tenantId, employeeId, dayOfWeek, startTime, endTime) VALUES \n('demo-tenant-001', 2, 1, '09:00', '17:00'),\n('demo-tenant-001', 2, 2, '09:00', '17:00'),\n('demo-tenant-001', 2, 3, '09:00', '17:00'),\n('demo-tenant-001', 2, 4, '09:00', '17:00'),\n('demo-tenant-001', 2, 5, '09:00', '17:00');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute INSERT INTO employeeSchedules (tenantId, employeeId, dayOfWeek, startTime, endTime) VALUES \n('demo-tenant-001', 2, 1, '09:00', '17:00'),\n('demo-tenant-001', 2, 2, '09:00', '17:00'),\n('demo-tenant-001', 2, 3, '09:00', '17:00'),\n('demo-tenant-001', 2, 4, '09:00', '17:00'),\n('demo-tenant-001', 2, 5, '09:00', '17:00');",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'tenantId' in 'field list'"
+  ]
+}

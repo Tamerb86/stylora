@@ -14,6 +14,7 @@ import { DomainSettingsTab } from "@/components/DomainSettingsTab";
 import { BrandingSettingsTab } from "@/components/BrandingSettingsTab";
 import { PrintSettingsTab } from "@/components/settings/PrintSettingsTab";
 import { SMSSettingsTab } from "@/components/settings/SMSSettingsTab";
+import { PaymentSettingsTab } from "@/components/settings/PaymentSettingsTab";
 import { BusinessHoursTab } from "@/components/BusinessHoursTab";
 import { trpc } from "@/lib/trpc";
 import { useUIMode } from "@/contexts/UIModeContext";
@@ -306,76 +307,7 @@ export default function Settings() {
 
           {/* Payment Tab */}
           <TabsContent value="payment">
-            <Card>
-              <CardHeader>
-                <CardTitle>Betalingsinnstillinger</CardTitle>
-                <CardDescription>
-                  Konfigurer betalingsmetoder og fakturering
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Vipps-betaling</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Tillat betaling med Vipps
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Kortbetaling</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Tillat betaling med kort
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Kontant</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Tillat kontantbetaling
-                    </p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-
-                <div className="pt-4 border-t">
-                  <h3 className="font-medium mb-3">Stripe-integrasjon</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Koble til Stripe for å motta online betalinger
-                  </p>
-                  <Button variant="outline">
-                    Koble til Stripe
-                  </Button>
-                </div>
-
-                <div className="pt-4 border-t">
-                  <h3 className="font-medium mb-3">Fakturering</h3>
-                  
-                  <div>
-                    <Label htmlFor="invoicePrefix">Fakturaprefiks</Label>
-                    <Input
-                      id="invoicePrefix"
-                      placeholder="INV-"
-                      defaultValue="INV-"
-                    />
-                  </div>
-
-                  <div className="mt-3">
-                    <Label htmlFor="vatNumber">Organisasjonsnummer</Label>
-                    <Input
-                      id="vatNumber"
-                      placeholder="123 456 789 MVA"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <PaymentSettingsTab />
           </TabsContent>
 
           {/* Domain Tab */}

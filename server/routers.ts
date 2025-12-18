@@ -1887,6 +1887,31 @@ export const appRouter = router({
 
         return { success: true };
       }),
+
+    delete: adminProcedure
+      .input(z.object({
+        id: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        const { services } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        
+        // Soft delete by setting isActive to false
+        await dbInstance
+          .update(services)
+          .set({ isActive: false })
+          .where(
+            and(
+              eq(services.id, input.id),
+              eq(services.tenantId, ctx.tenantId)
+            )
+          );
+
+        return { success: true };
+      }),
   }),
 
   // ============================================================================
@@ -2684,6 +2709,7 @@ export const appRouter = router({
         const { eq, and, lte, gte, or } = await import("drizzle-orm");
         
         const conditions = [
+          eq(employeeLeaves.tenantId, ctx.tenantId),
           eq(employeeLeaves.status, "approved"),
           or(
             and(
@@ -3113,6 +3139,31 @@ export const appRouter = router({
           .update(products)
           .set(updateData)
           .where(eq(products.id, input.productId));
+
+        return { success: true };
+      }),
+
+    delete: tenantProcedure
+      .input(z.object({
+        productId: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        const { products } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        
+        // Soft delete by setting isActive to false
+        await dbInstance
+          .update(products)
+          .set({ isActive: false })
+          .where(
+            and(
+              eq(products.id, input.productId),
+              eq(products.tenantId, ctx.tenantId)
+            )
+          );
 
         return { success: true };
       }),
@@ -4427,6 +4478,28 @@ export const appRouter = router({
   // PUBLIC BOOKING
   // ============================================================================
   publicBooking: router({
+    // Get tenant ID from subdomain
+    getTenantBySubdomain: publicProcedure
+      .input(z.object({ subdomain: z.string() }))
+      .query(async ({ input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) return null;
+
+        const { tenants } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+
+        const [tenant] = await dbInstance
+          .select({
+            id: tenants.id,
+            subdomain: tenants.subdomain,
+            name: tenants.name,
+          })
+          .from(tenants)
+          .where(eq(tenants.subdomain, input.subdomain));
+
+        return tenant || null;
+      }),
+
     getBranding: publicProcedure
       .input(z.object({ tenantId: z.string() }))
       .query(async ({ input }) => {
@@ -4558,8 +4631,8 @@ export const appRouter = router({
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
 
-        const { appointments, services, users } = await import("../drizzle/schema");
-        const { eq, and } = await import("drizzle-orm");
+        const { appointments, services, users, employeeLeaves } = await import("../drizzle/schema");
+        const { eq, and, lte, gte, inArray } = await import("drizzle-orm");
 
         // Get service duration
         const [service] = await dbInstance
@@ -4585,6 +4658,34 @@ export const appRouter = router({
               )
             );
           employeeIds = employees.map((e) => e.id);
+        }
+
+        // Get approved employee leaves that overlap with the requested date
+        const requestedDate = new Date(input.date);
+        const approvedLeaves = employeeIds.length > 0 ? await dbInstance
+          .select({
+            employeeId: employeeLeaves.employeeId,
+            startDate: employeeLeaves.startDate,
+            endDate: employeeLeaves.endDate,
+          })
+          .from(employeeLeaves)
+          .where(
+            and(
+              eq(employeeLeaves.tenantId, input.tenantId),
+              eq(employeeLeaves.status, "approved"),
+              lte(employeeLeaves.startDate, requestedDate),
+              gte(employeeLeaves.endDate, requestedDate),
+              inArray(employeeLeaves.employeeId, employeeIds)
+            )
+          ) : [];
+
+        // Filter out employees who are on leave
+        const employeesOnLeave = new Set(approvedLeaves.map(l => l.employeeId));
+        const availableEmployeeIds = employeeIds.filter(id => !employeesOnLeave.has(id));
+
+        // If no employees available (all on leave), return empty slots
+        if (availableEmployeeIds.length === 0) {
+          return [];
         }
 
         // Get existing appointments for the date
@@ -4618,9 +4719,9 @@ export const appRouter = router({
             const endMinute = endMinutes % 60;
             const endTimeStr = `${endHour.toString().padStart(2, "0")}:${endMinute.toString().padStart(2, "0")}:00`;
 
-            // Check if any employee is available
+            // Check if any employee is available (excluding those on leave)
             let availableEmployeeId: number | undefined;
-            for (const empId of employeeIds) {
+            for (const empId of availableEmployeeIds) {
               const hasConflict = existingAppointments.some((appt) => {
                 if (appt.employeeId !== empId) return false;
                 // Check for time overlap
@@ -5506,6 +5607,155 @@ export const appRouter = router({
           );
 
         return { success: true };
+      }),
+
+    // Get weekly summary for all employees
+    getWeeklySummary: adminProcedure
+      .input(z.object({
+        year: z.number(),
+        month: z.number(), // 1-12
+      }))
+      .query(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) return [];
+
+        const { timesheets, users } = await import("../drizzle/schema");
+        const { eq, and, sql } = await import("drizzle-orm");
+
+        // Get first and last day of the month
+        const firstDay = new Date(input.year, input.month - 1, 1);
+        const lastDay = new Date(input.year, input.month, 0);
+
+        const result = await dbInstance.execute(
+          sql`SELECT 
+            t.employeeId,
+            u.name as employeeName,
+            WEEK(t.workDate, 1) as weekNumber,
+            MIN(t.workDate) as weekStart,
+            MAX(t.workDate) as weekEnd,
+            COALESCE(SUM(CAST(t.totalHours AS DECIMAL(10,2))), 0) as totalHours,
+            COUNT(*) as shiftCount
+          FROM timesheets t
+          LEFT JOIN users u ON t.employeeId = u.id
+          WHERE t.tenantId = ${ctx.tenantId}
+            AND t.workDate >= ${firstDay.toISOString().split('T')[0]}
+            AND t.workDate <= ${lastDay.toISOString().split('T')[0]}
+          GROUP BY t.employeeId, u.name, WEEK(t.workDate, 1)
+          ORDER BY t.employeeId, weekNumber`
+        );
+
+        return result[0] as Array<{
+          employeeId: number;
+          employeeName: string;
+          weekNumber: number;
+          weekStart: string;
+          weekEnd: string;
+          totalHours: string;
+          shiftCount: number;
+        }>;
+      }),
+
+    // Get monthly summary for all employees
+    getMonthlySummary: adminProcedure
+      .input(z.object({
+        year: z.number(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) return [];
+
+        const { timesheets, users } = await import("../drizzle/schema");
+        const { eq, and, sql } = await import("drizzle-orm");
+
+        const result = await dbInstance.execute(
+          sql`SELECT 
+            t.employeeId,
+            u.name as employeeName,
+            MONTH(t.workDate) as month,
+            COALESCE(SUM(CAST(t.totalHours AS DECIMAL(10,2))), 0) as totalHours,
+            COUNT(*) as shiftCount,
+            COUNT(DISTINCT t.workDate) as daysWorked
+          FROM timesheets t
+          LEFT JOIN users u ON t.employeeId = u.id
+          WHERE t.tenantId = ${ctx.tenantId}
+            AND YEAR(t.workDate) = ${input.year}
+          GROUP BY t.employeeId, u.name, MONTH(t.workDate)
+          ORDER BY t.employeeId, month`
+        );
+
+        return result[0] as Array<{
+          employeeId: number;
+          employeeName: string;
+          month: number;
+          totalHours: string;
+          shiftCount: number;
+          daysWorked: number;
+        }>;
+      }),
+
+    // Get detailed employee work hours report
+    getEmployeeWorkReport: adminProcedure
+      .input(z.object({
+        employeeId: z.number().optional(),
+        startDate: z.string(),
+        endDate: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) return { employees: [], summary: { totalHours: "0", totalShifts: 0, averageHoursPerDay: "0" } };
+
+        const { timesheets, users } = await import("../drizzle/schema");
+        const { eq, and, sql } = await import("drizzle-orm");
+
+        // Build employee filter
+        const employeeFilter = input.employeeId 
+          ? sql`AND t.employeeId = ${input.employeeId}` 
+          : sql``;
+
+        const result = await dbInstance.execute(
+          sql`SELECT 
+            t.employeeId,
+            u.name as employeeName,
+            COALESCE(SUM(CAST(t.totalHours AS DECIMAL(10,2))), 0) as totalHours,
+            COUNT(*) as shiftCount,
+            COUNT(DISTINCT t.workDate) as daysWorked,
+            MIN(t.workDate) as firstDay,
+            MAX(t.workDate) as lastDay,
+            AVG(CAST(t.totalHours AS DECIMAL(10,2))) as avgHoursPerShift
+          FROM timesheets t
+          LEFT JOIN users u ON t.employeeId = u.id
+          WHERE t.tenantId = ${ctx.tenantId}
+            AND t.workDate >= ${input.startDate}
+            AND t.workDate <= ${input.endDate}
+            ${employeeFilter}
+          GROUP BY t.employeeId, u.name
+          ORDER BY totalHours DESC`
+        );
+
+        const employees = result[0] as Array<{
+          employeeId: number;
+          employeeName: string;
+          totalHours: string;
+          shiftCount: number;
+          daysWorked: number;
+          firstDay: string;
+          lastDay: string;
+          avgHoursPerShift: string;
+        }>;
+
+        // Calculate overall summary
+        const totalHours = employees.reduce((sum, e) => sum + parseFloat(e.totalHours || "0"), 0);
+        const totalShifts = employees.reduce((sum, e) => sum + e.shiftCount, 0);
+        const totalDays = employees.reduce((sum, e) => sum + e.daysWorked, 0);
+
+        return {
+          employees,
+          summary: {
+            totalHours: totalHours.toFixed(2),
+            totalShifts,
+            averageHoursPerDay: totalDays > 0 ? (totalHours / totalDays).toFixed(2) : "0",
+          },
+        };
       }),
   }),
 
@@ -6775,8 +7025,31 @@ export const appRouter = router({
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
         }
 
-        const { walkInQueue } = await import("../drizzle/schema");
+        const { walkInQueue, services } = await import("../drizzle/schema");
 
+        // Get queue entry with service details
+        const queueEntry = await dbInstance
+          .select({
+            id: walkInQueue.id,
+            customerName: walkInQueue.customerName,
+            customerId: walkInQueue.customerId,
+            serviceId: walkInQueue.serviceId,
+            serviceName: services.name,
+            servicePrice: services.price,
+          })
+          .from(walkInQueue)
+          .leftJoin(services, eq(walkInQueue.serviceId, services.id))
+          .where(and(
+            eq(walkInQueue.id, input.queueId),
+            eq(walkInQueue.tenantId, ctx.user.tenantId)
+          ))
+          .limit(1);
+
+        if (!queueEntry || queueEntry.length === 0) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Queue entry not found" });
+        }
+
+        // Update status to in_service
         await dbInstance
           .update(walkInQueue)
           .set({
@@ -6788,7 +7061,14 @@ export const appRouter = router({
             eq(walkInQueue.tenantId, ctx.user.tenantId)
           ));
 
-        return { success: true };
+        // Return service details for POS redirect
+        return {
+          success: true,
+          serviceId: queueEntry[0].serviceId,
+          servicePrice: queueEntry[0].servicePrice,
+          customerId: queueEntry[0].customerId,
+          customerName: queueEntry[0].customerName,
+        };
       }),
 
     /**
@@ -10729,6 +11009,365 @@ export const appRouter = router({
       }),
   }),
 
+  // ============================================================================
+  // IZETTLE PAYMENT INTEGRATION
+  // ============================================================================
+  izettle: router({
+    // Get authorization URL to connect iZettle account
+    getAuthUrl: adminProcedure
+      .query(async ({ ctx }) => {
+        const { getAuthorizationUrl } = await import('./services/izettle');
+        return { url: getAuthorizationUrl(ctx.tenantId) };
+      }),
+
+    // Get iZettle connection status
+    getStatus: adminProcedure
+      .query(async ({ ctx }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const [provider] = await dbInstance
+          .select()
+          .from(paymentProviders)
+          .where(
+            and(
+              eq(paymentProviders.tenantId, ctx.tenantId),
+              eq(paymentProviders.providerType, 'izettle')
+            )
+          )
+          .limit(1);
+
+        if (!provider) {
+          return {
+            connected: false,
+            email: null,
+            accountId: null,
+            lastSync: null,
+          };
+        }
+
+        return {
+          connected: !!provider.accessToken,
+          email: provider.providerEmail,
+          accountId: provider.providerAccountId,
+          lastSync: provider.lastSyncAt,
+          isActive: provider.isActive,
+        };
+      }),
+
+    // Disconnect iZettle account
+    disconnect: adminProcedure
+      .mutation(async ({ ctx }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        await dbInstance
+          .update(paymentProviders)
+          .set({
+            isActive: false,
+            accessToken: null,
+            refreshToken: null,
+            tokenExpiresAt: null,
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(paymentProviders.tenantId, ctx.tenantId),
+              eq(paymentProviders.providerType, 'izettle')
+            )
+          );
+
+        return { success: true };
+      }),
+
+    // Create payment (called from POS)
+    createPayment: protectedProcedure
+      .input(z.object({
+        amount: z.number().positive(),
+        currency: z.string().default('NOK'),
+        reference: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        // Get iZettle provider
+        const [provider] = await dbInstance
+          .select()
+          .from(paymentProviders)
+          .where(
+            and(
+              eq(paymentProviders.tenantId, ctx.tenantId),
+              eq(paymentProviders.providerType, 'izettle'),
+              eq(paymentProviders.isActive, true)
+            )
+          )
+          .limit(1);
+
+        if (!provider || !provider.accessToken) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "iZettle not connected. Please connect your iZettle account first.",
+          });
+        }
+
+        const { decryptToken, createPayment, refreshAccessToken } = await import('./services/izettle');
+        
+        let accessToken = decryptToken(provider.accessToken);
+        
+        // Check if token is expired and refresh if needed
+        if (provider.tokenExpiresAt && new Date(provider.tokenExpiresAt) < new Date()) {
+          try {
+            const refreshToken = decryptToken(provider.refreshToken!);
+            const newTokens = await refreshAccessToken(refreshToken);
+            
+            const { encryptToken } = await import('./services/izettle');
+            accessToken = newTokens.access_token;
+            
+            // Update tokens in database
+            await dbInstance
+              .update(paymentProviders)
+              .set({
+                accessToken: encryptToken(newTokens.access_token),
+                refreshToken: encryptToken(newTokens.refresh_token),
+                tokenExpiresAt: new Date(Date.now() + newTokens.expires_in * 1000),
+                updatedAt: new Date(),
+              })
+              .where(eq(paymentProviders.id, provider.id));
+          } catch (error) {
+            throw new TRPCError({
+              code: "UNAUTHORIZED",
+              message: "Failed to refresh iZettle token. Please reconnect your account.",
+            });
+          }
+        }
+
+        // Create payment
+        try {
+          const payment = await createPayment(
+            accessToken,
+            input.amount,
+            input.currency,
+            input.reference
+          );
+
+          // Update last sync
+          await dbInstance
+            .update(paymentProviders)
+            .set({
+              lastSyncAt: new Date(),
+              updatedAt: new Date(),
+            })
+            .where(eq(paymentProviders.id, provider.id));
+
+          return {
+            success: true,
+            purchaseUUID: payment.purchaseUUID,
+            amount: payment.amount,
+            currency: payment.currency,
+            status: payment.status,
+          };
+        } catch (error: any) {
+          // Log error
+          await dbInstance
+            .update(paymentProviders)
+            .set({
+              lastErrorAt: new Date(),
+              lastErrorMessage: error.message,
+              updatedAt: new Date(),
+            })
+            .where(eq(paymentProviders.id, provider.id));
+
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Failed to create payment: ${error.message}`,
+          });
+        }
+      }),
+
+    // Get payment status
+    getPaymentStatus: protectedProcedure
+      .input(z.object({
+        purchaseUUID: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const [provider] = await dbInstance
+          .select()
+          .from(paymentProviders)
+          .where(
+            and(
+              eq(paymentProviders.tenantId, ctx.tenantId),
+              eq(paymentProviders.providerType, 'izettle'),
+              eq(paymentProviders.isActive, true)
+            )
+          )
+          .limit(1);
+
+        if (!provider || !provider.accessToken) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "iZettle not connected",
+          });
+        }
+
+        const { decryptToken, getPaymentStatus } = await import('./services/izettle');
+        const accessToken = decryptToken(provider.accessToken);
+
+        try {
+          const status = await getPaymentStatus(accessToken, input.purchaseUUID);
+          return status;
+        } catch (error: any) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Failed to get payment status: ${error.message}`,
+          });
+        }
+      }),
+  }),
+
+  // ============================================================================
+  // PAYMENT SETTINGS (for online booking)
+  // ============================================================================
+  paymentSettings: router({
+    // Get payment settings for tenant
+    get: tenantProcedure.query(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      }
+
+      const { paymentSettings } = await import("../drizzle/schema");
+      const [settings] = await dbInstance
+        .select()
+        .from(paymentSettings)
+        .where(eq(paymentSettings.tenantId, ctx.tenantId))
+        .limit(1);
+
+      // Return default settings if none exist
+      if (!settings) {
+        return {
+          vippsEnabled: false,
+          cardEnabled: false,
+          cashEnabled: true,
+          payAtSalonEnabled: true,
+          vippsTestMode: true,
+          stripeTestMode: true,
+          defaultPaymentMethod: "pay_at_salon" as const,
+        };
+      }
+
+      return settings;
+    }),
+
+    // Update payment settings
+    update: adminProcedure
+      .input(
+        z.object({
+          vippsEnabled: z.boolean().optional(),
+          cardEnabled: z.boolean().optional(),
+          cashEnabled: z.boolean().optional(),
+          payAtSalonEnabled: z.boolean().optional(),
+          vippsClientId: z.string().optional(),
+          vippsClientSecret: z.string().optional(),
+          vippsSubscriptionKey: z.string().optional(),
+          vippsMerchantSerialNumber: z.string().optional(),
+          vippsTestMode: z.boolean().optional(),
+          stripePublishableKey: z.string().optional(),
+          stripeSecretKey: z.string().optional(),
+          stripeTestMode: z.boolean().optional(),
+          defaultPaymentMethod: z.enum(["vipps", "card", "cash", "pay_at_salon"]).optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { paymentSettings } = await import("../drizzle/schema");
+
+        // Check if settings exist
+        const [existing] = await dbInstance
+          .select()
+          .from(paymentSettings)
+          .where(eq(paymentSettings.tenantId, ctx.tenantId))
+          .limit(1);
+
+        if (existing) {
+          // Update existing settings
+          await dbInstance
+            .update(paymentSettings)
+            .set({
+              ...input,
+              updatedAt: new Date(),
+            })
+            .where(eq(paymentSettings.tenantId, ctx.tenantId));
+        } else {
+          // Create new settings
+          await dbInstance.insert(paymentSettings).values({
+            tenantId: ctx.tenantId,
+            ...input,
+          });
+        }
+
+        // Return updated settings
+        const [updated] = await dbInstance
+          .select()
+          .from(paymentSettings)
+          .where(eq(paymentSettings.tenantId, ctx.tenantId))
+          .limit(1);
+
+        return updated;
+      }),
+
+    // Get public payment settings (for booking page)
+    getPublic: publicProcedure
+      .input(z.object({ tenantId: z.string() }))
+      .query(async ({ input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { paymentSettings } = await import("../drizzle/schema");
+        const [settings] = await dbInstance
+          .select({
+            vippsEnabled: paymentSettings.vippsEnabled,
+            cardEnabled: paymentSettings.cardEnabled,
+            cashEnabled: paymentSettings.cashEnabled,
+            payAtSalonEnabled: paymentSettings.payAtSalonEnabled,
+            defaultPaymentMethod: paymentSettings.defaultPaymentMethod,
+            // Don't expose sensitive keys
+          })
+          .from(paymentSettings)
+          .where(eq(paymentSettings.tenantId, input.tenantId))
+          .limit(1);
+
+        // Return default settings if none exist
+        if (!settings) {
+          return {
+            vippsEnabled: false,
+            cardEnabled: false,
+            cashEnabled: true,
+            payAtSalonEnabled: true,
+            defaultPaymentMethod: "pay_at_salon" as const,
+          };
+        }
+
+        return settings;
+      }),
+  }),
 
 });
 

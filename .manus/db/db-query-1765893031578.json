@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO tenants (id, name, subdomain, phone, email, address, status, createdAt, updatedAt) VALUES ('demo-tenant-001', 'Stylora Demo Salong', 'demo', '+47 123 45 678', 'demo@stylora.no', 'Storgata 1, 0123 Oslo, Norge', 'active', NOW(), NOW());",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute INSERT INTO tenants (id, name, subdomain, phone, email, address, status, createdAt, updatedAt) VALUES ('demo-tenant-001', 'Stylora Demo Salong', 'demo', '+47 123 45 678', 'demo@stylora.no', 'Storgata 1, 0123 Oslo, Norge', 'active', NOW(), NOW());",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 57
+}

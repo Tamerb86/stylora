@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO customers (tenantId, firstName, lastName, phone, email) VALUES \n('demo-tenant-001', 'Ole', 'Nordmann', '+47 900 11 222', 'ole@example.com'),\n('demo-tenant-001', 'Kari', 'Hansen', '+47 900 33 444', 'kari@example.com'),\n('demo-tenant-001', 'Per', 'Olsen', '+47 900 55 666', 'per@example.com');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute INSERT INTO customers (tenantId, firstName, lastName, phone, email) VALUES \n('demo-tenant-001', 'Ole', 'Nordmann', '+47 900 11 222', 'ole@example.com'),\n('demo-tenant-001', 'Kari', 'Hansen', '+47 900 33 444', 'kari@example.com'),\n('demo-tenant-001', 'Per', 'Olsen', '+47 900 55 666', 'per@example.com');",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 76
+}

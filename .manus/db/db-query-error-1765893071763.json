@@ -1,0 +1,8 @@
+{
+  "query": "INSERT INTO services (tenantId, name, price, duration, categoryId) VALUES \n('demo-tenant-001', 'Herreklipp', 350.00, 30, 1),\n('demo-tenant-001', 'Skjegg trim', 150.00, 15, 1),\n('demo-tenant-001', 'Herreklipp + Skjegg', 450.00, 45, 1),\n('demo-tenant-001', 'Barneklipp', 250.00, 20, 1);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute INSERT INTO services (tenantId, name, price, duration, categoryId) VALUES \n('demo-tenant-001', 'Herreklipp', 350.00, 30, 1),\n('demo-tenant-001', 'Skjegg trim', 150.00, 15, 1),\n('demo-tenant-001', 'Herreklipp + Skjegg', 450.00, 45, 1),\n('demo-tenant-001', 'Barneklipp', 250.00, 20, 1);",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 1: Unknown column 'duration' in 'field list'"
+  ]
+}

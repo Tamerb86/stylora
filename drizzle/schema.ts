@@ -717,15 +717,7 @@ export const salonSettings = mysqlTable("salonSettings", {
     welcomeSubtitle: string;
     showStaffSection: boolean;
     showSummaryCard: boolean;
-  }>().default({
-    logoUrl: null,
-    primaryColor: "#2563eb",
-    accentColor: "#ea580c",
-    welcomeTitle: "Velkommen!",
-    welcomeSubtitle: "Bestill din time på nett.",
-    showStaffSection: true,
-    showSummaryCard: true,
-  }),
+  }>(),
   printSettings: json("printSettings").$type<{
     fontSize: "small" | "medium" | "large";
     showLogo: boolean;
@@ -736,13 +728,7 @@ export const salonSettings = mysqlTable("salonSettings", {
     bankAccount?: string;
     website?: string;
     businessHours?: string;
-  }>().default({
-    fontSize: "medium",
-    showLogo: true,
-    customFooterText: "Takk for besøket! Velkommen tilbake!",
-    autoPrintReceipt: false,
-    autoOpenCashDrawer: false,
-  }),
+  }>(),
   receiptLogoUrl: text("receiptLogoUrl"),
   // Time Clock Auto Clock-Out
   autoClockOutTime: time("autoClockOutTime").default("17:00"), // Default end of shift time for auto clock-out
@@ -963,12 +949,26 @@ export type InsertUnimicroSyncLog = typeof unimicroSyncLog.$inferInsert;
 export const paymentProviders = mysqlTable("paymentProviders", {
   id: int("id").autoincrement().primaryKey(),
   tenantId: varchar("tenantId", { length: 36 }).notNull(),
-  providerType: mysqlEnum("providerType", ["stripe_terminal", "vipps", "nets", "manual_card", "cash", "generic"]).notNull(),
+  providerType: mysqlEnum("providerType", ["izettle", "stripe_terminal", "vipps", "nets", "manual_card", "cash", "generic"]).notNull(),
   providerName: varchar("providerName", { length: 100 }).notNull(), // e.g., "Main Counter Terminal"
   isActive: boolean("isActive").default(true).notNull(),
   isDefault: boolean("isDefault").default(false).notNull(), // Default provider for this type
+  
+  // OAuth fields (for iZettle, Vipps, etc.)
+  accessToken: text("accessToken"), // OAuth access token (encrypted)
+  refreshToken: text("refreshToken"), // OAuth refresh token (encrypted)
+  tokenExpiresAt: timestamp("tokenExpiresAt"), // When access token expires
+  providerAccountId: varchar("providerAccountId", { length: 255 }), // e.g., iZettle merchant ID
+  providerEmail: varchar("providerEmail", { length: 320 }), // Email associated with provider account
+  
   // Configuration (stored as JSON)
   config: json("config"), // API keys, terminal IDs, etc.
+  
+  // Sync metadata
+  lastSyncAt: timestamp("lastSyncAt"), // Last successful sync with provider
+  lastErrorAt: timestamp("lastErrorAt"), // Last error timestamp
+  lastErrorMessage: text("lastErrorMessage"), // Last error details
+  
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => ({
@@ -1196,3 +1196,46 @@ export type InsertFikenProductMapping = typeof fikenProductMapping.$inferInsert;
 
 export type FikenSyncLog = typeof fikenSyncLog.$inferSelect;
 export type InsertFikenSyncLog = typeof fikenSyncLog.$inferInsert;
+
+// ============================================================================
+// PAYMENT SETTINGS (for online booking)
+// ============================================================================
+
+export const paymentSettings = mysqlTable("paymentSettings", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: varchar("tenantId", { length: 36 }).notNull().unique(),
+  
+  // Enable/disable payment methods
+  vippsEnabled: boolean("vippsEnabled").default(false).notNull(),
+  cardEnabled: boolean("cardEnabled").default(false).notNull(),
+  cashEnabled: boolean("cashEnabled").default(true).notNull(),
+  payAtSalonEnabled: boolean("payAtSalonEnabled").default(true).notNull(),
+  
+  // Vipps configuration
+  vippsClientId: text("vippsClientId"),
+  vippsClientSecret: text("vippsClientSecret"),
+  vippsSubscriptionKey: text("vippsSubscriptionKey"),
+  vippsMerchantSerialNumber: varchar("vippsMerchantSerialNumber", { length: 20 }),
+  vippsTestMode: boolean("vippsTestMode").default(true).notNull(),
+  
+  // Stripe configuration
+  stripePublishableKey: text("stripePublishableKey"),
+  stripeSecretKey: text("stripeSecretKey"),
+  stripeTestMode: boolean("stripeTestMode").default(true).notNull(),
+  
+  // Default payment method
+  defaultPaymentMethod: mysqlEnum("defaultPaymentMethod", [
+    "vipps",
+    "card",
+    "cash",
+    "pay_at_salon"
+  ]).default("pay_at_salon"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => ({
+  tenantIdx: index("tenant_idx").on(table.tenantId),
+}));
+
+export type PaymentSettings = typeof paymentSettings.$inferSelect;
+export type InsertPaymentSettings = typeof paymentSettings.$inferInsert;

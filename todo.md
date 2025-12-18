@@ -4629,3 +4629,25 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Backend API: getTenantOwner procedure
 - [x] Backend API: updateTenantOwnerCredentials procedure (email, name, phone, password)
 - [x] Password hashing with bcrypt for owner password updates
+
+## Phase 34: Production Safety - Backup & Staging
+- [ ] Research Railway automatic backup options
+- [ ] Implement automatic database backup system
+- [ ] Set up staging environment separate from production
+- [ ] Document backup and restore procedures
+- [ ] Document staging vs production workflow
+
+## Phase 25: Payment Settings for Online Booking
+- [x] Create paymentSettings database table with Vipps/card/cash/payAtSalon toggles
+- [x] Add Vipps configuration fields (clientId, clientSecret, subscriptionKey, merchantSerialNumber)
+- [x] Add Stripe configuration fields (publishableKey, secretKey)
+- [x] Create tRPC API endpoints (get, update, getPublic)
+- [x] Create PaymentSettingsTab component with toggle switches
+- [x] Connect Settings page to database
+- [x] Add Vipps configuration form (shown when Vipps enabled)
+- [x] Add Stripe configuration form (shown when card enabled)
+- [x] Write vitest tests for payment settings API
+- [ ] Update booking page to respect payment settings
+- [ ] Show only enabled payment methods on booking page
+- [ ] Create guide for configuring Vipps payment
+- [ ] Create guide for configuring Stripe payment
