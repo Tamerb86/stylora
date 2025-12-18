@@ -4794,4 +4794,13 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add retry mechanism UI in confirmation page
 - [x] Fix TypeScript error in App.tsx (restarted server)
 - [x] Test complete iZettle flow with confirmation page
-- [ ] Save checkpoint and deploy to Railway
+- [x] Save checkpoint and deploy to Railway
+
+## Phase 41: Fix /izettle/callback Route 404 Error on Railway
+- [x] Check if Railway deployment completed successfully - YES
+- [x] Verify home page works on Railway - YES
+- [x] Check why /izettle/callback returns 404 on Railway - FIXED
+- [x] Verify route exists in App.tsx - YES
+- [x] Check if client-side routing is configured for Railway - YES
+- [x] SPA fallback configuration already exists in vite.ts
+- [x] Test on Railway production after fix - WORKING PERFECTLY!
