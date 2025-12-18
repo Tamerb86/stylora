@@ -949,12 +949,26 @@ export type InsertUnimicroSyncLog = typeof unimicroSyncLog.$inferInsert;
 export const paymentProviders = mysqlTable("paymentProviders", {
   id: int("id").autoincrement().primaryKey(),
   tenantId: varchar("tenantId", { length: 36 }).notNull(),
-  providerType: mysqlEnum("providerType", ["stripe_terminal", "vipps", "nets", "manual_card", "cash", "generic"]).notNull(),
+  providerType: mysqlEnum("providerType", ["izettle", "stripe_terminal", "vipps", "nets", "manual_card", "cash", "generic"]).notNull(),
   providerName: varchar("providerName", { length: 100 }).notNull(), // e.g., "Main Counter Terminal"
   isActive: boolean("isActive").default(true).notNull(),
   isDefault: boolean("isDefault").default(false).notNull(), // Default provider for this type
+  
+  // OAuth fields (for iZettle, Vipps, etc.)
+  accessToken: text("accessToken"), // OAuth access token (encrypted)
+  refreshToken: text("refreshToken"), // OAuth refresh token (encrypted)
+  tokenExpiresAt: timestamp("tokenExpiresAt"), // When access token expires
+  providerAccountId: varchar("providerAccountId", { length: 255 }), // e.g., iZettle merchant ID
+  providerEmail: varchar("providerEmail", { length: 320 }), // Email associated with provider account
+  
   // Configuration (stored as JSON)
   config: json("config"), // API keys, terminal IDs, etc.
+  
+  // Sync metadata
+  lastSyncAt: timestamp("lastSyncAt"), // Last successful sync with provider
+  lastErrorAt: timestamp("lastErrorAt"), // Last error timestamp
+  lastErrorMessage: text("lastErrorMessage"), // Last error details
+  
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => ({

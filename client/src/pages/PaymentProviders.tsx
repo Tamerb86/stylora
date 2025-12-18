@@ -7,6 +7,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, CreditCard, Banknote, Smartphone, Settings, Trash2, Edit, CheckCircle2, XCircle } from "lucide-react";
@@ -357,6 +367,31 @@ export default function PaymentProviders() {
     </Dialog>
   );
 
+  // iZettle integration
+  const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
+  const { data: iZettleStatus, refetch: refetchIZettle } = trpc.izettle.getStatus.useQuery();
+  const { data: authUrlData } = trpc.izettle.getAuthUrl.useQuery();
+  const disconnectIZettle = trpc.izettle.disconnect.useMutation({
+    onSuccess: () => {
+      toast.success("iZettle frakoblet");
+      refetchIZettle();
+      setDisconnectDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error(`Feil ved frakobling: ${error.message}`);
+    },
+  });
+
+  const handleConnectIZettle = () => {
+    if (authUrlData?.url) {
+      window.location.href = authUrlData.url;
+    }
+  };
+
+  const handleDisconnectIZettle = () => {
+    disconnectIZettle.mutate();
+  };
+
   return (
     <DashboardLayout>
     <div className="container mx-auto py-8">
@@ -375,6 +410,99 @@ export default function PaymentProviders() {
           Legg til terminal
         </Button>
       </div>
+
+      {/* iZettle OAuth Integration */}
+      <Card className="mb-6 border-2 border-primary/20">
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                iZettle (Zettle by PayPal)
+                {iZettleStatus?.connected && (
+                  <Badge variant="default" className="bg-green-500">
+                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                    Tilkoblet
+                  </Badge>
+                )}
+                {!iZettleStatus?.connected && (
+                  <Badge variant="secondary">
+                    <XCircle className="h-3 w-3 mr-1" />
+                    Ikke tilkoblet
+                  </Badge>
+                )}
+              </CardTitle>
+              <CardDescription className="mt-2">
+                Aksepter kortbetalinger med iZettle kortleser. Pengene går direkte til din iZettle-konto.
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {iZettleStatus?.connected ? (
+            <>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">E-post:</span>
+                  <span className="font-medium">{iZettleStatus.email}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Konto-ID:</span>
+                  <span className="font-mono text-xs">{iZettleStatus.accountId}</span>
+                </div>
+                {iZettleStatus.lastSync && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Sist synkronisert:</span>
+                    <span>{new Date(iZettleStatus.lastSync).toLocaleString('no-NO')}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => window.open('https://my.izettle.com', '_blank')}
+                  className="flex-1"
+                >
+                  Åpne iZettle Dashboard
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => setDisconnectDialogOpen(true)}
+                  disabled={disconnectIZettle.isPending}
+                >
+                  {disconnectIZettle.isPending ? "Kobler fra..." : "Koble fra"}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="bg-muted p-4 rounded-lg space-y-2">
+                <h4 className="font-medium">Fordeler med iZettle:</h4>
+                <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                  <li>Aksepter alle kort: Visa, Mastercard, BankAxept</li>
+                  <li>Kontaktløs betaling (NFC)</li>
+                  <li>Avgift: 1.75% - 2.75% per transaksjon</li>
+                  <li>Utbetaling til bankkonto: 1-2 virkedager</li>
+                  <li>Ingen månedlig avgift</li>
+                </ul>
+              </div>
+
+              <Button
+                onClick={handleConnectIZettle}
+                className="w-full"
+                size="lg"
+              >
+                Koble til iZettle
+              </Button>
+
+              <p className="text-xs text-muted-foreground text-center">
+                Du vil bli sendt til iZettle for å autorisere tilkoblingen.
+              </p>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4">
         {!providers || providers.length === 0 ? (
@@ -457,6 +585,28 @@ export default function PaymentProviders() {
         title="Rediger terminal"
       />
     </div>
+
+      {/* iZettle Disconnect Confirmation Dialog */}
+      <AlertDialog open={disconnectDialogOpen} onOpenChange={setDisconnectDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Koble fra iZettle?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Er du sikker på at du vil koble fra iZettle? Du vil ikke lenger kunne ta imot kortbetalinger
+              gjennom iZettle før du kobler til igjen.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDisconnectIZettle}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Koble fra
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 }

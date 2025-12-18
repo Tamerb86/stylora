@@ -10987,6 +10987,232 @@ export const appRouter = router({
       }),
   }),
 
+  // ============================================================================
+  // IZETTLE PAYMENT INTEGRATION
+  // ============================================================================
+  izettle: router({
+    // Get authorization URL to connect iZettle account
+    getAuthUrl: adminProcedure
+      .query(async ({ ctx }) => {
+        const { getAuthorizationUrl } = await import('./services/izettle');
+        return { url: getAuthorizationUrl(ctx.tenantId) };
+      }),
+
+    // Get iZettle connection status
+    getStatus: adminProcedure
+      .query(async ({ ctx }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const [provider] = await dbInstance
+          .select()
+          .from(paymentProviders)
+          .where(
+            and(
+              eq(paymentProviders.tenantId, ctx.tenantId),
+              eq(paymentProviders.providerType, 'izettle')
+            )
+          )
+          .limit(1);
+
+        if (!provider) {
+          return {
+            connected: false,
+            email: null,
+            accountId: null,
+            lastSync: null,
+          };
+        }
+
+        return {
+          connected: !!provider.accessToken,
+          email: provider.providerEmail,
+          accountId: provider.providerAccountId,
+          lastSync: provider.lastSyncAt,
+          isActive: provider.isActive,
+        };
+      }),
+
+    // Disconnect iZettle account
+    disconnect: adminProcedure
+      .mutation(async ({ ctx }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        await dbInstance
+          .update(paymentProviders)
+          .set({
+            isActive: false,
+            accessToken: null,
+            refreshToken: null,
+            tokenExpiresAt: null,
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(paymentProviders.tenantId, ctx.tenantId),
+              eq(paymentProviders.providerType, 'izettle')
+            )
+          );
+
+        return { success: true };
+      }),
+
+    // Create payment (called from POS)
+    createPayment: protectedProcedure
+      .input(z.object({
+        amount: z.number().positive(),
+        currency: z.string().default('NOK'),
+        reference: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        // Get iZettle provider
+        const [provider] = await dbInstance
+          .select()
+          .from(paymentProviders)
+          .where(
+            and(
+              eq(paymentProviders.tenantId, ctx.tenantId),
+              eq(paymentProviders.providerType, 'izettle'),
+              eq(paymentProviders.isActive, true)
+            )
+          )
+          .limit(1);
+
+        if (!provider || !provider.accessToken) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "iZettle not connected. Please connect your iZettle account first.",
+          });
+        }
+
+        const { decryptToken, createPayment, refreshAccessToken } = await import('./services/izettle');
+        
+        let accessToken = decryptToken(provider.accessToken);
+        
+        // Check if token is expired and refresh if needed
+        if (provider.tokenExpiresAt && new Date(provider.tokenExpiresAt) < new Date()) {
+          try {
+            const refreshToken = decryptToken(provider.refreshToken!);
+            const newTokens = await refreshAccessToken(refreshToken);
+            
+            const { encryptToken } = await import('./services/izettle');
+            accessToken = newTokens.access_token;
+            
+            // Update tokens in database
+            await dbInstance
+              .update(paymentProviders)
+              .set({
+                accessToken: encryptToken(newTokens.access_token),
+                refreshToken: encryptToken(newTokens.refresh_token),
+                tokenExpiresAt: new Date(Date.now() + newTokens.expires_in * 1000),
+                updatedAt: new Date(),
+              })
+              .where(eq(paymentProviders.id, provider.id));
+          } catch (error) {
+            throw new TRPCError({
+              code: "UNAUTHORIZED",
+              message: "Failed to refresh iZettle token. Please reconnect your account.",
+            });
+          }
+        }
+
+        // Create payment
+        try {
+          const payment = await createPayment(
+            accessToken,
+            input.amount,
+            input.currency,
+            input.reference
+          );
+
+          // Update last sync
+          await dbInstance
+            .update(paymentProviders)
+            .set({
+              lastSyncAt: new Date(),
+              updatedAt: new Date(),
+            })
+            .where(eq(paymentProviders.id, provider.id));
+
+          return {
+            success: true,
+            purchaseUUID: payment.purchaseUUID,
+            amount: payment.amount,
+            currency: payment.currency,
+            status: payment.status,
+          };
+        } catch (error: any) {
+          // Log error
+          await dbInstance
+            .update(paymentProviders)
+            .set({
+              lastErrorAt: new Date(),
+              lastErrorMessage: error.message,
+              updatedAt: new Date(),
+            })
+            .where(eq(paymentProviders.id, provider.id));
+
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Failed to create payment: ${error.message}`,
+          });
+        }
+      }),
+
+    // Get payment status
+    getPaymentStatus: protectedProcedure
+      .input(z.object({
+        purchaseUUID: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const [provider] = await dbInstance
+          .select()
+          .from(paymentProviders)
+          .where(
+            and(
+              eq(paymentProviders.tenantId, ctx.tenantId),
+              eq(paymentProviders.providerType, 'izettle'),
+              eq(paymentProviders.isActive, true)
+            )
+          )
+          .limit(1);
+
+        if (!provider || !provider.accessToken) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "iZettle not connected",
+          });
+        }
+
+        const { decryptToken, getPaymentStatus } = await import('./services/izettle');
+        const accessToken = decryptToken(provider.accessToken);
+
+        try {
+          const status = await getPaymentStatus(accessToken, input.purchaseUUID);
+          return status;
+        } catch (error: any) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Failed to get payment status: ${error.message}`,
+          });
+        }
+      }),
+  }),
 
 });
 

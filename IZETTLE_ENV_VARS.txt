@@ -1,0 +1,6 @@
+
+# iZettle OAuth credentials need to be added to Railway:
+# IZETTLE_CLIENT_ID=3209d1a8-4c06-48bd-8c88-f5bc0bf473bc
+# IZETTLE_CLIENT_SECRET=IZSEC422729de-4f98-476e-914f-0419447026c7
+# IZETTLE_REDIRECT_URI=https://barbertime-production-5d35.up.railway.app/api/izettle/callback
+

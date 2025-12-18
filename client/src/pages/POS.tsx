@@ -86,6 +86,8 @@ export default function POS() {
   const { data: customers = [] } = trpc.customers.list.useQuery();
   const { data: employees = [] } = trpc.employees.list.useQuery();
   const { data: printSettings } = trpc.salonSettings.getPrintSettings.useQuery();
+  const { data: iZettleStatus } = trpc.izettle.getStatus.useQuery();
+  const createIZettlePayment = trpc.izettle.createPayment.useMutation();
 
   // Auto-focus search field on page load
   useEffect(() => {
@@ -250,6 +252,108 @@ export default function POS() {
     0
   );
   const total = subtotal + vatAmount;
+
+  // iZettle payment handler
+  const handleIZettleCheckout = async () => {
+    // Validation
+    if (cart.items.length === 0) {
+      toast.error("Handlekurven er tom");
+      return;
+    }
+
+    if (!iZettleStatus?.connected) {
+      toast.error("iZettle er ikke tilkoblet. Gå til innstillinger for å koble til.");
+      return;
+    }
+
+    setIsProcessingPayment(true);
+    setPaymentInstructions("Starter iZettle-betaling...");
+
+    try {
+      // Create order first
+      const orderRes = await createOrder.mutateAsync({
+        customerId: cart.customerId,
+        appointmentId: cart.appointmentId,
+        employeeId: cart.employeeId,
+        items: cart.items.map((i) => ({
+          itemType: i.itemType,
+          itemId: i.id,
+          quantity: i.quantity,
+          unitPrice: i.unitPrice,
+          vatRate: i.vatRate,
+        })),
+      });
+
+      setPaymentInstructions("Venter på betaling på iZettle-leser...");
+
+      // Create iZettle payment
+      const paymentRes = await createIZettlePayment.mutateAsync({
+        orderId: orderRes.order.id,
+        amount: total,
+        description: `Ordre #${orderRes.order.id}`,
+      });
+
+      if (paymentRes.success) {
+        // Show success
+        setLastOrderId(orderRes.order.id);
+        setLastTotal(total);
+        setLastPaymentMethod("iZettle");
+
+        // Get customer email if available
+        if (cart.customerId) {
+          const customer = customers.find(c => c.id === cart.customerId);
+          setLastCustomerEmail(customer?.email || null);
+        } else {
+          setLastCustomerEmail(null);
+        }
+
+        setShowSuccessDialog(true);
+
+        // Clear cart
+        setCart({ items: [] });
+
+        // Print receipt if thermal printer is connected
+        if (thermalPrinter.connectedPrinter && printSettings?.autoPrintReceipts) {
+          try {
+            const receiptData = {
+              orderNumber: orderRes.order.id,
+              date: new Date().toLocaleDateString('no-NO'),
+              time: new Date().toLocaleTimeString('no-NO', { hour: '2-digit', minute: '2-digit' }),
+              customerName: cart.customerName,
+              employeeName: cart.employeeName,
+              items: cart.items.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                total: item.quantity * item.unitPrice,
+              })),
+              subtotal: subtotal,
+              vat: vatAmount,
+              total: total,
+              paymentMethod: 'iZettle',
+              footerText: printSettings.customFooterText,
+            };
+
+            await thermalPrinter.printReceipt(receiptData);
+            toast.success("Kvittering skrevet ut");
+          } catch (printError) {
+            console.error("Print error:", printError);
+            toast.error("Kunne ikke skrive ut kvittering");
+          }
+        }
+
+        toast.success("Betaling fullført!");
+      } else {
+        throw new Error(paymentRes.error || "Betaling feilet");
+      }
+    } catch (error: any) {
+      console.error("iZettle payment error:", error);
+      toast.error(`Betaling feilet: ${error.message}`);
+    } finally {
+      setIsProcessingPayment(false);
+      setPaymentInstructions("");
+    }
+  };
 
   // Checkout handler
   const handleCheckout = async (paymentMethod: "cash" | "card") => {
@@ -954,6 +1058,36 @@ export default function POS() {
                     </>
                   )}
                 </Button>
+
+                {/* iZettle Payment Button */}
+                {iZettleStatus?.connected && (
+                  <Button
+                    size="lg"
+                    className="w-full h-16 text-lg bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 relative"
+                    onClick={handleIZettleCheckout}
+                    disabled={
+                      cart.items.length === 0 ||
+                      createOrder.isPending ||
+                      createIZettlePayment.isPending ||
+                      isProcessingPayment
+                    }
+                  >
+                    {isProcessingPayment && createIZettlePayment.isPending ? (
+                      <>
+                        <Loader2 className="w-6 h-6 mr-3 animate-spin" />
+                        Behandler iZettle-betaling...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-6 h-6 mr-3" />
+                        Betal med iZettle
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 px-2 py-1 bg-white/20 rounded text-xs font-mono">
+                          F4
+                        </span>
+                      </>
+                    )}
+                  </Button>
+                )}
 
                 {/* Manual Open Cash Drawer Button (only show if thermal printer connected) */}
                 {thermalPrinter.connectedPrinter && (
