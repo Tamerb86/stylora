@@ -4810,5 +4810,14 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Check if IZettle page component exists - NO
 - [x] Create /izettle page (redirects to /izettle-settings)
 - [x] Add route to App.tsx
+- [x] Save checkpoint and deploy to Railway
+- [x] Push to GitHub - Railway will auto-deploy
+
+## Phase 43: Fix iZettle Callback Database Query Error
+- [x] Investigate "Failed query" error in iZettle callback
+- [x] Check paymentProviders query parameters
+- [x] Add better error handling for missing/invalid state
+- [x] Add comprehensive logging throughout callback flow
+- [x] Add validation for tenantId before database operations
+- [ ] Test iZettle callback flow with real OAuth
 - [ ] Save checkpoint and deploy to Railway
-- [ ] Test /izettle route on Railway production

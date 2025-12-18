@@ -121,21 +121,41 @@ async function startServer() {
       const code = req.query.code as string;
       const state = req.query.state as string;
       
+      console.log("[iZettle Callback] Received:", { code: code ? "present" : "missing", state: state ? "present" : "missing" });
+      
       if (!code || !state) {
-        return res.status(400).send("Missing code or state parameter");
+        console.error("[iZettle Callback] Missing parameters:", { code, state });
+        return res.redirect("/izettle/callback?izettle=error&message=" + encodeURIComponent("Missing code or state parameter"));
       }
       
       // Decode state to get tenantId
-      const stateData = JSON.parse(Buffer.from(state, "base64").toString());
-      const tenantId = stateData.tenantId;
+      let stateData;
+      let tenantId;
+      try {
+        stateData = JSON.parse(Buffer.from(state, "base64").toString());
+        tenantId = stateData.tenantId;
+        console.log("[iZettle Callback] Decoded state:", { tenantId });
+      } catch (error) {
+        console.error("[iZettle Callback] Failed to decode state:", error);
+        return res.redirect("/izettle/callback?izettle=error&message=" + encodeURIComponent("Invalid state parameter"));
+      }
+      
+      if (!tenantId) {
+        console.error("[iZettle Callback] No tenantId in state:", stateData);
+        return res.redirect("/izettle/callback?izettle=error&message=" + encodeURIComponent("Missing tenant information"));
+      }
       
       // Exchange code for tokens
+      console.log("[iZettle Callback] Exchanging code for tokens...");
       const { exchangeCodeForToken, encryptToken } = await import("../services/izettle");
       const tokens = await exchangeCodeForToken(code);
+      console.log("[iZettle Callback] Tokens received successfully");
       
       // Save tokens to database
+      console.log("[iZettle Callback] Saving tokens to database for tenant:", tenantId);
       const { getDb } = await import("../db");
       const dbInstance = await getDb();
+      console.log("[iZettle Callback] Database instance:", dbInstance ? "connected" : "null");
       
       if (dbInstance) {
         const { paymentProviders } = await import("../../drizzle/schema");
@@ -157,6 +177,7 @@ async function startServer() {
         
         if (existing) {
           // Update existing
+          console.log("[iZettle Callback] Updating existing provider:", existing.id);
           await dbInstance
             .update(paymentProviders)
             .set({
@@ -167,8 +188,10 @@ async function startServer() {
               updatedAt: new Date(),
             })
             .where(eq(paymentProviders.id, existing.id));
+          console.log("[iZettle Callback] Provider updated successfully");
         } else {
           // Insert new
+          console.log("[iZettle Callback] Creating new provider entry");
           await dbInstance.insert(paymentProviders).values({
             tenantId,
             providerType: "izettle",
@@ -177,6 +200,7 @@ async function startServer() {
             tokenExpiresAt: expiresAt,
             isActive: true,
           });
+          console.log("[iZettle Callback] Provider created successfully");
         }
       }
       
