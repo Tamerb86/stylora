@@ -82,6 +82,7 @@ const menuItems = [
     { icon: Building2, label: "Fiken", path: "/fiken" },
   ] },
   { icon: CreditCard, label: "Betalingsterminaler", path: "/payment-providers", adminOnly: true, advancedOnly: true },
+  { icon: CreditCard, label: "iZettle", path: "/izettle", adminOnly: true, advancedOnly: true },
   { icon: SettingsIcon, label: "Innstillinger", path: "/settings" },
 ];
 

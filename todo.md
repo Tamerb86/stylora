@@ -4665,3 +4665,11 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Include screenshots and examples
 - [x] Add troubleshooting section
 - [ ] Link guide from Settings page
+
+## Phase 28: iZettle Frontend Integration
+- [x] Create iZettle settings page component
+- [x] Add OAuth connection flow UI
+- [x] Show connection status and disconnect option
+- [x] Add to navigation menu
+- [ ] Test OAuth flow and payment integration
+- [ ] Create iZettle configuration guide
