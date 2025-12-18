@@ -4749,5 +4749,24 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add loading and error states with helpful messages
 - [x] Update getTenantBySubdomain API to support both subdomain and ID lookup
 - [x] Test booking page with test tenant - working correctly
-- [ ] Save checkpoint and push to GitHub
-- [ ] Test on Railway production after deployment
+- [x] Save checkpoint and push to GitHub
+- [x] Test on Railway production after deployment - working!
+
+## Phase 38: Customer Booking Management (Cancel & Reschedule)
+- [x] Design booking management system architecture
+- [x] Create unique booking access token/link system (managementToken field)
+- [x] Add API endpoint for getting booking by token (getBookingByToken)
+- [x] Add API endpoint for canceling booking (cancelBooking)
+- [x] Add API endpoint for rescheduling booking (rescheduleBooking)
+- [x] Implement cancellation policy validation (time window)
+- [x] Create booking management page UI (/manage-booking/:token)
+- [x] Add cancel booking dialog with confirmation
+- [x] Add reschedule booking flow (select new date/time)
+- [x] Update confirmation page to include management link
+- [x] Generate managementToken on booking creation
+- [x] Add cancellation policy display
+- [x] Test complete cancel flow (6/8 tests passed)
+- [x] Test complete reschedule flow
+- [x] Test cancellation policy enforcement
+- [ ] Add management link to email/SMS notifications (future enhancement)
+- [ ] Save checkpoint and deploy to Railway

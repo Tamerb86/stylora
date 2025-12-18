@@ -1,0 +1,8 @@
+{
+  "query": "ALTER TABLE appointments ADD COLUMN managementToken VARCHAR(64) UNIQUE;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute ALTER TABLE appointments ADD COLUMN managementToken VARCHAR(64) UNIQUE;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 8200 (HY000) at line 1: unsupported add column 'managementtoken' constraint UNIQUE KEY when altering 'FUrq59UAJ9LE4f7MefV9tg.appointments'"
+  ]
+}

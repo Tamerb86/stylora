@@ -29,6 +29,7 @@ import Analytics from "@/pages/Analytics";
 import EmployeeDashboard from "@/pages/EmployeeDashboard";
 import PublicBooking from "@/pages/PublicBooking";
 import BookingSuccess from "@/pages/BookingSuccess";
+import ManageBooking from "@/pages/ManageBooking";
 import CaseStudy from "@/pages/CaseStudy";
 import AboutUs from "@/pages/AboutUs";
 import Testimonials from "@/pages/Testimonials";
@@ -88,6 +89,7 @@ function Router() {
       <Route path="/setup-wizard" component={SetupWizard} />
       <Route path="/book" component={PublicBooking} />
       <Route path="/book/success" component={BookingSuccess} />
+      <Route path="/manage-booking/:token" component={ManageBooking} />
       <Route path="/case-study" component={CaseStudy} />
       <Route path="/about" component={AboutUs} />
       <Route path="/testimonials" component={Testimonials} />

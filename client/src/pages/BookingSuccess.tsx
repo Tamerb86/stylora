@@ -234,6 +234,23 @@ END:VCALENDAR`;
           </div>
         </Card>
 
+        {/* Management Link */}
+        {booking.managementToken && (
+          <Card className="p-6 mb-6 shadow-lg bg-blue-50 border-blue-200">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+              Administrer din booking
+            </h2>
+            <p className="text-gray-600 mb-4">
+              Du kan endre eller avbestille timen din ved å bruke lenken nedenfor.
+            </p>
+            <Link href={`/manage-booking/${booking.managementToken}`}>
+              <Button className="w-full bg-gradient-to-r from-[#4a90e2] to-[#7b68ee] hover:opacity-90 text-white">
+                Administrer booking
+              </Button>
+            </Link>
+          </Card>
+        )}
+
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-4">
           <Button

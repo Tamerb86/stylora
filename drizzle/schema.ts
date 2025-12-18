@@ -174,6 +174,7 @@ export const appointments = mysqlTable("appointments", {
   canceledBy: mysqlEnum("canceledBy", ["customer", "staff", "system"]),
   canceledAt: timestamp("canceledAt"),
   isLateCancellation: boolean("isLateCancellation").default(false), // true if canceled inside cancellation window
+  managementToken: varchar("managementToken", { length: 64 }).unique(), // Unique token for customer to manage booking
   notes: text("notes"),
   recurrenceRuleId: int("recurrenceRuleId"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

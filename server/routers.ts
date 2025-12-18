@@ -4829,6 +4829,9 @@ export const appRouter = router({
           customerId = newCustomer.insertId;
         }
 
+        // Generate unique management token
+        const managementToken = nanoid(32);
+
         // Create appointment
         const [appointment] = await dbInstance.insert(appointments).values({
           tenantId: input.tenantId,
@@ -4838,6 +4841,7 @@ export const appRouter = router({
           startTime: input.time,
           endTime,
           status: "pending",
+          managementToken,
         });
 
         const appointmentId = appointment.insertId;
@@ -4853,6 +4857,7 @@ export const appRouter = router({
           success: true,
           appointmentId,
           customerId,
+          managementToken,
         };
       }),
 
@@ -4943,6 +4948,9 @@ export const appRouter = router({
           customerId = newCustomer.insertId;
         }
 
+        // Generate unique management token
+        const managementToken = nanoid(32);
+
         // Create appointment
         const [appointment] = await dbInstance.insert(appointments).values({
           tenantId: input.tenantId,
@@ -4952,6 +4960,7 @@ export const appRouter = router({
           startTime: input.time,
           endTime,
           status: "pending",
+          managementToken,
         });
 
         const appointmentId = appointment.insertId;
@@ -5127,6 +5136,9 @@ export const appRouter = router({
           customerId = newCustomer.insertId;
         }
 
+        // Generate unique management token
+        const managementToken = nanoid(32);
+
         // Create appointment
         const [appointment] = await dbInstance.insert(appointments).values({
           tenantId: input.tenantId,
@@ -5136,6 +5148,7 @@ export const appRouter = router({
           startTime: input.time,
           endTime,
           status: "pending",
+          managementToken,
         });
 
         const appointmentId = appointment.insertId;
@@ -5230,6 +5243,7 @@ export const appRouter = router({
             endTime: appointments.endTime,
             appointmentDate: appointments.appointmentDate,
             status: appointments.status,
+            managementToken: appointments.managementToken,
             customerName: customers.firstName,
             customerPhone: customers.phone,
             customerEmail: customers.email,
@@ -5278,6 +5292,7 @@ export const appRouter = router({
           startTime: appointmentDateTime.toISOString(),
           endTime: endDateTime.toISOString(),
           status: appointment.status,
+          managementToken: appointment.managementToken || undefined,
           customerName: `${appointment.customerName}`,
           customerPhone: appointment.customerPhone,
           customerEmail: appointment.customerEmail || undefined,
@@ -5286,6 +5301,283 @@ export const appRouter = router({
           totalPrice: serviceDetails?.price || 0,
           paymentMethod: payment?.paymentGateway || "unknown",
           paymentStatus: payment?.status || "unknown",
+        };
+      }),
+
+    /**
+     * Get booking by management token
+     * Allows customers to access their booking without authentication
+     */
+    getBookingByToken: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .query(async ({ input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+        const { appointments, customers, users, services, appointmentServices, tenants } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+
+        // Get appointment with all related data
+        const [appointment] = await dbInstance
+          .select({
+            id: appointments.id,
+            tenantId: appointments.tenantId,
+            startTime: appointments.startTime,
+            endTime: appointments.endTime,
+            appointmentDate: appointments.appointmentDate,
+            status: appointments.status,
+            notes: appointments.notes,
+            customerFirstName: customers.firstName,
+            customerLastName: customers.lastName,
+            customerPhone: customers.phone,
+            customerEmail: customers.email,
+            employeeName: users.name,
+            employeeId: users.id,
+            salonName: tenants.name,
+            salonPhone: tenants.phone,
+            salonAddress: tenants.address,
+            cancellationWindowHours: tenants.cancellationWindowHours,
+          })
+          .from(appointments)
+          .innerJoin(customers, eq(appointments.customerId, customers.id))
+          .innerJoin(users, eq(appointments.employeeId, users.id))
+          .innerJoin(tenants, eq(appointments.tenantId, tenants.id))
+          .where(eq(appointments.managementToken, input.token))
+          .limit(1);
+
+        if (!appointment) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Booking not found" });
+        }
+
+        // Get services
+        const servicesList = await dbInstance
+          .select({
+            serviceName: services.name,
+            price: appointmentServices.price,
+          })
+          .from(appointmentServices)
+          .innerJoin(services, eq(appointmentServices.serviceId, services.id))
+          .where(eq(appointmentServices.appointmentId, appointment.id));
+
+        const totalPrice = servicesList.reduce((sum, s) => sum + Number(s.price), 0);
+
+        // Calculate if cancellation is allowed
+        const appointmentDateTime = new Date(appointment.appointmentDate);
+        const [hours, minutes] = appointment.startTime.split(":").map(Number);
+        appointmentDateTime.setHours(hours, minutes, 0, 0);
+
+        const now = new Date();
+        const hoursUntilAppointment = (appointmentDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+        const canCancel = hoursUntilAppointment > (appointment.cancellationWindowHours || 24) && 
+                         (appointment.status === "pending" || appointment.status === "confirmed");
+        const canReschedule = canCancel; // Same rules for now
+
+        return {
+          id: appointment.id,
+          tenantId: appointment.tenantId,
+          startTime: appointmentDateTime.toISOString(),
+          endTime: appointment.endTime,
+          status: appointment.status,
+          notes: appointment.notes,
+          customerName: `${appointment.customerFirstName} ${appointment.customerLastName || ""}`.trim(),
+          customerPhone: appointment.customerPhone,
+          customerEmail: appointment.customerEmail,
+          employeeName: appointment.employeeName,
+          employeeId: appointment.employeeId,
+          services: servicesList.map(s => ({
+            name: s.serviceName,
+            price: Number(s.price),
+          })),
+          totalPrice,
+          salonName: appointment.salonName,
+          salonPhone: appointment.salonPhone,
+          salonAddress: appointment.salonAddress,
+          canCancel,
+          canReschedule,
+          cancellationWindowHours: appointment.cancellationWindowHours || 24,
+        };
+      }),
+
+    /**
+     * Cancel booking by management token
+     */
+    cancelBooking: publicProcedure
+      .input(z.object({ 
+        token: z.string(),
+        reason: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+        const { appointments, tenants } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+
+        // Get appointment
+        const [appointment] = await dbInstance
+          .select({
+            id: appointments.id,
+            tenantId: appointments.tenantId,
+            appointmentDate: appointments.appointmentDate,
+            startTime: appointments.startTime,
+            status: appointments.status,
+          })
+          .from(appointments)
+          .where(eq(appointments.managementToken, input.token))
+          .limit(1);
+
+        if (!appointment) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Booking not found" });
+        }
+
+        if (appointment.status === "canceled") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Booking is already canceled" });
+        }
+
+        if (appointment.status === "completed") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot cancel completed booking" });
+        }
+
+        // Get tenant cancellation policy
+        const [tenant] = await dbInstance
+          .select({ cancellationWindowHours: tenants.cancellationWindowHours })
+          .from(tenants)
+          .where(eq(tenants.id, appointment.tenantId))
+          .limit(1);
+
+        // Check if within cancellation window
+        const appointmentDateTime = new Date(appointment.appointmentDate);
+        const [hours, minutes] = appointment.startTime.split(":").map(Number);
+        appointmentDateTime.setHours(hours, minutes, 0, 0);
+
+        const now = new Date();
+        const hoursUntilAppointment = (appointmentDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+        const cancellationWindow = tenant?.cancellationWindowHours || 24;
+        const isLateCancellation = hoursUntilAppointment < cancellationWindow;
+
+        if (hoursUntilAppointment < 0) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot cancel past appointment" });
+        }
+
+        // Update appointment
+        await dbInstance
+          .update(appointments)
+          .set({
+            status: "canceled",
+            cancellationReason: input.reason || "Canceled by customer",
+            canceledBy: "customer",
+            canceledAt: new Date(),
+            isLateCancellation,
+          })
+          .where(eq(appointments.id, appointment.id));
+
+        return {
+          success: true,
+          isLateCancellation,
+          message: isLateCancellation 
+            ? `Booking canceled. Note: This is a late cancellation (less than ${cancellationWindow} hours notice).`
+            : "Booking canceled successfully.",
+        };
+      }),
+
+    /**
+     * Reschedule booking by management token
+     */
+    rescheduleBooking: publicProcedure
+      .input(z.object({ 
+        token: z.string(),
+        newDate: z.string(),
+        newTime: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+        const { appointments, tenants, services, appointmentServices } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+
+        // Get appointment
+        const [appointment] = await dbInstance
+          .select({
+            id: appointments.id,
+            tenantId: appointments.tenantId,
+            appointmentDate: appointments.appointmentDate,
+            startTime: appointments.startTime,
+            status: appointments.status,
+          })
+          .from(appointments)
+          .where(eq(appointments.managementToken, input.token))
+          .limit(1);
+
+        if (!appointment) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Booking not found" });
+        }
+
+        if (appointment.status === "canceled") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot reschedule canceled booking" });
+        }
+
+        if (appointment.status === "completed") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot reschedule completed booking" });
+        }
+
+        // Get tenant cancellation policy
+        const [tenant] = await dbInstance
+          .select({ cancellationWindowHours: tenants.cancellationWindowHours })
+          .from(tenants)
+          .where(eq(tenants.id, appointment.tenantId))
+          .limit(1);
+
+        // Check if within cancellation window for original appointment
+        const appointmentDateTime = new Date(appointment.appointmentDate);
+        const [hours, minutes] = appointment.startTime.split(":").map(Number);
+        appointmentDateTime.setHours(hours, minutes, 0, 0);
+
+        const now = new Date();
+        const hoursUntilAppointment = (appointmentDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+        const cancellationWindow = tenant?.cancellationWindowHours || 24;
+
+        if (hoursUntilAppointment < cancellationWindow) {
+          throw new TRPCError({ 
+            code: "BAD_REQUEST", 
+            message: `Cannot reschedule within ${cancellationWindow} hours of appointment` 
+          });
+        }
+
+        // Get service duration to calculate new end time
+        const [appointmentService] = await dbInstance
+          .select({ serviceId: appointmentServices.serviceId })
+          .from(appointmentServices)
+          .where(eq(appointmentServices.appointmentId, appointment.id))
+          .limit(1);
+
+        const [service] = await dbInstance
+          .select({ durationMinutes: services.durationMinutes })
+          .from(services)
+          .where(eq(services.id, appointmentService.serviceId))
+          .limit(1);
+
+        // Calculate new end time
+        const [newHours, newMinutes] = input.newTime.split(":").map(Number);
+        const startMinutes = newHours * 60 + newMinutes;
+        const endMinutes = startMinutes + (service?.durationMinutes || 60);
+        const endHour = Math.floor(endMinutes / 60);
+        const endMinute = endMinutes % 60;
+        const newEndTime = `${endHour.toString().padStart(2, "0")}:${endMinute.toString().padStart(2, "0")}:00`;
+
+        // Update appointment
+        await dbInstance
+          .update(appointments)
+          .set({
+            appointmentDate: new Date(input.newDate),
+            startTime: input.newTime,
+            endTime: newEndTime,
+          })
+          .where(eq(appointments.id, appointment.id));
+
+        return {
+          success: true,
+          message: "Booking rescheduled successfully.",
         };
       }),
   }),
