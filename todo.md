@@ -4738,3 +4738,16 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Test public booking page access
 - [ ] Test complete booking flow
 - [x] Document test results
+
+## Tenant ID Mismatch Fix
+- [x] Check which tenant owns the existing services
+- [ ] Verify tamerb86@gmail.com tenant exists
+- [ ] Fix tenant_id for services or create new services
+- [ ] Test booking page shows services correctly
+
+## Dynamic Booking URL Fix
+- [ ] Find domain settings page component
+- [ ] Make booking URL dynamic based on tenant subdomain
+- [ ] Update QR code generation to use correct URL
+- [ ] Test with different tenants
+- [ ] Deploy to production
