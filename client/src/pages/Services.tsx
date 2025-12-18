@@ -4,14 +4,35 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Scissors, Clock, CalendarPlus, ShoppingCart } from "lucide-react";
+import { Plus, Scissors, Clock, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
+type Service = {
+  id: number;
+  name: string;
+  description: string | null;
+  durationMinutes: number;
+  price: string;
+};
+
 export default function Services() {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -20,29 +41,92 @@ export default function Services() {
   });
 
   const { data: services, isLoading, refetch } = trpc.services.list.useQuery();
+  
   const createService = trpc.services.create.useMutation({
     onSuccess: () => {
       toast.success("Tjeneste opprettet!");
-      setIsDialogOpen(false);
+      setIsCreateDialogOpen(false);
       refetch();
-      setFormData({
-        name: "",
-        description: "",
-        durationMinutes: "30",
-        price: "",
-      });
+      resetForm();
     },
     onError: (error) => {
       toast.error(`Feil: ${error.message}`);
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const updateService = trpc.services.update.useMutation({
+    onSuccess: () => {
+      toast.success("Tjeneste oppdatert!");
+      setIsEditDialogOpen(false);
+      refetch();
+      setSelectedService(null);
+    },
+    onError: (error) => {
+      toast.error(`Feil: ${error.message}`);
+    },
+  });
+
+  const deleteService = trpc.services.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Tjeneste slettet!");
+      setIsDeleteDialogOpen(false);
+      refetch();
+      setSelectedService(null);
+    },
+    onError: (error) => {
+      toast.error(`Feil: ${error.message}`);
+    },
+  });
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      description: "",
+      durationMinutes: "30",
+      price: "",
+    });
+  };
+
+  const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     createService.mutate({
       ...formData,
       durationMinutes: parseInt(formData.durationMinutes),
     });
+  };
+
+  const handleEdit = (service: Service) => {
+    setSelectedService(service);
+    setFormData({
+      name: service.name,
+      description: service.description || "",
+      durationMinutes: service.durationMinutes.toString(),
+      price: service.price,
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedService) return;
+    
+    updateService.mutate({
+      id: selectedService.id,
+      name: formData.name,
+      description: formData.description,
+      durationMinutes: parseInt(formData.durationMinutes),
+      price: formData.price,
+    });
+  };
+
+  const handleDelete = (service: Service) => {
+    setSelectedService(service);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (!selectedService) return;
+    deleteService.mutate({ id: selectedService.id });
   };
 
   return (
@@ -53,7 +137,9 @@ export default function Services() {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">Tjenester</h1>
             <p className="text-muted-foreground">Administrer behandlinger og priser</p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          
+          {/* Create Dialog */}
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-white shadow-lg">
                 <Plus className="mr-2 h-4 w-4" />
@@ -67,11 +153,11 @@ export default function Services() {
                   Legg til en ny behandling i systemet
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleCreate} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Navn *</Label>
+                  <Label htmlFor="create-name">Navn *</Label>
                   <Input
-                    id="name"
+                    id="create-name"
                     required
                     placeholder="F.eks. Herreklipp"
                     value={formData.name}
@@ -80,9 +166,9 @@ export default function Services() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Beskrivelse</Label>
+                  <Label htmlFor="create-description">Beskrivelse</Label>
                   <Textarea
-                    id="description"
+                    id="create-description"
                     placeholder="Kort beskrivelse av tjenesten"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -92,9 +178,9 @@ export default function Services() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="duration">Varighet (minutter) *</Label>
+                    <Label htmlFor="create-duration">Varighet (minutter) *</Label>
                     <Input
-                      id="duration"
+                      id="create-duration"
                       type="number"
                       required
                       min="5"
@@ -104,9 +190,9 @@ export default function Services() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="price">Pris (NOK) *</Label>
+                    <Label htmlFor="create-price">Pris (NOK) *</Label>
                     <Input
-                      id="price"
+                      id="create-price"
                       type="number"
                       required
                       min="0"
@@ -119,7 +205,7 @@ export default function Services() {
                 </div>
 
                 <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                     Avbryt
                   </Button>
                   <Button type="submit" disabled={createService.isPending}>
@@ -131,6 +217,101 @@ export default function Services() {
           </Dialog>
         </div>
 
+        {/* Edit Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Rediger tjeneste</DialogTitle>
+              <DialogDescription>
+                Oppdater informasjon om tjenesten
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleUpdate} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Navn *</Label>
+                <Input
+                  id="edit-name"
+                  required
+                  placeholder="F.eks. Herreklipp"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-description">Beskrivelse</Label>
+                <Textarea
+                  id="edit-description"
+                  placeholder="Kort beskrivelse av tjenesten"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-duration">Varighet (minutter) *</Label>
+                  <Input
+                    id="edit-duration"
+                    type="number"
+                    required
+                    min="5"
+                    step="5"
+                    value={formData.durationMinutes}
+                    onChange={(e) => setFormData({ ...formData, durationMinutes: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-price">Pris (NOK) *</Label>
+                  <Input
+                    id="edit-price"
+                    type="number"
+                    required
+                    min="0"
+                    step="0.01"
+                    placeholder="299.00"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                  Avbryt
+                </Button>
+                <Button type="submit" disabled={updateService.isPending}>
+                  {updateService.isPending ? "Lagrer..." : "Lagre endringer"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Er du sikker?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Dette vil permanent slette tjenesten "{selectedService?.name}". 
+                Denne handlingen kan ikke angres.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                {deleteService.isPending ? "Sletter..." : "Slett tjeneste"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Services Grid */}
         {isLoading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
@@ -167,19 +348,19 @@ export default function Services() {
                       size="sm"
                       variant="outline"
                       className="flex-1"
-                      onClick={() => window.location.href = "/appointments"}
+                      onClick={() => handleEdit(service)}
                     >
-                      <CalendarPlus className="h-3 w-3 mr-1" />
-                      Book
+                      <Pencil className="h-3 w-3 mr-1" />
+                      Rediger
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
-                      className="flex-1"
-                      onClick={() => window.location.href = "/pos"}
+                      className="flex-1 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                      onClick={() => handleDelete(service)}
                     >
-                      <ShoppingCart className="h-3 w-3 mr-1" />
-                      Kasse
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      Slett
                     </Button>
                   </div>
                 </CardContent>
@@ -194,16 +375,10 @@ export default function Services() {
               <p className="text-muted-foreground mb-6 text-center max-w-md">
                 Legg til tjenester som du tilbyr (klipp, farge, styling, etc.) for å kunne booke avtaler og selge i kassen.
               </p>
-              <div className="flex gap-3">
-                <Button onClick={() => setIsDialogOpen(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Opprett første tjeneste
-                </Button>
-                <Button variant="outline" onClick={() => window.location.href = "/appointments"}>
-                  <CalendarPlus className="h-4 w-4 mr-2" />
-                  Se kalender
-                </Button>
-              </div>
+              <Button onClick={() => setIsCreateDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Opprett første tjeneste
+              </Button>
             </CardContent>
           </Card>
         )}

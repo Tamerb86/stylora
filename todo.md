@@ -4720,3 +4720,11 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 ## Phase 34: Time Clock Widget in Right Sidebar (CANCELLED - broke the site)
 - [x] Reverted changes to fix broken site
 - [ ] Need to investigate why it broke before retrying
+
+## Phase 35: Fix Service Edit/Delete Functionality
+- [x] Investigate service edit code in Services page
+- [x] Check backend API endpoints for update/delete services
+- [x] Fix service edit functionality
+- [x] Fix service delete functionality
+- [x] Test CRUD operations for services
+- [ ] Save checkpoint and push to GitHub
