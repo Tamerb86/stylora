@@ -282,19 +282,19 @@ export default function Customers() {
                       size="sm"
                       variant="outline"
                       className="flex-1 gap-2"
-                      onClick={() => setLocation("/appointments")}
+                      onClick={() => setLocation(`/customers/${customer.id}`)}
                     >
-                      <CalendarPlus className="h-4 w-4" />
-                      Book avtale
+                      <Users className="h-4 w-4" />
+                      Se detaljer
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       className="flex-1 gap-2"
-                      onClick={() => setLocation("/orders")}
+                      onClick={() => setLocation("/appointments")}
                     >
-                      <Receipt className="h-4 w-4" />
-                      Se kjøpshistorikk
+                      <CalendarPlus className="h-4 w-4" />
+                      Book avtale
                     </Button>
                   </div>
                 </CardContent>

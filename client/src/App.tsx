@@ -10,6 +10,7 @@ import { ThermalPrinterProvider } from "@/contexts/ThermalPrinterContext";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Customers from "./pages/Customers";
+import CustomerDetails from "./pages/CustomerDetails";
 import Services from "./pages/Services";
 import Appointments from "./pages/Appointments";
 import Employees from "@/pages/Employees";
@@ -143,6 +144,7 @@ function Router() {
         </ProtectedSaasAdminRoute>
       </Route>
       <Route path="/dashboard" component={Dashboard} />
+      <Route path="/customers/:id" component={CustomerDetails} />
       <Route path="/customers" component={Customers} />
       <Route path="/services" component={Services} />
       <Route path="/appointments" component={Appointments} />

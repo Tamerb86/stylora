@@ -4728,3 +4728,13 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Fix service delete functionality
 - [x] Test CRUD operations for services
 - [ ] Save checkpoint and push to GitHub
+
+## Phase 36: Customer History Feature
+- [x] Design customer history UI/UX
+- [x] Add customer history view to customer card
+- [x] Show past appointments with services
+- [x] Display visit dates and frequency
+- [x] Add notes section for each visit
+- [x] Add total spent and visit count
+- [x] Test customer history functionality
+- [ ] Save checkpoint and push to GitHub
