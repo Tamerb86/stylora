@@ -4478,6 +4478,28 @@ export const appRouter = router({
   // PUBLIC BOOKING
   // ============================================================================
   publicBooking: router({
+    // Get tenant ID from subdomain
+    getTenantBySubdomain: publicProcedure
+      .input(z.object({ subdomain: z.string() }))
+      .query(async ({ input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) return null;
+
+        const { tenants } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+
+        const [tenant] = await dbInstance
+          .select({
+            id: tenants.id,
+            subdomain: tenants.subdomain,
+            name: tenants.name,
+          })
+          .from(tenants)
+          .where(eq(tenants.subdomain, input.subdomain));
+
+        return tenant || null;
+      }),
+
     getBranding: publicProcedure
       .input(z.object({ tenantId: z.string() }))
       .query(async ({ input }) => {

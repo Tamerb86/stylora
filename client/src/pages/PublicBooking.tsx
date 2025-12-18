@@ -10,8 +10,8 @@ import { format, addDays } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
 
-// Get tenant ID from subdomain or URL parameter
-function getTenantId(): string {
+// Get tenant subdomain from URL (used to lookup actual tenant ID)
+function getTenantSubdomain(): string {
   // Try to get from URL parameter first
   const urlParams = new URLSearchParams(window.location.search);
   const tenantParam = urlParams.get('tenant');
@@ -27,13 +27,17 @@ function getTenantId(): string {
   }
 
   // Fallback for development/localhost
-  return "goeasychargeco@gmail.com";
+  return "demo-barbertime";
 }
 
 type BookingStep = "service" | "employee" | "datetime" | "info" | "payment" | "confirmation";
 
 export default function PublicBooking() {
-  const [tenantId] = useState(() => getTenantId());
+  const [tenantSubdomain] = useState(() => getTenantSubdomain());
+  
+  // Fetch actual tenant ID from subdomain
+  const { data: tenantData } = trpc.publicBooking.getTenantBySubdomain.useQuery({ subdomain: tenantSubdomain });
+  const tenantId = tenantData?.id || tenantSubdomain; // Fallback to subdomain if not found
   const [currentStep, setCurrentStep] = useState<BookingStep>("service");
   const [selectedService, setSelectedService] = useState<number | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<number | null>(null);

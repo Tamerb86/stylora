@@ -4751,3 +4751,10 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Update QR code generation to use correct URL
 - [ ] Test with different tenants
 - [ ] Deploy to production
+
+## Public Booking Page - Services Not Showing
+- [x] Debug tenant_id resolution in PublicBooking.tsx
+- [x] Check if services query is using correct tenant_id
+- [ ] Verify getTenantId() function works correctly
+- [ ] Test with newly created services (Herreklipp, Hårfarge)
+- [ ] Fix and deploy solution
