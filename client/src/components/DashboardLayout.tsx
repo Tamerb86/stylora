@@ -52,6 +52,7 @@ import { OnboardingTour } from "./OnboardingTour";
 import { trpc } from "@/lib/trpc";
 import { Badge } from "@/components/ui/badge";
 
+// Daily Operations - Most frequently used
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: Calendar, label: "Timebok", path: "/appointments" },
@@ -65,7 +66,6 @@ const menuItems = [
     { icon: Clock, label: "Innstemplingsterminal", path: "/timeclock" },
     { icon: UserCog, label: "Administrer vakter", path: "/timeclock-admin", adminOnly: true },
   ] },
-  { icon: Bell, label: "Varsler", path: "/notifications", advancedOnly: true },
   { icon: Gift, label: "Lojalitet", path: "/loyalty", advancedOnly: true },
   { icon: MessageCircle, label: "Kommunikasjon", path: "/communications", advancedOnly: true, submenu: [
     { icon: MessageCircle, label: "Innstillinger", path: "/communications" },
@@ -73,16 +73,21 @@ const menuItems = [
     { icon: TrendingUp, label: "Kampanjeanalyse", path: "/campaign-analytics" },
     { icon: Mail, label: "E-postmaler", path: "/email-templates" },
   ] },
-  { icon: Database, label: "Sikkerhetskopier", path: "/backups", adminOnly: true, advancedOnly: true },
+  { icon: Bell, label: "Varsler", path: "/notifications", advancedOnly: true },
+];
+
+// Settings & Configuration - Grouped together
+const settingsMenuItems = [
+  { icon: SettingsIcon, label: "Innstillinger", path: "/settings" },
+  { icon: CreditCard, label: "Betalingsterminaler", path: "/payment-providers", adminOnly: true, advancedOnly: true },
+  { icon: CreditCard, label: "iZettle", path: "/izettle", adminOnly: true, advancedOnly: true },
   { icon: Building2, label: "Regnskap", path: "/accounting", adminOnly: true, submenu: [
     { icon: Building2, label: "Alle integrasjoner", path: "/accounting" },
     { icon: Building2, label: "Eksport til regnskapsfører", path: "/accountant-export" },
     { icon: Building2, label: "Unimicro", path: "/unimicro" },
     { icon: Building2, label: "Fiken", path: "/fiken" },
   ] },
-  { icon: CreditCard, label: "Betalingsterminaler", path: "/payment-providers", adminOnly: true, advancedOnly: true },
-  { icon: CreditCard, label: "iZettle", path: "/izettle", adminOnly: true, advancedOnly: true },
-  { icon: SettingsIcon, label: "Innstillinger", path: "/settings" },
+  { icon: Database, label: "Sikkerhetskopier", path: "/backups", adminOnly: true, advancedOnly: true },
 ];
 
 const paymentsMenuItems = [
@@ -218,6 +223,7 @@ function DashboardLayoutContent({
   const [isVacationExpanded, setIsVacationExpanded] = useState(true);
   const [isReportsExpanded, setIsReportsExpanded] = useState(true);
   const [isPaymentsExpanded, setIsPaymentsExpanded] = useState(true);
+  const [isSettingsExpanded, setIsSettingsExpanded] = useState(true);
 
   // Fetch badge counts
   const { data: badgeCounts } = trpc.dashboard.badgeCounts.useQuery(undefined, {
@@ -444,6 +450,48 @@ function DashboardLayoutContent({
                             onClick={() => setLocation(item.path)}
                             tooltip={item.label}
                             className="h-9 transition-all font-normal"
+                          >
+                            <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
+                            <span>{item.label}</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      );
+                    })}
+                </>
+              )}
+              
+              {/* Settings Group Label (Advanced Mode Only) */}
+              {!isSimpleMode && (
+                <>
+                  <button
+                    onClick={() => setIsSettingsExpanded(!isSettingsExpanded)}
+                    className="w-full px-2 py-2 text-xs font-semibold text-muted-foreground/70 mt-2 flex items-center justify-between hover:text-foreground transition-colors cursor-pointer"
+                  >
+                    <span className="flex items-center gap-1.5">⚙️ Innstillinger</span>
+                    <ChevronDown 
+                      className={`h-3 w-3 transition-transform duration-200 ${isSettingsExpanded ? 'rotate-0' : '-rotate-90'}`}
+                    />
+                  </button>
+                  
+                  {/* Settings Menu Items */}
+                  {isSettingsExpanded && settingsMenuItems
+                    .filter(item => {
+                      // Filter out admin-only items for non-admins
+                      if (item.adminOnly && user?.role !== "admin" && user?.role !== "owner") return false;
+                      return true;
+                    })
+                    .map(item => {
+                      const isActive = location === item.path;
+                      const tourAttr = item.path === "/settings" ? "settings-link" : undefined;
+
+                      return (
+                        <SidebarMenuItem key={item.path}>
+                          <SidebarMenuButton
+                            isActive={isActive}
+                            onClick={() => setLocation(item.path)}
+                            tooltip={item.label}
+                            className="h-9 transition-all font-normal"
+                            data-tour={tourAttr}
                           >
                             <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
                             <span>{item.label}</span>
