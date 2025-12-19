@@ -4964,3 +4964,10 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add X icon import from lucide-react
 - [x] Test that sidebar search renders correctly
 - [x] Push fix to GitHub
+
+## Phase 59: Search Empty State UX Improvement
+- [x] Add "Ingen resultater funnet" message when search returns no results
+- [x] Create list of popular/frequently used pages
+- [x] Display popular pages as suggestions when no results found
+- [x] Add clear styling to differentiate empty state from normal results
+- [x] Test with various search queries

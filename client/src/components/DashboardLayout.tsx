@@ -398,8 +398,8 @@ function DashboardLayoutContent({
             </div>
 
             <SidebarMenu className="px-2 py-1">
-              {menuItems
-                .filter(item => {
+              {(() => {
+                const filteredItems = menuItems.filter(item => {
                   // Filter out advanced-only items in simple mode
                   if (isSimpleMode && item.advancedOnly) return false;
                   // Filter out admin-only items for non-admins
@@ -411,7 +411,51 @@ function DashboardLayoutContent({
                            (item.tooltip && item.tooltip.toLowerCase().includes(query));
                   }
                   return true;
-                })
+                });
+
+                // Popular pages for empty state
+                const popularPages = [
+                  { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+                  { path: "/appointments", label: "Timebok", icon: Calendar },
+                  { path: "/customers", label: "Kunder", icon: Users },
+                  { path: "/pos", label: "Salgssted (POS)", icon: ShoppingCart },
+                  { path: "/reports", label: "Rapporter", icon: BarChart3 },
+                ];
+
+                // Show empty state if searching and no results
+                if (sidebarSearchQuery && filteredItems.length === 0) {
+                  return (
+                    <div className="px-2 py-4 space-y-4">
+                      <div className="text-center text-sm text-muted-foreground">
+                        <p className="font-medium">Ingen resultater funnet</p>
+                        <p className="text-xs mt-1">Prøv et annet søkeord</p>
+                      </div>
+                      <div className="border-t pt-4">
+                        <p className="text-xs font-semibold text-muted-foreground mb-2 px-2">Populære sider</p>
+                        {popularPages.map(page => {
+                          const isActive = location === page.path;
+                          return (
+                            <SidebarMenuItem key={page.path}>
+                              <SidebarMenuButton
+                                isActive={isActive}
+                                onClick={() => {
+                                  setLocation(page.path);
+                                  setSidebarSearchQuery("");
+                                }}
+                                className="h-9 transition-all font-normal"
+                              >
+                                <page.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
+                                <span>{page.label}</span>
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                }
+
+                return filteredItems
                 .map(item => {
                   const isActive = location === item.path;
                   // Add data-tour attributes for onboarding
@@ -463,7 +507,8 @@ function DashboardLayoutContent({
                       </TooltipProvider>
                     </SidebarMenuItem>
                   );
-                })}
+                });
+              })()}
               
               {/* Payments Group Label (Advanced Mode Only) */}
               {!isSimpleMode && (
