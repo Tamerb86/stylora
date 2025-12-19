@@ -11337,19 +11337,19 @@ export const appRouter = router({
           .limit(1);
 
         if (!provider) {
-          return {
-            connected: false,
-            email: null,
-            accountId: null,
-            lastSync: null,
-          };
+        return {
+          connected: false,
+          email: null,
+          accountId: null,
+          lastSync: null as string | null,
+        };
         }
 
         return {
           connected: !!provider.accessToken,
           email: provider.providerEmail,
           accountId: provider.providerAccountId,
-          lastSync: provider.lastSyncAt,
+          lastSync: provider.lastSyncAt ? provider.lastSyncAt.toISOString() : null,
           isActive: provider.isActive,
         };
       }),

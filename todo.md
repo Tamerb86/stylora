@@ -4929,3 +4929,10 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Push to GitHub and test
 - [ ] Verify iZettle connection status displays correctly
 - [ ] Verify tokens are readable from database
+
+## Phase 53: Fix tRPC Serialization Error
+- [ ] New error: "Unable to transform response from server"
+- [ ] TRPCClientError when calling getStatus query
+- [ ] Issue: Response contains non-serializable data (Date objects)
+- [ ] Fix getStatus to return serializable data (convert Dates to strings)
+- [ ] Test and verify iZettle displays as connected
