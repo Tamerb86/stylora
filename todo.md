@@ -4899,3 +4899,15 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Update navigation to remove iZettle menu item
 - [ ] Test iZettle connection from Payment Terminals page
 - [ ] Verify all payment providers show in one unified page
+
+## Phase 51: Fix paymentProviders Table Missing
+- [x] Railway logs show: "Database query failed" for paymentProviders table
+- [x] Query fails: SELECT from paymentProviders WHERE tenantId = ? AND providerType = ?
+- [x] Confirmed paymentProviders table missing in Railway MySQL
+- [x] Verified schema.ts has paymentProviders definition (line 950)
+- [x] Updated package.json build script to run migrations automatically
+- [x] Build now runs: drizzle-kit generate && drizzle-kit migrate before build
+- [x] Created RAILWAY_DEPLOYMENT_FIX.md with complete instructions
+- [ ] User needs to redeploy in Railway to apply migrations
+- [ ] Test iZettle OAuth after redeployment
+- [ ] Confirm tokens save successfully
