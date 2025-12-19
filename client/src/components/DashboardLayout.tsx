@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, Calendar, Scissors, UserCog, Package, BarChart3, Settings as SettingsIcon, Bell, Gift, DollarSign, TrendingUp, Clock, ShoppingCart, Receipt, Search, RefreshCw, Plane, CalendarCheck, Database, Building2, CreditCard, History, ChevronDown, MessageCircle, Send, UserCheck, Mail, Shield } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, Calendar, Scissors, UserCog, Package, BarChart3, Settings as SettingsIcon, Bell, Gift, DollarSign, TrendingUp, Clock, ShoppingCart, Receipt, Search, RefreshCw, Plane, CalendarCheck, Database, Building2, CreditCard, History, ChevronDown, MessageCircle, Send, UserCheck, Mail, Shield, Wallet, FileText, Settings } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -220,10 +220,40 @@ function DashboardLayoutContent({
   const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
   const { isSimpleMode, toggleMode } = useUIMode();
-  const [isVacationExpanded, setIsVacationExpanded] = useState(true);
-  const [isReportsExpanded, setIsReportsExpanded] = useState(true);
-  const [isPaymentsExpanded, setIsPaymentsExpanded] = useState(true);
-  const [isSettingsExpanded, setIsSettingsExpanded] = useState(true);
+  // Initialize expansion states from localStorage
+  const [isVacationExpanded, setIsVacationExpanded] = useState(() => {
+    const saved = localStorage.getItem('sidebar-vacation-expanded');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  const [isReportsExpanded, setIsReportsExpanded] = useState(() => {
+    const saved = localStorage.getItem('sidebar-reports-expanded');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  const [isPaymentsExpanded, setIsPaymentsExpanded] = useState(() => {
+    const saved = localStorage.getItem('sidebar-payments-expanded');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  const [isSettingsExpanded, setIsSettingsExpanded] = useState(() => {
+    const saved = localStorage.getItem('sidebar-settings-expanded');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  // Save expansion states to localStorage
+  useEffect(() => {
+    localStorage.setItem('sidebar-vacation-expanded', JSON.stringify(isVacationExpanded));
+  }, [isVacationExpanded]);
+
+  useEffect(() => {
+    localStorage.setItem('sidebar-reports-expanded', JSON.stringify(isReportsExpanded));
+  }, [isReportsExpanded]);
+
+  useEffect(() => {
+    localStorage.setItem('sidebar-payments-expanded', JSON.stringify(isPaymentsExpanded));
+  }, [isPaymentsExpanded]);
+
+  useEffect(() => {
+    localStorage.setItem('sidebar-settings-expanded', JSON.stringify(isSettingsExpanded));
+  }, [isSettingsExpanded]);
 
   // Fetch badge counts
   const { data: badgeCounts } = trpc.dashboard.badgeCounts.useQuery(undefined, {
@@ -395,7 +425,10 @@ function DashboardLayoutContent({
                     onClick={() => setIsPaymentsExpanded(!isPaymentsExpanded)}
                     className="w-full px-2 py-2 text-xs font-semibold text-muted-foreground/70 mt-2 flex items-center justify-between hover:text-foreground transition-colors cursor-pointer"
                   >
-                    <span className="flex items-center gap-1.5">💰 Betalinger</span>
+                    <span className="flex items-center gap-1.5">
+                      <Wallet className="h-3.5 w-3.5" />
+                      Betalinger
+                    </span>
                     <ChevronDown 
                       className={`h-3 w-3 transition-transform duration-200 ${isPaymentsExpanded ? 'rotate-0' : '-rotate-90'}`}
                     />
@@ -428,7 +461,10 @@ function DashboardLayoutContent({
                     onClick={() => setIsReportsExpanded(!isReportsExpanded)}
                     className="w-full px-2 py-2 text-xs font-semibold text-muted-foreground/70 mt-2 flex items-center justify-between hover:text-foreground transition-colors cursor-pointer"
                   >
-                    <span className="flex items-center gap-1.5">📊 Rapporter</span>
+                    <span className="flex items-center gap-1.5">
+                      <FileText className="h-3.5 w-3.5" />
+                      Rapporter
+                    </span>
                     <ChevronDown 
                       className={`h-3 w-3 transition-transform duration-200 ${isReportsExpanded ? 'rotate-0' : '-rotate-90'}`}
                     />
@@ -467,7 +503,10 @@ function DashboardLayoutContent({
                     onClick={() => setIsSettingsExpanded(!isSettingsExpanded)}
                     className="w-full px-2 py-2 text-xs font-semibold text-muted-foreground/70 mt-2 flex items-center justify-between hover:text-foreground transition-colors cursor-pointer"
                   >
-                    <span className="flex items-center gap-1.5">⚙️ Innstillinger</span>
+                    <span className="flex items-center gap-1.5">
+                      <Settings className="h-3.5 w-3.5" />
+                      Innstillinger
+                    </span>
                     <ChevronDown 
                       className={`h-3 w-3 transition-transform duration-200 ${isSettingsExpanded ? 'rotate-0' : '-rotate-90'}`}
                     />
@@ -509,7 +548,10 @@ function DashboardLayoutContent({
                     onClick={() => setIsVacationExpanded(!isVacationExpanded)}
                     className="w-full px-2 py-2 text-xs font-semibold text-muted-foreground/70 mt-2 flex items-center justify-between hover:text-foreground transition-colors cursor-pointer"
                   >
-                    <span className="flex items-center gap-1.5">✈️ Ferie & Fridager</span>
+                    <span className="flex items-center gap-1.5">
+                      <Plane className="h-3.5 w-3.5" />
+                      Ferie & Fridager
+                    </span>
                     <ChevronDown 
                       className={`h-3 w-3 transition-transform duration-200 ${isVacationExpanded ? 'rotate-0' : '-rotate-90'}`}
                     />
