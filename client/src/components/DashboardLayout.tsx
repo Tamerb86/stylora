@@ -378,7 +378,7 @@ function DashboardLayoutContent({
             {/* Sidebar Search */}
             <div className="px-3 py-2 border-b">
               <div className="relative">
-                <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="text"
                   placeholder="Søk i meny..."
