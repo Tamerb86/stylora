@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, Calendar, Scissors, UserCog, Package, BarChart3, Settings as SettingsIcon, Bell, Gift, DollarSign, TrendingUp, Clock, ShoppingCart, Receipt, Search, RefreshCw, Plane, CalendarCheck, Database, Building2, CreditCard, History, ChevronDown, MessageCircle, Send, UserCheck, Mail, Shield, Wallet, FileText, Settings } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, Calendar, Scissors, UserCog, Package, BarChart3, Settings as SettingsIcon, Bell, Gift, DollarSign, TrendingUp, Clock, ShoppingCart, Receipt, Search as SearchIcon, RefreshCw, Plane, CalendarCheck, Database, Building2, CreditCard, History, ChevronDown, MessageCircle, Send, UserCheck, Mail, Shield, Wallet, FileText, Settings, X } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -51,66 +51,73 @@ import { Label } from "@/components/ui/label";
 import { OnboardingTour } from "./OnboardingTour";
 import { trpc } from "@/lib/trpc";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Daily Operations - Most frequently used
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-  { icon: Calendar, label: "Timebok", path: "/appointments" },
-  { icon: UserCheck, label: "Walk-in Kø", path: "/walk-in-queue" },
-  { icon: ShoppingCart, label: "Salgssted (POS)", path: "/pos" },
-  { icon: Users, label: "Kunder", path: "/customers" },
-  { icon: Scissors, label: "Tjenester", path: "/services" },
-  { icon: UserCog, label: "Ansatte", path: "/employees" },
-  { icon: Package, label: "Produkter", path: "/products", advancedOnly: true },
-  { icon: Clock, label: "Timeregistrering", path: "/timeclock", submenu: [
-    { icon: Clock, label: "Innstemplingsterminal", path: "/timeclock" },
-    { icon: UserCog, label: "Administrer vakter", path: "/timeclock-admin", adminOnly: true },
+  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", tooltip: "Oversikt over dagens avtaler og nøkkeltall" },
+  { icon: Calendar, label: "Timebok", path: "/appointments", tooltip: "Administrer og bestill timer for kunder" },
+  { icon: UserCheck, label: "Walk-in Kø", path: "/walk-in-queue", tooltip: "Håndter walk-in kunder uten avtale" },
+  { icon: ShoppingCart, label: "Salgssted (POS)", path: "/pos", tooltip: "Registrer salg og behandle betalinger" },
+  { icon: Users, label: "Kunder", path: "/customers", tooltip: "Administrer kunderegisteret" },
+  { icon: Scissors, label: "Tjenester", path: "/services", tooltip: "Administrer tjenester og priser" },
+  { icon: UserCog, label: "Ansatte", path: "/employees", tooltip: "Administrer ansatte og deres tilganger" },
+  { icon: Package, label: "Produkter", path: "/products", advancedOnly: true, tooltip: "Administrer produkter for salg" },
+  { icon: Clock, label: "Timeregistrering", path: "/timeclock", tooltip: "Registrer arbeidstimer for ansatte", submenu: [
+    { icon: Clock, label: "Innstemplingsterminal", path: "/timeclock", tooltip: "Stemple inn og ut" },
+    { icon: UserCog, label: "Administrer vakter", path: "/timeclock-admin", adminOnly: true, tooltip: "Administrer og godkjenn arbeidstimer" },
   ] },
-  { icon: Gift, label: "Lojalitet", path: "/loyalty", advancedOnly: true },
-  { icon: MessageCircle, label: "Kommunikasjon", path: "/communications", advancedOnly: true, submenu: [
-    { icon: MessageCircle, label: "Innstillinger", path: "/communications" },
-    { icon: Send, label: "Masseutsendelse", path: "/bulk-messaging" },
-    { icon: TrendingUp, label: "Kampanjeanalyse", path: "/campaign-analytics" },
-    { icon: Mail, label: "E-postmaler", path: "/email-templates" },
+  { icon: Gift, label: "Lojalitet", path: "/loyalty", advancedOnly: true, tooltip: "Administrer lojalitetsprogram og belønninger" },
+  { icon: MessageCircle, label: "Kommunikasjon", path: "/communications", advancedOnly: true, tooltip: "Send meldinger og varsler til kunder", submenu: [
+    { icon: MessageCircle, label: "Innstillinger", path: "/communications", tooltip: "Konfigurer kommunikasjonsinnstillinger" },
+    { icon: Send, label: "Masseutsendelse", path: "/bulk-messaging", tooltip: "Send meldinger til flere kunder samtidig" },
+    { icon: TrendingUp, label: "Kampanjeanalyse", path: "/campaign-analytics", tooltip: "Analyser kampanjeresultater" },
+    { icon: Mail, label: "E-postmaler", path: "/email-templates", tooltip: "Administrer e-postmaler" },
   ] },
-  { icon: Bell, label: "Varsler", path: "/notifications", advancedOnly: true },
+  { icon: Bell, label: "Varsler", path: "/notifications", advancedOnly: true, tooltip: "Administrer automatiske varsler" },
 ];
 
 // Settings & Configuration - Grouped together
 const settingsMenuItems = [
-  { icon: SettingsIcon, label: "Innstillinger", path: "/settings" },
-  { icon: CreditCard, label: "Betalingsterminaler", path: "/payment-providers", adminOnly: true, advancedOnly: true },
-  { icon: CreditCard, label: "iZettle", path: "/izettle", adminOnly: true, advancedOnly: true },
-  { icon: Building2, label: "Regnskap", path: "/accounting", adminOnly: true, submenu: [
-    { icon: Building2, label: "Alle integrasjoner", path: "/accounting" },
-    { icon: Building2, label: "Eksport til regnskapsfører", path: "/accountant-export" },
-    { icon: Building2, label: "Unimicro", path: "/unimicro" },
-    { icon: Building2, label: "Fiken", path: "/fiken" },
+  { icon: SettingsIcon, label: "Innstillinger", path: "/settings", tooltip: "Konfigurer systeminnstillinger" },
+  { icon: CreditCard, label: "Betalingsterminaler", path: "/payment-providers", adminOnly: true, advancedOnly: true, tooltip: "Administrer betalingsterminaler" },
+  { icon: CreditCard, label: "iZettle", path: "/izettle", adminOnly: true, advancedOnly: true, tooltip: "Koble til iZettle-konto" },
+  { icon: Building2, label: "Regnskap", path: "/accounting", adminOnly: true, tooltip: "Integrasjoner med regnskapssystemer", submenu: [
+    { icon: Building2, label: "Alle integrasjoner", path: "/accounting", tooltip: "Oversikt over regnskapsintegrasjoner" },
+    { icon: Building2, label: "Eksport til regnskapsfører", path: "/accountant-export", tooltip: "Eksporter data til regnskapsfører" },
+    { icon: Building2, label: "Unimicro", path: "/unimicro", tooltip: "Unimicro-integrasjon" },
+    { icon: Building2, label: "Fiken", path: "/fiken", tooltip: "Fiken-integrasjon" },
   ] },
-  { icon: Database, label: "Sikkerhetskopier", path: "/backups", adminOnly: true, advancedOnly: true },
+  { icon: Database, label: "Sikkerhetskopier", path: "/backups", adminOnly: true, advancedOnly: true, tooltip: "Administrer sikkerhetskopier" },
 ];
 
 const paymentsMenuItems = [
-  { icon: CreditCard, label: "Kasse (Betaling)", path: "/pos-payment", advancedOnly: true },
-  { icon: Receipt, label: "Ordrehistorikk", path: "/orders", advancedOnly: true },
-  { icon: History, label: "Betalingshistorikk", path: "/payment-history", advancedOnly: true },
-  { icon: RefreshCw, label: "Refusjoner", path: "/refunds", advancedOnly: true },
-  { icon: RefreshCw, label: "Refusjonsstyring", path: "/refund-management", advancedOnly: true },
+  { icon: CreditCard, label: "Kasse (Betaling)", path: "/pos-payment", advancedOnly: true, tooltip: "Behandle betalinger ved kassen" },
+  { icon: Receipt, label: "Ordrehistorikk", path: "/orders", advancedOnly: true, tooltip: "Se alle tidligere ordrer" },
+  { icon: History, label: "Betalingshistorikk", path: "/payment-history", advancedOnly: true, tooltip: "Se alle betalingstransaksjoner" },
+  { icon: RefreshCw, label: "Refusjoner", path: "/refunds", advancedOnly: true, tooltip: "Administrer refusjoner" },
+  { icon: RefreshCw, label: "Refusjonsstyring", path: "/refund-management", advancedOnly: true, tooltip: "Avansert refusjonsstyring" },
 ];
 
 const reportsMenuItems = [
-  { icon: BarChart3, label: "Rapporter", path: "/reports", advancedOnly: true },
-  { icon: BarChart3, label: "Fremmøterapport", path: "/attendance", advancedOnly: true },
-  { icon: DollarSign, label: "Økonomi", path: "/financial", advancedOnly: true },
-  { icon: TrendingUp, label: "Analyse", path: "/analytics", advancedOnly: true },
-  { icon: TrendingUp, label: "Avanserte rapporter", path: "/advanced-reports", advancedOnly: true },
-  { icon: DollarSign, label: "POS Rapporter", path: "/pos-reports", advancedOnly: true },
+  { icon: BarChart3, label: "Rapporter", path: "/reports", advancedOnly: true, tooltip: "Se alle rapporter og statistikk" },
+  { icon: BarChart3, label: "Fremmøterapport", path: "/attendance", advancedOnly: true, tooltip: "Rapport over kundefremmøte" },
+  { icon: DollarSign, label: "Økonomi", path: "/financial", advancedOnly: true, tooltip: "Finansielle rapporter og økonomi" },
+  { icon: TrendingUp, label: "Analyse", path: "/analytics", advancedOnly: true, tooltip: "Analyser og innsikt" },
+  { icon: TrendingUp, label: "Avanserte rapporter", path: "/advanced-reports", advancedOnly: true, tooltip: "Avanserte rapporter og statistikk" },
+  { icon: DollarSign, label: "POS Rapporter", path: "/pos-reports", advancedOnly: true, tooltip: "Salgsrapporter fra POS" },
 ];
 
 const vacationMenuItems = [
-  { icon: Plane, label: "Mine Ferier", path: "/my-leaves", advancedOnly: true },
-  { icon: CalendarCheck, label: "Feriegodkjenninger", path: "/leave-approvals", adminOnly: true, advancedOnly: true },
-  { icon: Calendar, label: "Helligdager", path: "/holidays", adminOnly: true, advancedOnly: true },
+  { icon: Plane, label: "Mine Ferier", path: "/my-leaves", advancedOnly: true, tooltip: "Administrer dine feriedager" },
+  { icon: CalendarCheck, label: "Feriegodkjenninger", path: "/leave-approvals", adminOnly: true, advancedOnly: true, tooltip: "Godkjenn eller avslå feriesøknader" },
+  { icon: Calendar, label: "Helligdager", path: "/holidays", adminOnly: true, advancedOnly: true, tooltip: "Administrer helligdager og fridager" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -216,6 +223,7 @@ function DashboardLayoutContent({
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [sidebarSearchQuery, setSidebarSearchQuery] = useState("");
   const sidebarRef = useRef<HTMLDivElement>(null);
   const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
@@ -367,6 +375,28 @@ function DashboardLayoutContent({
           </SidebarHeader>
 
           <SidebarContent className="gap-0">
+            {/* Sidebar Search */}
+            <div className="px-3 py-2 border-b">
+              <div className="relative">
+                <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Søk i meny..."
+                  value={sidebarSearchQuery}
+                  onChange={(e) => setSidebarSearchQuery(e.target.value)}
+                  className="h-8 pl-8 pr-8 text-sm"
+                />
+                {sidebarSearchQuery && (
+                  <button
+                    onClick={() => setSidebarSearchQuery("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+
             <SidebarMenu className="px-2 py-1">
               {menuItems
                 .filter(item => {
@@ -374,6 +404,12 @@ function DashboardLayoutContent({
                   if (isSimpleMode && item.advancedOnly) return false;
                   // Filter out admin-only items for non-admins
                   if (item.adminOnly && user?.role !== "admin" && user?.role !== "owner") return false;
+                  // Filter by search query
+                  if (sidebarSearchQuery) {
+                    const query = sidebarSearchQuery.toLowerCase();
+                    return item.label.toLowerCase().includes(query) || 
+                           (item.tooltip && item.tooltip.toLowerCase().includes(query));
+                  }
                   return true;
                 })
                 .map(item => {
@@ -395,25 +431,36 @@ function DashboardLayoutContent({
 
                   return (
                     <SidebarMenuItem key={item.path}>
-                        <SidebarMenuButton
-                        isActive={isActive}
-                        onClick={() => setLocation(item.path)}
-                        tooltip={item.label}
-                        className={`h-9 transition-all font-normal`}
-                        data-tour={tourAttr}
-                      >
-                        <item.icon
-                          className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
-                        />
-                        <span className="flex items-center gap-2 flex-1">
-                          {item.label}
-                          {badgeCount > 0 && (
-                            <Badge variant="destructive" className="ml-auto h-5 px-1.5 text-xs font-semibold">
-                              {badgeCount}
-                            </Badge>
+                      <TooltipProvider delayDuration={300}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <SidebarMenuButton
+                              isActive={isActive}
+                              onClick={() => setLocation(item.path)}
+                              tooltip={item.label}
+                              className={`h-9 transition-all font-normal`}
+                              data-tour={tourAttr}
+                            >
+                              <item.icon
+                                className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
+                              />
+                              <span className="flex items-center gap-2 flex-1">
+                                {item.label}
+                                {badgeCount > 0 && (
+                                  <Badge variant="destructive" className="ml-auto h-5 px-1.5 text-xs font-semibold">
+                                    {badgeCount}
+                                  </Badge>
+                                )}
+                              </span>
+                            </SidebarMenuButton>
+                          </TooltipTrigger>
+                          {item.tooltip && (
+                            <TooltipContent side="right" className="max-w-xs">
+                              <p className="text-sm">{item.tooltip}</p>
+                            </TooltipContent>
                           )}
-                        </span>
-                      </SidebarMenuButton>
+                        </Tooltip>
+                      </TooltipProvider>
                     </SidebarMenuItem>
                   );
                 })}
@@ -435,19 +482,39 @@ function DashboardLayoutContent({
                   </button>
                   
                   {/* Payments Menu Items */}
-                  {isPaymentsExpanded && paymentsMenuItems.map(item => {
+                  {isPaymentsExpanded && paymentsMenuItems
+                    .filter(item => {
+                      if (sidebarSearchQuery) {
+                        const query = sidebarSearchQuery.toLowerCase();
+                        return item.label.toLowerCase().includes(query) || 
+                               (item.tooltip && item.tooltip.toLowerCase().includes(query));
+                      }
+                      return true;
+                    })
+                    .map(item => {
                     const isActive = location === item.path;
                     return (
                       <SidebarMenuItem key={item.path}>
-                        <SidebarMenuButton
-                          isActive={isActive}
-                          onClick={() => setLocation(item.path)}
-                          tooltip={item.label}
-                          className="h-9 transition-all font-normal"
-                        >
-                          <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
-                          <span>{item.label}</span>
-                        </SidebarMenuButton>
+                        <TooltipProvider delayDuration={300}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <SidebarMenuButton
+                                isActive={isActive}
+                                onClick={() => setLocation(item.path)}
+                                tooltip={item.label}
+                                className="h-9 transition-all font-normal"
+                              >
+                                <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
+                                <span>{item.label}</span>
+                              </SidebarMenuButton>
+                            </TooltipTrigger>
+                            {item.tooltip && (
+                              <TooltipContent side="right" className="max-w-xs">
+                                <p className="text-sm">{item.tooltip}</p>
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                        </TooltipProvider>
                       </SidebarMenuItem>
                     );
                   })}
@@ -475,21 +542,38 @@ function DashboardLayoutContent({
                     .filter(item => {
                       // Filter out advanced-only items in simple mode
                       if (item.advancedOnly && isSimpleMode) return false;
+                      // Filter by search query
+                      if (sidebarSearchQuery) {
+                        const query = sidebarSearchQuery.toLowerCase();
+                        return item.label.toLowerCase().includes(query) || 
+                               (item.tooltip && item.tooltip.toLowerCase().includes(query));
+                      }
                       return true;
                     })
                     .map(item => {
                       const isActive = location === item.path;
                       return (
                         <SidebarMenuItem key={item.path}>
-                          <SidebarMenuButton
-                            isActive={isActive}
-                            onClick={() => setLocation(item.path)}
-                            tooltip={item.label}
-                            className="h-9 transition-all font-normal"
-                          >
-                            <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
-                            <span>{item.label}</span>
-                          </SidebarMenuButton>
+                          <TooltipProvider delayDuration={300}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <SidebarMenuButton
+                                  isActive={isActive}
+                                  onClick={() => setLocation(item.path)}
+                                  tooltip={item.label}
+                                  className="h-9 transition-all font-normal"
+                                >
+                                  <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
+                                  <span>{item.label}</span>
+                                </SidebarMenuButton>
+                              </TooltipTrigger>
+                              {item.tooltip && (
+                                <TooltipContent side="right" className="max-w-xs">
+                                  <p className="text-sm">{item.tooltip}</p>
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                          </TooltipProvider>
                         </SidebarMenuItem>
                       );
                     })}
@@ -517,6 +601,12 @@ function DashboardLayoutContent({
                     .filter(item => {
                       // Filter out admin-only items for non-admins
                       if (item.adminOnly && user?.role !== "admin" && user?.role !== "owner") return false;
+                      // Filter by search query
+                      if (sidebarSearchQuery) {
+                        const query = sidebarSearchQuery.toLowerCase();
+                        return item.label.toLowerCase().includes(query) || 
+                               (item.tooltip && item.tooltip.toLowerCase().includes(query));
+                      }
                       return true;
                     })
                     .map(item => {
@@ -525,16 +615,27 @@ function DashboardLayoutContent({
 
                       return (
                         <SidebarMenuItem key={item.path}>
-                          <SidebarMenuButton
-                            isActive={isActive}
-                            onClick={() => setLocation(item.path)}
-                            tooltip={item.label}
-                            className="h-9 transition-all font-normal"
-                            data-tour={tourAttr}
-                          >
-                            <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
-                            <span>{item.label}</span>
-                          </SidebarMenuButton>
+                          <TooltipProvider delayDuration={300}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <SidebarMenuButton
+                                  isActive={isActive}
+                                  onClick={() => setLocation(item.path)}
+                                  tooltip={item.label}
+                                  className="h-9 transition-all font-normal"
+                                  data-tour={tourAttr}
+                                >
+                                  <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
+                                  <span>{item.label}</span>
+                                </SidebarMenuButton>
+                              </TooltipTrigger>
+                              {item.tooltip && (
+                                <TooltipContent side="right" className="max-w-xs">
+                                  <p className="text-sm">{item.tooltip}</p>
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                          </TooltipProvider>
                         </SidebarMenuItem>
                       );
                     })}
@@ -562,6 +663,12 @@ function DashboardLayoutContent({
                     .filter(item => {
                       // Filter out admin-only items for non-admins
                       if (item.adminOnly && user?.role !== "admin" && user?.role !== "owner") return false;
+                      // Filter by search query
+                      if (sidebarSearchQuery) {
+                        const query = sidebarSearchQuery.toLowerCase();
+                        return item.label.toLowerCase().includes(query) || 
+                               (item.tooltip && item.tooltip.toLowerCase().includes(query));
+                      }
                       return true;
                     })
                     .map(item => {
@@ -575,22 +682,33 @@ function DashboardLayoutContent({
 
                       return (
                         <SidebarMenuItem key={item.path}>
-                          <SidebarMenuButton
-                            isActive={isActive}
-                            onClick={() => setLocation(item.path)}
-                            tooltip={item.label}
-                            className="h-9 transition-all font-normal"
-                          >
-                            <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
-                            <span className="flex items-center gap-2 flex-1">
-                              {item.label}
-                              {badgeCount > 0 && (
-                                <Badge variant="default" className="ml-auto h-5 px-1.5 text-xs font-semibold bg-orange-500 hover:bg-orange-600">
-                                  {badgeCount}
-                                </Badge>
+                          <TooltipProvider delayDuration={300}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <SidebarMenuButton
+                                  isActive={isActive}
+                                  onClick={() => setLocation(item.path)}
+                                  tooltip={item.label}
+                                  className="h-9 transition-all font-normal"
+                                >
+                                  <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
+                                  <span className="flex items-center gap-2 flex-1">
+                                    {item.label}
+                                    {badgeCount > 0 && (
+                                      <Badge variant="default" className="ml-auto h-5 px-1.5 text-xs font-semibold bg-orange-500 hover:bg-orange-600">
+                                        {badgeCount}
+                                      </Badge>
+                                    )}
+                                  </span>
+                                </SidebarMenuButton>
+                              </TooltipTrigger>
+                              {item.tooltip && (
+                                <TooltipContent side="right" className="max-w-xs">
+                                  <p className="text-sm">{item.tooltip}</p>
+                                </TooltipContent>
                               )}
-                            </span>
-                          </SidebarMenuButton>
+                            </Tooltip>
+                          </TooltipProvider>
                         </SidebarMenuItem>
                       );
                     })}
