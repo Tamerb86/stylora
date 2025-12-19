@@ -169,16 +169,11 @@ async function startServer() {
         // Check if provider already exists
         let existing;
         try {
-          console.log("[iZettle Callback] Querying existing provider for tenant:", tenantId);
+          console.log("[iZettle Callback] Querying existing provider");
           [existing] = await dbInstance
             .select()
             .from(paymentProviders)
-            .where(
-              and(
-                eq(paymentProviders.tenantId, tenantId),
-                eq(paymentProviders.providerType, "izettle")
-              )
-            )
+            .where(eq(paymentProviders.providerType, "izettle"))
             .limit(1);
           console.log("[iZettle Callback] Query result:", existing ? "found" : "not found");
         } catch (dbError: any) {
@@ -207,8 +202,9 @@ async function startServer() {
             // Insert new
             console.log("[iZettle Callback] Creating new provider entry");
             await dbInstance.insert(paymentProviders).values({
-              tenantId,
+              tenantId: tenantId || 'platform-admin-tenant',
               providerType: "izettle",
+              providerName: "iZettle",
               accessToken: encryptToken(tokens.access_token),
               refreshToken: encryptToken(tokens.refresh_token),
               tokenExpiresAt: expiresAt,

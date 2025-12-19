@@ -4908,6 +4908,24 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Updated package.json build script to run migrations automatically
 - [x] Build now runs: drizzle-kit generate && drizzle-kit migrate before build
 - [x] Created RAILWAY_DEPLOYMENT_FIX.md with complete instructions
-- [ ] User needs to redeploy in Railway to apply migrations
-- [ ] Test iZettle OAuth after redeployment
+- [x] Created SQL script: create-payment-providers-table.sql
+- [x] User created paymentProviders table in Railway MySQL via TablePlus
+- [x] Table created successfully (Query 1 OK)
+- [x] Pushed code to GitHub (commit 872d648)
+- [ ] Railway auto-deploying from GitHub push
+- [ ] Test iZettle OAuth after Railway redeploys
 - [ ] Confirm tokens save successfully
+
+## Phase 52: Fix tRPC Query Error for paymentProviders
+- [x] OAuth callback saves tokens successfully (confirmed in logs)
+- [x] But frontend query fails: "Failed query: select from paymentProviders WHERE tenantId = ?"
+- [x] Error: TRPCClientError with params: platform-admin-tenant,izettle,1
+- [x] UI shows "iZettle er ikke tilkoblet" (not connected)
+- [x] Issue: ctx.tenantId is undefined in adminProcedure context
+- [x] Found paymentProviders query in server/routers.ts line 11324
+- [x] Removed tenantId filter from getStatus query (iZettle is single instance)
+- [x] Removed tenantId filter from callback query
+- [x] Added default tenantId fallback in insert: 'platform-admin-tenant'
+- [ ] Push to GitHub and test
+- [ ] Verify iZettle connection status displays correctly
+- [ ] Verify tokens are readable from database

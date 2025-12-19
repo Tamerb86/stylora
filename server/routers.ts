@@ -11329,15 +11329,11 @@ export const appRouter = router({
         }
 
         const { paymentProviders } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
         const [provider] = await dbInstance
           .select()
           .from(paymentProviders)
-          .where(
-            and(
-              eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, 'izettle')
-            )
-          )
+          .where(eq(paymentProviders.providerType, 'izettle'))
           .limit(1);
 
         if (!provider) {
