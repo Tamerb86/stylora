@@ -5033,3 +5033,10 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add stronger font-weight (700 or bold)
 - [x] Test changes in browser
 - [x] Save checkpoint
+
+## Phase 67: Fix Legend Text Color Using CSS Classes
+- [x] Add global CSS styles for Recharts legend
+- [x] Target .recharts-legend-item-text class
+- [x] Apply black color and larger font
+- [x] Test in browser to verify changes
+- [x] Save checkpoint
