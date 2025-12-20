@@ -42,6 +42,11 @@ export function WalkInQueue() {
     refetchInterval: 30000,
   });
 
+  // Fetch intelligent wait times
+  const { data: waitTimesData } = trpc.walkInQueue.calculateWaitTimes.useQuery(undefined, {
+    refetchInterval: 30000, // Auto-refresh every 30 seconds
+  });
+
   const { data: services } = trpc.services.list.useQuery();
   // Get tenantId from auth context
   const { data: authData } = trpc.auth.me.useQuery();
@@ -181,20 +186,20 @@ export function WalkInQueue() {
     toast.info("SMS-varsel funksjon kommer snart");
   };
 
-  // Calculate dynamic wait time based on priority and available barbers
-  const calculateDynamicWaitTime = (position: number, priority: string, serviceDuration: number) => {
-    const availableBarbers = barberStats?.available || 1;
-    const priorityMultiplier = priority === "vip" ? 0.5 : priority === "urgent" ? 0.75 : 1;
-    
-    // Base calculation: (position × service duration) / available barbers
-    const baseWaitTime = (position * serviceDuration) / availableBarbers;
-    const adjustedWaitTime = Math.round(baseWaitTime * priorityMultiplier);
-    
-    // Return range (±5 minutes)
-    const minWait = Math.max(0, adjustedWaitTime - 5);
-    const maxWait = adjustedWaitTime + 5;
-    
-    return { min: minWait, max: maxWait, estimated: adjustedWaitTime };
+  // Get intelligent wait time from backend calculation
+  const getIntelligentWaitTime = (queueId: number) => {
+    const waitTimeInfo = waitTimesData?.waitTimes?.find((wt: any) => wt.queueId === queueId);
+    if (waitTimeInfo) {
+      const estimated = waitTimeInfo.estimatedWaitMinutes;
+      return {
+        min: Math.max(0, estimated - 5),
+        max: estimated + 5,
+        estimated,
+        color: waitTimeInfo.color,
+      };
+    }
+    // Fallback to simple calculation if backend data not available
+    return { min: 10, max: 20, estimated: 15, color: "green" };
   };
 
   const getPriorityBadge = (priority: string, reason?: string) => {
@@ -237,15 +242,38 @@ export function WalkInQueue() {
     );
   };
 
+  const getWaitTimeColorByName = (color: string) => {
+    const colorMap: Record<string, string> = {
+      green: "text-green-600 dark:text-green-400",
+      yellow: "text-yellow-600 dark:text-yellow-400",
+      orange: "text-orange-600 dark:text-orange-400",
+      red: "text-red-600 dark:text-red-400",
+    };
+    return colorMap[color] || "text-gray-600 dark:text-gray-400";
+  };
+
+  const getWaitTimeBgByName = (color: string) => {
+    const bgMap: Record<string, string> = {
+      green: "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800",
+      yellow: "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800",
+      orange: "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800",
+      red: "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800",
+    };
+    return bgMap[color] || "bg-gray-50 dark:bg-gray-900/20 border-gray-200 dark:border-gray-800";
+  };
+
+  // Legacy functions for backward compatibility
   const getWaitTimeColor = (minutes: number) => {
     if (minutes < 15) return "text-green-600 dark:text-green-400";
     if (minutes < 30) return "text-yellow-600 dark:text-yellow-400";
+    if (minutes < 45) return "text-orange-600 dark:text-orange-400";
     return "text-red-600 dark:text-red-400";
   };
 
   const getWaitTimeBg = (minutes: number) => {
     if (minutes < 15) return "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800";
     if (minutes < 30) return "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800";
+    if (minutes < 45) return "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800";
     return "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800";
   };
 
@@ -463,16 +491,12 @@ export function WalkInQueue() {
             {waitingCustomers.map((customer: any, index: number) => {
               const service = services?.find((s: any) => s.id === customer.serviceId);
               const employee = employees?.find((e: any) => e.id === customer.employeeId);
-              const waitTime = calculateDynamicWaitTime(
-                index + 1, 
-                customer.priority, 
-                service?.durationMinutes || 30
-              );
+              const waitTime = getIntelligentWaitTime(customer.id);
               
               return (
                 <div
                   key={customer.id}
-                  className={`flex items-center justify-between p-4 border-2 rounded-lg transition-colors ${getWaitTimeBg(waitTime.estimated)}`}
+                  className={`flex items-center justify-between p-4 border-2 rounded-lg transition-colors ${getWaitTimeBgByName(waitTime.color)}`}
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
@@ -498,11 +522,12 @@ export function WalkInQueue() {
                           <span className="font-medium">{employee.name}</span>
                         </div>
                       )}
-                      <div className={`flex items-center gap-1 ${getWaitTimeColor(waitTime.estimated)}`}>
+                      <div className={`flex items-center gap-1 ${getWaitTimeColorByName(waitTime.color)}`}>
                         <Clock className="h-4 w-4" />
                         <span className="font-semibold">
-                          {waitTime.min}-{waitTime.max} min
+                          ~{waitTime.estimated} min
                         </span>
+                        <span className="text-xs text-muted-foreground">({waitTime.min}-{waitTime.max})</span>
                       </div>
                       <div className="text-muted-foreground">
                         Lagt til: {customer.addedAt ? format(new Date(customer.addedAt), "HH:mm", { locale: nb }) : "Ukjent"}

@@ -5210,3 +5210,24 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Test all 3 pages in all 4 languages
 - [ ] Save checkpoint
 - [ ] Deploy to Railway production
+
+## Phase 80: Intelligent Wait Time Calculation System
+- [x] Duration field already exists in services table (durationMinutes)
+- [x] Create wait time calculation algorithm in backend
+  - [x] Calculate total time for customers ahead in queue
+  - [x] Factor in number of available staff
+  - [x] Consider current in-service customers' remaining time
+  - [x] Apply priority multipliers (VIP gets 0.7x, Urgent gets 0.85x)
+- [x] Add backend endpoint calculateWaitTimes to get estimated wait times
+- [x] Update Walk-in Queue component to fetch intelligent wait times
+- [x] Replace calculateDynamicWaitTime with getIntelligentWaitTime
+- [x] Add color-coded wait time indicators:
+  - [x] Green: 0-15 minutes
+  - [x] Yellow: 16-30 minutes
+  - [x] Orange: 31-45 minutes
+  - [x] Red: 46+ minutes
+- [x] Add auto-refresh for wait times every 30 seconds
+- [x] Update UI to display estimated wait time with color-coded backgrounds
+- [ ] Test wait time calculations with different scenarios
+- [ ] Save checkpoint
+- [ ] Deploy to Railway production

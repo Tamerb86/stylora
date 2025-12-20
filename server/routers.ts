@@ -7568,6 +7568,128 @@ export const appRouter = router({
     }),
 
     /**
+     * Calculate intelligent wait times for all customers in queue
+     * Takes into account:
+     * - Service duration
+     * - Number of customers ahead
+     * - Available staff count
+     * - Current in-service customers' remaining time
+     * - Priority levels (VIP gets 0.7x multiplier, Urgent gets 0.85x)
+     */
+    calculateWaitTimes: tenantProcedure.query(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      }
+
+      const { walkInQueue, services, users } = await import("../drizzle/schema");
+
+      // Get all active employees
+      const allEmployees = await dbInstance
+        .select({ id: users.id })
+        .from(users)
+        .where(and(
+          eq(users.tenantId, ctx.user.tenantId),
+          eq(users.isActive, true),
+          or(
+            eq(users.role, "employee"),
+            eq(users.role, "admin"),
+            eq(users.role, "owner")
+          )
+        ));
+
+      const totalStaff = Math.max(allEmployees.length, 1); // At least 1 to avoid division by zero
+
+      // Get customers currently in service with their service duration and start time
+      const inServiceCustomers = await dbInstance
+        .select({
+          id: walkInQueue.id,
+          startedAt: walkInQueue.startedAt,
+          durationMinutes: services.durationMinutes,
+        })
+        .from(walkInQueue)
+        .leftJoin(services, eq(walkInQueue.serviceId, services.id))
+        .where(and(
+          eq(walkInQueue.tenantId, ctx.user.tenantId),
+          eq(walkInQueue.status, "in_service")
+        ));
+
+      // Calculate average remaining time for in-service customers
+      const now = new Date();
+      let totalRemainingTime = 0;
+      for (const customer of inServiceCustomers) {
+        if (customer.startedAt && customer.durationMinutes) {
+          const elapsedMinutes = Math.floor((now.getTime() - customer.startedAt.getTime()) / (1000 * 60));
+          const remainingMinutes = Math.max(customer.durationMinutes - elapsedMinutes, 0);
+          totalRemainingTime += remainingMinutes;
+        }
+      }
+      const avgRemainingTime = inServiceCustomers.length > 0 ? totalRemainingTime / inServiceCustomers.length : 0;
+
+      // Get waiting customers with their service details
+      const waitingCustomers = await dbInstance
+        .select({
+          id: walkInQueue.id,
+          position: walkInQueue.position,
+          priority: walkInQueue.priority,
+          durationMinutes: services.durationMinutes,
+          addedAt: walkInQueue.addedAt,
+        })
+        .from(walkInQueue)
+        .leftJoin(services, eq(walkInQueue.serviceId, services.id))
+        .where(and(
+          eq(walkInQueue.tenantId, ctx.user.tenantId),
+          eq(walkInQueue.status, "waiting")
+        ))
+        .orderBy(walkInQueue.position);
+
+      // Calculate wait time for each customer
+      const waitTimes: { queueId: number; estimatedWaitMinutes: number; color: string }[] = [];
+      let cumulativeTime = avgRemainingTime; // Start with remaining time of in-service customers
+
+      for (let i = 0; i < waitingCustomers.length; i++) {
+        const customer = waitingCustomers[i];
+        const serviceDuration = customer.durationMinutes || 30; // Default 30 minutes
+
+        // Calculate base wait time (cumulative time divided by available staff)
+        let estimatedWait = Math.ceil(cumulativeTime / totalStaff);
+
+        // Apply priority multipliers
+        if (customer.priority === "vip") {
+          estimatedWait = Math.ceil(estimatedWait * 0.7); // VIP gets 30% faster service
+        } else if (customer.priority === "urgent") {
+          estimatedWait = Math.ceil(estimatedWait * 0.85); // Urgent gets 15% faster service
+        }
+
+        // Determine color based on wait time
+        let color = "green"; // 0-15 minutes
+        if (estimatedWait > 45) {
+          color = "red"; // 46+ minutes
+        } else if (estimatedWait > 30) {
+          color = "orange"; // 31-45 minutes
+        } else if (estimatedWait > 15) {
+          color = "yellow"; // 16-30 minutes
+        }
+
+        waitTimes.push({
+          queueId: customer.id,
+          estimatedWaitMinutes: estimatedWait,
+          color,
+        });
+
+        // Add this customer's service duration to cumulative time for next customer
+        cumulativeTime += serviceDuration;
+      }
+
+      return {
+        waitTimes,
+        totalStaff,
+        inServiceCount: inServiceCustomers.length,
+        waitingCount: waitingCustomers.length,
+      };
+    }),
+
+    /**
      * Update customer priority in queue
      */
     updatePriority: adminProcedure
