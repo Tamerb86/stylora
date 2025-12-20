@@ -24,7 +24,12 @@
     "activeStaff": "الموظفون النشطون",
     "totalServices": "إجمالي الخدمات",
     "popularService": "الخدمة الأكثر طلباً",
-    "noData": "لا توجد بيانات"
+    "noData": "لا توجد بيانات",
+    "appointmentsTrend": "اتجاه المواعيد (آخر 7 أيام)",
+    "statusDistribution": "توزيع الحالات",
+    "monthlyCalendar": "التقويم الشهري",
+    "cancelled": "ملغى",
+    "appointments": "المواعيد"
   },
   "nav": {
     "dashboard": "لوحة التحكم",

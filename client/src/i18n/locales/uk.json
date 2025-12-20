@@ -24,7 +24,12 @@
     "activeStaff": "Активні співробітники",
     "totalServices": "Всього послуг",
     "popularService": "Популярна послуга",
-    "noData": "Немає даних"
+    "noData": "Немає даних",
+    "appointmentsTrend": "Тренд зустрічей (останні 7 днів)",
+    "statusDistribution": "Розподіл статусів",
+    "monthlyCalendar": "Місячний календар",
+    "cancelled": "Скасовано",
+    "appointments": "Зустрічі"
   },
   "nav": {
     "dashboard": "Панель управління",

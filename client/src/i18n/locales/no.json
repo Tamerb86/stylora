@@ -24,7 +24,12 @@
     "activeStaff": "Aktive ansatte",
     "totalServices": "Totalt tjenester",
     "popularService": "Populær tjeneste",
-    "noData": "Ingen data"
+    "noData": "Ingen data",
+    "appointmentsTrend": "Avtaletrend (siste 7 dager)",
+    "statusDistribution": "Statusfordeling",
+    "monthlyCalendar": "Månedlig kalender",
+    "cancelled": "Kansellert",
+    "appointments": "Avtaler"
   },
   "nav": {
     "dashboard": "Dashbord",

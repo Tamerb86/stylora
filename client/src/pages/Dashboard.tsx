@@ -19,6 +19,10 @@ import {
   Package
 } from "lucide-react";
 import { useTranslation } from 'react-i18next';
+import AppointmentsChart from '@/components/charts/AppointmentsChart';
+import StatusDistributionChart from '@/components/charts/StatusDistributionChart';
+import MiniCalendar from '@/components/MiniCalendar';
+import { BarChart3, PieChart, Calendar as CalendarIcon } from 'lucide-react';
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation();
@@ -30,6 +34,8 @@ export default function Dashboard() {
   });
   const { data: employees } = trpc.employees.list.useQuery();
   const { data: services } = trpc.services.list.useQuery();
+  const { data: appointmentsOverTime } = trpc.dashboard.appointmentsOverTime.useQuery();
+  const { data: statusDistribution } = trpc.dashboard.statusDistribution.useQuery();
   const [, setLocation] = useLocation();
   const isRTL = i18n.language === 'ar';
 
@@ -371,6 +377,72 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Charts Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Appointments Trend Chart */}
+          <Card className="border-0 shadow-md lg:col-span-2">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <div className="p-1.5 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg">
+                  <BarChart3 className="w-4 h-4 text-white" />
+                </div>
+                {t('dashboard.appointmentsTrend')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              {appointmentsOverTime && appointmentsOverTime.length > 0 ? (
+                <AppointmentsChart data={appointmentsOverTime} />
+              ) : (
+                <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+                  <p className="text-sm">{t('dashboard.noData')}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Status Distribution Chart */}
+          <Card className="border-0 shadow-md">
+            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <div className="p-1.5 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg">
+                  <PieChart className="w-4 h-4 text-white" />
+                </div>
+                {t('dashboard.statusDistribution')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              {statusDistribution ? (
+                <StatusDistributionChart data={statusDistribution} />
+              ) : (
+                <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+                  <p className="text-sm">{t('dashboard.noData')}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Mini Calendar */}
+        <Card className="border-0 shadow-md">
+          <CardHeader className="bg-gradient-to-r from-teal-50 to-cyan-50 pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <div className="p-1.5 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-lg">
+                <CalendarIcon className="w-4 h-4 text-white" />
+              </div>
+              {t('dashboard.monthlyCalendar')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            {upcomingAppointments ? (
+              <MiniCalendar appointments={upcomingAppointments as any} />
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <p className="text-sm">{t('dashboard.noData')}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </DashboardLayout>
   );

@@ -24,7 +24,12 @@
     "activeStaff": "Active Staff",
     "totalServices": "Total Services",
     "popularService": "Popular Service",
-    "noData": "No data"
+    "noData": "No data",
+    "appointmentsTrend": "Appointments Trend (Last 7 Days)",
+    "statusDistribution": "Status Distribution",
+    "monthlyCalendar": "Monthly Calendar",
+    "cancelled": "Cancelled",
+    "appointments": "Appointments"
   },
   "nav": {
     "dashboard": "Dashboard",

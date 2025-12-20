@@ -6101,6 +6101,77 @@ export const appRouter = router({
       };
     }),
 
+    // Get appointments over time (last 7 days)
+    appointmentsOverTime: tenantProcedure.query(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) return [];
+
+      const { appointments } = await import("../drizzle/schema");
+      const { eq, and, sql, gte } = await import("drizzle-orm");
+
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+      const startDate = sevenDaysAgo.toISOString().split('T')[0];
+
+      const appts = await dbInstance.select({
+        date: appointments.appointmentDate,
+        count: sql<number>`count(*)`
+      })
+      .from(appointments)
+      .where(
+        and(
+          eq(appointments.tenantId, ctx.tenantId),
+          gte(appointments.appointmentDate, startDate)
+        )
+      )
+      .groupBy(appointments.appointmentDate)
+      .orderBy(appointments.appointmentDate);
+
+      // Fill in missing dates with 0 count
+      const result = [];
+      for (let i = 0; i < 7; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() - (6 - i));
+        const dateStr = date.toISOString().split('T')[0];
+        const found = appts.find(a => String(a.date) === dateStr);
+        result.push({
+          date: dateStr,
+          count: found ? Number(found.count) : 0
+        });
+      }
+
+      return result;
+    }),
+
+    // Get appointment status distribution
+    statusDistribution: tenantProcedure.query(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) return { confirmed: 0, pending: 0, cancelled: 0 };
+
+      const { appointments } = await import("../drizzle/schema");
+      const { eq, and, sql } = await import("drizzle-orm");
+
+      const today = new Date().toISOString().split('T')[0];
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const startDate = thirtyDaysAgo.toISOString().split('T')[0];
+
+      const appts = await dbInstance.select()
+        .from(appointments)
+        .where(
+          and(
+            eq(appointments.tenantId, ctx.tenantId),
+            sql`${appointments.appointmentDate} >= ${startDate}`
+          )
+        );
+
+      return {
+        confirmed: appts.filter(a => a.status === 'confirmed').length,
+        pending: appts.filter(a => a.status === 'pending').length,
+        cancelled: appts.filter(a => a.status === 'canceled').length,
+      };
+    }),
+
     // Get badge counts for sidebar
     badgeCounts: tenantProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
