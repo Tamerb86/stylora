@@ -65,6 +65,7 @@ export default function POS() {
   const stripeTerminal = useStripeTerminal();
   const thermalPrinter = useThermalPrinter();
   const [cart, setCart] = useState<CartState>({ items: [] });
+  const [hasLoadedPreselect, setHasLoadedPreselect] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [customerSearchQuery, setCustomerSearchQuery] = useState("");
   const [employeeSearchQuery, setEmployeeSearchQuery] = useState("");
@@ -188,6 +189,39 @@ export default function POS() {
   const clearCart = () => {
     setCart({ items: [] });
   };
+
+  // Load preselected service from Walk-in Queue
+  useEffect(() => {
+    if (hasLoadedPreselect) return;
+    
+    const preselectData = sessionStorage.getItem('pos_preselect');
+    if (preselectData) {
+      try {
+        const data = JSON.parse(preselectData);
+        // Add service to cart
+        addItemToCart({
+          id: data.serviceId,
+          itemType: 'service',
+          name: data.serviceName,
+          quantity: 1,
+          unitPrice: data.servicePrice,
+          vatRate: 25, // Default VAT
+        });
+        // Set customer info if available
+        if (data.customerName) {
+          setCart(prev => ({
+            ...prev,
+            customerName: data.customerName,
+          }));
+        }
+        // Clear sessionStorage after loading
+        sessionStorage.removeItem('pos_preselect');
+        setHasLoadedPreselect(true);
+      } catch (error) {
+        console.error('Failed to load preselect data:', error);
+      }
+    }
+  }, [hasLoadedPreselect]);
 
   const selectCustomer = (customerId: number, customerName: string) => {
     setCart((prev) => ({ ...prev, customerId, customerName }));

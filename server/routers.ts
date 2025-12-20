@@ -7332,7 +7332,6 @@ export const appRouter = router({
           .select({
             id: walkInQueue.id,
             customerName: walkInQueue.customerName,
-            customerId: walkInQueue.customerId,
             serviceId: walkInQueue.serviceId,
             serviceName: services.name,
             servicePrice: services.price,
@@ -7366,7 +7365,7 @@ export const appRouter = router({
           success: true,
           serviceId: queueEntry[0].serviceId,
           servicePrice: queueEntry[0].servicePrice,
-          customerId: queueEntry[0].customerId,
+          serviceName: queueEntry[0].serviceName,
           customerName: queueEntry[0].customerName,
         };
       }),
@@ -7382,8 +7381,31 @@ export const appRouter = router({
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
         }
 
-        const { walkInQueue } = await import("../drizzle/schema");
+        const { walkInQueue, services } = await import("../drizzle/schema");
 
+        // Get queue entry with service details before updating
+        const queueEntry = await dbInstance
+          .select({
+            id: walkInQueue.id,
+            customerName: walkInQueue.customerName,
+            customerPhone: walkInQueue.customerPhone,
+            serviceId: walkInQueue.serviceId,
+            serviceName: services.name,
+            servicePrice: services.price,
+          })
+          .from(walkInQueue)
+          .leftJoin(services, eq(walkInQueue.serviceId, services.id))
+          .where(and(
+            eq(walkInQueue.id, input.queueId),
+            eq(walkInQueue.tenantId, ctx.user.tenantId)
+          ))
+          .limit(1);
+
+        if (!queueEntry || queueEntry.length === 0) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Queue entry not found" });
+        }
+
+        // Update status to completed
         await dbInstance
           .update(walkInQueue)
           .set({
@@ -7395,7 +7417,15 @@ export const appRouter = router({
             eq(walkInQueue.tenantId, ctx.user.tenantId)
           ));
 
-        return { success: true };
+        // Return customer and service data for POS
+        return {
+          success: true,
+          customerName: queueEntry[0].customerName,
+          customerPhone: queueEntry[0].customerPhone,
+          serviceId: queueEntry[0].serviceId,
+          serviceName: queueEntry[0].serviceName,
+          servicePrice: queueEntry[0].servicePrice,
+        };
       }),
 
     /**

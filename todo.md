@@ -5080,3 +5080,17 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Audit Reports pages responsiveness (already responsive)
 - [x] Test changes in dev environment
 - [x] Save checkpoint
+
+## Phase 72: Fix Walk-in Queue Workflow
+- [x] Audit Walk-in Queue page code
+- [x] Add "In Service" section to display customers with status = "in_service"
+- [x] Add "Fullfør & Betal" button for in-service customers
+- [x] Update completeService endpoint to return customer and service data
+- [x] Implement auto-redirect to POS after completing service
+- [x] Store service/customer data in sessionStorage for POS
+- [x] Add useEffect in POS to load preselected service from sessionStorage
+- [x] Pre-fill customer name in POS cart
+- [x] Verified "Legg til Kunde" button is clear and prominent
+- [ ] Test complete workflow from queue to payment
+- [ ] Deploy to Railway production
+- [ ] Save checkpoint

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import { nb } from "date-fns/locale";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function WalkInQueue() {
+  const [, setLocation] = useLocation();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editPriorityDialog, setEditPriorityDialog] = useState<{ open: boolean; queueId: number | null; currentPriority: string; currentReason: string }>({
     open: false,
@@ -99,6 +100,29 @@ export function WalkInQueue() {
     },
   });
 
+  const completeService = trpc.walkInQueue.completeService.useMutation({
+    onSuccess: (data: any) => {
+      toast.success("Tjeneste fullført - omdirigerer til kasse");
+      refetch();
+      // Navigate to POS with pre-selected service and customer info
+      const service = services?.find((s: any) => s.id === data.serviceId);
+      if (service) {
+        // Store customer and service info in sessionStorage for POS to pick up
+        sessionStorage.setItem('pos_preselect', JSON.stringify({
+          customerName: data.customerName,
+          customerPhone: data.customerPhone,
+          serviceId: data.serviceId,
+          serviceName: service.name,
+          servicePrice: service.price,
+        }));
+        setLocation('/pos');
+      }
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Kunne ikke fullføre tjeneste");
+    },
+  });
+
   const handleAddToQueue = () => {
     if (!newCustomer.customerName || !newCustomer.customerPhone) {
       toast.error("Vennligst fyll ut navn og telefon");
@@ -145,6 +169,12 @@ export function WalkInQueue() {
       priority: editPriorityDialog.currentPriority as "normal" | "urgent" | "vip",
       priorityReason: editPriorityDialog.currentReason || undefined,
     });
+  };
+
+  const handleCompleteService = (queueId: number) => {
+    if (confirm("Er du sikker på at tjenesten er fullført? Kunden vil bli sendt til kassen.")) {
+      completeService.mutate({ queueId });
+    }
   };
 
   const handleNotify = (queueId: number) => {
@@ -230,6 +260,7 @@ export function WalkInQueue() {
   });
 
   const waitingCustomers = sortedQueue.filter((q: any) => q.status === "waiting") || [];
+  const inServiceCustomers = sortedQueue.filter((q: any) => q.status === "in_service") || [];
   const averageWaitTime = waitingCustomers.length > 0
     ? Math.floor(waitingCustomers.reduce((sum: number, q: any) => {
         const service = services?.find((s: any) => s.id === q.serviceId);
@@ -533,6 +564,102 @@ export function WalkInQueue() {
           </div>
         )}
       </CardContent>
+
+      {/* In-Service Customers */}
+      {inServiceCustomers.length > 0 && (
+        <CardContent className="border-t">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Play className="h-5 w-5 text-blue-600" />
+              Tjeneste pågår ({inServiceCustomers.length})
+            </h3>
+            <p className="text-sm text-muted-foreground">Kunder som får tjeneste nå</p>
+          </div>
+          <div className="space-y-3">
+            {inServiceCustomers.map((customer: any) => {
+              const service = services?.find((s: any) => s.id === customer.serviceId);
+              const employee = employees?.find((e: any) => e.id === customer.employeeId);
+              const startedMinutesAgo = customer.startedAt 
+                ? Math.floor((Date.now() - new Date(customer.startedAt).getTime()) / 60000)
+                : 0;
+              
+              return (
+                <div
+                  key={customer.id}
+                  className="flex items-center justify-between p-4 border-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white font-bold text-lg animate-pulse">
+                        <Play className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <div className="font-semibold text-lg">{customer.customerName}</div>
+                          {getPriorityBadge(customer.priority, customer.priorityReason)}
+                        </div>
+                        <div className="text-sm text-muted-foreground">{customer.customerPhone}</div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-sm ml-13">
+                      <div>
+                        <span className="text-muted-foreground">Tjeneste:</span>{" "}
+                        <span className="font-medium">{service?.name || "Ukjent"}</span>
+                      </div>
+                      {employee && (
+                        <div>
+                          <span className="text-muted-foreground">Frisør:</span>{" "}
+                          <span className="font-medium">{employee.name}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
+                        <Clock className="h-4 w-4" />
+                        <span className="font-semibold">
+                          {startedMinutesAgo} min siden startet
+                        </span>
+                      </div>
+                      <div className="text-muted-foreground">
+                        Startet: {customer.startedAt ? format(new Date(customer.startedAt), "HH:mm", { locale: nb }) : "Ukjent"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="lg"
+                            variant="default"
+                            className="bg-green-600 hover:bg-green-700"
+                            onClick={() => handleCompleteService(customer.id)}
+                          >
+                            <span className="mr-2">✓</span> Fullført & Betal
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Marker som fullført og gå til kasse</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="icon"
+                            variant="destructive"
+                            onClick={() => handleRemove(customer.id, customer.customerName)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Avbryt tjeneste</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      )}
 
       {/* Edit Priority Dialog */}
       <Dialog open={editPriorityDialog.open} onOpenChange={(open) => setEditPriorityDialog({ ...editPriorityDialog, open })}>
