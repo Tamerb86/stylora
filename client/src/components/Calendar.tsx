@@ -357,7 +357,7 @@ export function Calendar({
   return (
     <div className="space-y-4">
       {/* Legend */}
-      <div className="flex items-center gap-4 text-xs text-muted-foreground bg-muted/30 p-3 rounded-lg">
+      <div className="grid grid-cols-2 md:flex md:items-center gap-3 md:gap-6 text-xs md:text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-red-50 border border-red-200 rounded"></div>
           <span>🏖️ Helligdag (stengt)</span>
@@ -373,7 +373,7 @@ export function Calendar({
       </div>
 
       {/* Header Controls */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={navigatePrevious}>
             <ChevronLeft className="h-4 w-4" />
@@ -384,12 +384,12 @@ export function Calendar({
           <Button variant="outline" size="sm" onClick={navigateNext}>
             <ChevronRight className="h-4 w-4" />
           </Button>
-          <h2 className="text-lg font-semibold capitalize">{formatDateHeader()}</h2>
+          <h2 className="text-base md:text-lg font-semibold capitalize">{formatDateHeader()}</h2>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           <Select value={selectedEmployeeId} onValueChange={setSelectedEmployeeId}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Alle ansatte" />
             </SelectTrigger>
             <SelectContent>
@@ -403,7 +403,7 @@ export function Calendar({
           </Select>
 
           <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="w-full sm:w-[150px]">
               <SelectValue placeholder="Alle statuser" />
             </SelectTrigger>
             <SelectContent>
@@ -418,7 +418,7 @@ export function Calendar({
 
           {services.length > 0 && (
             <Select value={selectedServiceId} onValueChange={setSelectedServiceId}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Alle tjenester" />
               </SelectTrigger>
               <SelectContent>
@@ -433,7 +433,7 @@ export function Calendar({
           )}
 
           <Select value={view} onValueChange={(v) => setView(v as CalendarView)}>
-            <SelectTrigger className="w-[120px]">
+            <SelectTrigger className="w-full sm:w-[120px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -475,7 +475,7 @@ export function Calendar({
         <Card>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
-              <div className="min-w-[800px]">
+              <div className="min-w-full">
                 {/* Day Header - All Employees */}
                 <div className="grid border-b" style={{ gridTemplateColumns: `80px repeat(${employees.length}, 1fr)` }}>
                   <div className="p-2 border-r bg-muted"></div>
@@ -581,7 +581,7 @@ export function Calendar({
         <Card>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
-              <div className="min-w-[800px]">
+              <div className="min-w-full">
                 {/* Week Header */}
                 <div className="grid grid-cols-8 border-b">
                   <div className="p-2 border-r bg-muted"></div>
