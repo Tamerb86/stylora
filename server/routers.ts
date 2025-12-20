@@ -9054,6 +9054,15 @@ export const appRouter = router({
         const { deleteBackup } = await import("./backup");
         return deleteBackup(input.id, ctx.tenantId);
       }),
+
+    // Download backup SQL
+    download: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const { regenerateBackupSQL } = await import("./backup");
+        const sqlContent = await regenerateBackupSQL(input.id, ctx.tenantId);
+        return { sqlContent };
+      }),
   }),
 
   // ============================================================================

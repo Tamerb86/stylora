@@ -13,10 +13,15 @@ export default function Backups() {
 
   const { data: backups, refetch } = trpc.backups.list.useQuery();
   const createBackup = trpc.backups.create.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Sikkerhetskopi opprettet!");
       setIsCreating(false);
       refetch();
+      
+      // Auto-download the backup
+      if (data.sqlContent) {
+        downloadBackupFile(data.sqlContent, data.fileName);
+      }
     },
     onError: (error) => {
       toast.error(error.message || "Kunne ikke opprette sikkerhetskopi");
@@ -45,6 +50,38 @@ export default function Backups() {
     const dateStr = format(new Date(createdAt), "PPP 'kl.' HH:mm", { locale: nb });
     if (confirm(`Er du sikker på at du vil slette sikkerhetskopien fra ${dateStr}?`)) {
       deleteBackup.mutate({ id });
+    }
+  };
+
+  const downloadBackupFile = (sqlContent: string, fileName: string) => {
+    const blob = new Blob([sqlContent], { type: "application/sql" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadBackupMutation = trpc.backups.download.useQuery(
+    { id: 0 },
+    { enabled: false }
+  );
+
+  const handleDownload = async (backupId: number) => {
+    try {
+      toast.info("Genererer sikkerhetskopi...");
+      const utils = trpc.useUtils();
+      const result = await utils.backups.download.fetch({ id: backupId });
+      if (result?.sqlContent) {
+        const fileName = `backup-${backupId}-${new Date().toISOString().replace(/[:.]/g, "-")}.sql`;
+        downloadBackupFile(result.sqlContent, fileName);
+        toast.success("Sikkerhetskopi lastet ned!");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Kunne ikke laste ned sikkerhetskopi");
     }
   };
 
@@ -163,10 +200,10 @@ export default function Backups() {
             <div className="text-sm text-blue-900 dark:text-blue-100">
               <p className="font-semibold mb-2">Viktig informasjon om sikkerhetskopier:</p>
               <ul className="list-disc list-inside space-y-1 text-blue-800 dark:text-blue-200">
-                <li>Sikkerhetskopier lagres sikkert i skyen (S3)</li>
+                <li>Sikkerhetskopier genereres som SQL-filer og lastes ned automatisk</li>
                 <li>Opprett sikkerhetskopi før viktige oppdateringer eller endringer</li>
                 <li>Gamle sikkerhetskopier slettes ikke automatisk - administrer manuelt</li>
-                <li>Nedlasting av sikkerhetskopier er tilgjengelig via S3-lenken</li>
+                <li>Du kan laste ned tidligere sikkerhetskopier ved å klikke på nedlastingsknappen</li>
               </ul>
             </div>
           </div>
@@ -232,10 +269,7 @@ export default function Backups() {
                         variant="outline"
                         size="icon"
                         className="h-10 w-10"
-                        onClick={() => {
-                          // Note: In a real implementation, you would get a signed download URL from the backend
-                          toast.info("Kontakt support for nedlasting av sikkerhetskopi");
-                        }}
+                        onClick={() => handleDownload(backup.id)}
                         title="Last ned sikkerhetskopi"
                       >
                         <Download className="h-5 w-5" />

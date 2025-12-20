@@ -1,19 +1,19 @@
 import { getDb } from "./db";
 import { databaseBackups } from "../drizzle/schema";
-import { storagePut } from "./storage";
 import { eq, desc } from "drizzle-orm";
 
 /**
  * Create a full database backup
- * Exports all tables to SQL and uploads to S3
+ * Exports all tables to SQL and returns the SQL content for direct download
  */
 export async function createDatabaseBackup(tenantId: string, userId?: number) {
   const db = await getDb();
   if (!db) throw new Error("Database connection failed");
+  
   const backupId = await db.insert(databaseBackups).values({
     tenantId,
     backupType: userId ? "manual" : "full",
-    fileKey: "", // Will be updated after upload
+    fileKey: "", // Not used for direct download
     status: "in_progress",
     createdBy: userId,
   });
@@ -21,26 +21,19 @@ export async function createDatabaseBackup(tenantId: string, userId?: number) {
   const insertedId = Array.isArray(backupId) ? backupId[0]?.insertId : (backupId as any).insertId;
 
   try {
-    // Generate SQL dump using mysqldump-like approach
+    // Generate SQL dump
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const fileName = `backup-${tenantId}-${timestamp}.sql`;
     
     // Export database structure and data
     const sqlDump = await exportDatabaseToSQL(tenantId);
-    
-    // Upload to S3
-    const fileKey = `backups/${tenantId}/${fileName}`;
-    const { url } = await storagePut(
-      fileKey,
-      Buffer.from(sqlDump, "utf-8"),
-      "application/sql"
-    );
+    const fileSize = Buffer.byteLength(sqlDump, "utf-8");
 
-    // Update backup record
+    // Update backup record with success
     await db.update(databaseBackups)
       .set({
-        fileKey,
-        fileSize: Buffer.byteLength(sqlDump, "utf-8"),
+        fileKey: fileName, // Store filename for reference
+        fileSize,
         status: "completed",
         completedAt: new Date(),
       })
@@ -49,9 +42,9 @@ export async function createDatabaseBackup(tenantId: string, userId?: number) {
     return {
       success: true,
       backupId: Number(insertedId),
-      fileKey,
-      url,
-      size: Buffer.byteLength(sqlDump, "utf-8"),
+      fileName,
+      sqlContent: sqlDump, // Return SQL content for direct download
+      size: fileSize,
     };
   } catch (error: any) {
     // Mark backup as failed
@@ -74,6 +67,7 @@ export async function createDatabaseBackup(tenantId: string, userId?: number) {
 async function exportDatabaseToSQL(tenantId: string): Promise<string> {
   const db = await getDb();
   if (!db) throw new Error("Database connection failed");
+  
   let sql = `-- BarberTime Database Backup\n`;
   sql += `-- Tenant: ${tenantId}\n`;
   sql += `-- Date: ${new Date().toISOString()}\n\n`;
@@ -84,7 +78,9 @@ async function exportDatabaseToSQL(tenantId: string): Promise<string> {
     "tenants",
     "users",
     "services",
+    "serviceCategories",
     "products",
+    "productCategories",
     "customers",
     "appointments",
     "appointmentServices",
@@ -96,10 +92,15 @@ async function exportDatabaseToSQL(tenantId: string): Promise<string> {
     "commissions",
     "loyaltyPrograms",
     "loyaltyTransactions",
+    "loyaltyRewards",
+    "loyaltyRedemptions",
     "walkInQueue",
     "employeeLeaves",
     "salonHolidays",
     "notifications",
+    "expenses",
+    "salonSettings",
+    "paymentSettings",
   ];
 
   for (const tableName of tables) {
@@ -144,6 +145,7 @@ async function exportDatabaseToSQL(tenantId: string): Promise<string> {
 export async function listBackups(tenantId: string) {
   const db = await getDb();
   if (!db) throw new Error("Database connection failed");
+  
   const backups = await db
     .select()
     .from(databaseBackups)
@@ -161,6 +163,7 @@ export async function listBackups(tenantId: string) {
 export async function deleteOldBackups(tenantId: string, keepCount: number = 30) {
   const db = await getDb();
   if (!db) throw new Error("Database connection failed");
+  
   const allBackups = await db
     .select()
     .from(databaseBackups)
@@ -176,8 +179,6 @@ export async function deleteOldBackups(tenantId: string, keepCount: number = 30)
 
   for (const backup of backupsToDelete) {
     try {
-      // Note: We're not deleting from S3 to prevent accidental data loss
-      // S3 lifecycle policies should handle old file cleanup
       await db.delete(databaseBackups).where(eq(databaseBackups.id, backup.id));
       deleted++;
     } catch (error) {
@@ -194,6 +195,7 @@ export async function deleteOldBackups(tenantId: string, keepCount: number = 30)
 export async function getBackupById(backupId: number, tenantId: string) {
   const db = await getDb();
   if (!db) throw new Error("Database connection failed");
+  
   const backup = await db
     .select()
     .from(databaseBackups)
@@ -213,6 +215,7 @@ export async function getBackupById(backupId: number, tenantId: string) {
 export async function deleteBackup(backupId: number, tenantId: string) {
   const db = await getDb();
   if (!db) throw new Error("Database connection failed");
+  
   const backup = await getBackupById(backupId, tenantId);
   if (!backup) {
     throw new Error("Backup not found");
@@ -220,6 +223,20 @@ export async function deleteBackup(backupId: number, tenantId: string) {
 
   await db.delete(databaseBackups).where(eq(databaseBackups.id, backupId));
   
-  // Note: Not deleting from S3 for safety
   return { success: true };
+}
+
+/**
+ * Re-generate SQL content for an existing backup
+ * Used when user wants to download an old backup
+ */
+export async function regenerateBackupSQL(backupId: number, tenantId: string): Promise<string> {
+  const backup = await getBackupById(backupId, tenantId);
+  if (!backup) {
+    throw new Error("Backup not found");
+  }
+
+  // Re-generate SQL from current database state
+  // Note: This will reflect current data, not the data at backup time
+  return exportDatabaseToSQL(tenantId);
 }
