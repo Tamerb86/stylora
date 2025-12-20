@@ -268,7 +268,7 @@ export default function POSFinancialReports() {
                       <XAxis dataKey="name" />
                       <YAxis />
                       <Tooltip />
-                      <Legend wrapperStyle={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }} />
+                      <Legend wrapperStyle={{ fontSize: '16px', fontWeight: '700', color: '#000000' }} />
                       <Bar dataKey="sales" fill="#3b82f6" name="Salg (NOK)" />
                     </BarChart>
                   </ResponsiveContainer>
@@ -318,7 +318,7 @@ export default function POSFinancialReports() {
                     <XAxis dataKey="hour" />
                     <YAxis />
                     <Tooltip />
-                    <Legend wrapperStyle={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }} />
+                    <Legend wrapperStyle={{ fontSize: '16px', fontWeight: '700', color: '#000000' }} />
                     <Line type="monotone" dataKey="sales" stroke="#8b5cf6" name="Salg (NOK)" strokeWidth={2} />
                   </LineChart>
                 </ResponsiveContainer>

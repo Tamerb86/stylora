@@ -308,7 +308,7 @@ function AdvancedFinancialReportsContent() {
                 <XAxis dataKey="period" />
                 <YAxis />
                 <Tooltip />
-                <Legend wrapperStyle={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }} />
+                <Legend wrapperStyle={{ fontSize: '16px', fontWeight: '700', color: '#000000' }} />
                 <Line type="monotone" dataKey="revenue" stroke="#3b82f6" name="Omsetning (kr)" strokeWidth={2} />
                 <Line type="monotone" dataKey="orders" stroke="#10b981" name="Antall ordre" strokeWidth={2} />
               </LineChart>
@@ -342,7 +342,7 @@ function AdvancedFinancialReportsContent() {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Legend wrapperStyle={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }} />
+                <Legend wrapperStyle={{ fontSize: '16px', fontWeight: '700', color: '#000000' }} />
                 <Bar dataKey="revenue" fill="#3b82f6" name="Omsetning (kr)" />
                 <Bar dataKey="orders" fill="#10b981" name="Antall ordre" />
               </BarChart>

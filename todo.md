@@ -5026,3 +5026,10 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Make legend text darker/bolder
 - [x] Test changes in browser
 - [x] Save checkpoint
+
+## Phase 66: Fix Chart Legend Contrast and Readability
+- [x] Change legend text color to pure black or very dark
+- [x] Increase font size to 16px
+- [x] Add stronger font-weight (700 or bold)
+- [x] Test changes in browser
+- [x] Save checkpoint

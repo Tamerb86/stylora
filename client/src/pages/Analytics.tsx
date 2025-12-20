@@ -180,7 +180,7 @@ function AnalyticsContent() {
                 <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip />
-                <Legend wrapperStyle={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }} />
+                <Legend wrapperStyle={{ fontSize: '16px', fontWeight: '700', color: '#000000' }} />
                 <Line type="monotone" dataKey="kunder" stroke="#1e3a5f" strokeWidth={2} name="Nye kunder" />
               </LineChart>
             </ResponsiveContainer>
@@ -209,7 +209,7 @@ function AnalyticsContent() {
                 <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip formatter={(value) => `${value} kr`} />
-                <Legend wrapperStyle={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }} />
+                <Legend wrapperStyle={{ fontSize: '16px', fontWeight: '700', color: '#000000' }} />
                 <Line type="monotone" dataKey="inntekt" stroke="#ff6b35" strokeWidth={2} name="Inntekt (kr)" />
               </LineChart>
             </ResponsiveContainer>
@@ -239,7 +239,7 @@ function AnalyticsContent() {
                 <YAxis yAxisId="left" />
                 <YAxis yAxisId="right" orientation="right" />
                 <Tooltip />
-                <Legend wrapperStyle={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }} />
+                <Legend wrapperStyle={{ fontSize: '16px', fontWeight: '700', color: '#000000' }} />
                 <Bar yAxisId="left" dataKey="avtaler" fill="#4a90e2" name="Avtaler" />
                 <Bar yAxisId="right" dataKey="inntekt" fill="#50c878" name="Inntekt (kr)" />
               </BarChart>
@@ -269,7 +269,7 @@ function AnalyticsContent() {
                 <XAxis type="number" />
                 <YAxis dataKey="tjeneste" type="category" width={150} />
                 <Tooltip />
-                <Legend wrapperStyle={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }} />
+                <Legend wrapperStyle={{ fontSize: '16px', fontWeight: '700', color: '#000000' }} />
                 <Bar dataKey="bookinger" fill="#50c878" name="Bookinger" />
               </BarChart>
             </ResponsiveContainer>
