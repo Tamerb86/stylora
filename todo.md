@@ -5019,3 +5019,10 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add import history table
 - [x] Write vitest tests for import functions
 - [x] Save checkpoint
+
+## Phase 65: Improve Chart Legend Visibility
+- [x] Find chart components with legends
+- [x] Increase legend text font size
+- [x] Make legend text darker/bolder
+- [x] Test changes in browser
+- [x] Save checkpoint
