@@ -5173,15 +5173,20 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Save checkpoint
 - [ ] Deploy to Railway production
 
-## Phase 78: Translate All Main Pages to 4 Languages
-- [ ] Translate Appointments page (Norwegian, Arabic, English, Ukrainian)
-- [ ] Translate Customers page (all 4 languages)
-- [ ] Translate Services page (all 4 languages)
-- [ ] Translate Employees page (all 4 languages)
-- [ ] Translate POS page (all 4 languages)
-- [ ] Translate Analytics page (all 4 languages)
-- [ ] Translate Settings page (all 4 languages)
-- [ ] Translate Walk-in Queue page (all 4 languages)
-- [ ] Test all translations in each language
+## Phase 78: Translate Walk-in Queue and POS Pages (Priority Pages)
+- [ ] Extract all text strings from Walk-in Queue component
+- [ ] Add Walk-in Queue translations to Norwegian locale
+- [ ] Add Walk-in Queue translations to Arabic locale
+- [ ] Add Walk-in Queue translations to English locale
+- [ ] Add Walk-in Queue translations to Ukrainian locale
+- [ ] Update Walk-in Queue component to use useTranslation
+- [ ] Extract all text strings from POS component
+- [ ] Add POS translations to Norwegian locale
+- [ ] Add POS translations to Arabic locale
+- [ ] Add POS translations to English locale
+- [ ] Add POS translations to Ukrainian locale
+- [ ] Update POS component to use useTranslation
+- [ ] Test Walk-in Queue in all 4 languages
+- [ ] Test POS in all 4 languages
 - [ ] Save checkpoint
 - [ ] Deploy to Railway production
