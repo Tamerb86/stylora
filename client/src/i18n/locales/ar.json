@@ -99,7 +99,11 @@
     "confirmStart": "هل أنت متأكد من بدء الخدمة لهذا العميل؟",
     "confirmRemove": "هل أنت متأكد من إزالة {name} من القائمة؟",
     "confirmComplete": "هل أنت متأكد من إنهاء الخدمة؟ سيتم توجيه العميل إلى الكاشير.",
-    "smsNotification": "خاصية إشعار SMS قريباً"
+    "smsNotification": "خاصية إشعار SMS قريباً",
+    "availableStaff": "متاح",
+    "serviceDuration": "مدة الخدمة",
+    "estimatedNote": "وقت الانتظار تقديري وقد يختلف",
+    "welcomeIn": "أهلاً بك!"
   },
   "common": {
     "loading": "جاري التحميل...",

@@ -99,7 +99,11 @@
     "confirmStart": "Er du sikker på at du vil starte tjenesten for denne kunden?",
     "confirmRemove": "Er du sikker på at du vil fjerne {name} fra køen?",
     "confirmComplete": "Er du sikker på at tjenesten er fullført? Kunden vil bli sendt til kassen.",
-    "smsNotification": "SMS-varsel funksjon kommer snart"
+    "smsNotification": "SMS-varsel funksjon kommer snart",
+    "availableStaff": "tilgjengelige",
+    "serviceDuration": "Behandlingstid",
+    "estimatedNote": "Ventetiden er estimert og kan variere",
+    "welcomeIn": "Velkommen inn!"
   },
   "common": {
     "loading": "Laster...",

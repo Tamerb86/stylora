@@ -99,7 +99,11 @@
     "confirmStart": "Are you sure you want to start the service for this customer?",
     "confirmRemove": "Are you sure you want to remove {name} from the queue?",
     "confirmComplete": "Are you sure the service is complete? Customer will be sent to checkout.",
-    "smsNotification": "SMS notification feature coming soon"
+    "smsNotification": "SMS notification feature coming soon",
+    "availableStaff": "available",
+    "serviceDuration": "Service duration",
+    "estimatedNote": "Wait time is estimated and may vary",
+    "welcomeIn": "Welcome in!"
   },
   "common": {
     "loading": "Loading...",

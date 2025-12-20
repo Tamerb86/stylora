@@ -5231,3 +5231,20 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Test wait time calculations with different scenarios
 - [ ] Save checkpoint
 - [ ] Deploy to Railway production
+
+## Phase 81: Improve Digital Display Board for Customers
+- [x] Find existing display board page (QueueDisplay.tsx)
+- [x] Analyze current design and features
+- [x] Enhance visual design with modern UI and gradient backgrounds
+- [x] Add smooth animations for queue updates (fade-in, slide-in, scale-in)
+- [x] Integrate intelligent wait times from calculateWaitTimes endpoint
+- [x] Add color-coded wait time indicators (green/yellow/orange/red gradients)
+- [x] Add multi-language support (Norwegian, Arabic, English, Ukrainian)
+- [x] Add RTL support for Arabic language
+- [x] Add auto-refresh every 10-15 seconds
+- [x] Display available staff count in header
+- [x] Add translations for all display text (4 languages)
+- [x] Large, readable fonts already present for TV display
+- [x] Salon branding (Stylora logo and colors) already present
+- [ ] Save checkpoint
+- [ ] Deploy to Railway production
