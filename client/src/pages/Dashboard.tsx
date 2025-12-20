@@ -12,7 +12,8 @@ import {
   TrendingUp,
   DollarSign,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Sparkles
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -33,7 +34,7 @@ export default function Dashboard() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="p-8">
+        <div className="p-8" dir="rtl">
           <div className="animate-pulse space-y-6">
             <div className="grid grid-cols-2 gap-6">
               {[1, 2, 3, 4].map((i) => (
@@ -48,53 +49,57 @@ export default function Dashboard() {
 
   const statCards = [
     {
-      label: "Dagens avtaler",
+      label: "مواعيد اليوم",
       value: stats?.todayAppointments || 0,
-      bgColor: "bg-blue-50",
-      textColor: "text-blue-600",
+      bgColor: "bg-gradient-to-br from-blue-50 to-blue-100",
+      textColor: "text-blue-700",
       icon: CalendarPlus,
+      iconBg: "bg-blue-500",
     },
     {
-      label: "Ventende",
+      label: "قيد الانتظار",
       value: stats?.pendingAppointments || 0,
-      bgColor: "bg-pink-50",
-      textColor: "text-pink-600",
+      bgColor: "bg-gradient-to-br from-amber-50 to-amber-100",
+      textColor: "text-amber-700",
       icon: AlertCircle,
+      iconBg: "bg-amber-500",
     },
     {
-      label: "Fullførte avtaler",
+      label: "المواعيد المكتملة",
       value: stats?.completedAppointments || 0,
-      bgColor: "bg-green-50",
-      textColor: "text-green-600",
+      bgColor: "bg-gradient-to-br from-emerald-50 to-emerald-100",
+      textColor: "text-emerald-700",
       icon: CheckCircle2,
+      iconBg: "bg-emerald-500",
     },
     {
-      label: "Totalt kunder",
+      label: "إجمالي العملاء",
       value: stats?.totalCustomers || 0,
-      bgColor: "bg-purple-50",
-      textColor: "text-purple-600",
+      bgColor: "bg-gradient-to-br from-purple-50 to-purple-100",
+      textColor: "text-purple-700",
       icon: User,
+      iconBg: "bg-purple-500",
     },
   ];
 
   const quickActions = [
     {
-      label: "Ny avtale",
+      label: "موعد جديد",
       icon: CalendarPlus,
       onClick: () => setLocation("/appointments"),
-      color: "from-blue-600 to-purple-600",
+      color: "from-blue-600 via-blue-500 to-cyan-500",
     },
     {
-      label: "Ny kunde",
+      label: "عميل جديد",
       icon: UserPlus,
       onClick: () => setLocation("/customers"),
-      color: "from-purple-600 to-pink-600",
+      color: "from-purple-600 via-purple-500 to-pink-500",
     },
     {
-      label: "Nytt salg (POS)",
+      label: "عملية بيع جديدة",
       icon: ShoppingCart,
       onClick: () => setLocation("/pos"),
-      color: "from-orange-600 to-red-600",
+      color: "from-orange-600 via-orange-500 to-red-500",
     },
   ];
 
@@ -104,7 +109,7 @@ export default function Dashboard() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("no-NO", { 
+    return date.toLocaleDateString("ar-SA", { 
       weekday: 'short', 
       day: 'numeric', 
       month: 'short' 
@@ -113,27 +118,43 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
-      <div className="p-4 md:p-8 space-y-6">
+      <div className="p-4 md:p-8 space-y-6" dir="rtl">
+        {/* Welcome Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center gap-3">
+            <Sparkles className="w-10 h-10 text-blue-600" />
+            لوحة التحكم
+          </h1>
+          <p className="text-muted-foreground mt-2 text-lg">
+            مرحباً بك! إليك ملخص أعمال اليوم
+          </p>
+        </div>
+
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {statCards.map((card, index) => {
             const Icon = card.icon;
             return (
-              <Card key={index} className="overflow-hidden">
-                <CardContent className={`${card.bgColor} p-6`}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className={`${card.textColor} text-sm font-medium opacity-80`}>
+              <Card 
+                key={index} 
+                className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              >
+                <CardContent className={`${card.bgColor} p-6 relative`}>
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-3">
+                      <p className={`${card.textColor} text-sm font-semibold opacity-90`}>
                         {card.label}
                       </p>
-                      <p className={`${card.textColor} text-4xl font-bold mt-2`}>
+                      <p className={`${card.textColor} text-5xl font-bold tracking-tight`}>
                         {card.value}
                       </p>
                     </div>
-                    <div className={`${card.bgColor} p-3 rounded-full`}>
-                      <Icon className={`${card.textColor} w-8 h-8`} />
+                    <div className={`${card.iconBg} p-4 rounded-2xl shadow-lg`}>
+                      <Icon className="w-8 h-8 text-white" />
                     </div>
                   </div>
+                  {/* Decorative element */}
+                  <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/50 to-transparent"></div>
                 </CardContent>
               </Card>
             );
@@ -141,14 +162,16 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
-              Hurtighandlinger
+        <Card className="border-0 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100">
+            <CardTitle className="flex items-center gap-3 text-2xl">
+              <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              إجراءات سريعة
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {quickActions.map((action, index) => {
                 const Icon = action.icon;
@@ -156,12 +179,14 @@ export default function Dashboard() {
                   <Button
                     key={index}
                     onClick={action.onClick}
-                    className={`h-24 bg-gradient-to-r ${action.color} hover:opacity-90 transition-opacity`}
+                    className={`h-28 bg-gradient-to-r ${action.color} hover:opacity-90 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl border-0`}
                     size="lg"
                   >
-                    <div className="flex flex-col items-center gap-2">
-                      <Icon className="w-6 h-6" />
-                      <span className="text-base font-semibold">{action.label}</span>
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
+                        <Icon className="w-7 h-7" />
+                      </div>
+                      <span className="text-lg font-bold">{action.label}</span>
                     </div>
                   </Button>
                 );
@@ -172,58 +197,63 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Upcoming Appointments */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5" />
-                Kommende avtaler
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50">
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg">
+                  <Clock className="w-5 h-5 text-white" />
+                </div>
+                المواعيد القادمة
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               {upcomingAppointments && upcomingAppointments.length > 0 ? (
                 <div className="space-y-3">
                   {upcomingAppointments.slice(0, 5).map((appointment: any) => (
                     <div
                       key={appointment.id}
-                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors cursor-pointer"
+                      className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl hover:from-slate-100 hover:to-slate-200 transition-all duration-300 cursor-pointer border border-slate-200 hover:shadow-md"
                       onClick={() => setLocation("/appointments")}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-                          {appointment.customerFirstName?.[0] || "?"}
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                          {appointment.customerFirstName?.[0] || "؟"}
                         </div>
                         <div>
-                          <p className="font-medium">
+                          <p className="font-bold text-lg">
                             {appointment.customerFirstName} {appointment.customerLastName}
                           </p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-sm text-muted-foreground font-medium">
                             {formatDate(appointment.appointmentDate)} • {formatTime(appointment.appointmentDate, appointment.startTime)}
                           </p>
                         </div>
                       </div>
-                      <div className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        appointment.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                        appointment.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-gray-100 text-gray-700'
+                      <div className={`px-4 py-2 rounded-full text-sm font-bold shadow-sm ${
+                        appointment.status === 'confirmed' ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white' :
+                        appointment.status === 'pending' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white' :
+                        'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
                       }`}>
-                        {appointment.status === 'confirmed' ? 'Bekreftet' :
-                         appointment.status === 'pending' ? 'Venter' :
+                        {appointment.status === 'confirmed' ? 'مؤكد' :
+                         appointment.status === 'pending' ? 'قيد الانتظار' :
                          appointment.status}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p>Ingen kommende avtaler</p>
+                <div className="text-center py-12 text-muted-foreground">
+                  <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full flex items-center justify-center">
+                    <Clock className="w-10 h-10 opacity-50" />
+                  </div>
+                  <p className="text-lg font-semibold mb-2">لا توجد مواعيد قادمة</p>
+                  <p className="text-sm mb-4">ابدأ بإنشاء موعد جديد</p>
                   <Button
                     variant="outline"
-                    size="sm"
-                    className="mt-3"
+                    size="lg"
+                    className="mt-3 border-2 hover:bg-blue-50 hover:border-blue-500 hover:text-blue-600 transition-all"
                     onClick={() => setLocation("/appointments")}
                   >
-                    Opprett ny avtale
+                    إنشاء موعد جديد
                   </Button>
                 </div>
               )}
@@ -231,51 +261,59 @@ export default function Dashboard() {
           </Card>
 
           {/* Today's Performance */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <DollarSign className="w-5 h-5" />
-                Dagens ytelse
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50">
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg">
+                  <DollarSign className="w-5 h-5 text-white" />
+                </div>
+                أداء اليوم
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                <div className="flex items-center justify-between p-5 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200 shadow-sm hover:shadow-md transition-all">
                   <div>
-                    <p className="text-sm text-blue-600 font-medium">Totale avtaler</p>
-                    <p className="text-3xl font-bold text-blue-700 mt-1">
+                    <p className="text-sm text-blue-700 font-bold mb-1">إجمالي المواعيد</p>
+                    <p className="text-4xl font-black text-blue-800">
                       {stats?.todayAppointments || 0}
                     </p>
                   </div>
-                  <CalendarPlus className="w-10 h-10 text-blue-600 opacity-50" />
+                  <div className="p-4 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl shadow-lg">
+                    <CalendarPlus className="w-10 h-10 text-white" />
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                <div className="flex items-center justify-between p-5 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-all">
                   <div>
-                    <p className="text-sm text-green-600 font-medium">Fullførte</p>
-                    <p className="text-3xl font-bold text-green-700 mt-1">
+                    <p className="text-sm text-emerald-700 font-bold mb-1">المكتملة</p>
+                    <p className="text-4xl font-black text-emerald-800">
                       {stats?.completedAppointments || 0}
                     </p>
                   </div>
-                  <CheckCircle2 className="w-10 h-10 text-green-600 opacity-50" />
+                  <div className="p-4 bg-gradient-to-br from-emerald-500 to-green-500 rounded-2xl shadow-lg">
+                    <CheckCircle2 className="w-10 h-10 text-white" />
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg">
+                <div className="flex items-center justify-between p-5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 shadow-sm hover:shadow-md transition-all">
                   <div>
-                    <p className="text-sm text-orange-600 font-medium">Ventende</p>
-                    <p className="text-3xl font-bold text-orange-700 mt-1">
+                    <p className="text-sm text-amber-700 font-bold mb-1">قيد الانتظار</p>
+                    <p className="text-4xl font-black text-amber-800">
                       {stats?.pendingAppointments || 0}
                     </p>
                   </div>
-                  <AlertCircle className="w-10 h-10 text-orange-600 opacity-50" />
+                  <div className="p-4 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl shadow-lg">
+                    <AlertCircle className="w-10 h-10 text-white" />
+                  </div>
                 </div>
 
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="w-full h-14 text-lg font-bold border-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:border-blue-500 hover:text-blue-600 transition-all"
                   onClick={() => setLocation("/analytics")}
                 >
-                  Se fullstendig analyse →
+                  عرض التحليلات الكاملة ←
                 </Button>
               </div>
             </CardContent>
