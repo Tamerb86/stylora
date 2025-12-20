@@ -291,8 +291,7 @@ export function WalkInQueue() {
   const inServiceCustomers = sortedQueue.filter((q: any) => q.status === "in_service") || [];
   const averageWaitTime = waitingCustomers.length > 0
     ? Math.floor(waitingCustomers.reduce((sum: number, q: any) => {
-        const service = services?.find((s: any) => s.id === q.serviceId);
-        const waitTime = calculateDynamicWaitTime(q.position, q.priority, service?.durationMinutes || 30);
+        const waitTime = getIntelligentWaitTime(q.id);
         return sum + waitTime.estimated;
       }, 0) / waitingCustomers.length)
     : 0;

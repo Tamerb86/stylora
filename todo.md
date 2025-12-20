@@ -5248,3 +5248,5 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Salon branding (Stylora logo and colors) already present
 - [ ] Save checkpoint
 - [ ] Deploy to Railway production
+
+- [x] Fix calculateDynamicWaitTime undefined error in WalkInQueue component
