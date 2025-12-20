@@ -95,6 +95,7 @@ const settingsMenuItems = [
     { icon: Building2, label: "Fiken", path: "/fiken", tooltip: "Fiken-integrasjon" },
   ] },
   { icon: Database, label: "Sikkerhetskopier", path: "/backups", adminOnly: true, advancedOnly: true, tooltip: "Administrer sikkerhetskopier" },
+  { icon: FileText, label: "Importer Data", path: "/import", adminOnly: true, advancedOnly: true, tooltip: "Importer kunder, tjenester og produkter" },
 ];
 
 const paymentsMenuItems = [

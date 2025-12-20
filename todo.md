@@ -5001,3 +5001,21 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Update backup download to work without Manus storage proxy
 - [x] Test backup creation and download
 - [x] Save checkpoint
+
+## Phase 64: Data Import System (Excel/CSV + SQL Restore)
+- [x] Create dataImports table to track import history
+- [x] Install xlsx and csv-parser packages
+- [x] Create server/import.ts with Excel/CSV parsing functions
+- [x] Implement importCustomersFromCSV function
+- [x] Implement importServicesFromCSV function
+- [x] Implement importProductsFromCSV function
+- [x] Implement restoreFromSQL function for backup restoration
+- [x] Create import validation and error handling
+- [x] Add import.* tRPC endpoints (uploadCustomers, uploadServices, uploadProducts, restoreBackup)
+- [x] Create DataImport.tsx page with file upload UI
+- [x] Add CSV/Excel template download buttons
+- [x] Add SQL restore section with file upload
+- [x] Show import progress and results
+- [x] Add import history table
+- [x] Write vitest tests for import functions
+- [x] Save checkpoint

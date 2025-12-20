@@ -1240,3 +1240,31 @@ export const paymentSettings = mysqlTable("paymentSettings", {
 
 export type PaymentSettings = typeof paymentSettings.$inferSelect;
 export type InsertPaymentSettings = typeof paymentSettings.$inferInsert;
+
+// ============================================================================
+// DATA IMPORTS
+// ============================================================================
+
+export const dataImports = mysqlTable("dataImports", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: varchar("tenantId", { length: 36 }).notNull(),
+  importType: mysqlEnum("importType", ["customers", "services", "products", "sql_restore"]).notNull(),
+  fileName: varchar("fileName", { length: 255 }).notNull(),
+  fileSize: int("fileSize"), // bytes
+  status: mysqlEnum("status", ["in_progress", "completed", "failed"]).default("in_progress").notNull(),
+  recordsTotal: int("recordsTotal").default(0), // Total records in file
+  recordsImported: int("recordsImported").default(0), // Successfully imported
+  recordsFailed: int("recordsFailed").default(0), // Failed to import
+  errorMessage: text("errorMessage"),
+  errorDetails: json("errorDetails"), // Array of error objects
+  importedBy: int("importedBy"), // User ID who initiated import
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  completedAt: timestamp("completedAt"),
+}, (table) => ({
+  tenantIdx: index("tenant_idx").on(table.tenantId),
+  statusIdx: index("status_idx").on(table.status),
+  createdAtIdx: index("created_at_idx").on(table.createdAt),
+}));
+
+export type DataImport = typeof dataImports.$inferSelect;
+export type InsertDataImport = typeof dataImports.$inferInsert;

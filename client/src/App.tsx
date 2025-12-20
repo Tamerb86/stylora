@@ -45,6 +45,7 @@ import MyLeaves from "@/pages/MyLeaves";
 import LeaveApprovals from "@/pages/LeaveApprovals";
 import SalonHolidays from "@/pages/SalonHolidays";
 import Backups from "@/pages/Backups";
+import DataImport from "@/pages/DataImport";
 import UnimicroSettings from "@/pages/UnimicroSettings";
 import FikenSettings from "./pages/FikenSettings";
 import AccountingIntegrations from "./pages/AccountingIntegrations";
@@ -111,6 +112,7 @@ function Router() {
       <Route path="/leave-approvals" component={LeaveApprovals} />
       <Route path="/holidays" component={SalonHolidays} />
       <Route path="/backups" component={Backups} />
+      <Route path="/import" component={DataImport} />
       <Route path="/unimicro" component={UnimicroSettings} />
       <Route path="/fiken" component={FikenSettings} />
       <Route path="/accounting" component={AccountingIntegrations} />

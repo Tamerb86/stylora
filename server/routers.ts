@@ -9066,6 +9066,73 @@ export const appRouter = router({
   }),
 
   // ============================================================================
+  // DATA IMPORTS
+  // ============================================================================
+  imports: router({
+    // Import customers from CSV/Excel
+    importCustomers: adminProcedure
+      .input(z.object({
+        fileContent: z.string(), // base64 encoded file
+        fileName: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { importCustomersFromFile } = await import("./import");
+        const fileBuffer = Buffer.from(input.fileContent, "base64");
+        return importCustomersFromFile(ctx.tenantId, fileBuffer, input.fileName, ctx.user.id);
+      }),
+
+    // Import services from CSV/Excel
+    importServices: adminProcedure
+      .input(z.object({
+        fileContent: z.string(),
+        fileName: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { importServicesFromFile } = await import("./import");
+        const fileBuffer = Buffer.from(input.fileContent, "base64");
+        return importServicesFromFile(ctx.tenantId, fileBuffer, input.fileName, ctx.user.id);
+      }),
+
+    // Import products from CSV/Excel
+    importProducts: adminProcedure
+      .input(z.object({
+        fileContent: z.string(),
+        fileName: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { importProductsFromFile } = await import("./import");
+        const fileBuffer = Buffer.from(input.fileContent, "base64");
+        return importProductsFromFile(ctx.tenantId, fileBuffer, input.fileName, ctx.user.id);
+      }),
+
+    // Restore from SQL backup
+    restoreSQL: adminProcedure
+      .input(z.object({
+        fileContent: z.string(),
+        fileName: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { restoreFromSQL } = await import("./import");
+        const fileBuffer = Buffer.from(input.fileContent, "base64");
+        return restoreFromSQL(ctx.tenantId, fileBuffer, input.fileName, ctx.user.id);
+      }),
+
+    // List all imports
+    list: adminProcedure.query(async ({ ctx }) => {
+      const { listImports } = await import("./import");
+      return listImports(ctx.tenantId);
+    }),
+
+    // Get import details
+    getById: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const { getImportById } = await import("./import");
+        return getImportById(input.id, ctx.tenantId);
+      }),
+  }),
+
+  // ============================================================================
   // ONBOARDING WIZARD
   // ============================================================================
   wizard: router({
