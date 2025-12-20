@@ -5048,3 +5048,12 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Increase font size if needed
 - [x] Test changes in browser
 - [x] Save checkpoint
+
+## Phase 69: Move Innstemplet nå List and Add Sound Notifications
+- [x] Move "Innstemplet nå" list from bottom-left to top-right
+- [x] Position it below the clock display
+- [x] Add sound notification files (clock in/out sounds)
+- [x] Implement sound playback on clock in event
+- [x] Implement sound playback on clock out event
+- [x] Test positioning and sound notifications
+- [x] Save checkpoint

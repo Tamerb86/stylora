@@ -108,6 +108,12 @@ export default function TimeClock() {
 
     try {
       const result = await clockInMutation.mutateAsync({ pin, tenantId });
+      
+      // Play clock-in sound
+      const audio = new Audio('/sounds/clock-in.mp3');
+      audio.volume = 0.5;
+      audio.play().catch(() => {/* Ignore if autoplay blocked */});
+      
       setLastAction({
         type: "in",
         name: result.employeeName || "Ansatt",
@@ -124,6 +130,12 @@ export default function TimeClock() {
 
     try {
       const result = await clockOutMutation.mutateAsync({ pin, tenantId });
+      
+      // Play clock-out sound
+      const audio = new Audio('/sounds/clock-out.mp3');
+      audio.volume = 0.5;
+      audio.play().catch(() => {/* Ignore if autoplay blocked */});
+      
       setLastAction({
         type: "out",
         name: result.employeeName || "Ansatt",
@@ -316,9 +328,9 @@ export default function TimeClock() {
         </div>
       </div>
 
-      {/* Active Employees Display - Bottom Left Corner */}
+      {/* Active Employees Display - Top Right Below Clock */}
       {activeEmployees.length > 0 && (
-        <div className="fixed bottom-4 left-4 z-40">
+        <div className="fixed top-24 right-4 z-40">
           <Card className="p-4 bg-white/95 backdrop-blur-xl border-gray-200 shadow-2xl max-w-xs">
             <div className="flex items-center gap-2 mb-3">
               <Users className="w-4 h-4 text-green-400" />
