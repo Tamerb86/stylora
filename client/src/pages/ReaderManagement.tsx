@@ -37,8 +37,8 @@ export default function ReaderManagement() {
             return result.secret;
           },
           onUnexpectedReaderDisconnect: () => {
-            toast.error("قارئ البطاقات انقطع بشكل غير متوقع", {
-              description: "يرجى إعادة الاتصال",
+            toast.error("Kortleseren ble uventet frakoblet", {
+              description: "Vennligst koble til på nytt",
             });
             setConnectedReader(null);
           },
@@ -48,8 +48,8 @@ export default function ReaderManagement() {
         console.log("Stripe Terminal initialized");
       } catch (error) {
         console.error("Error initializing Stripe Terminal:", error);
-        toast.error("فشل تهيئة نظام البطاقات", {
-          description: "يرجى التحقق من إعدادات Stripe",
+        toast.error("Kunne ikke initialisere kortsystemet", {
+          description: "Vennligst sjekk Stripe-innstillingene",
         });
       }
     };
@@ -60,8 +60,8 @@ export default function ReaderManagement() {
   // Discover readers
   const discoverReaders = async () => {
     if (!terminal) {
-      toast.error("نظام البطاقات غير جاهز", {
-        description: "يرجى الانتظار قليلاً وإعادة المحاولة",
+      toast.error("Kortsystemet er ikke klart", {
+        description: "Vennligst vent litt og prøv igjen",
       });
       return;
     }
@@ -79,23 +79,23 @@ export default function ReaderManagement() {
 
       if (discoverResult.error) {
         console.error("Discover error:", discoverResult.error);
-        toast.error("فشل البحث عن قارئات البطاقات", {
+        toast.error("Kunne ikke finne kortlesere", {
           description: discoverResult.error.message,
         });
       } else {
         setDiscoveredReaders(discoverResult.discoveredReaders);
         if (discoverResult.discoveredReaders.length === 0) {
-          toast.info("لم يتم العثور على قارئات بطاقات", {
-            description: "تأكد من تشغيل القارئ واتصاله بالشبكة",
+          toast.info("Ingen kortlesere funnet", {
+            description: "Sørg for at leseren er på og koblet til nettverket",
           });
         } else {
-          toast.success(`تم العثور على ${discoverResult.discoveredReaders.length} قارئ`);
+          toast.success(`Fant ${discoverResult.discoveredReaders.length} leser(e)`);
         }
       }
     } catch (error: any) {
       console.error("Error discovering readers:", error);
-      toast.error("خطأ في البحث عن القارئات", {
-        description: error.message || "حدث خطأ غير متوقع",
+      toast.error("Feil ved søk etter lesere", {
+        description: error.message || "En uventet feil oppstod",
       });
     } finally {
       setIsConnecting(false);
@@ -105,7 +105,7 @@ export default function ReaderManagement() {
   // Connect to a reader
   const connectToReader = async (reader: any) => {
     if (!terminal) {
-      toast.error("نظام البطاقات غير جاهز");
+      toast.error("Kortsystemet er ikke klart");
       return;
     }
 
@@ -116,19 +116,19 @@ export default function ReaderManagement() {
 
       if (connectResult.error) {
         console.error("Connect error:", connectResult.error);
-        toast.error("فشل الاتصال بالقارئ", {
+        toast.error("Kunne ikke koble til leseren", {
           description: connectResult.error.message,
         });
       } else {
         setConnectedReader(connectResult.reader);
-        toast.success("تم الاتصال بالقارئ بنجاح", {
-          description: `متصل بـ: ${reader.label || reader.id}`,
+        toast.success("Koblet til leseren", {
+          description: `Koblet til: ${reader.label || reader.id}`,
         });
       }
     } catch (error: any) {
       console.error("Error connecting to reader:", error);
-      toast.error("خطأ في الاتصال", {
-        description: error.message || "حدث خطأ غير متوقع",
+      toast.error("Tilkoblingsfeil", {
+        description: error.message || "En uventet feil oppstod",
       });
     } finally {
       setIsConnecting(false);
@@ -142,10 +142,10 @@ export default function ReaderManagement() {
     try {
       await terminal.disconnectReader();
       setConnectedReader(null);
-      toast.success("تم قطع الاتصال بالقارئ");
+      toast.success("Frakoblet fra leseren");
     } catch (error: any) {
       console.error("Error disconnecting reader:", error);
-      toast.error("فشل قطع الاتصال", {
+      toast.error("Kunne ikke frakoble", {
         description: error.message,
       });
     }
@@ -156,10 +156,10 @@ export default function ReaderManagement() {
       <div className="container mx-auto py-8">
         <div className="mb-6">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
-            إدارة قارئ البطاقات
+            Kortleser Administrasjon
           </h1>
           <p className="text-muted-foreground mt-1">
-            اتصل بقارئ البطاقات لمعالجة المدفوعات
+            Koble til kortleser for å behandle betalinger
           </p>
         </div>
 
@@ -168,10 +168,10 @@ export default function ReaderManagement() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="h-5 w-5" />
-              حالة الاتصال
+              Tilkoblingsstatus
             </CardTitle>
             <CardDescription>
-              حالة الاتصال الحالية بقارئ البطاقات
+              Nåværende tilkoblingsstatus for kortleser
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -180,7 +180,7 @@ export default function ReaderManagement() {
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="h-6 w-6 text-green-500" />
                   <div>
-                    <p className="font-medium">متصل</p>
+                    <p className="font-medium">Tilkoblet</p>
                     <p className="text-sm text-muted-foreground">
                       {connectedReader.label || connectedReader.id}
                     </p>
@@ -190,16 +190,16 @@ export default function ReaderManagement() {
                   variant="outline"
                   onClick={disconnectReader}
                 >
-                  قطع الاتصال
+                  Koble fra
                 </Button>
               </div>
             ) : (
               <div className="flex items-center gap-3">
                 <XCircle className="h-6 w-6 text-gray-400" />
                 <div>
-                  <p className="font-medium">غير متصل</p>
+                  <p className="font-medium">Ikke tilkoblet</p>
                   <p className="text-sm text-muted-foreground">
-                    لا يوجد قارئ بطاقات متصل حالياً
+                    Ingen kortleser er tilkoblet for øyeblikket
                   </p>
                 </div>
               </div>
@@ -210,9 +210,9 @@ export default function ReaderManagement() {
         {/* Discover Readers */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>البحث عن قارئات البطاقات</CardTitle>
+            <CardTitle>Søk etter kortlesere</CardTitle>
             <CardDescription>
-              ابحث عن قارئات البطاقات المتاحة على الشبكة
+              Finn tilgjengelige kortlesere på nettverket
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -224,12 +224,12 @@ export default function ReaderManagement() {
               {isConnecting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  جاري البحث...
+                  Søker...
                 </>
               ) : (
                 <>
                   <RefreshCw className="mr-2 h-4 w-4" />
-                  بحث عن قارئات
+                  Søk etter lesere
                 </>
               )}
             </Button>
@@ -237,7 +237,7 @@ export default function ReaderManagement() {
             {discoveredReaders.length > 0 && (
               <div className="space-y-3">
                 <p className="text-sm font-medium">
-                  القارئات المكتشفة ({discoveredReaders.length}):
+                  Oppdagede lesere ({discoveredReaders.length}):
                 </p>
                 {discoveredReaders.map((reader) => (
                   <Card key={reader.id}>
@@ -245,7 +245,7 @@ export default function ReaderManagement() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="font-medium">
-                            {reader.label || "قارئ بدون اسم"}
+                            {reader.label || "Leser uten navn"}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {reader.device_type} - {reader.id}
@@ -261,7 +261,7 @@ export default function ReaderManagement() {
                           onClick={() => connectToReader(reader)}
                           disabled={isConnecting || connectedReader?.id === reader.id}
                         >
-                          {connectedReader?.id === reader.id ? "متصل" : "اتصال"}
+                          {connectedReader?.id === reader.id ? "Tilkoblet" : "Koble til"}
                         </Button>
                       </div>
                     </CardContent>
@@ -276,7 +276,7 @@ export default function ReaderManagement() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>القارئات المسجلة</span>
+              <span>Registrerte lesere</span>
               <Button
                 variant="outline"
                 size="sm"
@@ -291,7 +291,7 @@ export default function ReaderManagement() {
               </Button>
             </CardTitle>
             <CardDescription>
-              جميع القارئات المسجلة في حساب Stripe الخاص بك
+              Alle lesere registrert i din Stripe-konto
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -307,7 +307,7 @@ export default function ReaderManagement() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="font-medium">
-                            {reader.label || "قارئ بدون اسم"}
+                            {reader.label || "Leser uten navn"}
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {reader.device_type} - {reader.serial_number || reader.id}
@@ -331,7 +331,7 @@ export default function ReaderManagement() {
               </div>
             ) : (
               <p className="text-center text-muted-foreground py-8">
-                لا توجد قارئات مسجلة
+                Ingen registrerte lesere
               </p>
             )}
           </CardContent>
