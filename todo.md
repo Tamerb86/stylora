@@ -5190,3 +5190,23 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Test POS in all 4 languages
 - [ ] Save checkpoint
 - [ ] Deploy to Railway production
+
+## Phase 79: Translate Walk-in Queue, POS, and Appointments Pages
+- [x] Add Walk-in Queue translations to Norwegian locale (60+ strings)
+- [x] Add Walk-in Queue translations to Arabic locale (60+ strings)
+- [x] Add Walk-in Queue translations to English locale (60+ strings)
+- [x] Add Walk-in Queue translations to Ukrainian locale (60+ strings)
+- [ ] Update Walk-in Queue component to use useTranslation
+- [ ] Add POS translations to Norwegian locale
+- [ ] Add POS translations to Arabic locale
+- [ ] Add POS translations to English locale
+- [ ] Add POS translations to Ukrainian locale
+- [ ] Update POS component to use useTranslation
+- [ ] Add Appointments translations to Norwegian locale
+- [ ] Add Appointments translations to Arabic locale
+- [ ] Add Appointments translations to English locale
+- [ ] Add Appointments translations to Ukrainian locale
+- [ ] Update Appointments component to use useTranslation
+- [ ] Test all 3 pages in all 4 languages
+- [ ] Save checkpoint
+- [ ] Deploy to Railway production
