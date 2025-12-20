@@ -9,6 +9,7 @@ import { getLoginUrl } from "./const";
 import "./index.css";
 import { ThermalPrinterProvider } from "@/contexts/ThermalPrinterContext";
 import { UIModeProvider } from "@/contexts/UIModeContext";
+import "@/i18n/config";
 
 const queryClient = new QueryClient();
 

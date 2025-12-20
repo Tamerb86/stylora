@@ -1,0 +1,50 @@
+{
+  "dashboard": {
+    "title": "Dashbord",
+    "welcome": "Velkommen! Her er dagens sammendrag",
+    "todayAppointments": "Dagens avtaler",
+    "pending": "Ventende",
+    "completed": "Fullførte avtaler",
+    "totalCustomers": "Totalt kunder",
+    "quickActions": "Hurtighandlinger",
+    "newAppointment": "Ny avtale",
+    "newCustomer": "Ny kunde",
+    "newSale": "Nytt salg (POS)",
+    "upcomingAppointments": "Kommende avtaler",
+    "noAppointments": "Ingen kommende avtaler",
+    "createAppointment": "Opprett ny avtale",
+    "todayPerformance": "Dagens ytelse",
+    "totalAppointments": "Totale avtaler",
+    "completedCount": "Fullførte",
+    "pendingCount": "Ventende",
+    "viewFullAnalytics": "Se fullstendig analyse →",
+    "confirmed": "Bekreftet",
+    "pendingStatus": "Venter"
+  },
+  "nav": {
+    "dashboard": "Dashbord",
+    "appointments": "Avtaler",
+    "customers": "Kunder",
+    "services": "Tjenester",
+    "employees": "Ansatte",
+    "pos": "Kasse (POS)",
+    "analytics": "Analyse",
+    "settings": "Innstillinger"
+  },
+  "common": {
+    "loading": "Laster...",
+    "save": "Lagre",
+    "cancel": "Avbryt",
+    "delete": "Slett",
+    "edit": "Rediger",
+    "add": "Legg til",
+    "search": "Søk",
+    "filter": "Filtrer",
+    "export": "Eksporter",
+    "import": "Importer",
+    "yes": "Ja",
+    "no": "Nei",
+    "ok": "OK",
+    "close": "Lukk"
+  }
+}

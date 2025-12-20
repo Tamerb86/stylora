@@ -15,8 +15,10 @@ import {
   AlertCircle,
   Sparkles
 } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 export default function Dashboard() {
+  const { t, i18n } = useTranslation();
   const { data: stats, isLoading } = trpc.dashboard.todayStats.useQuery();
   const { data: wizardStatus } = trpc.wizard.getStatus.useQuery();
   const { data: upcomingAppointments } = trpc.appointments.list.useQuery({
@@ -24,6 +26,7 @@ export default function Dashboard() {
     endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
   });
   const [, setLocation] = useLocation();
+  const isRTL = i18n.language === 'ar';
 
   // Redirect to wizard if not completed
   if (wizardStatus && !wizardStatus.onboardingCompleted) {
@@ -34,7 +37,7 @@ export default function Dashboard() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="p-8" dir="rtl">
+        <div className="p-8">
           <div className="animate-pulse space-y-6">
             <div className="grid grid-cols-2 gap-6">
               {[1, 2, 3, 4].map((i) => (
@@ -49,7 +52,7 @@ export default function Dashboard() {
 
   const statCards = [
     {
-      label: "مواعيد اليوم",
+      label: t('dashboard.todayAppointments'),
       value: stats?.todayAppointments || 0,
       bgColor: "bg-gradient-to-br from-blue-50 to-blue-100",
       textColor: "text-blue-700",
@@ -57,7 +60,7 @@ export default function Dashboard() {
       iconBg: "bg-blue-500",
     },
     {
-      label: "قيد الانتظار",
+      label: t('dashboard.pending'),
       value: stats?.pendingAppointments || 0,
       bgColor: "bg-gradient-to-br from-amber-50 to-amber-100",
       textColor: "text-amber-700",
@@ -65,7 +68,7 @@ export default function Dashboard() {
       iconBg: "bg-amber-500",
     },
     {
-      label: "المواعيد المكتملة",
+      label: t('dashboard.completed'),
       value: stats?.completedAppointments || 0,
       bgColor: "bg-gradient-to-br from-emerald-50 to-emerald-100",
       textColor: "text-emerald-700",
@@ -73,7 +76,7 @@ export default function Dashboard() {
       iconBg: "bg-emerald-500",
     },
     {
-      label: "إجمالي العملاء",
+      label: t('dashboard.totalCustomers'),
       value: stats?.totalCustomers || 0,
       bgColor: "bg-gradient-to-br from-purple-50 to-purple-100",
       textColor: "text-purple-700",
@@ -84,19 +87,19 @@ export default function Dashboard() {
 
   const quickActions = [
     {
-      label: "موعد جديد",
+      label: t('dashboard.newAppointment'),
       icon: CalendarPlus,
       onClick: () => setLocation("/appointments"),
       color: "from-blue-600 via-blue-500 to-cyan-500",
     },
     {
-      label: "عميل جديد",
+      label: t('dashboard.newCustomer'),
       icon: UserPlus,
       onClick: () => setLocation("/customers"),
       color: "from-purple-600 via-purple-500 to-pink-500",
     },
     {
-      label: "عملية بيع جديدة",
+      label: t('dashboard.newSale'),
       icon: ShoppingCart,
       onClick: () => setLocation("/pos"),
       color: "from-orange-600 via-orange-500 to-red-500",
@@ -109,7 +112,10 @@ export default function Dashboard() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("ar-SA", { 
+    const locale = i18n.language === 'ar' ? 'ar-SA' : 
+                   i18n.language === 'uk' ? 'uk-UA' : 
+                   i18n.language === 'en' ? 'en-US' : 'no-NO';
+    return date.toLocaleDateString(locale, { 
       weekday: 'short', 
       day: 'numeric', 
       month: 'short' 
@@ -118,15 +124,15 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
-      <div className="p-4 md:p-8 space-y-6" dir="rtl">
+      <div className="p-4 md:p-8 space-y-6">
         {/* Welcome Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center gap-3">
             <Sparkles className="w-10 h-10 text-blue-600" />
-            لوحة التحكم
+            {t('dashboard.title')}
           </h1>
           <p className="text-muted-foreground mt-2 text-lg">
-            مرحباً بك! إليك ملخص أعمال اليوم
+            {t('dashboard.welcome')}
           </p>
         </div>
 
@@ -168,7 +174,7 @@ export default function Dashboard() {
               <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg">
                 <TrendingUp className="w-6 h-6 text-white" />
               </div>
-              إجراءات سريعة
+              {t('dashboard.quickActions')}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
@@ -203,7 +209,7 @@ export default function Dashboard() {
                 <div className="p-2 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg">
                   <Clock className="w-5 h-5 text-white" />
                 </div>
-                المواعيد القادمة
+                {t('dashboard.upcomingAppointments')}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
@@ -217,7 +223,7 @@ export default function Dashboard() {
                     >
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                          {appointment.customerFirstName?.[0] || "؟"}
+                          {appointment.customerFirstName?.[0] || "?"}
                         </div>
                         <div>
                           <p className="font-bold text-lg">
@@ -233,8 +239,8 @@ export default function Dashboard() {
                         appointment.status === 'pending' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white' :
                         'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
                       }`}>
-                        {appointment.status === 'confirmed' ? 'مؤكد' :
-                         appointment.status === 'pending' ? 'قيد الانتظار' :
+                        {appointment.status === 'confirmed' ? t('dashboard.confirmed') :
+                         appointment.status === 'pending' ? t('dashboard.pendingStatus') :
                          appointment.status}
                       </div>
                     </div>
@@ -245,15 +251,15 @@ export default function Dashboard() {
                   <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full flex items-center justify-center">
                     <Clock className="w-10 h-10 opacity-50" />
                   </div>
-                  <p className="text-lg font-semibold mb-2">لا توجد مواعيد قادمة</p>
-                  <p className="text-sm mb-4">ابدأ بإنشاء موعد جديد</p>
+                  <p className="text-lg font-semibold mb-2">{t('dashboard.noAppointments')}</p>
+                  <p className="text-sm mb-4">{t('dashboard.createAppointment')}</p>
                   <Button
                     variant="outline"
                     size="lg"
                     className="mt-3 border-2 hover:bg-blue-50 hover:border-blue-500 hover:text-blue-600 transition-all"
                     onClick={() => setLocation("/appointments")}
                   >
-                    إنشاء موعد جديد
+                    {t('dashboard.createAppointment')}
                   </Button>
                 </div>
               )}
@@ -267,14 +273,14 @@ export default function Dashboard() {
                 <div className="p-2 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg">
                   <DollarSign className="w-5 h-5 text-white" />
                 </div>
-                أداء اليوم
+                {t('dashboard.todayPerformance')}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-5 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200 shadow-sm hover:shadow-md transition-all">
                   <div>
-                    <p className="text-sm text-blue-700 font-bold mb-1">إجمالي المواعيد</p>
+                    <p className="text-sm text-blue-700 font-bold mb-1">{t('dashboard.totalAppointments')}</p>
                     <p className="text-4xl font-black text-blue-800">
                       {stats?.todayAppointments || 0}
                     </p>
@@ -286,7 +292,7 @@ export default function Dashboard() {
 
                 <div className="flex items-center justify-between p-5 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200 shadow-sm hover:shadow-md transition-all">
                   <div>
-                    <p className="text-sm text-emerald-700 font-bold mb-1">المكتملة</p>
+                    <p className="text-sm text-emerald-700 font-bold mb-1">{t('dashboard.completedCount')}</p>
                     <p className="text-4xl font-black text-emerald-800">
                       {stats?.completedAppointments || 0}
                     </p>
@@ -298,7 +304,7 @@ export default function Dashboard() {
 
                 <div className="flex items-center justify-between p-5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 shadow-sm hover:shadow-md transition-all">
                   <div>
-                    <p className="text-sm text-amber-700 font-bold mb-1">قيد الانتظار</p>
+                    <p className="text-sm text-amber-700 font-bold mb-1">{t('dashboard.pendingCount')}</p>
                     <p className="text-4xl font-black text-amber-800">
                       {stats?.pendingAppointments || 0}
                     </p>
@@ -313,7 +319,7 @@ export default function Dashboard() {
                   className="w-full h-14 text-lg font-bold border-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:border-blue-500 hover:text-blue-600 transition-all"
                   onClick={() => setLocation("/analytics")}
                 >
-                  عرض التحليلات الكاملة ←
+                  {t('dashboard.viewFullAnalytics')}
                 </Button>
               </div>
             </CardContent>

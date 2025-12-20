@@ -1,0 +1,50 @@
+{
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "welcome": "مرحباً بك! إليك ملخص أعمال اليوم",
+    "todayAppointments": "مواعيد اليوم",
+    "pending": "قيد الانتظار",
+    "completed": "المواعيد المكتملة",
+    "totalCustomers": "إجمالي العملاء",
+    "quickActions": "إجراءات سريعة",
+    "newAppointment": "موعد جديد",
+    "newCustomer": "عميل جديد",
+    "newSale": "عملية بيع جديدة",
+    "upcomingAppointments": "المواعيد القادمة",
+    "noAppointments": "لا توجد مواعيد قادمة",
+    "createAppointment": "إنشاء موعد جديد",
+    "todayPerformance": "أداء اليوم",
+    "totalAppointments": "إجمالي المواعيد",
+    "completedCount": "المكتملة",
+    "pendingCount": "قيد الانتظار",
+    "viewFullAnalytics": "عرض التحليلات الكاملة ←",
+    "confirmed": "مؤكد",
+    "pendingStatus": "قيد الانتظار"
+  },
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "appointments": "المواعيد",
+    "customers": "العملاء",
+    "services": "الخدمات",
+    "employees": "الموظفون",
+    "pos": "نقاط البيع",
+    "analytics": "التحليلات",
+    "settings": "الإعدادات"
+  },
+  "common": {
+    "loading": "جاري التحميل...",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "add": "إضافة",
+    "search": "بحث",
+    "filter": "تصفية",
+    "export": "تصدير",
+    "import": "استيراد",
+    "yes": "نعم",
+    "no": "لا",
+    "ok": "موافق",
+    "close": "إغلاق"
+  }
+}

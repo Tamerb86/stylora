@@ -49,6 +49,7 @@ import { useUIMode } from "@/contexts/UIModeContext";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { OnboardingTour } from "./OnboardingTour";
+import LanguageSwitcher from "./LanguageSwitcher";
 import { trpc } from "@/lib/trpc";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -838,14 +839,17 @@ function DashboardLayoutContent({
                 </div>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSearchOpen(true)}
-              className="h-9 w-9"
-            >
-              <Search className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSearchOpen(true)}
+                className="h-9 w-9"
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         )}
         <main className="flex-1 p-4">

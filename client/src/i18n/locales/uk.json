@@ -1,0 +1,50 @@
+{
+  "dashboard": {
+    "title": "Панель управління",
+    "welcome": "Ласкаво просимо! Ось підсумок сьогодні",
+    "todayAppointments": "Сьогоднішні зустрічі",
+    "pending": "В очікуванні",
+    "completed": "Завершені зустрічі",
+    "totalCustomers": "Всього клієнтів",
+    "quickActions": "Швидкі дії",
+    "newAppointment": "Нова зустріч",
+    "newCustomer": "Новий клієнт",
+    "newSale": "Новий продаж",
+    "upcomingAppointments": "Майбутні зустрічі",
+    "noAppointments": "Немає майбутніх зустрічей",
+    "createAppointment": "Створити нову зустріч",
+    "todayPerformance": "Сьогоднішні показники",
+    "totalAppointments": "Всього зустрічей",
+    "completedCount": "Завершено",
+    "pendingCount": "В очікуванні",
+    "viewFullAnalytics": "Переглянути повну аналітику →",
+    "confirmed": "Підтверджено",
+    "pendingStatus": "В очікуванні"
+  },
+  "nav": {
+    "dashboard": "Панель управління",
+    "appointments": "Зустрічі",
+    "customers": "Клієнти",
+    "services": "Послуги",
+    "employees": "Співробітники",
+    "pos": "Каса",
+    "analytics": "Аналітика",
+    "settings": "Налаштування"
+  },
+  "common": {
+    "loading": "Завантаження...",
+    "save": "Зберегти",
+    "cancel": "Скасувати",
+    "delete": "Видалити",
+    "edit": "Редагувати",
+    "add": "Додати",
+    "search": "Пошук",
+    "filter": "Фільтр",
+    "export": "Експорт",
+    "import": "Імпорт",
+    "yes": "Так",
+    "no": "Ні",
+    "ok": "OK",
+    "close": "Закрити"
+  }
+}

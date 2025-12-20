@@ -1,0 +1,50 @@
+{
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome! Here's today's summary",
+    "todayAppointments": "Today's Appointments",
+    "pending": "Pending",
+    "completed": "Completed Appointments",
+    "totalCustomers": "Total Customers",
+    "quickActions": "Quick Actions",
+    "newAppointment": "New Appointment",
+    "newCustomer": "New Customer",
+    "newSale": "New Sale (POS)",
+    "upcomingAppointments": "Upcoming Appointments",
+    "noAppointments": "No upcoming appointments",
+    "createAppointment": "Create New Appointment",
+    "todayPerformance": "Today's Performance",
+    "totalAppointments": "Total Appointments",
+    "completedCount": "Completed",
+    "pendingCount": "Pending",
+    "viewFullAnalytics": "View Full Analytics →",
+    "confirmed": "Confirmed",
+    "pendingStatus": "Pending"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "appointments": "Appointments",
+    "customers": "Customers",
+    "services": "Services",
+    "employees": "Employees",
+    "pos": "Point of Sale",
+    "analytics": "Analytics",
+    "settings": "Settings"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "close": "Close"
+  }
+}
