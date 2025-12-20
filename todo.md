@@ -4977,3 +4977,19 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Replace SearchIcon with Search
 - [x] Test login and sidebar search
 - [x] Push fix to GitHub
+
+## Phase 61: Update Domain to www.stylora.no
+- [ ] Update VITE_APP_URL environment variable
+- [ ] Update API base URL configuration
+- [ ] Update OAuth callback URLs
+- [ ] Update email template URLs
+- [ ] Update notification URLs
+- [ ] Update meta tags and SEO
+- [ ] Test all URLs and redirects
+- [ ] Deploy to Railway
+
+## Phase 62: Change Toast Duration from 10s to 5s
+- [x] Find all toast.success/error/info calls with duration: 10000
+- [x] Update duration to 5000 (5 seconds)
+- [x] Test toast notifications
+- [x] Save checkpoint
