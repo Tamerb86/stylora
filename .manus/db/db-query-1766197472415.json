@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO tenants (id, name, subdomain, status, timezone, currency, vatRate, emailVerified, onboardingCompleted, createdAt, updatedAt) \nVALUES ('7fd450d6-be6a-46c8-a42f-c62fcc4f3341', 'K S Frisør salon', 'ks-frisor', 'active', 'Europe/Oslo', 'NOK', 25.00, false, false, NOW(), NOW());",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute INSERT INTO tenants (id, name, subdomain, status, timezone, currency, vatRate, emailVerified, onboardingCompleted, createdAt, updatedAt) \nVALUES ('7fd450d6-be6a-46c8-a42f-c62fcc4f3341', 'K S Frisør salon', 'ks-frisor', 'active', 'Europe/Oslo', 'NOK', 25.00, false, false, NOW(), NOW());",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 61
+}

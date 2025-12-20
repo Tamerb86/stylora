@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE tenants SET status = 'active' WHERE id = 'ks-frisor-tenant';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute UPDATE tenants SET status = 'active' WHERE id = 'ks-frisor-tenant';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 54
+}

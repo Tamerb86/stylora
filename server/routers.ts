@@ -7585,7 +7585,7 @@ export const appRouter = router({
         }
 
         const { tenants, tenantSubscriptions, subscriptionPlans, users, customers, appointments, orders } = await import("../drizzle/schema");
-        const { eq, and, or, like, gte, sql } = await import("drizzle-orm");
+        const { eq, and, or, like, gte, sql, desc } = await import("drizzle-orm");
 
         const { search, status, page, pageSize } = input;
         const offset = (page - 1) * pageSize;
