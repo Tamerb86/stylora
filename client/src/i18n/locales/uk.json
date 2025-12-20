@@ -19,7 +19,12 @@
     "pendingCount": "В очікуванні",
     "viewFullAnalytics": "Переглянути повну аналітику →",
     "confirmed": "Підтверджено",
-    "pendingStatus": "В очікуванні"
+    "pendingStatus": "В очікуванні",
+    "salonInsights": "Інформація про салон",
+    "activeStaff": "Активні співробітники",
+    "totalServices": "Всього послуг",
+    "popularService": "Популярна послуга",
+    "noData": "Немає даних"
   },
   "nav": {
     "dashboard": "Панель управління",

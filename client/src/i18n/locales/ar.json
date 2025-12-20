@@ -19,7 +19,12 @@
     "pendingCount": "قيد الانتظار",
     "viewFullAnalytics": "عرض التحليلات الكاملة ←",
     "confirmed": "مؤكد",
-    "pendingStatus": "قيد الانتظار"
+    "pendingStatus": "قيد الانتظار",
+    "salonInsights": "رؤى الصالون",
+    "activeStaff": "الموظفون النشطون",
+    "totalServices": "إجمالي الخدمات",
+    "popularService": "الخدمة الأكثر طلباً",
+    "noData": "لا توجد بيانات"
   },
   "nav": {
     "dashboard": "لوحة التحكم",

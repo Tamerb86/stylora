@@ -19,7 +19,12 @@
     "pendingCount": "Ventende",
     "viewFullAnalytics": "Se fullstendig analyse →",
     "confirmed": "Bekreftet",
-    "pendingStatus": "Venter"
+    "pendingStatus": "Venter",
+    "salonInsights": "Salonginnsikt",
+    "activeStaff": "Aktive ansatte",
+    "totalServices": "Totalt tjenester",
+    "popularService": "Populær tjeneste",
+    "noData": "Ingen data"
   },
   "nav": {
     "dashboard": "Dashbord",

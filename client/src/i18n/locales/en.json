@@ -19,7 +19,12 @@
     "pendingCount": "Pending",
     "viewFullAnalytics": "View Full Analytics →",
     "confirmed": "Confirmed",
-    "pendingStatus": "Pending"
+    "pendingStatus": "Pending",
+    "salonInsights": "Salon Insights",
+    "activeStaff": "Active Staff",
+    "totalServices": "Total Services",
+    "popularService": "Popular Service",
+    "noData": "No data"
   },
   "nav": {
     "dashboard": "Dashboard",

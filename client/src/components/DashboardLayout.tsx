@@ -765,6 +765,11 @@ function DashboardLayoutContent({
           </SidebarContent>
 
           <SidebarFooter className="p-3 space-y-3">
+            {/* Language Switcher */}
+            <div className="group-data-[collapsible=icon]:hidden">
+              <LanguageSwitcher />
+            </div>
+            
             {/* UI Mode Toggle */}
             <div data-tour="ui-mode-toggle" className="flex items-center justify-between px-2 py-1.5 rounded-lg bg-accent/50 group-data-[collapsible=icon]:hidden">
               <Label htmlFor="ui-mode" className="text-xs font-medium cursor-pointer">

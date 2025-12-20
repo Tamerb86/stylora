@@ -5139,3 +5139,18 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add locale-aware date formatting for all languages
 - [ ] Save checkpoint
 - [ ] Deploy to Railway production
+
+## Phase 76: Dashboard Improvements - Language Switcher & Salon Insights
+- [x] Add LanguageSwitcher to desktop view in SidebarFooter
+- [x] Reduce icon sizes in stat cards (from w-8 h-8 to w-5 h-5)
+- [x] Reduce button heights in quick actions (h-24 to h-20)
+- [x] Make stat cards more compact (p-6 to p-4)
+- [x] Add salon insights section with:
+  - [x] Active employees count
+  - [x] Total services count
+  - [x] Most popular service name
+- [x] Update translations for new sections (all 4 languages)
+- [x] Reduce card heights and padding throughout
+- [x] Make welcome header smaller (text-3xl to text-2xl)
+- [ ] Save checkpoint
+- [ ] Deploy to Railway production
