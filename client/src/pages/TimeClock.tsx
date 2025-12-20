@@ -319,10 +319,10 @@ export default function TimeClock() {
       {/* Active Employees Display - Bottom Left Corner */}
       {activeEmployees.length > 0 && (
         <div className="fixed bottom-4 left-4 z-40">
-          <Card className="p-4 bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl max-w-xs">
+          <Card className="p-4 bg-white/95 backdrop-blur-xl border-gray-200 shadow-2xl max-w-xs">
             <div className="flex items-center gap-2 mb-3">
               <Users className="w-4 h-4 text-green-400" />
-              <h3 className="text-sm font-semibold text-white">Innstemplet nå</h3>
+              <h3 className="text-base font-bold text-gray-900">Innstemplet nå</h3>
             </div>
             <div className="space-y-2">
               {activeEmployees.map((emp: any) => {
@@ -341,11 +341,11 @@ export default function TimeClock() {
                   <div key={emp.id} className="flex items-center justify-between gap-3 text-xs">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
-                      <span className="text-white font-medium truncate">{emp.employeeName}</span>
+                      <span className="text-gray-900 font-semibold truncate text-sm">{emp.employeeName}</span>
                     </div>
-                    <div className="text-blue-200 font-mono whitespace-nowrap flex-shrink-0">
+                    <div className="text-gray-700 font-mono whitespace-nowrap flex-shrink-0 text-sm">
                       {clockInTime.toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" })}
-                      <span className="text-green-300 ml-1">({elapsedDisplay})</span>
+                      <span className="text-green-600 ml-1 font-semibold">({elapsedDisplay})</span>
                     </div>
                   </div>
                 );

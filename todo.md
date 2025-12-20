@@ -5040,3 +5040,11 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Apply black color and larger font
 - [x] Test in browser to verify changes
 - [x] Save checkpoint
+
+## Phase 68: Fix Text Visibility in Attendance Page "Innstemplet nå"
+- [x] Find attendance/timesheet page component
+- [x] Locate "Innstemplet nå" section
+- [x] Make text darker and more visible
+- [x] Increase font size if needed
+- [x] Test changes in browser
+- [x] Save checkpoint
