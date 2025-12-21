@@ -5292,3 +5292,26 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Fix date comparison operations in appointments module (converted strings to Date objects)
 - [x] Fix CustomerDetails.tsx to use appointmentDate instead of date
 - [x] Reduced TypeScript errors from 31 to ~20 (remaining errors are in other modules)
+
+## Phase: iZettle Production Testing
+- [x] Check if iZettle is connected on production (stylora.no) - NOT CONNECTED
+- [x] If not connected, guide user through OAuth connection flow - FAILED: "Failed to save connection"
+- [ ] Verify Zettle Reader device is powered on and paired
+- [ ] Test creating a payment from POS
+- [ ] Verify payment appears on Zettle Reader
+- [ ] Complete payment on device
+- [ ] Verify payment status updates in BarberTime
+- [ ] Check payment record in database
+- [ ] Document any issues or errors encountered
+
+## Phase: Fix iZettle Connection Error
+- [x] Apply database migration to production (added missing columns via SQL)
+- [x] Verify paymentProviders table has TEXT columns for tokens (confirmed)
+- [ ] Retry iZettle OAuth connection
+- [ ] Verify connection succeeds
+
+## Phase: Fix iZettle OAuth Callback INSERT Error
+- [x] Update iZettle callback to explicitly set NULL for optional columns
+- [x] Remove 'default' values from INSERT query (added explicit NULL values)
+- [ ] Test OAuth connection after fix
+- [ ] Verify tokens are saved successfully
