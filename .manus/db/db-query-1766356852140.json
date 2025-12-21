@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO services (tenantId, name, description, durationMinutes, price, createdAt, updatedAt) VALUES \n('demo-tenant-barbertime', 'Herreklipp', 'Klassisk herreklipp med vask og styling', 30, '550.00', NOW(), NOW()),\n('demo-tenant-barbertime', 'Hårfarge', 'Profesjonell hårfarge med konsultasjon', 60, '1500.00', NOW(), NOW()),\n('demo-tenant-barbertime', 'Skjeggstell', 'Skjeggtrim og styling', 20, '350.00', NOW(), NOW());",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute INSERT INTO services (tenantId, name, description, durationMinutes, price, createdAt, updatedAt) VALUES \n('demo-tenant-barbertime', 'Herreklipp', 'Klassisk herreklipp med vask og styling', 30, '550.00', NOW(), NOW()),\n('demo-tenant-barbertime', 'Hårfarge', 'Profesjonell hårfarge med konsultasjon', 60, '1500.00', NOW(), NOW()),\n('demo-tenant-barbertime', 'Skjeggstell', 'Skjeggtrim og styling', 20, '350.00', NOW(), NOW());",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 62
+}

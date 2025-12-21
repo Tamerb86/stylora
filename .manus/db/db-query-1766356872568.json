@@ -1,0 +1,169 @@
+{
+  "query": "SHOW TABLES;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute SHOW TABLES;",
+  "rows": [
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "__drizzle_migrations"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "appointmentServices"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "appointments"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "auditLogs"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "bulkCampaigns"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "businessHours"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "campaignRecipients"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "communicationSettings"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "communicationTemplates"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "contactMessages"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "customers"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "dataImports"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "databaseBackups"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "emailTemplates"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "emailVerifications"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "employeeLeaves"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "employeeSchedules"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "expenses"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "fikenCustomerMapping"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "fikenInvoiceMapping"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "fikenProductMapping"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "fikenSettings"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "fikenSyncLog"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "loyaltyPoints"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "loyaltyRedemptions"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "loyaltyRewards"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "loyaltyTransactions"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "notifications"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "orderItems"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "orders"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "paymentProviders"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "paymentSettings"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "paymentSplits"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "payments"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "productCategories"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "products"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "recurrenceRules"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "refunds"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "salonHolidays"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "salonSettings"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "serviceCategories"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "services"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "settings"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "subscriptionPlans"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "tenantSubscriptions"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "tenants"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "timesheets"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "unimicroCustomerMapping"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "unimicroInvoiceMapping"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "unimicroSettings"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "unimicroSyncLog"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "users"
+    },
+    {
+      "Tables_in_FUrq59UAJ9LE4f7MefV9tg": "walkInQueue"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_FUrq59UAJ9LE4f7MefV9tg\n__drizzle_migrations\nappointmentServices\nappointments\nauditLogs\nbulkCampaigns\nbusinessHours\ncampaignRecipients\ncommunicationSettings\ncommunicationTemplates\ncontactMessages\ncustomers\ndataImports\ndatabaseBackups\nemailTemplates\nemailVerifications\nemployeeLeaves\nemployeeSchedules\nexpenses\nfikenCustomerMapping\nfikenInvoiceMapping\nfikenProductMapping\nfikenSettings\nfikenSyncLog\nloyaltyPoints\nloyaltyRedemptions\nloyaltyRewards\nloyaltyTransactions\nnotifications\norderItems\norders\npaymentProviders\npaymentSettings\npaymentSplits\npayments\nproductCategories\nproducts\nrecurrenceRules\nrefunds\nsalonHolidays\nsalonSettings\nserviceCategories\nservices\nsettings\nsubscriptionPlans\ntenantSubscriptions\ntenants\ntimesheets\nunimicroCustomerMapping\nunimicroInvoiceMapping\nunimicroSettings\nunimicroSyncLog\nusers\nwalkInQueue\n",
+  "stderr": "",
+  "execution_time_ms": 49
+}

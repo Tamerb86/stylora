@@ -62,13 +62,13 @@ export default function PublicBooking() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [customerInfo, setCustomerInfo] = useState({
-    firstName: "",
-    lastName: "",
-    phone: "",
-    email: "",
+    firstName: "Ola",
+    lastName: "Nordmann",
+    phone: "12345678",
+    email: "ola@example.com",
   });
   const [bookingId, setBookingId] = useState<number | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"stripe" | "vipps" | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"stripe" | "vipps" | "cash" | "pay_at_salon" | null>(null);
 
   const { data: branding } = trpc.publicBooking.getBranding.useQuery(
     { tenantId: TENANT_ID },
@@ -212,6 +212,9 @@ export default function PublicBooking() {
         callbackUrl: `${window.location.origin}/book/success?bookingId={APPOINTMENT_ID}`,
         fallbackUrl: `${window.location.origin}/book?canceled=true`,
       });
+    } else if (paymentMethod === "cash" || paymentMethod === "pay_at_salon") {
+      // For cash/pay_at_salon, create booking directly without payment
+      createBookingMutation.mutate(bookingData);
     }
   };
 

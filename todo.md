@@ -5374,3 +5374,21 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add status badges (pending/confirmed/completed)
 - [x] Integrate widget into Dashboard page
 - [x] Add "Se alle" link to Timebok page
+
+## Feature: Public Online Booking System
+- [x] Add public TRPC endpoints (no auth required)
+- [ ] Create public booking page route (/booking)
+- [ ] Add service selection step
+- [ ] Add employee selection step (optional - customer can choose "any")
+- [ ] Add date/time selection with available slots
+- [ ] Add customer information form (name, phone, email)
+- [ ] Add booking confirmation step
+- [ ] Send confirmation email to customer
+- [ ] Send notification to salon staff
+- [ ] Add booking cancellation link in email
+
+- [ ] Fix public booking - check schema for correct employee table name
+- [ ] Fix TRPC publicBooking endpoints to use correct tables
+- [ ] Test complete booking flow (service → employee → time → booking)
+
+- [x] Fix Step 4 → Step 5 navigation in PublicBooking page
