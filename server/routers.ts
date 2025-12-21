@@ -6782,7 +6782,8 @@ export const appRouter = router({
 
         const { orders, paymentProviders } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
-        const { createPayment, decryptToken } = await import("./services/izettle");
+        const { decryptToken } = await import("./services/izettle");
+        const { getReaderConnectManager } = await import("./services/reader-connect");
 
         // Validate order exists and belongs to tenant
         const [order] = await dbInstance
@@ -6833,39 +6834,96 @@ export const appRouter = router({
         // Decrypt access token
         const accessToken = decryptToken(provider.accessToken);
 
-        // Create payment on Zettle
-        try {
-          const zettlePayment = await createPayment(
-            accessToken,
-            input.amount,
-            "NOK",
-            `Order #${order.id}`
-          );
-
-          // Create pending payment record in our database
-          const payment = await db.createPayment({
-            tenantId,
-            orderId: order.id,
-            appointmentId: order.appointmentId,
-            paymentMethod: "card",
-            paymentGateway: "izettle",
-            amount: input.amount.toFixed(2),
-            currency: "NOK",
-            status: "pending",
-            gatewaySessionId: zettlePayment.purchaseUUID,
-            gatewayPaymentId: zettlePayment.purchaseUUID,
-            gatewayMetadata: JSON.stringify(zettlePayment),
-            lastFour: null,
-            cardBrand: null,
-            processedBy: user.id,
-            processedAt: null,
-            errorMessage: null,
+        // Get or create Reader Connect manager
+        // Check if provider has linkId (Reader Connect setup)
+        if (!provider.config || !JSON.parse(provider.config as string).linkId) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "PayPal Reader er ikke koblet til. Vennligst koble til Reader i innstillinger.",
           });
+        }
+
+        const config = JSON.parse(provider.config as string);
+        const linkId = config.linkId;
+
+        // Get Reader Connect manager
+        const manager = getReaderConnectManager(tenantId, linkId, accessToken);
+
+        // Ensure WebSocket is connected
+        if (!manager.isConnected()) {
+          try {
+            await manager.connect();
+          } catch (error: any) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: `Kunne ikke koble til PayPal Reader: ${error.message}`,
+            });
+          }
+        }
+
+        // Create pending payment record in our database
+        const payment = await db.createPayment({
+          tenantId,
+          orderId: order.id,
+          appointmentId: order.appointmentId,
+          paymentMethod: "card",
+          paymentGateway: "izettle",
+          amount: input.amount.toFixed(2),
+          currency: "NOK",
+          status: "pending",
+          gatewaySessionId: null,
+          gatewayPaymentId: null,
+          gatewayMetadata: null,
+          lastFour: null,
+          cardBrand: null,
+          processedBy: user.id,
+          processedAt: null,
+          errorMessage: null,
+        });
+
+        // Send payment request to Reader via WebSocket
+        try {
+          const internalTraceId = await manager.sendPaymentRequest(
+            {
+              amount: input.amount,
+              currency: "NOK",
+              reference: `Order #${order.id}`,
+            },
+            (progress) => {
+              // Payment progress callback
+              console.log(`[Zettle Payment ${payment.id}] Progress:`, progress.status);
+            },
+            async (result) => {
+              // Payment result callback
+              console.log(`[Zettle Payment ${payment.id}] Result:`, result.resultStatus);
+
+              // Update payment record based on result
+              if (result.resultStatus === "COMPLETED") {
+                await db.updatePayment(payment.id, {
+                  status: "completed",
+                  processedAt: new Date(),
+                  gatewayPaymentId: result.resultPayload?.purchaseUUID || internalTraceId,
+                  gatewayMetadata: JSON.stringify(result.resultPayload),
+                });
+              } else if (result.resultStatus === "FAILED") {
+                await db.updatePayment(payment.id, {
+                  status: "failed",
+                  errorMessage: result.resultErrorMessage || "Payment failed",
+                });
+              } else if (result.resultStatus === "CANCELED") {
+                await db.updatePayment(payment.id, {
+                  status: "cancelled",
+                  errorMessage: result.resultErrorMessage || "Payment canceled",
+                });
+              }
+            }
+          );
 
           return {
             payment,
-            purchaseUUID: zettlePayment.purchaseUUID,
-            status: zettlePayment.status,
+            internalTraceId,
+            status: "pending",
+            message: "Betaling sendt til PayPal Reader. Venter på bekreftelse...",
           };
         } catch (error: any) {
           console.error("[createZettlePayment] Error:", error);
@@ -11901,8 +11959,23 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    // Create payment (called from POS)
+    // DEPRECATED: Use pos.createZettlePayment instead (Reader Connect API)
+    // This endpoint is kept for backward compatibility but should not be used
     createPayment: protectedProcedure
+      .input(z.object({
+        amount: z.number().positive(),
+        currency: z.string().default('NOK'),
+        reference: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        throw new TRPCError({
+          code: "NOT_IMPLEMENTED",
+          message: "This endpoint is deprecated. Please use pos.createZettlePayment with PayPal Reader instead.",
+        });
+      }),
+
+    // DEPRECATED: Old implementation removed - use Reader Connect API
+    _oldCreatePayment: protectedProcedure
       .input(z.object({
         amount: z.number().positive(),
         currency: z.string().default('NOK'),
@@ -11939,78 +12012,14 @@ export const appRouter = router({
           });
         }
 
-        const { decryptToken, createPayment, refreshAccessToken } = await import('./services/izettle');
+        const { decryptToken, refreshAccessToken } = await import('./services/izettle');
         
-        let accessToken = decryptToken(provider.accessToken);
-        
-        // Check if token is expired and refresh if needed
-        if (provider.tokenExpiresAt && new Date(provider.tokenExpiresAt) < new Date()) {
-          try {
-            const refreshToken = decryptToken(provider.refreshToken!);
-            const newTokens = await refreshAccessToken(refreshToken);
-            
-            const { encryptToken } = await import('./services/izettle');
-            accessToken = newTokens.access_token;
-            
-            // Update tokens in database
-            await dbInstance
-              .update(paymentProviders)
-              .set({
-                accessToken: encryptToken(newTokens.access_token),
-                refreshToken: encryptToken(newTokens.refresh_token),
-                tokenExpiresAt: new Date(Date.now() + newTokens.expires_in * 1000),
-                updatedAt: new Date(),
-              })
-              .where(eq(paymentProviders.id, provider.id));
-          } catch (error) {
-            throw new TRPCError({
-              code: "UNAUTHORIZED",
-              message: "Failed to refresh iZettle token. Please reconnect your account.",
-            });
-          }
-        }
-
-        // Create payment
-        try {
-          const payment = await createPayment(
-            accessToken,
-            input.amount,
-            input.currency,
-            input.reference
-          );
-
-          // Update last sync
-          await dbInstance
-            .update(paymentProviders)
-            .set({
-              lastSyncAt: new Date(),
-              updatedAt: new Date(),
-            })
-            .where(eq(paymentProviders.id, provider.id));
-
-          return {
-            success: true,
-            purchaseUUID: payment.purchaseUUID,
-            amount: payment.amount,
-            currency: payment.currency,
-            status: payment.status,
-          };
-        } catch (error: any) {
-          // Log error
-          await dbInstance
-            .update(paymentProviders)
-            .set({
-              lastErrorAt: new Date(),
-              lastErrorMessage: error.message,
-              updatedAt: new Date(),
-            })
-            .where(eq(paymentProviders.id, provider.id));
-
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: `Failed to create payment: ${error.message}`,
-          });
-        }
+        // This old implementation has been removed
+        // Use pos.createZettlePayment with Reader Connect API instead
+        throw new TRPCError({
+          code: "NOT_IMPLEMENTED",
+          message: "This endpoint is deprecated. Please upgrade to PayPal Reader and use Reader Connect API.",
+        });
       }),
 
     // Get payment status

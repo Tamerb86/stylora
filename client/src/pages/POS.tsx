@@ -308,7 +308,7 @@ export default function POS() {
       } else if (paymentMethod === "izettle") {
         // iZettle payment
         setIsProcessingPayment(true);
-        setPaymentInstructions("Starter betaling på iZettle...");
+        setPaymentInstructions("Sender betaling til PayPal Reader...");
 
         try {
           // Create payment on Zettle
@@ -319,10 +319,13 @@ export default function POS() {
 
           // Store payment info for status tracking
           setZettlePaymentId(zettleResult.payment.id);
-          setZettlePurchaseUUID(zettleResult.purchaseUUID);
+          setZettlePurchaseUUID(zettleResult.internalTraceId || null);
           setShowZettleDialog(true);
-          setPaymentInstructions("");
+          setPaymentInstructions(zettleResult.message || "Betaling sendt til PayPal Reader...");
           setIsProcessingPayment(false);
+          
+          // Show info toast
+          toast.info("Betaling sendt til PayPal Reader. Sjekk Reader-skjermen.");
           
           // Don't show success dialog yet - wait for payment completion
           return;

@@ -5316,4 +5316,18 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Test OAuth connection after fix
 - [ ] Verify tokens are saved successfully
 
-- [ ] Fix iZettle OAuth scope to include WRITE:PURCHASE for creating payments on Zettle Reader
+- [x] Fix iZettle OAuth scope to include WRITE:PURCHASE for creating payments on Zettle Reader
+
+- [ ] Fix iZettle API 405 Method Not Allowed error - research correct endpoint and HTTP method
+
+## Phase: Reader Connect API Integration (PayPal Reader)
+- [x] Remove old Purchase API code (createPayment function)
+- [x] Implement Reader Connect Link creation API endpoint
+- [x] Implement WebSocket connection management
+- [x] Create payment request via WebSocket
+- [x] Handle payment progress responses
+- [x] Handle payment result responses
+- [x] Add Reader setup page for linking PayPal Reader (documented in READER_CONNECT_SETUP.md)
+- [x] Update POS to send payments via WebSocket instead of REST
+- [x] Add payment status display in POS
+- [ ] Test with PayPal Reader (requires hardware)

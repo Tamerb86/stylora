@@ -121,38 +121,79 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
 }
 
 /**
- * Create a payment in iZettle
+ * Create a Reader Link (for PayPal Reader)
+ * This creates a connection between Stylora and the PayPal Reader
  */
-export async function createPayment(
+export async function createReaderLink(
   accessToken: string,
-  amount: number,
-  currency: string = "NOK",
-  reference: string
+  linkName: string = "Stylora POS"
 ): Promise<{
-  purchaseUUID: string;
-  amount: number;
-  currency: string;
-  status: string;
+  linkId: string;
+  linkName: string;
+  websocketUrl: string;
 }> {
-  const response = await fetch("https://purchase.izettle.com/purchases/v2", {
+  const response = await fetch("https://reader-connect.zettle.com/v1/links", {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${accessToken}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      amount: Math.round(amount * 100), // Convert to cents
-      currency,
-      reference,
+      linkName,
     }),
   });
 
   if (!response.ok) {
     const error = await response.text();
-    throw new Error(`iZettle payment creation failed: ${error}`);
+    throw new Error(`Reader Link creation failed: ${error}`);
   }
 
   return response.json();
+}
+
+/**
+ * Get existing Reader Links
+ */
+export async function getReaderLinks(
+  accessToken: string
+): Promise<Array<{
+  linkId: string;
+  linkName: string;
+  status: string;
+}>> {
+  const response = await fetch("https://reader-connect.zettle.com/v1/links", {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Failed to fetch Reader Links: ${error}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Delete a Reader Link
+ */
+export async function deleteReaderLink(
+  accessToken: string,
+  linkId: string
+): Promise<void> {
+  const response = await fetch(`https://reader-connect.zettle.com/v1/links/${linkId}`, {
+    method: "DELETE",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Failed to delete Reader Link: ${error}`);
+  }
 }
 
 /**
