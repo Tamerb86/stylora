@@ -5260,3 +5260,10 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Update POS component to use translations (deferred - translation files ready for future integration)
 - [x] Test all translations in all 4 languages (translation files validated)
 - [ ] Save checkpoint and deploy to production
+
+## Phase: Zettle Card Reader Integration
+- [x] Fix paymentProviders schema - change accessToken and refreshToken to TEXT
+- [x] Verify database schema is correct (TEXT type with 65535 chars)
+- [x] Test token insertion with encrypted long tokens
+- [x] Verify multi-tenant iZettle integration works correctly
+- [x] Document iZettle integration flow and requirements

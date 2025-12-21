@@ -1,0 +1,19 @@
+{
+  "query": "SELECT id, tenantId, providerType, providerName, LENGTH(accessToken) as accessTokenLength, LENGTH(refreshToken) as refreshTokenLength, tokenExpiresAt \nFROM paymentProviders \nWHERE tenantId = 'test-tenant-123'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute SELECT id, tenantId, providerType, providerName, LENGTH(accessToken) as accessTokenLength, LENGTH(refreshToken) as refreshTokenLength, tokenExpiresAt \nFROM paymentProviders \nWHERE tenantId = 'test-tenant-123'",
+  "rows": [
+    {
+      "id": "1",
+      "tenantId": "test-tenant-123",
+      "providerType": "izettle",
+      "providerName": "Test iZettle Connection",
+      "accessTokenLength": "300",
+      "refreshTokenLength": "136",
+      "tokenExpiresAt": "2025-12-20 22:00:00"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\ttenantId\tproviderType\tproviderName\taccessTokenLength\trefreshTokenLength\ttokenExpiresAt\n1\ttest-tenant-123\tizettle\tTest iZettle Connection\t300\t136\t2025-12-20 22:00:00\n",
+  "stderr": "",
+  "execution_time_ms": 57
+}

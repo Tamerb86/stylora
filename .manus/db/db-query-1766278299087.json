@@ -1,0 +1,28 @@
+{
+  "query": "SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, COLUMN_TYPE \nFROM INFORMATION_SCHEMA.COLUMNS \nWHERE TABLE_NAME = 'paymentProviders' \nAND COLUMN_NAME IN ('accessToken', 'refreshToken', 'tokenExpiresAt')",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH, COLUMN_TYPE \nFROM INFORMATION_SCHEMA.COLUMNS \nWHERE TABLE_NAME = 'paymentProviders' \nAND COLUMN_NAME IN ('accessToken', 'refreshToken', 'tokenExpiresAt')",
+  "rows": [
+    {
+      "COLUMN_NAME": "accessToken",
+      "DATA_TYPE": "text",
+      "CHARACTER_MAXIMUM_LENGTH": "65535",
+      "COLUMN_TYPE": "text"
+    },
+    {
+      "COLUMN_NAME": "refreshToken",
+      "DATA_TYPE": "text",
+      "CHARACTER_MAXIMUM_LENGTH": "65535",
+      "COLUMN_TYPE": "text"
+    },
+    {
+      "COLUMN_NAME": "tokenExpiresAt",
+      "DATA_TYPE": "timestamp",
+      "CHARACTER_MAXIMUM_LENGTH": "NULL",
+      "COLUMN_TYPE": "timestamp"
+    }
+  ],
+  "messages": [],
+  "stdout": "COLUMN_NAME\tDATA_TYPE\tCHARACTER_MAXIMUM_LENGTH\tCOLUMN_TYPE\naccessToken\ttext\t65535\ttext\nrefreshToken\ttext\t65535\ttext\ntokenExpiresAt\ttimestamp\tNULL\ttimestamp\n",
+  "stderr": "",
+  "execution_time_ms": 63
+}
