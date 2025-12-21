@@ -1933,6 +1933,67 @@ export const appRouter = router({
         return db.getAppointmentById(input.id);
       }),
 
+    getToday: tenantProcedure
+      .query(async ({ ctx }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+        const { appointments, customers, employees, services, appointmentServices } = await import("../drizzle/schema");
+        const { eq, and, gte, lt } = await import("drizzle-orm");
+
+        // Get today's date range (00:00:00 to 23:59:59)
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        // Fetch today's appointments with related data
+        const todayAppointments = await dbInstance
+          .select({
+            id: appointments.id,
+            appointmentDate: appointments.appointmentDate,
+            startTime: appointments.startTime,
+            endTime: appointments.endTime,
+            status: appointments.status,
+            notes: appointments.notes,
+            customerId: appointments.customerId,
+            customerName: customers.name,
+            employeeId: appointments.employeeId,
+            employeeName: employees.name,
+          })
+          .from(appointments)
+          .leftJoin(customers, eq(appointments.customerId, customers.id))
+          .leftJoin(employees, eq(appointments.employeeId, employees.id))
+          .where(
+            and(
+              eq(appointments.tenantId, ctx.tenantId),
+              gte(appointments.appointmentDate, today),
+              lt(appointments.appointmentDate, tomorrow)
+            )
+          )
+          .orderBy(appointments.startTime);
+
+        // Fetch services for each appointment
+        const appointmentsWithServices = await Promise.all(
+          todayAppointments.map(async (apt) => {
+            const aptServices = await dbInstance
+              .select({
+                serviceName: services.name,
+              })
+              .from(appointmentServices)
+              .leftJoin(services, eq(appointmentServices.serviceId, services.id))
+              .where(eq(appointmentServices.appointmentId, apt.id));
+
+            return {
+              ...apt,
+              services: aptServices.map(s => s.serviceName).filter(Boolean),
+            };
+          })
+        );
+
+        return appointmentsWithServices;
+      }),
+
     create: tenantProcedure
       .input(z.object({
         customerId: z.number(),

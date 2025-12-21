@@ -5366,3 +5366,11 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Test calendar date selection
 - [x] Add day navigation buttons (← 1 day / 1 day →)
 - [x] Add month navigation buttons (← 1 month / 1 month →)
+
+## Feature: Today's Appointments Widget in Dashboard
+- [x] Add TRPC endpoint to fetch today's appointments
+- [x] Create TodayAppointments widget component
+- [x] Display appointment time, customer, service, employee
+- [x] Add status badges (pending/confirmed/completed)
+- [x] Integrate widget into Dashboard page
+- [x] Add "Se alle" link to Timebok page

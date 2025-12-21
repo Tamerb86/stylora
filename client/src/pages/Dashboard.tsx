@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next';
 import AppointmentsChart from '@/components/charts/AppointmentsChart';
 import StatusDistributionChart from '@/components/charts/StatusDistributionChart';
 import MiniCalendar from '@/components/MiniCalendar';
+import TodayAppointments from '@/components/TodayAppointments';
 import { BarChart3, PieChart, Calendar as CalendarIcon } from 'lucide-react';
 
 export default function Dashboard() {
@@ -180,6 +181,9 @@ export default function Dashboard() {
             );
           })}
         </div>
+
+        {/* Today's Appointments Widget */}
+        <TodayAppointments />
 
         {/* Salon Insights - NEW */}
         <Card className="border-0 shadow-md">
