@@ -5351,3 +5351,18 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add TRPC endpoint to fetch last 10 iZettle payments
 - [x] Add payment history section in iZettle Settings
 - [x] Display payment amount, status, date, and Reader name
+
+## Bug: Appointment Creation Not Working
+- [ ] Investigate appointment creation error
+- [ ] Check browser console for error messages
+- [ ] Check backend logs for TRPC errors
+- [ ] Fix the issue
+- [ ] Test appointment creation flow
+
+## Enhancement: Disable Past Dates in Calendar
+- [x] Style past dates with gray color in calendar
+- [x] Disable click on past dates
+- [x] Add validation error message when trying to select past date
+- [ ] Test calendar date selection
+- [x] Add day navigation buttons (← 1 day / 1 day →)
+- [x] Add month navigation buttons (← 1 month / 1 month →)

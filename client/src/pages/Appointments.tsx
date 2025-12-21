@@ -222,6 +222,14 @@ export default function Appointments() {
       return;
     }
 
+    // Validate that selected date is not in the past
+    const selectedDateTime = new Date(`${selectedDate}T${selectedTime}`);
+    const now = new Date();
+    if (selectedDateTime < now) {
+      toast.error("Kan ikke opprette avtale i fortiden. Vennligst velg en fremtidig dato.");
+      return;
+    }
+
     if (isRecurring) {
       // Validate recurring fields
       if (recurringEndType === "date" && !recurringEndDate) {

@@ -186,7 +186,9 @@ export function Calendar({
 
   const navigatePrevious = () => {
     const newDate = new Date(currentDate);
-    if (view === "week") {
+    if (view === "day") {
+      newDate.setDate(newDate.getDate() - 1);
+    } else if (view === "week") {
       newDate.setDate(newDate.getDate() - 7);
     } else {
       newDate.setMonth(newDate.getMonth() - 1);
@@ -196,11 +198,37 @@ export function Calendar({
 
   const navigateNext = () => {
     const newDate = new Date(currentDate);
-    if (view === "week") {
+    if (view === "day") {
+      newDate.setDate(newDate.getDate() + 1);
+    } else if (view === "week") {
       newDate.setDate(newDate.getDate() + 7);
     } else {
       newDate.setMonth(newDate.getMonth() + 1);
     }
+    setCurrentDate(newDate);
+  };
+
+  const navigatePreviousDay = () => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() - 1);
+    setCurrentDate(newDate);
+  };
+
+  const navigateNextDay = () => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + 1);
+    setCurrentDate(newDate);
+  };
+
+  const navigatePreviousMonth = () => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(newDate.getMonth() - 1);
+    setCurrentDate(newDate);
+  };
+
+  const navigateNextMonth = () => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(newDate.getMonth() + 1);
     setCurrentDate(newDate);
   };
 
@@ -374,16 +402,39 @@ export function Calendar({
 
       {/* Header Controls */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={navigatePrevious}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="sm" onClick={goToToday}>
-            I dag
-          </Button>
-          <Button variant="outline" size="sm" onClick={navigateNext}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Main navigation (week/month) */}
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={navigatePrevious} title={view === "day" ? "Forrige dag" : view === "week" ? "Forrige uke" : "Forrige måned"}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="sm" onClick={goToToday}>
+              I dag
+            </Button>
+            <Button variant="outline" size="sm" onClick={navigateNext} title={view === "day" ? "Neste dag" : view === "week" ? "Neste uke" : "Neste måned"}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {/* Quick navigation buttons */}
+          <div className="flex items-center gap-2 border-l pl-3">
+            <Button variant="ghost" size="sm" onClick={navigatePreviousDay} title="1 dag tilbake" className="text-xs">
+              ← 1 dag
+            </Button>
+            <Button variant="ghost" size="sm" onClick={navigateNextDay} title="1 dag frem" className="text-xs">
+              1 dag →
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-2 border-l pl-3">
+            <Button variant="ghost" size="sm" onClick={navigatePreviousMonth} title="1 måned tilbake" className="text-xs">
+              ← 1 måned
+            </Button>
+            <Button variant="ghost" size="sm" onClick={navigateNextMonth} title="1 måned frem" className="text-xs">
+              1 måned →
+            </Button>
+          </div>
+
           <h2 className="text-base md:text-lg font-semibold capitalize">{formatDateHeader()}</h2>
         </div>
 
@@ -719,16 +770,26 @@ export function Calendar({
                 const dateStr = day.date.toISOString().split('T')[0];
                 const availableSlots = availableSlotsCount[dateStr] || 0;
                 
+                // Check if date is in the past
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const isPastDate = day.date < today;
+                
                 return (
                   <div
                     key={idx}
                     className={`min-h-[100px] p-2 border rounded-lg ${
-                      !day.isCurrentMonth ? "bg-muted/30" : "bg-background"
-                    } ${isToday ? "border-blue-500 border-2" : ""} hover:bg-muted/50 cursor-pointer`}
-                    onClick={() => onTimeSlotClick(day.date, "09:00")}
+                      !day.isCurrentMonth ? "bg-muted/30" : isPastDate ? "bg-gray-100 cursor-not-allowed" : "bg-background"
+                    } ${isToday ? "border-blue-500 border-2" : ""} ${
+                      !isPastDate ? "hover:bg-muted/50 cursor-pointer" : ""
+                    }`}
+                    onClick={() => !isPastDate && onTimeSlotClick(day.date, "09:00")}
+                    title={isPastDate ? "Kan ikke opprette avtale i fortiden" : ""}
                   >
                     <div className="flex justify-between items-start mb-1">
-                      <div className={`text-sm ${!day.isCurrentMonth ? "text-muted-foreground" : ""}`}>
+                      <div className={`text-sm ${
+                        !day.isCurrentMonth ? "text-muted-foreground" : isPastDate ? "text-gray-400 line-through" : ""
+                      }`}>
                         {day.date.getDate()}
                       </div>
                       {day.isCurrentMonth && availableSlots > 0 && (
