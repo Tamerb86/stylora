@@ -1,10 +1,11 @@
-import { 
+import {
   bigint,
   int, 
   mysqlEnum, 
   mysqlTable, 
   text, 
-  timestamp, 
+  timestamp,
+  datetime,
   varchar,
   decimal,
   boolean,
@@ -956,9 +957,9 @@ export const paymentProviders = mysqlTable("paymentProviders", {
   isDefault: boolean("isDefault").default(false).notNull(), // Default provider for this type
   
   // OAuth fields (for iZettle, Vipps, etc.)
-  accessToken: text("accessToken"), // OAuth access token (encrypted)
-  refreshToken: text("refreshToken"), // OAuth refresh token (encrypted)
-  tokenExpiresAt: timestamp("tokenExpiresAt"), // When access token expires
+  accessToken: text("accessToken").notNull(), // OAuth access token (encrypted)
+  refreshToken: text("refreshToken").notNull(), // OAuth refresh token (encrypted)
+  tokenExpiresAt: datetime("tokenExpiresAt", { fsp: 3 }).notNull(), // When access token expires
   providerAccountId: varchar("providerAccountId", { length: 255 }), // e.g., iZettle merchant ID
   providerEmail: varchar("providerEmail", { length: 320 }), // Email associated with provider account
   

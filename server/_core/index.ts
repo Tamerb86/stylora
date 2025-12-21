@@ -225,8 +225,15 @@ async function startServer() {
             console.log("[iZettle Callback] Provider created successfully");
           }
         } catch (dbError: any) {
-          console.error("[iZettle Callback] Database save failed:", dbError.message);
-          console.error("[iZettle Callback] Database error stack:", dbError.stack);
+          console.error("[iZettle Callback] Database save failed:", {
+            message: dbError.message,
+            code: dbError.code,
+            errno: dbError.errno,
+            sqlState: dbError.sqlState,
+            sqlMessage: dbError.sqlMessage,
+            sql: dbError.sql,
+            stack: dbError.stack
+          });
           return res.redirect("/izettle/callback?izettle=error&message=" + encodeURIComponent("Failed to save connection. Please try again."));
         }
       } catch (dbError: any) {

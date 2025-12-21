@@ -43,6 +43,13 @@
       "when": 1766191232156,
       "tag": "0005_steady_susan_delgado",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1766340902190,
+      "tag": "0006_lively_thunderbolt",
+      "breakpoints": true
     }
   ]
 }
