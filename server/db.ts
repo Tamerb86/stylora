@@ -217,7 +217,7 @@ export async function createPayment(data: {
   appointmentId?: number | null;
   orderId?: number | null;
   paymentMethod: "cash" | "card" | "vipps" | "stripe";
-  paymentGateway?: "stripe" | "vipps" | null;
+  paymentGateway?: "stripe" | "vipps" | "izettle" | null;
   amount: string;
   currency: string;
   status: "pending" | "completed" | "failed" | "refunded";

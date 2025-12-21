@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
+import ZettlePaymentStatus from "@/components/ZettlePaymentStatus";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -79,6 +80,9 @@ export default function POS() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentInstructions, setPaymentInstructions] = useState<string>("");
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
+  const [zettlePaymentId, setZettlePaymentId] = useState<number | null>(null);
+  const [zettlePurchaseUUID, setZettlePurchaseUUID] = useState<string | null>(null);
+  const [showZettleDialog, setShowZettleDialog] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Load services and products
@@ -101,6 +105,11 @@ export default function POS() {
   const recordCardPayment = trpc.pos.recordCardPayment.useMutation();
   const generateReceipt = trpc.pos.generateReceipt.useMutation();
   const sendReceiptEmail = trpc.pos.sendReceiptEmail.useMutation();
+  const createZettlePayment = trpc.pos.createZettlePayment.useMutation();
+  const checkZettleStatus = trpc.pos.checkZettlePaymentStatus.useQuery(
+    { purchaseUUID: "", paymentId: 0 },
+    { enabled: false }
+  );
 
   // Filter services and products by search query
   const filteredServices = useMemo(() => {
@@ -241,7 +250,7 @@ export default function POS() {
   const total = subtotal + vatAmount;
 
   // Checkout handler
-  const handleCheckout = async (paymentMethod: "cash" | "card") => {
+  const handleCheckout = async (paymentMethod: "cash" | "card" | "izettle") => {
     // Validation
     if (cart.items.length === 0) {
       toast.error("Handlekurven er tom");
@@ -295,6 +304,33 @@ export default function POS() {
             console.error("Failed to open cash drawer:", error);
             // Don't fail the transaction if drawer fails to open
           }
+        }
+      } else if (paymentMethod === "izettle") {
+        // iZettle payment
+        setIsProcessingPayment(true);
+        setPaymentInstructions("Starter betaling på iZettle...");
+
+        try {
+          // Create payment on Zettle
+          const zettleResult = await createZettlePayment.mutateAsync({
+            orderId: orderRes.order.id,
+            amount: total,
+          });
+
+          // Store payment info for status tracking
+          setZettlePaymentId(zettleResult.payment.id);
+          setZettlePurchaseUUID(zettleResult.purchaseUUID);
+          setShowZettleDialog(true);
+          setPaymentInstructions("");
+          setIsProcessingPayment(false);
+          
+          // Don't show success dialog yet - wait for payment completion
+          return;
+        } catch (error: any) {
+          setIsProcessingPayment(false);
+          setPaymentInstructions("");
+          toast.error(error.message || "Kunne ikke starte betaling på iZettle");
+          return;
         }
       } else {
         // Card payment with Stripe Terminal
@@ -424,6 +460,16 @@ export default function POS() {
         e.preventDefault();
         if (cart.items.length > 0 && cart.employeeId) {
           handleCheckout('card');
+        } else {
+          toast.error("Kan ikke betale", { description: cart.items.length === 0 ? "Handlekurven er tom" : "Vennligst velg en ansatt" });
+        }
+      }
+
+      // F4: Quick iZettle payment
+      if (e.key === 'F4') {
+        e.preventDefault();
+        if (cart.items.length > 0 && cart.employeeId) {
+          handleCheckout('izettle');
         } else {
           toast.error("Kan ikke betale", { description: cart.items.length === 0 ? "Handlekurven er tom" : "Vennligst velg en ansatt" });
         }
@@ -943,6 +989,31 @@ export default function POS() {
                     </>
                   )}
                 </Button>
+                <Button
+                  size="lg"
+                  className="w-full h-16 text-lg bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 relative"
+                  onClick={() => handleCheckout("izettle")}
+                  disabled={
+                    cart.items.length === 0 ||
+                    createOrder.isPending ||
+                    isProcessingPayment
+                  }
+                >
+                  {isProcessingPayment ? (
+                    <>
+                      <Loader2 className="w-6 h-6 mr-3 animate-spin" />
+                      Behandler betaling...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="w-6 h-6 mr-3" />
+                      Betal med iZettle
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 px-2 py-1 bg-white/20 rounded text-xs font-mono">
+                        F4
+                      </span>
+                    </>
+                  )}
+                </Button>
 
                 {/* Manual Open Cash Drawer Button (only show if thermal printer connected) */}
                 {thermalPrinter.connectedPrinter && (
@@ -1134,6 +1205,16 @@ export default function POS() {
                 <CreditCard className="w-5 h-5 text-blue-600" />
               </div>
 
+              <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+                <div className="flex items-center gap-3">
+                  <kbd className="px-3 py-1.5 bg-white border border-gray-300 rounded shadow-sm font-mono text-sm font-semibold">
+                    F4
+                  </kbd>
+                  <span className="text-gray-700">iZettle betaling</span>
+                </div>
+                <CreditCard className="w-5 h-5 text-purple-600" />
+              </div>
+
               <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
                 <div className="flex items-center gap-3">
                   <kbd className="px-3 py-1.5 bg-white border border-gray-300 rounded shadow-sm font-mono text-sm font-semibold">
@@ -1173,6 +1254,34 @@ export default function POS() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* iZettle Payment Status Dialog */}
+      <Dialog open={showZettleDialog} onOpenChange={setShowZettleDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-purple-600" />
+              iZettle Betaling
+            </DialogTitle>
+          </DialogHeader>
+          <ZettlePaymentStatus
+            purchaseUUID={zettlePurchaseUUID}
+            paymentId={zettlePaymentId}
+            amount={lastTotal}
+            onSuccess={() => {
+              setShowZettleDialog(false);
+              setLastPaymentMethod("iZettle");
+              setShowSuccessDialog(true);
+              clearCart();
+              toast.success("Betaling fullført!");
+            }}
+            onCancel={() => {
+              setShowZettleDialog(false);
+              toast.info("Betaling avbrutt");
+            }}
+          />
         </DialogContent>
       </Dialog>
     </div>

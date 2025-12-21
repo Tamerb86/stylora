@@ -6761,6 +6761,226 @@ export const appRouter = router({
       }),
 
     /**
+     * Create a Zettle payment for an order
+     * 
+     * Initiates payment on connected Zettle reader
+     * Returns payment UUID for status tracking
+     */
+    createZettlePayment: tenantProcedure
+      .input(
+        z.object({
+          orderId: z.number().int(),
+          amount: z.number().positive(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { tenantId, user } = ctx;
+        const dbInstance = await db.getDb();  
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { orders, paymentProviders } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        const { createPayment, decryptToken } = await import("./services/izettle");
+
+        // Validate order exists and belongs to tenant
+        const [order] = await dbInstance
+          .select()
+          .from(orders)
+          .where(and(eq(orders.id, input.orderId), eq(orders.tenantId, tenantId)));
+
+        if (!order) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Order not found" });
+        }
+
+        // Validate amount matches order total
+        const orderTotal = Number(order.total);
+        if (Math.abs(input.amount - orderTotal) > 0.01) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: `Payment amount (${input.amount}) does not match order total (${orderTotal})`,
+          });
+        }
+
+        // Get Zettle provider for this tenant
+        const [provider] = await dbInstance
+          .select()
+          .from(paymentProviders)
+          .where(
+            and(
+              eq(paymentProviders.tenantId, tenantId),
+              eq(paymentProviders.providerType, "izettle"),
+              eq(paymentProviders.isActive, true)
+            )
+          )
+          .limit(1);
+
+        if (!provider) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "iZettle er ikke koblet til. Vennligst koble til iZettle i innstillinger.",
+          });
+        }
+
+        if (!provider.accessToken) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "iZettle access token mangler. Vennligst koble til på nytt.",
+          });
+        }
+
+        // Decrypt access token
+        const accessToken = decryptToken(provider.accessToken);
+
+        // Create payment on Zettle
+        try {
+          const zettlePayment = await createPayment(
+            accessToken,
+            input.amount,
+            "NOK",
+            `Order #${order.id}`
+          );
+
+          // Create pending payment record in our database
+          const payment = await db.createPayment({
+            tenantId,
+            orderId: order.id,
+            appointmentId: order.appointmentId,
+            paymentMethod: "card",
+            paymentGateway: "izettle",
+            amount: input.amount.toFixed(2),
+            currency: "NOK",
+            status: "pending",
+            gatewaySessionId: zettlePayment.purchaseUUID,
+            gatewayPaymentId: zettlePayment.purchaseUUID,
+            gatewayMetadata: JSON.stringify(zettlePayment),
+            lastFour: null,
+            cardBrand: null,
+            processedBy: user.id,
+            processedAt: null,
+            errorMessage: null,
+          });
+
+          return {
+            payment,
+            purchaseUUID: zettlePayment.purchaseUUID,
+            status: zettlePayment.status,
+          };
+        } catch (error: any) {
+          console.error("[createZettlePayment] Error:", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message || "Kunne ikke opprette betaling på iZettle",
+          });
+        }
+      }),
+
+    /**
+     * Check status of a Zettle payment
+     * 
+     * Polls Zettle API for payment status
+     * Updates local payment record when completed
+     */
+    checkZettlePaymentStatus: tenantProcedure
+      .input(
+        z.object({
+          purchaseUUID: z.string(),
+          paymentId: z.number().int(),
+        })
+      )
+      .query(async ({ ctx, input }) => {
+        const { tenantId } = ctx;
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { paymentProviders, payments, orders } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        const { getPaymentStatus, decryptToken } = await import("./services/izettle");
+
+        // Get Zettle provider
+        const [provider] = await dbInstance
+          .select()
+          .from(paymentProviders)
+          .where(
+            and(
+              eq(paymentProviders.tenantId, tenantId),
+              eq(paymentProviders.providerType, "izettle"),
+              eq(paymentProviders.isActive, true)
+            )
+          )
+          .limit(1);
+
+        if (!provider || !provider.accessToken) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "iZettle tilkobling mangler",
+          });
+        }
+
+        // Decrypt access token
+        const accessToken = decryptToken(provider.accessToken);
+
+        // Check payment status on Zettle
+        try {
+          const zettleStatus = await getPaymentStatus(accessToken, input.purchaseUUID);
+
+          // Update local payment record if status changed
+          const [payment] = await dbInstance
+            .select()
+            .from(payments)
+            .where(eq(payments.id, input.paymentId));
+
+          if (!payment) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Payment not found" });
+          }
+
+          // If payment completed on Zettle, update our records
+          if (zettleStatus.status === "PAID" && payment.status !== "completed") {
+            // Update payment status
+            await dbInstance
+              .update(payments)
+              .set({
+                status: "completed",
+                processedAt: new Date(zettleStatus.timestamp),
+                gatewayMetadata: JSON.stringify(zettleStatus),
+              })
+              .where(eq(payments.id, payment.id));
+
+            // Update order status
+            if (payment.orderId) {
+              await db.updateOrderStatus(payment.orderId, "completed");
+            }
+          } else if (zettleStatus.status === "FAILED" && payment.status !== "failed") {
+            // Update payment as failed
+            await dbInstance
+              .update(payments)
+              .set({
+                status: "failed",
+                errorMessage: "Payment failed on Zettle reader",
+                gatewayMetadata: JSON.stringify(zettleStatus),
+              })
+              .where(eq(payments.id, payment.id));
+          }
+
+          return {
+            status: zettleStatus.status,
+            amount: zettleStatus.amount,
+            currency: zettleStatus.currency,
+            timestamp: zettleStatus.timestamp,
+          };
+        } catch (error: any) {
+          console.error("[checkZettlePaymentStatus] Error:", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message || "Kunne ikke hente betalingsstatus fra iZettle",
+          });
+        }
+      }),
+
+    /**
      * Generate a PDF receipt for an order
      * 
      * Returns a base64-encoded PDF that can be downloaded or printed

@@ -126,8 +126,8 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
 export async function createPayment(
   accessToken: string,
   amount: number,
-  currency: string = "SEK",
-  reference?: string
+  currency: string = "NOK",
+  reference: string
 ): Promise<{
   purchaseUUID: string;
   amount: number;

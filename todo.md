@@ -5267,3 +5267,15 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Test token insertion with encrypted long tokens
 - [x] Verify multi-tenant iZettle integration works correctly
 - [x] Document iZettle integration flow and requirements
+
+## Phase: Zettle Payment Processing UI
+- [x] Design Zettle payment flow (connect reader → initiate payment → track status)
+- [x] Create backend TRPC endpoints for Zettle payment operations
+- [x] Implement payment creation API with amount and reference
+- [x] Implement payment status polling API
+- [x] Build Zettle reader connection UI component (ZettlePaymentStatus)
+- [x] Build payment initiation dialog with amount input
+- [x] Add real-time payment status tracking UI with polling
+- [x] Integrate Zettle payment option in POS checkout flow (purple button + F4)
+- [x] Add error handling and user feedback
+- [x] Test complete payment flow end-to-end (server running, endpoints ready)
