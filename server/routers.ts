@@ -12286,6 +12286,92 @@ export const appRouter = router({
         }
       }),
 
+    // Get payment history (last 10 payments)
+    getPaymentHistory: adminProcedure
+      .query(async ({ ctx }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { payments, paymentProviders } = await import("../drizzle/schema");
+        const { eq, and, desc } = await import("drizzle-orm");
+
+        // Get iZettle provider
+        const [provider] = await dbInstance
+          .select()
+          .from(paymentProviders)
+          .where(
+            and(
+              eq(paymentProviders.tenantId, ctx.tenantId),
+              eq(paymentProviders.providerType, 'izettle'),
+              eq(paymentProviders.isActive, true)
+            )
+          )
+          .limit(1);
+
+        if (!provider) {
+          return { payments: [] };
+        }
+
+        // Get last 10 iZettle payments
+        const recentPayments = await dbInstance
+          .select({
+            id: payments.id,
+            amount: payments.amount,
+            currency: payments.currency,
+            status: payments.status,
+            createdAt: payments.createdAt,
+            processedAt: payments.processedAt,
+            gatewayPaymentId: payments.gatewayPaymentId,
+            gatewayMetadata: payments.gatewayMetadata,
+          })
+          .from(payments)
+          .where(
+            and(
+              eq(payments.tenantId, ctx.tenantId),
+              eq(payments.providerId, provider.id)
+            )
+          )
+          .orderBy(desc(payments.createdAt))
+          .limit(10);
+
+        // Parse metadata to get Reader Link info
+        const config = provider.config ? JSON.parse(provider.config as string) : {};
+        const readerLinks = config.readerLinks || [];
+
+        const paymentsWithDetails = recentPayments.map((payment) => {
+          let metadata: any = {};
+          try {
+            metadata = payment.gatewayMetadata ? JSON.parse(payment.gatewayMetadata as string) : {};
+          } catch (error) {
+            // Ignore parse errors
+          }
+
+          // Try to find Reader Link name from metadata
+          let readerName = "Unknown Reader";
+          if (metadata.linkId) {
+            const link = readerLinks.find((l: any) => l.linkId === metadata.linkId);
+            if (link) {
+              readerName = link.linkName;
+            }
+          }
+
+          return {
+            id: payment.id,
+            amount: payment.amount,
+            currency: payment.currency,
+            status: payment.status,
+            createdAt: payment.createdAt,
+            processedAt: payment.processedAt,
+            purchaseUUID: payment.gatewayPaymentId,
+            readerName,
+          };
+        });
+
+        return { payments: paymentsWithDetails };
+      }),
+
     // ============================================================================
     // DEPRECATED ENDPOINTS
     // ============================================================================

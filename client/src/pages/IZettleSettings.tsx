@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Loader2, ExternalLink, CheckCircle2, XCircle, AlertCircle, Smartphone, CreditCard, BarChart3, RefreshCw, FileText, ArrowRight, Link as LinkIcon, Trash2, Plus, Wifi, WifiOff } from "lucide-react";
+import { Loader2, ExternalLink, CheckCircle2, XCircle, AlertCircle, Smartphone, CreditCard, BarChart3, RefreshCw, FileText, ArrowRight, Link as LinkIcon, Trash2, Plus, Wifi, WifiOff, Clock, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -22,6 +22,10 @@ export default function IZettleSettings() {
       enabled: status?.connected,
       refetchInterval: 5000, // Auto-refresh every 5 seconds
     }
+  );
+  const { data: paymentHistory } = (trpc as any).izettle.getPaymentHistory.useQuery(
+    undefined,
+    { enabled: status?.connected }
   );
   
   const getAuthUrlQuery = (trpc as any).izettle.getAuthUrl.useQuery(undefined, {
@@ -487,6 +491,103 @@ export default function IZettleSettings() {
                   iZettle Reader 2 støttes ikke.
                 </AlertDescription>
               </Alert>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Payment History */}
+        {isConnected && paymentHistory?.payments && paymentHistory.payments.length > 0 && (
+          <Card className="border-2 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-blue-600" />
+                    Betalingshistorikk
+                  </CardTitle>
+                  <CardDescription>Siste 10 iZettle-betalinger</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="space-y-3">
+                {paymentHistory.payments.map((payment: any) => {
+                  const isCompleted = payment.status === 'completed';
+                  const isPending = payment.status === 'pending';
+                  const isFailed = payment.status === 'failed';
+
+                  return (
+                    <div
+                      key={payment.id}
+                      className={`flex items-center justify-between p-4 rounded-lg border-2 ${
+                        isCompleted ? 'bg-green-50 border-green-200' :
+                        isPending ? 'bg-yellow-50 border-yellow-200' :
+                        'bg-red-50 border-red-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          isCompleted ? 'bg-green-100' :
+                          isPending ? 'bg-yellow-100' :
+                          'bg-red-100'
+                        }`}>
+                          {isCompleted && <CheckCircle2 className="h-5 w-5 text-green-600" />}
+                          {isPending && <Loader2 className="h-5 w-5 text-yellow-600 animate-spin" />}
+                          {isFailed && <XCircle className="h-5 w-5 text-red-600" />}
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900">
+                            {payment.amount.toFixed(2)} {payment.currency}
+                          </h4>
+                          <p className="text-xs text-gray-500">
+                            {format(new Date(payment.createdAt), "PPP 'kl.' HH:mm", { locale: nb })}
+                          </p>
+                          <p className="text-xs text-gray-600 mt-1">
+                            Reader: {payment.readerName}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Badge
+                          variant={isCompleted ? "default" : isPending ? "secondary" : "destructive"}
+                          className={isCompleted ? "bg-green-500" : isPending ? "bg-yellow-500" : ""}
+                        >
+                          {isCompleted ? "Fullført" : isPending ? "Venter" : "Mislyktes"}
+                        </Badge>
+                        {payment.purchaseUUID && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            UUID: {payment.purchaseUUID.substring(0, 8)}...
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Summary Stats */}
+              <div className="mt-6 pt-6 border-t">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      {paymentHistory.payments.filter((p: any) => p.status === 'completed').length}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">Fullført</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-yellow-600">
+                      {paymentHistory.payments.filter((p: any) => p.status === 'pending').length}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">Venter</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-red-600">
+                      {paymentHistory.payments.filter((p: any) => p.status === 'failed').length}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">Mislyktes</div>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         )}

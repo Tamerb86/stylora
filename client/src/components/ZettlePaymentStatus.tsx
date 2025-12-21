@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, Loader2, CreditCard } from "lucide-react";
+import { playSuccessSound, playErrorSound } from "@/lib/audio";
 
 interface ZettlePaymentStatusProps {
   purchaseUUID: string | null;
@@ -40,9 +41,11 @@ export default function ZettlePaymentStatus({
 
     if (paymentStatus.status === "PAID") {
       setStatus("completed");
+      playSuccessSound(); // Play success sound
       setTimeout(() => onSuccess(), 1000);
     } else if (paymentStatus.status === "FAILED") {
       setStatus("failed");
+      playErrorSound(); // Play error sound
     }
   }, [paymentStatus, onSuccess]);
 

@@ -5343,3 +5343,11 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add real-time Reader status indicator (connected/disconnected)
 - [x] Add multi-Reader support (store multiple linkIds)
 - [x] Add Reader selection dropdown in POS
+
+## Phase: Audio Notifications & Payment History
+- [x] Add audio notification utility (play success/error sounds)
+- [x] Play "ding" sound on payment COMPLETED
+- [x] Play "error" sound on payment FAILED
+- [x] Add TRPC endpoint to fetch last 10 iZettle payments
+- [x] Add payment history section in iZettle Settings
+- [x] Display payment amount, status, date, and Reader name
