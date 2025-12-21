@@ -83,6 +83,7 @@ export default function POS() {
   const [zettlePaymentId, setZettlePaymentId] = useState<number | null>(null);
   const [zettlePurchaseUUID, setZettlePurchaseUUID] = useState<string | null>(null);
   const [showZettleDialog, setShowZettleDialog] = useState(false);
+  const [selectedLinkId, setSelectedLinkId] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Load services and products
@@ -91,6 +92,14 @@ export default function POS() {
   const { data: customers = [] } = trpc.customers.list.useQuery();
   const { data: employees = [] } = trpc.employees.list.useQuery();
   const { data: printSettings } = trpc.salonSettings.getPrintSettings.useQuery();
+  const { data: readerLinks } = (trpc as any).izettle.getReaderLinks.useQuery();
+
+  // Auto-select first Reader Link if available
+  useEffect(() => {
+    if (readerLinks?.links && readerLinks.links.length > 0 && !selectedLinkId) {
+      setSelectedLinkId(readerLinks.links[0].linkId);
+    }
+  }, [readerLinks, selectedLinkId]);
 
   // Auto-focus search field on page load
   useEffect(() => {
@@ -311,10 +320,21 @@ export default function POS() {
         setPaymentInstructions("Sender betaling til PayPal Reader...");
 
         try {
+          // Check if Reader Link is selected
+          if (!selectedLinkId) {
+            toast.error("Ingen PayPal Reader valgt", {
+              description: "Vennligst velg en Reader Link først.",
+            });
+            setIsProcessingPayment(false);
+            setPaymentInstructions("");
+            return;
+          }
+
           // Create payment on Zettle
           const zettleResult = await createZettlePayment.mutateAsync({
             orderId: orderRes.order.id,
             amount: total,
+            linkId: selectedLinkId,
           });
 
           // Store payment info for status tracking
@@ -992,9 +1012,28 @@ export default function POS() {
                     </>
                   )}
                 </Button>
+
+                {/* Reader Link Selector */}
+                {readerLinks?.links && readerLinks.links.length > 1 && (
+                  <div className="w-full mt-2">
+                    <label className="text-xs text-gray-600 mb-1 block">PayPal Reader:</label>
+                    <select
+                      value={selectedLinkId || ""}
+                      onChange={(e) => setSelectedLinkId(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                    >
+                      {readerLinks.links.map((link: any) => (
+                        <option key={link.linkId} value={link.linkId}>
+                          {link.linkName} {link.connected ? "(Tilkoblet)" : "(Frakoblet)"}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 <Button
                   size="lg"
-                  className="w-full h-16 text-lg bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 relative"
+                  className="w-full h-16 text-lg bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 relative mt-2"
                   onClick={() => handleCheckout("izettle")}
                   disabled={
                     cart.items.length === 0 ||

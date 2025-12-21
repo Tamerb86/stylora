@@ -5330,4 +5330,16 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add Reader setup page for linking PayPal Reader (documented in READER_CONNECT_SETUP.md)
 - [x] Update POS to send payments via WebSocket instead of REST
 - [x] Add payment status display in POS
-- [ ] Test with PayPal Reader (requires hardware)
+- [ ] Test with PayPal Reader (requires hardware) - BLOCKED: Need to purchase PayPal Reader first
+
+## Phase: Reader Link Management UI
+- [x] Add TRPC endpoint for creating Reader Link
+- [x] Add TRPC endpoint for listing Reader Links
+- [x] Add TRPC endpoint for deleting Reader Link
+- [x] Add TRPC endpoint for getting Reader status
+- [x] Add UI button to create Reader Link in Betalingsterminaler page
+- [x] Add UI to display existing Reader Links
+- [x] Add UI to delete Reader Links
+- [x] Add real-time Reader status indicator (connected/disconnected)
+- [x] Add multi-Reader support (store multiple linkIds)
+- [x] Add Reader selection dropdown in POS

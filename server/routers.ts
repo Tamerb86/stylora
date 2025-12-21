@@ -6771,6 +6771,7 @@ export const appRouter = router({
         z.object({
           orderId: z.number().int(),
           amount: z.number().positive(),
+          linkId: z.string().optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -6836,15 +6837,30 @@ export const appRouter = router({
 
         // Get or create Reader Connect manager
         // Check if provider has linkId (Reader Connect setup)
-        if (!provider.config || !JSON.parse(provider.config as string).linkId) {
+        const config = provider.config ? JSON.parse(provider.config as string) : {};
+        const readerLinks = config.readerLinks || [];
+
+        if (readerLinks.length === 0) {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
-            message: "PayPal Reader er ikke koblet til. Vennligst koble til Reader i innstillinger.",
+            message: "Ingen PayPal Reader Links funnet. Vennligst opprett en Reader Link i innstillinger.",
           });
         }
 
-        const config = JSON.parse(provider.config as string);
-        const linkId = config.linkId;
+        // Use provided linkId or default to first available
+        let linkId = input.linkId;
+        if (!linkId) {
+          linkId = readerLinks[0].linkId;
+        }
+
+        // Verify linkId exists in config
+        const linkExists = readerLinks.some((link: any) => link.linkId === linkId);
+        if (!linkExists) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "Ugyldig Reader Link ID. Vennligst velg en gyldig Reader Link.",
+          });
+        }
 
         // Get Reader Connect manager
         const manager = getReaderConnectManager(tenantId, linkId, accessToken);
@@ -12021,6 +12037,258 @@ export const appRouter = router({
           message: "This endpoint is deprecated. Please upgrade to PayPal Reader and use Reader Connect API.",
         });
       }),
+
+    // ============================================================================
+    // READER CONNECT API - Reader Link Management
+    // ============================================================================
+
+    // Create a new Reader Link
+    createReaderLink: adminProcedure
+      .input(z.object({
+        linkName: z.string().default("Stylora POS"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { paymentProviders } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+
+        // Get iZettle provider
+        const [provider] = await dbInstance
+          .select()
+          .from(paymentProviders)
+          .where(
+            and(
+              eq(paymentProviders.tenantId, ctx.tenantId),
+              eq(paymentProviders.providerType, 'izettle'),
+              eq(paymentProviders.isActive, true)
+            )
+          )
+          .limit(1);
+
+        if (!provider || !provider.accessToken) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "iZettle not connected. Please connect your iZettle account first.",
+          });
+        }
+
+        const { decryptToken, createReaderLink } = await import('./services/izettle');
+        const accessToken = decryptToken(provider.accessToken);
+
+        try {
+          const link = await createReaderLink(accessToken, input.linkName);
+
+          // Store linkId in provider config
+          const currentConfig = provider.config ? JSON.parse(provider.config as string) : {};
+          const readerLinks = currentConfig.readerLinks || [];
+          readerLinks.push({
+            linkId: link.linkId,
+            linkName: link.linkName,
+            createdAt: new Date().toISOString(),
+          });
+
+          await dbInstance
+            .update(paymentProviders)
+            .set({
+              config: JSON.stringify({ ...currentConfig, readerLinks }),
+              updatedAt: new Date(),
+            })
+            .where(eq(paymentProviders.id, provider.id));
+
+          return {
+            success: true,
+            linkId: link.linkId,
+            linkName: link.linkName,
+          };
+        } catch (error: any) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Failed to create Reader Link: ${error.message}`,
+          });
+        }
+      }),
+
+    // Get all Reader Links
+    getReaderLinks: adminProcedure
+      .query(async ({ ctx }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { paymentProviders } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+
+        const [provider] = await dbInstance
+          .select()
+          .from(paymentProviders)
+          .where(
+            and(
+              eq(paymentProviders.tenantId, ctx.tenantId),
+              eq(paymentProviders.providerType, 'izettle'),
+              eq(paymentProviders.isActive, true)
+            )
+          )
+          .limit(1);
+
+        if (!provider) {
+          return { links: [] };
+        }
+
+        const config = provider.config ? JSON.parse(provider.config as string) : {};
+        const readerLinks = config.readerLinks || [];
+
+        // Get status for each link
+        const { getReaderConnectManager } = await import('./services/reader-connect');
+        const { decryptToken } = await import('./services/izettle');
+        const accessToken = provider.accessToken ? decryptToken(provider.accessToken) : null;
+
+        const linksWithStatus = readerLinks.map((link: any) => {
+          let connected = false;
+          if (accessToken) {
+            try {
+              const manager = getReaderConnectManager(ctx.tenantId, link.linkId, accessToken);
+              connected = manager.isConnected();
+            } catch (error) {
+              connected = false;
+            }
+          }
+          return {
+            ...link,
+            connected,
+          };
+        });
+
+        return { links: linksWithStatus };
+      }),
+
+    // Delete a Reader Link
+    deleteReaderLink: adminProcedure
+      .input(z.object({
+        linkId: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { paymentProviders } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+
+        const [provider] = await dbInstance
+          .select()
+          .from(paymentProviders)
+          .where(
+            and(
+              eq(paymentProviders.tenantId, ctx.tenantId),
+              eq(paymentProviders.providerType, 'izettle'),
+              eq(paymentProviders.isActive, true)
+            )
+          )
+          .limit(1);
+
+        if (!provider || !provider.accessToken) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "iZettle not connected",
+          });
+        }
+
+        const { decryptToken, deleteReaderLink } = await import('./services/izettle');
+        const { removeReaderConnectManager } = await import('./services/reader-connect');
+        const accessToken = decryptToken(provider.accessToken);
+
+        try {
+          // Delete from iZettle API
+          await deleteReaderLink(accessToken, input.linkId);
+
+          // Remove from local config
+          const currentConfig = provider.config ? JSON.parse(provider.config as string) : {};
+          const readerLinks = (currentConfig.readerLinks || []).filter(
+            (link: any) => link.linkId !== input.linkId
+          );
+
+          await dbInstance
+            .update(paymentProviders)
+            .set({
+              config: JSON.stringify({ ...currentConfig, readerLinks }),
+              updatedAt: new Date(),
+            })
+            .where(eq(paymentProviders.id, provider.id));
+
+          // Disconnect WebSocket manager
+          removeReaderConnectManager(ctx.tenantId, input.linkId);
+
+          return { success: true };
+        } catch (error: any) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Failed to delete Reader Link: ${error.message}`,
+          });
+        }
+      }),
+
+    // Connect to a Reader Link (establish WebSocket)
+    connectReaderLink: adminProcedure
+      .input(z.object({
+        linkId: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { paymentProviders } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+
+        const [provider] = await dbInstance
+          .select()
+          .from(paymentProviders)
+          .where(
+            and(
+              eq(paymentProviders.tenantId, ctx.tenantId),
+              eq(paymentProviders.providerType, 'izettle'),
+              eq(paymentProviders.isActive, true)
+            )
+          )
+          .limit(1);
+
+        if (!provider || !provider.accessToken) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "iZettle not connected",
+          });
+        }
+
+        const { decryptToken } = await import('./services/izettle');
+        const { getReaderConnectManager } = await import('./services/reader-connect');
+        const accessToken = decryptToken(provider.accessToken);
+
+        try {
+          const manager = getReaderConnectManager(ctx.tenantId, input.linkId, accessToken);
+          
+          if (!manager.isConnected()) {
+            await manager.connect();
+          }
+
+          return { success: true, connected: true };
+        } catch (error: any) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Failed to connect to Reader: ${error.message}`,
+          });
+        }
+      }),
+
+    // ============================================================================
+    // DEPRECATED ENDPOINTS
+    // ============================================================================
 
     // Get payment status
     getPaymentStatus: protectedProcedure
