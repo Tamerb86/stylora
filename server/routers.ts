@@ -11906,12 +11906,16 @@ export const appRouter = router({
       .input(z.object({
         amount: z.number().positive(),
         currency: z.string().default('NOK'),
-        reference: z.string().optional(),
+        reference: z.string(),
       }))
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        if (!ctx.user.tenantId) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "No tenant access" });
         }
 
         const { paymentProviders } = await import("../drizzle/schema");
@@ -11921,7 +11925,7 @@ export const appRouter = router({
           .from(paymentProviders)
           .where(
             and(
-              eq(paymentProviders.tenantId, ctx.tenantId),
+              eq(paymentProviders.tenantId, ctx.user.tenantId),
               eq(paymentProviders.providerType, 'izettle'),
               eq(paymentProviders.isActive, true)
             )
@@ -12020,13 +12024,17 @@ export const appRouter = router({
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
         }
 
+        if (!ctx.user.tenantId) {
+          throw new TRPCError({ code: "FORBIDDEN", message: "No tenant access" });
+        }
+
         const { paymentProviders } = await import("../drizzle/schema");
         const [provider] = await dbInstance
           .select()
           .from(paymentProviders)
           .where(
             and(
-              eq(paymentProviders.tenantId, ctx.tenantId),
+              eq(paymentProviders.tenantId, ctx.user.tenantId),
               eq(paymentProviders.providerType, 'izettle'),
               eq(paymentProviders.isActive, true)
             )

@@ -5279,3 +5279,9 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Integrate Zettle payment option in POS checkout flow (purple button + F4)
 - [x] Add error handling and user feedback
 - [x] Test complete payment flow end-to-end (server running, endpoints ready)
+
+## Phase: Fix TypeScript Errors
+- [x] Fix tenantId property access error in createZettlePayment endpoint (changed ctx.tenantId to ctx.user.tenantId)
+- [x] Fix reference parameter type error in createPayment call (made reference required in schema)
+- [x] Fix tenantId property access error in checkZettlePaymentStatus endpoint (changed ctx.tenantId to ctx.user.tenantId)
+- [x] Verify TypeScript compilation passes with no iZettle-related errors
