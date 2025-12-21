@@ -2308,8 +2308,8 @@ export const appRouter = router({
         // Get all appointments in date range
         const conditions = [
           eq(appointments.tenantId, ctx.tenantId),
-          gte(sql`DATE(${appointments.appointmentDate})`, input.startDate),
-          lte(sql`DATE(${appointments.appointmentDate})`, input.endDate),
+          gte(appointments.appointmentDate, new Date(input.startDate)),
+          lte(appointments.appointmentDate, new Date(input.endDate)),
         ];
 
         if (input.employeeId) {
@@ -2318,12 +2318,12 @@ export const appRouter = router({
 
         const bookedAppointments = await dbInstance
           .select({
-            date: sql<string>`DATE(${appointments.appointmentDate})`,
+            date: sql<string>`DATE(appointmentDate)`,
             count: sql<number>`COUNT(*)`,
           })
           .from(appointments)
           .where(and(...conditions))
-          .groupBy(sql`DATE(${appointments.appointmentDate})`);
+          .groupBy(sql`DATE(appointmentDate)`);
 
         // Calculate available slots per day
         const result: Record<string, number> = {};
@@ -6114,18 +6114,18 @@ export const appRouter = router({
       const startDate = sevenDaysAgo.toISOString().split('T')[0];
 
       const appts = await dbInstance.select({
-        date: appointments.appointmentDate,
+        date: sql<string>`DATE(appointmentDate)`,
         count: sql<number>`count(*)`
       })
       .from(appointments)
       .where(
         and(
           eq(appointments.tenantId, ctx.tenantId),
-          gte(appointments.appointmentDate, startDate)
+          gte(appointments.appointmentDate, new Date(startDate))
         )
       )
-      .groupBy(appointments.appointmentDate)
-      .orderBy(appointments.appointmentDate);
+      .groupBy(sql`DATE(appointmentDate)`)
+      .orderBy(sql`DATE(appointmentDate)`);
 
       // Fill in missing dates with 0 count
       const result = [];

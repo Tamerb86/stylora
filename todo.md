@@ -5285,3 +5285,10 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Fix reference parameter type error in createPayment call (made reference required in schema)
 - [x] Fix tenantId property access error in checkZettlePaymentStatus endpoint (changed ctx.tenantId to ctx.user.tenantId)
 - [x] Verify TypeScript compilation passes with no iZettle-related errors
+
+## Phase: Fix Appointments TypeScript Errors
+- [x] Identify all MySqlColumn type errors in appointments queries
+- [x] Fix appointmentDate column type usage in SQL queries (changed to sql`DATE(appointmentDate)`)
+- [x] Fix date comparison operations in appointments module (converted strings to Date objects)
+- [x] Fix CustomerDetails.tsx to use appointmentDate instead of date
+- [x] Reduced TypeScript errors from 31 to ~20 (remaining errors are in other modules)

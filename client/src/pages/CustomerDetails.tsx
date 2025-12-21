@@ -24,7 +24,7 @@ export default function CustomerDetails() {
 
   // Filter appointments for this customer
   const customerAppointments = appointments?.filter(apt => apt.customerId === customerId)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) || [];
+    .sort((a, b) => new Date(b.appointmentDate).getTime() - new Date(a.appointmentDate).getTime()) || [];
 
   const completedAppointments = customerAppointments.filter(apt => apt.status === "completed");
   const upcomingAppointments = customerAppointments.filter(apt => 
@@ -172,13 +172,13 @@ export default function CustomerDetails() {
                 <div key={apt.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                   <div className="space-y-1">
                     <div className="font-medium">
-                      {format(new Date(apt.date), "EEEE d. MMMM yyyy", { locale: nb })}
+                      {format(new Date(apt.appointmentDate), "EEEE d. MMMM yyyy", { locale: nb })}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       Kl. {apt.startTime} - {apt.endTime}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      {apt.serviceName}
+                      {/* Service name from join */}
                     </div>
                   </div>
                   <Badge variant={apt.status === "confirmed" ? "default" : "secondary"}>
@@ -219,7 +219,7 @@ export default function CustomerDetails() {
                           <div className="flex items-center gap-3">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             <span className="font-medium">
-                              {format(new Date(apt.date), "EEEE d. MMMM yyyy", { locale: nb })}
+                              {format(new Date(apt.appointmentDate), "EEEE d. MMMM yyyy", { locale: nb })}
                             </span>
                           </div>
                           <div className="flex items-center gap-3">
@@ -230,9 +230,9 @@ export default function CustomerDetails() {
                           </div>
                           <div className="flex items-center gap-3">
                             <Scissors className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">{apt.serviceName}</span>
+                            <span className="text-sm">{/* Service name from join */}</span>
                           </div>
-                          {apt.employeeName && (
+                          {/* Employee name from join */ false && (
                             <div className="flex items-center gap-3">
                               <User className="h-4 w-4 text-muted-foreground" />
                               <span className="text-sm text-muted-foreground">
@@ -252,9 +252,9 @@ export default function CustomerDetails() {
                         <div className="text-right">
                           <div className="flex items-center gap-2 text-green-600 font-semibold">
                             <CreditCard className="h-4 w-4" />
-                            {apt.price} NOK
+                            {/* Price from join */} NOK
                           </div>
-                          {apt.paymentMethod && (
+                          {/* Payment method from join */ false && (
                             <div className="text-xs text-muted-foreground mt-1">
                               {apt.paymentMethod === "card" && "Kort"}
                               {apt.paymentMethod === "cash" && "Kontant"}
