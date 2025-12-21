@@ -22,7 +22,7 @@ export function getAuthorizationUrl(tenantId: string): string {
     response_type: "code",
     client_id: IZETTLE_CLIENT_ID,
     redirect_uri: IZETTLE_REDIRECT_URI,
-    scope: "READ:PURCHASE READ:FINANCE READ:USERINFO",
+    scope: "READ:PURCHASE WRITE:PURCHASE READ:FINANCE READ:USERINFO",
     state,
   });
 

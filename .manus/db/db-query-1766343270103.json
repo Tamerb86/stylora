@@ -1,0 +1,9 @@
+{
+  "query": "SELECT id, tenantId, providerType, providerName, isActive, tokenExpiresAt, createdAt, updatedAt \nFROM paymentProviders \nWHERE providerType = 'izettle' \nORDER BY updatedAt DESC \nLIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute SELECT id, tenantId, providerType, providerName, isActive, tokenExpiresAt, createdAt, updatedAt \nFROM paymentProviders \nWHERE providerType = 'izettle' \nORDER BY updatedAt DESC \nLIMIT 5;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 125
+}

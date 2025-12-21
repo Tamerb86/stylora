@@ -5315,3 +5315,5 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Remove 'default' values from INSERT query (added explicit NULL values)
 - [ ] Test OAuth connection after fix
 - [ ] Verify tokens are saved successfully
+
+- [ ] Fix iZettle OAuth scope to include WRITE:PURCHASE for creating payments on Zettle Reader
