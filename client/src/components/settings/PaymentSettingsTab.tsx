@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { Loader2, Save, CreditCard, Smartphone, Banknote, Store } from "lucide-react";
 import { PayPalReaderPairing } from "./PayPalReaderPairing";
+import { IZettleOAuthConnection } from "./IZettleOAuthConnection";
 
 export function PaymentSettingsTab() {
   const [vippsEnabled, setVippsEnabled] = useState(false);
@@ -83,6 +84,9 @@ export function PaymentSettingsTab() {
 
   return (
     <div className="space-y-6">
+      {/* iZettle OAuth Connection */}
+      <IZettleOAuthConnection />
+      
       {/* PayPal Reader Pairing */}
       <PayPalReaderPairing />
       

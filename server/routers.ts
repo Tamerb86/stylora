@@ -11976,7 +11976,7 @@ export const appRouter = router({
         return { url: getAuthorizationUrl(ctx.tenantId) };
       }),
 
-    // Get iZettle connection status
+    // Get iZettle connection status for admin
     getStatus: adminProcedure
       .query(async ({ ctx }) => {
         const dbInstance = await db.getDb();
@@ -12051,6 +12051,63 @@ export const appRouter = router({
           code: "NOT_IMPLEMENTED",
           message: "This endpoint is deprecated. Please use pos.createZettlePayment with PayPal Reader instead.",
         });
+      }),
+
+    // Get iZettle connection status (for any authenticated user)
+    getConnectionStatus: tenantProcedure
+      .query(async ({ ctx }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { paymentProviders } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        const [provider] = await dbInstance
+          .select()
+          .from(paymentProviders)
+          .where(
+            and(
+              eq(paymentProviders.tenantId, ctx.tenantId),
+              eq(paymentProviders.providerType, 'izettle')
+            )
+          )
+          .limit(1);
+
+        if (!provider || !provider.accessToken) {
+          return {
+            isConnected: false,
+            accountEmail: null,
+          };
+        }
+
+        return {
+          isConnected: true,
+          accountEmail: provider.providerEmail || null,
+        };
+      }),
+
+    // Disconnect iZettle account
+    disconnect: tenantProcedure
+      .mutation(async ({ ctx }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { paymentProviders } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        
+        await dbInstance
+          .delete(paymentProviders)
+          .where(
+            and(
+              eq(paymentProviders.tenantId, ctx.tenantId),
+              eq(paymentProviders.providerType, 'izettle')
+            )
+          );
+
+        return { success: true };
       }),
 
     // DEPRECATED: Old implementation removed - use Reader Connect API
