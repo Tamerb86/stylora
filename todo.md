@@ -5396,6 +5396,6 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 
 ## UX Improvements (Week Sprint)
 - [x] Add unified "Add Customer + Booking" flow (single dialog instead of navigation)
-- [ ] Implement global search (customer/appointment/invoice) in header
-- [ ] Add clear confirmations for all actions (delete/edit/cancel) with Undo functionality
-- [ ] Create smart empty states for Products and Loyalty (instructions + quick setup button)
+- [x] Implement global search (customer/appointment/invoice) in header
+- [x] Add clear confirmations for all actions (delete/edit/cancel) with Undo functionality
+- [x] Create smart empty states for Products and Loyalty (instructions + quick setup button)
