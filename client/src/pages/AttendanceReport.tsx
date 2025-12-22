@@ -21,7 +21,7 @@ import {
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
-import { Download, Calendar, User, Pencil, Trash2, AlertCircle, FileDown, FileSpreadsheet, Filter, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Download, Calendar, User, Pencil, Trash2, AlertCircle, FileDown, FileSpreadsheet, Filter, X, ChevronDown, ChevronUp, Clock } from "lucide-react";
 import { exportToPDF, exportToExcel, formatHours, formatDuration } from "../lib/exportUtils";
 
 export default function AttendanceReport() {
@@ -380,6 +380,72 @@ export default function AttendanceReport() {
             </div>
           </div>
         </Card>
+
+        {/* Overall Summary Statistics */}
+        {employeeTotals.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="p-6 bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-90">Totale timer</p>
+                  <p className="text-3xl font-bold mt-1">
+                    {employeeTotals.reduce((sum: number, emp: any) => sum + (parseFloat(emp.totalHours) || 0), 0).toFixed(2)}
+                  </p>
+                  <p className="text-xs opacity-75 mt-1">timer</p>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
+                  <Calendar className="h-6 w-6" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6 bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-90">Totale skift</p>
+                  <p className="text-3xl font-bold mt-1">
+                    {employeeTotals.reduce((sum: number, emp: any) => sum + (emp.shiftCount || 0), 0)}
+                  </p>
+                  <p className="text-xs opacity-75 mt-1">skift</p>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
+                  <User className="h-6 w-6" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6 bg-gradient-to-br from-green-500 to-green-600 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-90">Gjennomsnitt per dag</p>
+                  <p className="text-3xl font-bold mt-1">
+                    {(employeeTotals.reduce((sum: number, emp: any) => sum + (parseFloat(emp.totalHours) || 0), 0) / 
+                      Math.max(employeeTotals.reduce((sum: number, emp: any) => sum + (emp.shiftCount || 0), 0), 1)).toFixed(2)}
+                  </p>
+                  <p className="text-xs opacity-75 mt-1">timer/skift</p>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
+                  <Clock className="h-6 w-6" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6 bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-90">Aktive ansatte</p>
+                  <p className="text-3xl font-bold mt-1">
+                    {employeeTotals.length}
+                  </p>
+                  <p className="text-xs opacity-75 mt-1">ansatte</p>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
+                  <User className="h-6 w-6" />
+                </div>
+              </div>
+            </Card>
+          </div>
+        )}
 
         {/* Employee Totals */}
         {employeeTotals.length > 0 && (

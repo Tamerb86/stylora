@@ -1,0 +1,52 @@
+{
+  "query": "SELECT id, name, subdomain, createdAt FROM tenants ORDER BY createdAt DESC LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute SELECT id, name, subdomain, createdAt FROM tenants ORDER BY createdAt DESC LIMIT 10;",
+  "rows": [
+    {
+      "id": "demo-tenant-barbertime",
+      "name": "Demo Barber Shop",
+      "subdomain": "demo-barbertime",
+      "createdAt": "2025-12-21 22:40:26"
+    },
+    {
+      "id": "7fd450d6-be6a-46c8-a42f-c62fcc4f3341",
+      "name": "K S Frisør salon",
+      "subdomain": "ks-frisor",
+      "createdAt": "2025-12-20 02:24:32"
+    },
+    {
+      "id": "test-backup-tenant-1766190858546",
+      "name": "Test Backup Salon",
+      "subdomain": "test-backup-1766190858546",
+      "createdAt": "2025-12-20 00:34:18"
+    },
+    {
+      "id": "test-backup-tenant-1766190843904",
+      "name": "Test Backup Salon",
+      "subdomain": "test-backup-1766190843904",
+      "createdAt": "2025-12-20 00:34:03"
+    },
+    {
+      "id": "ks-frisor-tenant",
+      "name": "K S Frisør",
+      "subdomain": "ks-frisor",
+      "createdAt": "2025-12-18 21:47:23"
+    },
+    {
+      "id": "test-salon-123",
+      "name": "Test Salon",
+      "subdomain": "test-salon",
+      "createdAt": "2025-12-18 14:45:13"
+    },
+    {
+      "id": "demo-tenant-001",
+      "name": "Stylora Demo Salong",
+      "subdomain": "demo",
+      "createdAt": "2025-12-16 13:50:31"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tsubdomain\tcreatedAt\ndemo-tenant-barbertime\tDemo Barber Shop\tdemo-barbertime\t2025-12-21 22:40:26\n7fd450d6-be6a-46c8-a42f-c62fcc4f3341\tK S Frisør salon\tks-frisor\t2025-12-20 02:24:32\ntest-backup-tenant-1766190858546\tTest Backup Salon\ttest-backup-1766190858546\t2025-12-20 00:34:18\ntest-backup-tenant-1766190843904\tTest Backup Salon\ttest-backup-1766190843904\t2025-12-20 00:34:03\nks-frisor-tenant\tK S Frisør\tks-frisor\t2025-12-18 21:47:23\ntest-salon-123\tTest Salon\ttest-salon\t2025-12-18 14:45:13\ndemo-tenant-001\tStylora Demo Salong\tdemo\t2025-12-16 13:50:31\n",
+  "stderr": "",
+  "execution_time_ms": 114
+}

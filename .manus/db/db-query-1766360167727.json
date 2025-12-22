@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO services (id, tenantId, name, description, durationMinutes, price, isActive, createdAt, updatedAt)\nVALUES \n(101, 'ks-frisor-tenant', 'Herreklipp', 'Klassisk herreklipp med vask og styling', 30, 450.00, 1, NOW(), NOW()),\n(102, 'ks-frisor-tenant', 'Dameklipp', 'Profesjonell dameklipp med styling', 45, 650.00, 1, NOW(), NOW()),\n(103, 'ks-frisor-tenant', 'Skjeggstell', 'Skjeggtrim og styling', 20, 300.00, 1, NOW(), NOW()),\n(104, 'ks-frisor-tenant', 'Hårfarge', 'Profesjonell hårfarge med konsultasjon', 90, 1200.00, 1, NOW(), NOW()),\n(105, 'ks-frisor-tenant', 'Permanent', 'Permanent med styling', 120, 1500.00, 1, NOW(), NOW());",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute INSERT INTO services (id, tenantId, name, description, durationMinutes, price, isActive, createdAt, updatedAt)\nVALUES \n(101, 'ks-frisor-tenant', 'Herreklipp', 'Klassisk herreklipp med vask og styling', 30, 450.00, 1, NOW(), NOW()),\n(102, 'ks-frisor-tenant', 'Dameklipp', 'Profesjonell dameklipp med styling', 45, 650.00, 1, NOW(), NOW()),\n(103, 'ks-frisor-tenant', 'Skjeggstell', 'Skjeggtrim og styling', 20, 300.00, 1, NOW(), NOW()),\n(104, 'ks-frisor-tenant', 'Hårfarge', 'Profesjonell hårfarge med konsultasjon', 90, 1200.00, 1, NOW(), NOW()),\n(105, 'ks-frisor-tenant', 'Permanent', 'Permanent med styling', 120, 1500.00, 1, NOW(), NOW());",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 71
+}

@@ -1,0 +1,8 @@
+{
+  "query": "INSERT INTO tenants (id, name, subdomain, address, phone, email, createdAt, updatedAt)\nVALUES ('ks-frisor-tenant', 'K S Frisør', 'ks-frisor', 'Storgata 122 C, 3915 Porsgrunn', '+47 123 45 678', 'khaled@ksfrisor.no', NOW(), NOW());",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute INSERT INTO tenants (id, name, subdomain, address, phone, email, createdAt, updatedAt)\nVALUES ('ks-frisor-tenant', 'K S Frisør', 'ks-frisor', 'Storgata 122 C, 3915 Porsgrunn', '+47 123 45 678', 'khaled@ksfrisor.no', NOW(), NOW());",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1062 (23000) at line 1: Duplicate entry '?' for key 'tenants.PRIMARY'"
+  ]
+}

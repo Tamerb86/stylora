@@ -170,13 +170,23 @@ export default function PublicBooking() {
   };
 
   const handleSubmitBooking = () => {
-    if (!customerInfo.firstName || !customerInfo.phone) {
-        toast.error("Manglende informasjon", {
-          description: "Fornavn og telefon er påkrevd.",
-        });
+    // Validate tenant ID
+    if (!TENANT_ID) {
+      toast.error("Feil", {
+        description: "Kunne ikke identifisere salongen. Vennligst last inn siden på nytt.",
+      });
       return;
     }
 
+    // Validate customer info
+    if (!customerInfo.firstName || !customerInfo.phone) {
+      toast.error("Manglende informasjon", {
+        description: "Fornavn og telefon er påkrevd.",
+      });
+      return;
+    }
+
+    // Validate booking selections
     if (!selectedService || !selectedEmployee || !selectedDate || !selectedTime) {
       toast.error("Ufullstendig booking", {
         description: "Vennligst fullfør alle steg.",
@@ -184,6 +194,7 @@ export default function PublicBooking() {
       return;
     }
 
+    // Validate payment method
     if (!paymentMethod) {
       toast.error("Velg betalingsmetode", {
         description: "Vennligst velg hvordan du vil betale.",
