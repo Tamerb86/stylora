@@ -202,6 +202,59 @@ export async function createReaderLink(
 }
 
 /**
+ * Pair a PayPal Reader using the 8-digit code displayed on the device
+ * This creates a link between the reader and your Zettle organization
+ */
+export async function pairReaderWithCode(
+  accessToken: string,
+  code: string,
+  deviceName: string = "Stylora POS"
+): Promise<{
+  linkId: string;
+  deviceName: string;
+  serialNumber: string;
+}> {
+  const response = await fetch("https://reader-connect.zettle.com/v1/integrator/link-offers/claim", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      code: code.toUpperCase().trim(),
+      tags: {
+        deviceName,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    
+    // Provide user-friendly error messages
+    if (response.status === 400) {
+      throw new Error(`Ugyldig kode. Sjekk at du har skrevet inn riktig 8-sifret kode fra PayPal Reader.`);
+    } else if (response.status === 404) {
+      throw new Error(`Koden ble ikke funnet. Kontroller at PayPal Reader er påslått og viser koden.`);
+    } else if (response.status === 401) {
+      throw new Error(`Autentisering mislyktes. Vennligst koble til iZettle på nytt.`);
+    } else if (response.status === 409) {
+      throw new Error(`Denne PayPal Reader er allerede koblet til en annen konto.`);
+    } else {
+      throw new Error(`Kunne ikke koble til PayPal Reader: ${error}`);
+    }
+  }
+
+  const link = await response.json();
+  
+  return {
+    linkId: link.id,
+    deviceName: link.integratorTags?.deviceName || deviceName,
+    serialNumber: link.readerTags?.serialNumber || "Unknown",
+  };
+}
+
+/**
  * Get existing Reader Links
  */
 export async function getReaderLinks(
@@ -211,7 +264,7 @@ export async function getReaderLinks(
   linkName: string;
   status: string;
 }>> {
-  const response = await fetch("https://reader-connect.zettle.com/v1/links", {
+  const response = await fetch("https://reader-connect.zettle.com/v1/integrator/links", {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${accessToken}`,

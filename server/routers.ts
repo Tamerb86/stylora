@@ -12187,6 +12187,79 @@ export const appRouter = router({
         }
       }),
 
+    // Pair a PayPal Reader using 8-digit code
+    pairReader: tenantProcedure
+      .input(z.object({
+        code: z.string().length(8, "Koden må være 8 tegn"),
+        deviceName: z.string().default("Stylora POS"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { paymentProviders } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+
+        // Get iZettle provider
+        const [provider] = await dbInstance
+          .select()
+          .from(paymentProviders)
+          .where(
+            and(
+              eq(paymentProviders.tenantId, ctx.tenantId),
+              eq(paymentProviders.providerType, 'izettle'),
+              eq(paymentProviders.isActive, true)
+            )
+          )
+          .limit(1);
+
+        if (!provider || !provider.accessToken) {
+          throw new TRPCError({
+            code: "PRECONDITION_FAILED",
+            message: "iZettle not connected. Please connect your iZettle account first.",
+          });
+        }
+
+        const { decryptToken, pairReaderWithCode } = await import('./services/izettle');
+        const accessToken = decryptToken(provider.accessToken);
+
+        try {
+          const link = await pairReaderWithCode(accessToken, input.code, input.deviceName);
+
+          // Store linkId in provider config
+          const currentConfig = provider.config ? JSON.parse(provider.config as string) : {};
+          const readerLinks = currentConfig.readerLinks || [];
+          readerLinks.push({
+            linkId: link.linkId,
+            deviceName: link.deviceName,
+            serialNumber: link.serialNumber,
+            createdAt: new Date().toISOString(),
+          });
+
+          await dbInstance
+            .update(paymentProviders)
+            .set({
+              config: JSON.stringify({ ...currentConfig, readerLinks }),
+              updatedAt: new Date(),
+            })
+            .where(eq(paymentProviders.id, provider.id));
+
+          return {
+            success: true,
+            linkId: link.linkId,
+            deviceName: link.deviceName,
+            serialNumber: link.serialNumber,
+          };
+        } catch (error: any) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message || "Failed to pair PayPal Reader",
+          });
+        }
+      }),
+
     // Get all Reader Links
     getReaderLinks: tenantProcedure
       .query(async ({ ctx }) => {

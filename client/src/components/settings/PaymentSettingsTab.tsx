@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { Loader2, Save, CreditCard, Smartphone, Banknote, Store } from "lucide-react";
+import { PayPalReaderPairing } from "./PayPalReaderPairing";
 
 export function PaymentSettingsTab() {
   const [vippsEnabled, setVippsEnabled] = useState(false);
@@ -81,13 +82,18 @@ export function PaymentSettingsTab() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Betalingsinnstillinger</CardTitle>
-        <CardDescription>
-          Konfigurer betalingsmetoder for online booking
-        </CardDescription>
-      </CardHeader>
+    <div className="space-y-6">
+      {/* PayPal Reader Pairing */}
+      <PayPalReaderPairing />
+      
+      {/* Payment Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Betalingsinnstillinger</CardTitle>
+          <CardDescription>
+            Konfigurer betalingsmetoder for online booking
+          </CardDescription>
+        </CardHeader>
       <CardContent className="space-y-6">
         {/* Payment Methods */}
         <div className="space-y-4">
@@ -272,5 +278,6 @@ export function PaymentSettingsTab() {
         </div>
       </CardContent>
     </Card>
+    </div>
   );
 }

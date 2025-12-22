@@ -5489,3 +5489,11 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Fix iZettle Authorization header error (added token validation and trimming in decryptToken)
 - [x] Fix SQL query in getPaymentHistory (changed providerId to paymentGateway='izettle')
 - [x] Fix appointments.getToday error (added proper null handling for services.name)
+
+## Phase: PayPal Reader Pairing Feature
+- [x] Add backend API endpoint for pairing PayPal Reader with 8-digit code
+- [x] Add pairReaderWithCode function in izettle service
+- [x] Create frontend UI for Reader pairing with instructions
+- [x] Add code input field and pairing button
+- [x] Display list of paired readers after successful pairing
+- [x] Test complete pairing flow
