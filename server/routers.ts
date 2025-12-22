@@ -12141,6 +12141,11 @@ export const appRouter = router({
 
         const { decryptToken, createReaderLink } = await import('./services/izettle');
         const accessToken = decryptToken(provider.accessToken);
+        
+        // Debug logging
+        console.log('[createReaderLink] Access token length:', accessToken.length);
+        console.log('[createReaderLink] Access token first 20 chars:', accessToken.substring(0, 20));
+        console.log('[createReaderLink] Access token contains invalid chars:', /[^A-Za-z0-9_\-\.]/.test(accessToken));
 
         try {
           const link = await createReaderLink(accessToken, input.linkName);
