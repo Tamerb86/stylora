@@ -12,6 +12,8 @@ export default function Reports() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<string>("all");
   const [selectedService, setSelectedService] = useState<string>("all");
+  const [selectedMonth, setSelectedMonth] = useState<string>("");
+  const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
   const [customStartDate, setCustomStartDate] = useState<string>("");
   const [customEndDate, setCustomEndDate] = useState<string>("");
   
@@ -20,6 +22,7 @@ export default function Reports() {
     const end = new Date();
     const start = new Date();
     
+    // Priority 1: Custom date range
     if (customStartDate && customEndDate) {
       return {
         startDate: customStartDate,
@@ -27,6 +30,19 @@ export default function Reports() {
       };
     }
     
+    // Priority 2: Selected month
+    if (selectedMonth && selectedYear) {
+      const year = parseInt(selectedYear);
+      const month = parseInt(selectedMonth) - 1; // JS months are 0-indexed
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      return {
+        startDate: firstDay.toISOString().split('T')[0],
+        endDate: lastDay.toISOString().split('T')[0],
+      };
+    }
+    
+    // Priority 3: Period selector
     switch (period) {
       case "today":
         start.setHours(0, 0, 0, 0);
@@ -77,6 +93,8 @@ export default function Reports() {
   const resetFilters = () => {
     setSelectedEmployee("all");
     setSelectedService("all");
+    setSelectedMonth("");
+    setSelectedYear(new Date().getFullYear().toString());
     setCustomStartDate("");
     setCustomEndDate("");
   };
@@ -103,8 +121,14 @@ export default function Reports() {
       { header: "Beløp (kr)", key: "amount" },
       { header: "Status", key: "status" },
     ];
-
-    exportToPDF(exportData, columns, "Salgsrapport", `salgsrapport_${period}`);
+    
+    const filename = selectedMonth && selectedYear 
+      ? `salgsrapport_${selectedYear}_${selectedMonth}`
+      : customStartDate && customEndDate
+      ? `salgsrapport_${customStartDate}_til_${customEndDate}`
+      : `salgsrapport_${period}`;
+    
+    exportToPDF(exportData, columns, "Salgsrapport", filename, totalRevenue);
   };
 
   const handleExportExcel = () => {
@@ -127,7 +151,13 @@ export default function Reports() {
       { header: "Status", key: "status" },
     ];
 
-    exportToExcel(exportData, columns, "Salgsrapport", `salgsrapport_${period}`);
+    const filename = selectedMonth && selectedYear 
+      ? `salgsrapport_${selectedYear}_${selectedMonth}`
+      : customStartDate && customEndDate
+      ? `salgsrapport_${customStartDate}_til_${customEndDate}`
+      : `salgsrapport_${period}`;
+    
+    exportToExcel(exportData, columns, "Salgsrapport", filename);
   };
 
   return (
@@ -180,7 +210,46 @@ export default function Reports() {
           </CardHeader>
           {showAdvancedFilters && (
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Row 1: Month, Year, Employee, Service */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Måned (MM)</label>
+                  <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Velg måned" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Alle måneder</SelectItem>
+                      <SelectItem value="01">01 - Januar</SelectItem>
+                      <SelectItem value="02">02 - Februar</SelectItem>
+                      <SelectItem value="03">03 - Mars</SelectItem>
+                      <SelectItem value="04">04 - April</SelectItem>
+                      <SelectItem value="05">05 - Mai</SelectItem>
+                      <SelectItem value="06">06 - Juni</SelectItem>
+                      <SelectItem value="07">07 - Juli</SelectItem>
+                      <SelectItem value="08">08 - August</SelectItem>
+                      <SelectItem value="09">09 - September</SelectItem>
+                      <SelectItem value="10">10 - Oktober</SelectItem>
+                      <SelectItem value="11">11 - November</SelectItem>
+                      <SelectItem value="12">12 - Desember</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium mb-2 block">År</label>
+                  <Select value={selectedYear} onValueChange={setSelectedYear}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="2024">2024</SelectItem>
+                      <SelectItem value="2025">2025</SelectItem>
+                      <SelectItem value="2026">2026</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
                 <div>
                   <label className="text-sm font-medium mb-2 block">Ansatt</label>
                   <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
@@ -214,9 +283,33 @@ export default function Reports() {
                     </SelectContent>
                   </Select>
                 </div>
-
+              </div>
+              
+              {/* Row 2: Custom Date Range */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Egendefinert periode</label>
+                  <label className="text-sm font-medium mb-2 block">Fra dato</label>
+                  <input
+                    type="date"
+                    value={customStartDate}
+                    onChange={(e) => setCustomStartDate(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Til dato</label>
+                  <input
+                    type="date"
+                    value={customEndDate}
+                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  />
+                </div>
+              </div>
+              
+              <div className="hidden">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Egendefinert periode (OLD)</label>
                   <div className="flex gap-2">
                     <input
                       type="date"

@@ -5425,3 +5425,25 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Add bulk SMS reminder for appointments
 - [ ] Add keyboard shortcuts (Ctrl+A to select all, Escape to deselect)
 - [ ] Persist selection state during pagination
+
+
+## Feature: Monthly Report Export
+- [ ] Add month selector (MM format: 01, 02, 03, etc.)
+- [ ] Add date range picker (Fra - Til dato)
+- [ ] Implement export to PDF for selected month
+- [ ] Implement export to Excel for selected month
+- [ ] Include all key metrics (revenue, appointments, customers, services)
+- [ ] Add charts and visualizations to exported reports
+- [ ] Show preview before export
+- [ ] Add loading state during export generation
+
+
+## Feature: Monthly Report Export (Timer - تقارير شهرية)
+- [x] Add month selector dropdown (MM format: 01-12)
+- [x] Add year selector (2024, 2025, 2026)
+- [x] Add date range picker (Fra - Til dato) - improved layout
+- [x] Filter data based on selected month or date range
+- [x] Implement export to PDF button with dynamic filename
+- [x] Implement export to Excel button with dynamic filename
+- [x] Include revenue, appointments, customers, top services in export
+- [x] Priority system: Custom date > Month/Year > Period selector
