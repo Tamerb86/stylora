@@ -5392,3 +5392,4 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Test complete booking flow (service → employee → time → booking)
 
 - [x] Fix Step 4 → Step 5 navigation in PublicBooking page
+- [x] Enhance PDF export in AttendanceReport to include employee totals and applied filters

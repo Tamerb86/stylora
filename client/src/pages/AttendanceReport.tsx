@@ -206,7 +206,35 @@ export default function AttendanceReport() {
       { header: "Redigert", key: "edited" },
     ];
 
-    exportToPDF(exportData, columns, "Timeregistrering", `timeregistrering_${startDate}_${endDate}`);
+    // Prepare period label
+    const periodLabels: Record<string, string> = {
+      today: "I dag",
+      thisWeek: "Denne uken",
+      thisMonth: "Denne måneden",
+      lastMonth: "Forrige måned",
+      custom: "Egendefinert",
+    };
+
+    // Prepare employee name
+    const selectedEmployeeName = selectedEmployee === "all" 
+      ? "Alle ansatte" 
+      : employees.find((e: any) => e.id === parseInt(selectedEmployee))?.name || "Ukjent";
+
+    // Prepare metadata
+    const metadata = {
+      filters: {
+        period: periodLabels[dateRange] || dateRange,
+        dateRange: `${new Date(startDate).toLocaleDateString('no-NO')} - ${new Date(endDate).toLocaleDateString('no-NO')}`,
+        employee: selectedEmployeeName,
+      },
+      totals: employeeTotals.map((et: any) => ({
+        employeeName: et.employeeName,
+        totalHours: parseFloat(et.totalHours || 0),
+        totalShifts: et.shiftCount,
+      })),
+    };
+
+    exportToPDF(exportData, columns, "Timeregistrering", `timeregistrering_${startDate}_${endDate}`, metadata);
   };
 
   const handleExportExcel = () => {

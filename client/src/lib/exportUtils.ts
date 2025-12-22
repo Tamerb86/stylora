@@ -11,6 +11,19 @@ interface ExportData {
   [key: string]: any;
 }
 
+interface ExportMetadata {
+  filters?: {
+    period?: string;
+    employee?: string;
+    dateRange?: string;
+  };
+  totals?: Array<{
+    employeeName: string;
+    totalHours: number;
+    totalShifts: number;
+  }>;
+}
+
 /**
  * Export data to PDF format
  */
@@ -18,7 +31,8 @@ export function exportToPDF(
   data: ExportData[],
   columns: ExportColumn[],
   title: string,
-  filename: string
+  filename: string,
+  metadata?: ExportMetadata
 ) {
   const doc = new jsPDF();
   
@@ -28,7 +42,46 @@ export function exportToPDF(
   
   // Add generation date
   doc.setFontSize(10);
-  doc.text(`Generert: ${new Date().toLocaleDateString('no-NO')}`, 14, 22);
+  let currentY = 22;
+  doc.text(`Generert: ${new Date().toLocaleDateString('no-NO')}`, 14, currentY);
+  currentY += 7;
+  
+  // Add filters if provided
+  if (metadata?.filters) {
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    if (metadata.filters.period) {
+      doc.text(`Periode: ${metadata.filters.period}`, 14, currentY);
+      currentY += 5;
+    }
+    if (metadata.filters.dateRange) {
+      doc.text(`Datoer: ${metadata.filters.dateRange}`, 14, currentY);
+      currentY += 5;
+    }
+    if (metadata.filters.employee) {
+      doc.text(`Ansatt: ${metadata.filters.employee}`, 14, currentY);
+      currentY += 5;
+    }
+    doc.setTextColor(0);
+    currentY += 3;
+  }
+  
+  // Add employee totals if provided
+  if (metadata?.totals && metadata.totals.length > 0) {
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
+    doc.text('Total timer per ansatt:', 14, currentY);
+    currentY += 6;
+    
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'normal');
+    metadata.totals.forEach((total) => {
+      const text = `${total.employeeName}: ${total.totalHours.toFixed(2)} timer (${total.totalShifts} skift)`;
+      doc.text(text, 20, currentY);
+      currentY += 5;
+    });
+    currentY += 3;
+  }
   
   // Prepare table data
   const tableHeaders = columns.map(col => col.header);
@@ -51,7 +104,7 @@ export function exportToPDF(
   autoTable(doc, {
     head: [tableHeaders],
     body: tableData,
-    startY: 28,
+    startY: currentY,
     styles: {
       fontSize: 9,
       cellPadding: 3,
