@@ -149,8 +149,9 @@ async function retryWithBackoff<T>(
 }
 
 /**
- * Create a Reader Link (for PayPal Reader)
- * This creates a connection between Stylora and the PayPal Reader
+ * Get existing Reader Links (for PayPal Reader)
+ * Note: To create a new link, you need to pair the physical reader first using the 8-digit code
+ * This function fetches existing links and returns the first one for WebSocket connection
  */
 export async function createReaderLink(
   accessToken: string,
@@ -161,15 +162,13 @@ export async function createReaderLink(
   websocketUrl: string;
 }> {
   return retryWithBackoff(async () => {
-    const response = await fetch("https://reader-connect.zettle.com/v1/links", {
-      method: "POST",
+    // First, try to get existing links
+    const response = await fetch("https://reader-connect.zettle.com/v1/integrator/links", {
+      method: "GET",
       headers: {
         "Authorization": `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        linkName,
-      }),
     });
 
     if (!response.ok) {
@@ -181,11 +180,24 @@ export async function createReaderLink(
       } else if (response.status === 401) {
         throw new Error(`Autentisering mislyktes. Vennligst koble til iZettle på nytt.`);
       } else {
-        throw new Error(`Reader Link creation failed: ${error}`);
+        throw new Error(`Failed to fetch Reader Links: ${error}`);
       }
     }
 
-    return response.json();
+    const links = await response.json();
+    
+    // If no links exist, throw error asking user to pair a reader first
+    if (!links || links.length === 0) {
+      throw new Error(`Ingen PayPal Reader funnet. Vennligst koble til en PayPal Reader først ved å følge instruksjonene i dokumentasjonen.`);
+    }
+    
+    // Return the first link
+    const link = links[0];
+    return {
+      linkId: link.id,
+      linkName: link.integratorTags?.deviceName || "PayPal Reader",
+      websocketUrl: `wss://reader-connect.zettle.com/v1/integrator/links/${link.id}/channel`,
+    };
   }, 3, 2000); // 3 retries, starting with 2 second delay
 }
 
