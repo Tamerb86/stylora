@@ -5393,3 +5393,5 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 
 - [x] Fix Step 4 → Step 5 navigation in PublicBooking page
 - [x] Enhance PDF export in AttendanceReport to include employee totals and applied filters
+- [x] Add custom date range inputs (Fra-Til) in AttendanceReport when "Egendefinert" is selected
+- [x] Enhance Excel export to include filters and employee totals like PDF

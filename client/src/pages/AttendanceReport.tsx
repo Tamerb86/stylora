@@ -256,7 +256,35 @@ export default function AttendanceReport() {
       { header: "Redigert", key: "edited" },
     ];
 
-    exportToExcel(exportData, columns, "Timeregistrering", `timeregistrering_${startDate}_${endDate}`);
+    // Prepare period label
+    const periodLabels: Record<string, string> = {
+      today: "I dag",
+      thisWeek: "Denne uken",
+      thisMonth: "Denne måneden",
+      lastMonth: "Forrige måned",
+      custom: "Egendefinert",
+    };
+
+    // Prepare employee name
+    const selectedEmployeeName = selectedEmployee === "all" 
+      ? "Alle ansatte" 
+      : employees.find((e: any) => e.id === parseInt(selectedEmployee))?.name || "Ukjent";
+
+    // Prepare metadata
+    const metadata = {
+      filters: {
+        period: periodLabels[dateRange] || dateRange,
+        dateRange: `${new Date(startDate).toLocaleDateString('no-NO')} - ${new Date(endDate).toLocaleDateString('no-NO')}`,
+        employee: selectedEmployeeName,
+      },
+      totals: employeeTotals.map((et: any) => ({
+        employeeName: et.employeeName,
+        totalHours: parseFloat(et.totalHours || 0),
+        totalShifts: et.shiftCount,
+      })),
+    };
+
+    exportToExcel(exportData, columns, "Timeregistrering", `timeregistrering_${startDate}_${endDate}`, metadata);
   };
 
   return (
@@ -327,6 +355,30 @@ export default function AttendanceReport() {
             </div>
           </div>
 
+          {/* Custom Date Range - Show immediately when Egendefinert is selected */}
+          {dateRange === "custom" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t">
+              <div className="space-y-2">
+                <Label>Fra dato</Label>
+                <Input
+                  type="date"
+                  value={customStartDate}
+                  onChange={(e) => setCustomStartDate(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Til dato</Label>
+                <Input
+                  type="date"
+                  value={customEndDate}
+                  onChange={(e) => setCustomEndDate(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Advanced Filters Toggle */}
           <div className="mt-4 border-t pt-4">
             <Button
@@ -343,28 +395,6 @@ export default function AttendanceReport() {
 
             {showFilters && (
               <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Custom Date Range */}
-                {dateRange === "custom" && (
-                  <>
-                    <div className="space-y-2">
-                      <Label>Fra dato</Label>
-                      <Input
-                        type="date"
-                        value={customStartDate}
-                        onChange={(e) => setCustomStartDate(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Til dato</Label>
-                      <Input
-                        type="date"
-                        value={customEndDate}
-                        onChange={(e) => setCustomEndDate(e.target.value)}
-                      />
-                    </div>
-                  </>
-                )}
-
                 {/* Status Filter */}
                 <div className="space-y-2">
                   <Label>Status</Label>
