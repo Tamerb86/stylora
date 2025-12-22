@@ -130,40 +130,8 @@ export function exportToExcel(
   data: ExportData[],
   columns: ExportColumn[],
   title: string,
-  filename: string,
-  metadata?: ExportMetadata
+  filename: string
 ) {
-  // Prepare header rows with metadata
-  const headerRows: any[] = [];
-  
-  // Add title
-  headerRows.push([title]);
-  headerRows.push([`Generert: ${new Date().toLocaleDateString('no-NO')}`]);
-  headerRows.push([]); // Empty row
-  
-  // Add filters if provided
-  if (metadata?.filters) {
-    if (metadata.filters.period) {
-      headerRows.push([`Periode: ${metadata.filters.period}`]);
-    }
-    if (metadata.filters.dateRange) {
-      headerRows.push([`Datoer: ${metadata.filters.dateRange}`]);
-    }
-    if (metadata.filters.employee) {
-      headerRows.push([`Ansatt: ${metadata.filters.employee}`]);
-    }
-    headerRows.push([]); // Empty row
-  }
-  
-  // Add employee totals if provided
-  if (metadata?.totals && metadata.totals.length > 0) {
-    headerRows.push(['Total timer per ansatt:']);
-    metadata.totals.forEach((total) => {
-      headerRows.push([`${total.employeeName}: ${total.totalHours.toFixed(2)} timer (${total.totalShifts} skift)`]);
-    });
-    headerRows.push([]); // Empty row
-  }
-  
   // Prepare worksheet data
   const worksheetData = data.map(row => {
     const formattedRow: any = {};
@@ -185,15 +153,8 @@ export function exportToExcel(
   });
   
   // Create workbook and worksheet
+  const worksheet = XLSX.utils.json_to_sheet(worksheetData);
   const workbook = XLSX.utils.book_new();
-  const worksheet = XLSX.utils.aoa_to_sheet(headerRows);
-  
-  // Append data table
-  XLSX.utils.sheet_add_json(worksheet, worksheetData, {
-    origin: -1, // Append after existing content
-    skipHeader: false,
-  });
-  
   XLSX.utils.book_append_sheet(workbook, worksheet, title);
   
   // Auto-size columns

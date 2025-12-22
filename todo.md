@@ -5393,5 +5393,9 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 
 - [x] Fix Step 4 → Step 5 navigation in PublicBooking page
 - [x] Enhance PDF export in AttendanceReport to include employee totals and applied filters
-- [x] Add custom date range inputs (Fra-Til) in AttendanceReport when "Egendefinert" is selected
-- [x] Enhance Excel export to include filters and employee totals like PDF
+
+## UX Improvements (Week Sprint)
+- [x] Add unified "Add Customer + Booking" flow (single dialog instead of navigation)
+- [ ] Implement global search (customer/appointment/invoice) in header
+- [ ] Add clear confirmations for all actions (delete/edit/cancel) with Undo functionality
+- [ ] Create smart empty states for Products and Loyalty (instructions + quick setup button)

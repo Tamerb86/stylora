@@ -24,6 +24,8 @@ import StatusDistributionChart from '@/components/charts/StatusDistributionChart
 import MiniCalendar from '@/components/MiniCalendar';
 import TodayAppointments from '@/components/TodayAppointments';
 import { BarChart3, PieChart, Calendar as CalendarIcon } from 'lucide-react';
+import QuickBookingDialog from '@/components/QuickBookingDialog';
+import { useState } from 'react';
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation();
@@ -39,6 +41,7 @@ export default function Dashboard() {
   const { data: statusDistribution } = trpc.dashboard.statusDistribution.useQuery();
   const [, setLocation] = useLocation();
   const isRTL = i18n.language === 'ar';
+  const [showQuickBooking, setShowQuickBooking] = useState(false);
 
   // Redirect to wizard if not completed
   if (wizardStatus && !wizardStatus.onboardingCompleted) {
@@ -99,9 +102,9 @@ export default function Dashboard() {
 
   const quickActions = [
     {
-      label: t('dashboard.newAppointment'),
+      label: t('dashboard.quickBooking', 'Quick Booking'),
       icon: CalendarPlus,
-      onClick: () => setLocation("/appointments"),
+      onClick: () => setShowQuickBooking(true),
       color: "from-blue-600 via-blue-500 to-cyan-500",
     },
     {
@@ -448,6 +451,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Quick Booking Dialog */}
+      <QuickBookingDialog open={showQuickBooking} onOpenChange={setShowQuickBooking} />
     </DashboardLayout>
   );
 }
