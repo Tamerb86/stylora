@@ -12586,6 +12586,7 @@ export const appRouter = router({
       }
 
       const { paymentSettings } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
       const [settings] = await dbInstance
         .select()
         .from(paymentSettings)
@@ -12634,6 +12635,7 @@ export const appRouter = router({
         }
 
         const { paymentSettings } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
 
         // Check if settings exist
         const [existing] = await dbInstance

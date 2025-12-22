@@ -5497,3 +5497,8 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add code input field and pairing button
 - [x] Display list of paired readers after successful pairing
 - [x] Test complete pairing flow
+
+## Bug Fix: Payment Settings Page
+- [x] Fix paymentSettings.get endpoint 500 error (added eq import)
+- [x] Fix OAuth callback null values causing INSERT failure
+- [x] Verify Payment Settings page loads correctly

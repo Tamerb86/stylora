@@ -236,12 +236,9 @@ async function startServer() {
               accessToken: encryptToken(tokens.access_token),
               refreshToken: encryptToken(tokens.refresh_token),
               tokenExpiresAt: expiresAt,
-              providerAccountId: null,
-              providerEmail: null,
-              config: null,
-              lastSyncAt: null,
-              lastErrorAt: null,
-              lastErrorMessage: null,
+              providerAccountId: "",
+              providerEmail: "",
+              config: "{}",
               isActive: true,
             });
             console.log("[iZettle Callback] Provider created successfully");
