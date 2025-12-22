@@ -5471,3 +5471,21 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add retry logic with exponential backoff for API calls (3 retries: 2s, 4s, 8s)
 - [x] Add better error handling for 429 (Too Many Requests)
 - [ ] Test createReaderLink button functionality
+
+
+## Feature: iZettle Dashboard & Notifications
+- [ ] Test iZettle Reader Link creation after fixes
+- [ ] Create iZettle Dashboard page with payment statistics
+- [ ] Show total transactions count
+- [ ] Show total revenue from iZettle payments
+- [ ] Display last 10 iZettle payments with details
+- [ ] Add charts for daily/weekly/monthly revenue
+- [ ] Implement real-time payment notifications (success/failure)
+- [ ] Add toast notifications for payment status
+- [ ] Store notification preferences in database
+
+
+## Critical Bug Fixes (Production)
+- [x] Fix iZettle Authorization header error (added token validation and trimming in decryptToken)
+- [x] Fix SQL query in getPaymentHistory (changed providerId to paymentGateway='izettle')
+- [x] Fix appointments.getToday error (added proper null handling for services.name)

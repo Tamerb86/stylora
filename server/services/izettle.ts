@@ -280,13 +280,29 @@ export function encryptToken(token: string): string {
  * Decrypt sensitive token data
  */
 export function decryptToken(encryptedToken: string): string {
-  const [ivHex, encrypted] = encryptedToken.split(":");
+  if (!encryptedToken || typeof encryptedToken !== 'string') {
+    throw new Error('Invalid encrypted token: must be a non-empty string');
+  }
+  
+  const parts = encryptedToken.split(":");
+  if (parts.length !== 2) {
+    throw new Error('Invalid encrypted token format: expected "iv:encrypted"');
+  }
+  
+  const [ivHex, encrypted] = parts;
   const iv = Buffer.from(ivHex, "hex");
   const key = crypto.scryptSync(ENCRYPTION_KEY, "salt", 32);
   const decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
   
   let decrypted = decipher.update(encrypted, "hex", "utf8");
   decrypted += decipher.final("utf8");
+  
+  // Trim whitespace and validate
+  decrypted = decrypted.trim();
+  
+  if (!decrypted) {
+    throw new Error('Decryption resulted in empty token');
+  }
   
   return decrypted;
 }

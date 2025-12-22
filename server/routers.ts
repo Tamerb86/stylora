@@ -1986,7 +1986,9 @@ export const appRouter = router({
 
             return {
               ...apt,
-              services: aptServices.map(s => s.serviceName).filter(Boolean),
+              services: aptServices
+                .map(s => s.serviceName)
+                .filter((name): name is string => typeof name === 'string' && name.length > 0),
             };
           })
         );
@@ -12391,7 +12393,7 @@ export const appRouter = router({
           .where(
             and(
               eq(payments.tenantId, ctx.tenantId),
-              eq(payments.providerId, provider.id)
+              eq(payments.paymentGateway, 'izettle')
             )
           )
           .orderBy(desc(payments.createdAt))
