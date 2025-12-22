@@ -12,6 +12,21 @@ import { serveStatic, setupVite } from "./vite";
 import { startNotificationScheduler } from "../notificationScheduler";
 import { handleStripeWebhook } from "../stripe-webhook";
 import { handleVippsCallback } from "../vipps-callback";
+import * as Sentry from "@sentry/node";
+
+// Initialize Sentry for error tracking
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    // Ignore known errors
+    ignoreErrors: [
+      'Can\'t add new command when connection is in closed state',
+      'Connection lost: The server closed the connection',
+    ],
+  });
+}
 
 // ============================================================================
 // RATE LIMITING CONFIGURATION
@@ -286,11 +301,20 @@ async function startServer() {
       createContext,
     })
   );
+  
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
+  }
+  
+  // Sentry error handler (must be after all routes)
+  if (process.env.SENTRY_DSN) {
+    app.use((err: any, req: any, res: any, next: any) => {
+      Sentry.captureException(err);
+      res.status(500).json({ error: 'Internal server error' });
+    });
   }
 
   const preferredPort = parseInt(process.env.PORT || "3000");

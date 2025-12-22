@@ -10,6 +10,33 @@ import "./index.css";
 import { ThermalPrinterProvider } from "@/contexts/ThermalPrinterContext";
 import { UIModeProvider } from "@/contexts/UIModeContext";
 import "@/i18n/config";
+import * as Sentry from "@sentry/react";
+
+// Initialize Sentry for error tracking
+if (import.meta.env.VITE_SENTRY_DSN) {
+  Sentry.init({
+    dsn: import.meta.env.VITE_SENTRY_DSN,
+    environment: import.meta.env.MODE,
+    integrations: [
+      Sentry.browserTracingIntegration(),
+      Sentry.replayIntegration({
+        maskAllText: true,
+        blockAllMedia: true,
+      }),
+    ],
+    // Performance Monitoring
+    tracesSampleRate: import.meta.env.MODE === 'production' ? 0.1 : 1.0,
+    // Session Replay
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
+    // Ignore known errors
+    ignoreErrors: [
+      'ResizeObserver loop limit exceeded',
+      'Non-Error promise rejection captured',
+      UNAUTHED_ERR_MSG,
+    ],
+  });
+}
 
 const queryClient = new QueryClient();
 

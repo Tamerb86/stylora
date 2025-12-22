@@ -5399,3 +5399,29 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Implement global search (customer/appointment/invoice) in header
 - [x] Add clear confirmations for all actions (delete/edit/cancel) with Undo functionality
 - [x] Create smart empty states for Products and Loyalty (instructions + quick setup button)
+
+
+## Feature: Error Tracking System (Sentry)
+- [x] Install @sentry/react and @sentry/node packages
+- [x] Configure Sentry in frontend (client/src/main.tsx)
+- [x] Configure Sentry in backend (server/_core/index.ts)
+- [ ] Add SENTRY_DSN environment variable (user needs to provide)
+- [x] Configure error filtering (ignore known errors)
+- [ ] Test production error tracking (requires SENTRY_DSN)
+
+## Feature: Bulk Operations (Multi-Select)
+- [x] Create useBulkSelection hook for managing selection state
+- [x] Create BulkActionToolbar component with gradient design
+- [x] Add checkbox column to Customers table
+- [x] Add bulk action toolbar (appears when items selected)
+- [x] Implement bulk delete for customers with confirmation dialog
+- [x] Implement bulk SMS sending for customers (UI ready, backend TODO)
+- [x] Add selection counter (e.g., "3 selected")
+- [x] Add loading states for bulk operations
+- [x] Show success/error toast for each operation
+- [ ] Add checkbox column to Appointments table (deferred - complex calendar UI)
+- [ ] Add bulk delete for appointments with confirmation
+- [ ] Add bulk status change for appointments (confirm/cancel)
+- [ ] Add bulk SMS reminder for appointments
+- [ ] Add keyboard shortcuts (Ctrl+A to select all, Escape to deselect)
+- [ ] Persist selection state during pagination

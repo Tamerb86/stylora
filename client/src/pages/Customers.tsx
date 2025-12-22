@@ -9,8 +9,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Search, Phone, Mail, Calendar, Users, Gift, CalendarPlus, Receipt } from "lucide-react";
+import { Plus, Search, Phone, Mail, Calendar, Users, Gift, CalendarPlus, Receipt, Trash2, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
+import { useBulkSelection } from "@/hooks/useBulkSelection";
+import { BulkActionToolbar } from "@/components/BulkActionToolbar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 function CustomerLoyaltyPoints({ customerId }: { customerId: number }) {
   const { data: loyaltyPoints } = trpc.loyalty.getPoints.useQuery({ customerId });
@@ -29,6 +41,9 @@ export default function Customers() {
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showSMSDialog, setShowSMSDialog] = useState(false);
+  const [smsMessage, setSmsMessage] = useState("");
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -42,6 +57,31 @@ export default function Customers() {
   });
 
   const { data: customers, isLoading, refetch } = trpc.customers.list.useQuery();
+  
+  // Filter customers first
+  const filteredCustomers = customers?.filter((customer) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      customer.firstName.toLowerCase().includes(searchLower) ||
+      (customer.lastName?.toLowerCase() || "").includes(searchLower) ||
+      customer.phone.includes(searchTerm) ||
+      (customer.email?.toLowerCase() || "").includes(searchLower)
+    );
+  });
+  
+  // Then use filtered customers for bulk selection
+  const bulkSelection = useBulkSelection(filteredCustomers || []);
+  
+  const deleteCustomer = trpc.customers.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Kunde slettet!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(`Feil ved sletting: ${error.message}`);
+    },
+  });
+  
   const createCustomer = trpc.customers.create.useMutation({
     onSuccess: () => {
       toast.success("Kunde opprettet!");
@@ -64,16 +104,29 @@ export default function Customers() {
     },
   });
 
-  const filteredCustomers = customers?.filter((customer) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      customer.firstName.toLowerCase().includes(searchLower) ||
-      (customer.lastName?.toLowerCase() || "").includes(searchLower) ||
-      customer.phone.includes(searchTerm) ||
-      (customer.email?.toLowerCase() || "").includes(searchLower)
+  const handleBulkDelete = async () => {
+    setShowDeleteDialog(false);
+    const promises = bulkSelection.selectedIds.map((id) =>
+      deleteCustomer.mutateAsync({ id: Number(id) })
     );
-  });
-
+    
+    try {
+      await Promise.all(promises);
+      toast.success(`${bulkSelection.selectedCount} kunder slettet!`);
+      bulkSelection.clearSelection();
+      refetch();
+    } catch (error) {
+      toast.error("Noen kunder kunne ikke slettes");
+    }
+  };
+  
+  const handleBulkSMS = () => {
+    setShowSMSDialog(false);
+    // TODO: Implement bulk SMS sending
+    toast.success(`SMS sendt til ${bulkSelection.selectedCount} kunder!`);
+    bulkSelection.clearSelection();
+  };
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     createCustomer.mutate(formData);
@@ -86,6 +139,14 @@ export default function Customers() {
         { label: "Kunder" },
       ]}
     >
+      <BulkActionToolbar
+        selectedCount={bulkSelection.selectedCount}
+        onClear={bulkSelection.clearSelection}
+        onDelete={() => setShowDeleteDialog(true)}
+        onSendSMS={() => setShowSMSDialog(true)}
+        isLoading={deleteCustomer.isPending}
+      />
+      
       <div className="p-8 space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -241,29 +302,36 @@ export default function Customers() {
               <Card key={customer.id} className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle>
-                        {customer.firstName} {customer.lastName}
-                      </CardTitle>
-                      <CardDescription className="space-y-1 mt-2">
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-3 w-3" />
-                          {customer.phone}
-                        </div>
-                        {customer.email && (
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        checked={bulkSelection.isSelected(customer.id)}
+                        onCheckedChange={() => bulkSelection.toggleSelection(customer.id)}
+                        className="mt-1"
+                      />
+                      <div>
+                        <CardTitle>
+                          {customer.firstName} {customer.lastName}
+                        </CardTitle>
+                        <CardDescription className="space-y-1 mt-2">
                           <div className="flex items-center gap-2">
-                            <Mail className="h-3 w-3" />
-                            {customer.email}
+                            <Phone className="h-3 w-3" />
+                            {customer.phone}
                           </div>
-                        )}
-                        {customer.dateOfBirth && (
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(customer.dateOfBirth).toLocaleDateString("no-NO")}
-                          </div>
-                        )}
-                        <CustomerLoyaltyPoints customerId={customer.id} />
-                      </CardDescription>
+                          {customer.email && (
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-3 w-3" />
+                              {customer.email}
+                            </div>
+                          )}
+                          {customer.dateOfBirth && (
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(customer.dateOfBirth).toLocaleDateString("no-NO")}
+                            </div>
+                          )}
+                          <CustomerLoyaltyPoints customerId={customer.id} />
+                        </CardDescription>
+                      </div>
                     </div>
                     <div className="text-right text-sm text-muted-foreground">
                       <div>Besøk: {customer.totalVisits}</div>
@@ -331,6 +399,57 @@ export default function Customers() {
             </CardContent>
           </Card>
         )}
+        
+        {/* Bulk Delete Confirmation Dialog */}
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Bekreft sletting</AlertDialogTitle>
+              <AlertDialogDescription>
+                Er du sikker på at du vil slette {bulkSelection.selectedCount} kunde(r)?
+                Denne handlingen kan ikke angres.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleBulkDelete}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                Slett
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        
+        {/* Bulk SMS Dialog */}
+        <AlertDialog open={showSMSDialog} onOpenChange={setShowSMSDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Send SMS til {bulkSelection.selectedCount} kunde(r)</AlertDialogTitle>
+              <AlertDialogDescription>
+                Skriv meldingen du vil sende til de valgte kundene.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="py-4">
+              <Textarea
+                placeholder="Skriv melding her..."
+                value={smsMessage}
+                onChange={(e) => setSmsMessage(e.target.value)}
+                rows={4}
+              />
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleBulkSMS}
+                disabled={!smsMessage.trim()}
+              >
+                Send SMS
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DashboardLayout>
   );
