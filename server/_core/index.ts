@@ -165,6 +165,9 @@ async function startServer() {
       const { exchangeCodeForToken, encryptToken } = await import("../services/izettle");
       const tokens = await exchangeCodeForToken(code);
       console.log("[iZettle Callback] Tokens received successfully");
+      console.log("[iZettle Callback] Access token length:", tokens.access_token.length);
+      console.log("[iZettle Callback] Access token first 30 chars:", tokens.access_token.substring(0, 30));
+      console.log("[iZettle Callback] Access token last 20 chars:", tokens.access_token.substring(tokens.access_token.length - 20));
       
       // Save tokens to database
       console.log("[iZettle Callback] Saving tokens to database for tenant:", tenantId);
@@ -208,11 +211,15 @@ async function startServer() {
           if (existing) {
             // Update existing
             console.log("[iZettle Callback] Updating existing provider:", existing.id);
+            const encryptedAccessToken = encryptToken(tokens.access_token);
+            const encryptedRefreshToken = encryptToken(tokens.refresh_token);
+            console.log("[iZettle Callback] Encrypted access token length:", encryptedAccessToken.length);
+            console.log("[iZettle Callback] Encrypted access token preview:", encryptedAccessToken.substring(0, 50));
             await dbInstance
               .update(paymentProviders)
               .set({
-                accessToken: encryptToken(tokens.access_token),
-                refreshToken: encryptToken(tokens.refresh_token),
+                accessToken: encryptedAccessToken,
+                refreshToken: encryptedRefreshToken,
                 tokenExpiresAt: expiresAt,
                 isActive: true,
                 updatedAt: new Date(),
