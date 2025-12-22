@@ -121,6 +121,34 @@ export async function refreshAccessToken(refreshToken: string): Promise<{
 }
 
 /**
+ * Retry helper with exponential backoff
+ */
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelay: number = 2000
+): Promise<T> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      // Check if it's a rate limit error (429)
+      const isRateLimitError = error.message?.includes('429') || error.message?.toLowerCase().includes('too many requests');
+      
+      if (attempt === maxRetries || !isRateLimitError) {
+        throw error;
+      }
+      
+      // Exponential backoff: 2s, 4s, 8s
+      const delay = baseDelay * Math.pow(2, attempt);
+      console.log(`[Retry] Attempt ${attempt + 1} failed, retrying in ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  throw new Error('Max retries exceeded');
+}
+
+/**
  * Create a Reader Link (for PayPal Reader)
  * This creates a connection between Stylora and the PayPal Reader
  */
@@ -132,23 +160,33 @@ export async function createReaderLink(
   linkName: string;
   websocketUrl: string;
 }> {
-  const response = await fetch("https://reader-connect.zettle.com/v1/links", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      linkName,
-    }),
-  });
+  return retryWithBackoff(async () => {
+    const response = await fetch("https://reader-connect.zettle.com/v1/links", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        linkName,
+      }),
+    });
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Reader Link creation failed: ${error}`);
-  }
+    if (!response.ok) {
+      const error = await response.text();
+      
+      // Provide user-friendly error messages
+      if (response.status === 429) {
+        throw new Error(`For mange forespørsler (429). Vennligst vent litt før du prøver igjen.`);
+      } else if (response.status === 401) {
+        throw new Error(`Autentisering mislyktes. Vennligst koble til iZettle på nytt.`);
+      } else {
+        throw new Error(`Reader Link creation failed: ${error}`);
+      }
+    }
 
-  return response.json();
+    return response.json();
+  }, 3, 2000); // 3 retries, starting with 2 second delay
 }
 
 /**

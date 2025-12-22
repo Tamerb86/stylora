@@ -5447,3 +5447,27 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Implement export to Excel button with dynamic filename
 - [x] Include revenue, appointments, customers, top services in export
 - [x] Priority system: Custom date > Month/Year > Period selector
+
+
+## Bug Fixes
+- [ ] Fix "Opprett" button not working in iZettle Reader Links settings (createReaderLink not triggering)
+
+
+## Bug Fixes - iZettle Integration
+- [x] Fix "Opprett" button not working in iZettle Reader Links settings (changed adminProcedure to tenantProcedure)
+
+
+## Feature: iZettle API Retry Logic
+- [ ] Create retry wrapper function with exponential backoff
+- [ ] Apply retry to createReaderLink API call
+- [ ] Apply retry to other iZettle API calls (getReaderLinks, deleteReaderLink, etc.)
+- [ ] Add progress messages in frontend ("Retrying... attempt 2 of 3")
+- [ ] Handle 429 (Too Many Requests) specifically
+- [ ] Add configurable retry settings (max attempts, base delay)
+
+
+## iZettle Integration Fixes
+- [x] Reduce refetchInterval from 5s to 30s to prevent rate limiting
+- [x] Add retry logic with exponential backoff for API calls (3 retries: 2s, 4s, 8s)
+- [x] Add better error handling for 429 (Too Many Requests)
+- [ ] Test createReaderLink button functionality

@@ -20,7 +20,7 @@ export default function IZettleSettings() {
     undefined,
     { 
       enabled: status?.connected,
-      refetchInterval: 5000, // Auto-refresh every 5 seconds
+      refetchInterval: 30000, // Auto-refresh every 30 seconds (reduced to prevent rate limiting)
     }
   );
   const { data: paymentHistory } = (trpc as any).izettle.getPaymentHistory.useQuery(

@@ -12104,7 +12104,7 @@ export const appRouter = router({
     // ============================================================================
 
     // Create a new Reader Link
-    createReaderLink: adminProcedure
+    createReaderLink: tenantProcedure
       .input(z.object({
         linkName: z.string().default("Stylora POS"),
       }))
@@ -12174,7 +12174,7 @@ export const appRouter = router({
       }),
 
     // Get all Reader Links
-    getReaderLinks: adminProcedure
+    getReaderLinks: tenantProcedure
       .query(async ({ ctx }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
@@ -12228,7 +12228,7 @@ export const appRouter = router({
       }),
 
     // Delete a Reader Link
-    deleteReaderLink: adminProcedure
+    deleteReaderLink: tenantProcedure
       .input(z.object({
         linkId: z.string(),
       }))
@@ -12295,7 +12295,7 @@ export const appRouter = router({
       }),
 
     // Connect to a Reader Link (establish WebSocket)
-    connectReaderLink: adminProcedure
+    connectReaderLink: tenantProcedure
       .input(z.object({
         linkId: z.string(),
       }))
