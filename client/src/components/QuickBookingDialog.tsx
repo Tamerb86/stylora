@@ -69,7 +69,7 @@ export default function QuickBookingDialog({ open, onOpenChange }: QuickBookingD
   });
 
   const filteredCustomers = customers?.filter((c: any) =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    c.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.phone?.includes(searchQuery)
   );
 

@@ -410,7 +410,7 @@ function DashboardLayoutContent({
                   if (sidebarSearchQuery) {
                     const query = sidebarSearchQuery.toLowerCase();
                     return item.label.toLowerCase().includes(query) || 
-                           (item.tooltip && item.tooltip.toLowerCase().includes(query));
+                           (item.tooltip?.toLowerCase().includes(query) ?? false);
                   }
                   return true;
                 });
@@ -534,7 +534,7 @@ function DashboardLayoutContent({
                       if (sidebarSearchQuery) {
                         const query = sidebarSearchQuery.toLowerCase();
                         return item.label.toLowerCase().includes(query) || 
-                               (item.tooltip && item.tooltip.toLowerCase().includes(query));
+                               (item.tooltip?.toLowerCase().includes(query) ?? false);
                       }
                       return true;
                     })
@@ -593,7 +593,7 @@ function DashboardLayoutContent({
                       if (sidebarSearchQuery) {
                         const query = sidebarSearchQuery.toLowerCase();
                         return item.label.toLowerCase().includes(query) || 
-                               (item.tooltip && item.tooltip.toLowerCase().includes(query));
+                               (item.tooltip?.toLowerCase().includes(query) ?? false);
                       }
                       return true;
                     })
@@ -652,7 +652,7 @@ function DashboardLayoutContent({
                       if (sidebarSearchQuery) {
                         const query = sidebarSearchQuery.toLowerCase();
                         return item.label.toLowerCase().includes(query) || 
-                               (item.tooltip && item.tooltip.toLowerCase().includes(query));
+                               (item.tooltip?.toLowerCase().includes(query) ?? false);
                       }
                       return true;
                     })
@@ -714,7 +714,7 @@ function DashboardLayoutContent({
                       if (sidebarSearchQuery) {
                         const query = sidebarSearchQuery.toLowerCase();
                         return item.label.toLowerCase().includes(query) || 
-                               (item.tooltip && item.tooltip.toLowerCase().includes(query));
+                               (item.tooltip?.toLowerCase().includes(query) ?? false);
                       }
                       return true;
                     })
