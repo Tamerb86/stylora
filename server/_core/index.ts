@@ -229,6 +229,13 @@ async function startServer() {
           } else {
             // Insert new
             console.log("[iZettle Callback] Creating new provider entry");
+            console.log("[iZettle Callback] Insert data:", {
+              tenantId: tenantId || 'platform-admin-tenant',
+              providerType: "izettle",
+              hasAccessToken: true,
+              hasRefreshToken: true,
+            });
+            
             const insertResult = await dbInstance.insert(paymentProviders).values({
               tenantId: tenantId || 'platform-admin-tenant',
               providerType: "izettle",
@@ -241,7 +248,28 @@ async function startServer() {
               config: null,
               isActive: true,
             });
-            console.log("[iZettle Callback] Provider created successfully, insertId:", insertResult.insertId);
+            
+            console.log("[iZettle Callback] Insert result:", insertResult);
+            console.log("[iZettle Callback] Insert result keys:", Object.keys(insertResult));
+            
+            // Verify the insert by querying back
+            const [verifyProvider] = await dbInstance
+              .select()
+              .from(paymentProviders)
+              .where(
+                and(
+                  eq(paymentProviders.tenantId, tenantId || 'platform-admin-tenant'),
+                  eq(paymentProviders.providerType, "izettle")
+                )
+              )
+              .limit(1);
+            
+            if (verifyProvider) {
+              console.log("[iZettle Callback] ✅ Verification successful - Provider saved with ID:", verifyProvider.id);
+            } else {
+              console.error("[iZettle Callback] ❌ Verification failed - Provider not found after insert!");
+              throw new Error("Failed to verify provider insertion");
+            }
           }
         } catch (dbError: any) {
           console.error("[iZettle Callback] Database save failed:", {
