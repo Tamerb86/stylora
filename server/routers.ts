@@ -12199,15 +12199,14 @@ export const appRouter = router({
         const { paymentProviders } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
 
-        // Get iZettle provider
+        // Get iZettle provider (don't filter by isActive - it might be null/false initially)
         const [provider] = await dbInstance
           .select()
           .from(paymentProviders)
           .where(
             and(
               eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, 'izettle'),
-              eq(paymentProviders.isActive, true)
+              eq(paymentProviders.providerType, 'izettle')
             )
           )
           .limit(1);
@@ -12286,15 +12285,14 @@ export const appRouter = router({
         console.log('[pairReader] Current tenant:', ctx.tenantId);
         console.log('[pairReader] User info:', { userId: ctx.user.id, email: ctx.user.email });
 
-        // Get iZettle provider
+        // Get iZettle provider (don't filter by isActive - it might be null/false initially)
         const [provider] = await dbInstance
           .select()
           .from(paymentProviders)
           .where(
             and(
               eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, 'izettle'),
-              eq(paymentProviders.isActive, true)
+              eq(paymentProviders.providerType, 'izettle')
             )
           )
           .limit(1);
@@ -12546,15 +12544,14 @@ export const appRouter = router({
         const { payments, paymentProviders } = await import("../drizzle/schema");
         const { eq, and, desc } = await import("drizzle-orm");
 
-        // Get iZettle provider
+        // Get iZettle provider (don't filter by isActive - it might be null/false initially)
         const [provider] = await dbInstance
           .select()
           .from(paymentProviders)
           .where(
             and(
               eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, 'izettle'),
-              eq(paymentProviders.isActive, true)
+              eq(paymentProviders.providerType, 'izettle')
             )
           )
           .limit(1);
