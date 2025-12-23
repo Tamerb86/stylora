@@ -5502,3 +5502,19 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Fix paymentSettings.get endpoint 500 error (added eq import)
 - [x] Fix OAuth callback null values causing INSERT failure
 - [x] Verify Payment Settings page loads correctly
+
+
+## Phase: PayPal Reader WebSocket Integration
+- [ ] Install ws (WebSocket) package for Node.js
+- [ ] Create WebSocket service for Reader Connect API (wss://reader-connect.zettle.com)
+- [ ] Implement WebSocket connection management (connect, disconnect, reconnect)
+- [ ] Create payment request endpoint (pos.createZettlePayment)
+- [ ] Send PAYMENT_REQUEST message via WebSocket
+- [ ] Handle PAYMENT_PROGRESS_RESPONSE messages
+- [ ] Handle PAYMENT_RESULT_RESPONSE messages (COMPLETED/FAILED/CANCELED)
+- [ ] Update payment status in database based on WebSocket responses
+- [ ] Add real-time payment status updates to frontend
+- [ ] Display payment progress in checkout UI
+- [ ] Test end-to-end payment flow with PayPal Reader
+- [ ] Add error handling for WebSocket disconnections
+- [ ] Add timeout handling for payment requests (30s)
