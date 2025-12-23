@@ -222,6 +222,22 @@ export async function pairReaderWithCode(
     },
   };
   
+  // Decode access token to check organization (JWT format)
+  try {
+    const tokenParts = accessToken.split('.');
+    if (tokenParts.length === 3) {
+      const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString());
+      console.log('[iZettle] Access token info:', {
+        organizationUuid: payload.organizationUuid || payload.org_id || 'NOT_FOUND',
+        scopes: payload.scope || payload.scopes || 'NOT_FOUND',
+        expiresAt: payload.exp ? new Date(payload.exp * 1000).toISOString() : 'NOT_FOUND',
+        issuedAt: payload.iat ? new Date(payload.iat * 1000).toISOString() : 'NOT_FOUND',
+      });
+    }
+  } catch (e) {
+    console.error('[iZettle] Failed to decode access token:', e);
+  }
+  
   // Log request details for debugging
   console.log('[iZettle] Pairing request:', {
     url: 'https://reader-connect.zettle.com/v1/integrator/link-offers/claim',
@@ -231,6 +247,8 @@ export async function pairReaderWithCode(
     codeRaw: code,
     codeTrimmed: code.trim(),
     codeUpperCase: code.toUpperCase().trim(),
+    accessTokenLength: accessToken.length,
+    accessTokenPrefix: accessToken.substring(0, 20) + '...',
   });
   
   const response = await fetch("https://reader-connect.zettle.com/v1/integrator/link-offers/claim", {
