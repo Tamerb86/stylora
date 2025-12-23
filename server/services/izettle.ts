@@ -214,8 +214,8 @@ export async function pairReaderWithCode(
   deviceName: string;
   serialNumber: string;
 }> {
-  // Use PayPal Reader Connect API v3 (new endpoint for PayPal Reader)
-  const response = await fetch("https://api-m.paypal.com/v3/readers/claim", {
+  // Use Zettle Reader Connect API v1 (correct endpoint for PayPal Reader)
+  const response = await fetch("https://reader-connect.zettle.com/v1/integrator/link-offers/claim", {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${accessToken}`,
@@ -223,6 +223,9 @@ export async function pairReaderWithCode(
     },
     body: JSON.stringify({
       code: code.toUpperCase().trim(),
+      tags: {
+        deviceName,
+      },
     }),
   });
 
@@ -253,11 +256,11 @@ export async function pairReaderWithCode(
 
   const link = await response.json();
   
-  // PayPal API v3 response format
+  // Zettle Reader Connect API response format
   return {
-    linkId: link.id || link.reader_id,
-    deviceName: deviceName, // PayPal API v3 doesn't return device name in response
-    serialNumber: link.serial_number || link.serialNumber || "Unknown",
+    linkId: link.id,
+    deviceName: link.integratorTags?.deviceName || deviceName,
+    serialNumber: link.readerTags?.serialNumber || "Unknown",
   };
 }
 
@@ -271,12 +274,11 @@ export async function getReaderLinks(
   linkName: string;
   status: string;
 }>> {
-  // Use PayPal Reader Connect API v3
-  const response = await fetch("https://api-m.paypal.com/v3/readers", {
+  // Use Zettle Reader Connect API v1
+  const response = await fetch("https://reader-connect.zettle.com/v1/integrator/links", {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
     },
   });
 
@@ -285,13 +287,13 @@ export async function getReaderLinks(
     throw new Error(`Failed to fetch Reader Links: ${error}`);
   }
 
-  const data = await response.json();
+  const links = await response.json();
   
-  // Transform PayPal API v3 response to match expected format
-  return (data.readers || []).map((reader: any) => ({
-    linkId: reader.id,
-    linkName: reader.name || `PayPal Reader ${reader.id.slice(0, 8)}`,
-    status: reader.status || 'unknown',
+  // Transform Zettle API response to match expected format
+  return (links || []).map((link: any) => ({
+    linkId: link.id,
+    linkName: link.integratorTags?.deviceName || link.readerTags?.serialNumber || `Reader ${link.id.slice(0, 8)}`,
+    status: 'active',
   }));
 }
 
@@ -302,12 +304,11 @@ export async function deleteReaderLink(
   accessToken: string,
   linkId: string
 ): Promise<void> {
-  // Use PayPal Reader Connect API v3
-  const response = await fetch(`https://api-m.paypal.com/v3/readers/${linkId}`, {
+  // Use Zettle Reader Connect API v1
+  const response = await fetch(`https://reader-connect.zettle.com/v1/integrator/links/${linkId}`, {
     method: "DELETE",
     headers: {
       "Authorization": `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
     },
   });
 
