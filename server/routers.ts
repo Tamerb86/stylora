@@ -12023,9 +12023,9 @@ export const appRouter = router({
           .update(paymentProviders)
           .set({
             isActive: false,
-            accessToken: null,
-            refreshToken: null,
-            tokenExpiresAt: null,
+            accessToken: undefined,
+            refreshToken: undefined,
+            tokenExpiresAt: undefined,
             updatedAt: new Date(),
           })
           .where(
@@ -12087,9 +12087,9 @@ export const appRouter = router({
         };
       }),
 
-    // Disconnect iZettle account
-    disconnect: tenantProcedure
-      .mutation(async ({ ctx }) => {
+    // Get linked PayPal Readers
+    getLinkedReaders: tenantProcedure
+      .query(async ({ ctx }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
@@ -12098,16 +12098,39 @@ export const appRouter = router({
         const { paymentProviders } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
         
-        await dbInstance
-          .delete(paymentProviders)
+        const [provider] = await dbInstance
+          .select()
+          .from(paymentProviders)
           .where(
             and(
               eq(paymentProviders.tenantId, ctx.tenantId),
               eq(paymentProviders.providerType, 'izettle')
             )
-          );
+          )
+          .limit(1);
 
-        return { success: true };
+        if (!provider || !provider.accessToken) {
+          return { readers: [] };
+        }
+
+        try {
+          const { decryptToken, getReaderLinks } = await import('./services/izettle');
+          const accessToken = decryptToken(provider.accessToken);
+          const links = await getReaderLinks(accessToken);
+          
+          return {
+            readers: links.map((link: any) => ({
+              linkId: link.id || link.linkId,
+              deviceName: link.integratorTags?.deviceName || 'PayPal Reader',
+              serialNumber: link.readerTags?.serialNumber || 'Unknown',
+              model: link.readerTags?.model || 'PayPal Reader',
+              status: 'linked',
+            })),
+          };
+        } catch (error: any) {
+          console.error('[getLinkedReaders] Error:', error.message);
+          return { readers: [], error: error.message };
+        }
       }),
 
     // DEPRECATED: Old implementation removed - use Reader Connect API
