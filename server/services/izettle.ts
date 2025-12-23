@@ -231,17 +231,25 @@ export async function pairReaderWithCode(
   if (!response.ok) {
     const error = await response.text();
     
+    // Log detailed error for debugging
+    console.error('[iZettle] Pairing failed:', {
+      status: response.status,
+      statusText: response.statusText,
+      code: code,
+      error: error,
+    });
+    
     // Provide user-friendly error messages
     if (response.status === 400) {
-      throw new Error(`Ugyldig kode. Sjekk at du har skrevet inn riktig 8-sifret kode fra PayPal Reader.`);
+      throw new Error(`Ugyldig kode. Koden kan være utløpt eller allerede brukt. Prøv å generere en ny kode ved å slå av og på PayPal Reader.`);
     } else if (response.status === 404) {
-      throw new Error(`Koden ble ikke funnet. Kontroller at PayPal Reader er påslått og viser koden.`);
+      throw new Error(`Koden ble ikke funnet. Kontroller at PayPal Reader er påslått, koblet til WiFi, og viser koden.`);
     } else if (response.status === 401) {
       throw new Error(`Autentisering mislyktes. Vennligst koble til iZettle på nytt.`);
     } else if (response.status === 409) {
       throw new Error(`Denne PayPal Reader er allerede koblet til en annen konto.`);
     } else {
-      throw new Error(`Kunne ikke koble til PayPal Reader: ${error}`);
+      throw new Error(`Kunne ikke koble til PayPal Reader (${response.status}): ${error}`);
     }
   }
 
