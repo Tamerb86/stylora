@@ -107,6 +107,261 @@ export const appRouter = router({
   export: exportRouter,
   
   // ============================================================================
+  // STRIPE CONNECT (OAuth for SaaS)
+  // ============================================================================
+  stripeConnect: router({
+    // Get Stripe Connect authorization URL
+    getAuthUrl: tenantProcedure.query(async ({ ctx }) => {
+      const STRIPE_CONNECT_CLIENT_ID = ENV.stripeConnectClientId || "";
+      const FRONTEND_URL = process.env.VITE_FRONTEND_URL || "http://localhost:3000";
+      
+      if (!STRIPE_CONNECT_CLIENT_ID) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Stripe Connect is not configured. Please contact support.",
+        });
+      }
+
+      const redirectUri = `${FRONTEND_URL}/stripe/callback`;
+      const state = ctx.tenantId; // Use tenantId as state for security
+
+      const authUrl =
+        `https://connect.stripe.com/oauth/authorize?` +
+        `response_type=code&` +
+        `client_id=${STRIPE_CONNECT_CLIENT_ID}&` +
+        `scope=read_write&` +
+        `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+        `state=${state}`;
+
+      return { authUrl };
+    }),
+
+    // Handle OAuth callback
+    handleCallback: publicProcedure
+      .input(
+        z.object({
+          code: z.string(),
+          state: z.string(), // tenantId
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { code, state: tenantId } = input;
+        const STRIPE_SECRET_KEY = ENV.stripeSecretKey || "";
+
+        if (!STRIPE_SECRET_KEY) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Stripe is not configured",
+          });
+        }
+
+        try {
+          const dbInstance = await db.getDb();
+          if (!dbInstance) {
+            throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          }
+
+          const { paymentSettings } = await import("../drizzle/schema");
+          const { eq } = await import("drizzle-orm");
+
+          // Exchange authorization code for access token
+          const response = await fetch("https://connect.stripe.com/oauth/token", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+              client_secret: STRIPE_SECRET_KEY,
+              code,
+              grant_type: "authorization_code",
+            }),
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error_description || "Failed to connect to Stripe");
+          }
+
+          const data = await response.json();
+
+          // Save connected account info to database
+          const existing = await dbInstance
+            .select()
+            .from(paymentSettings)
+            .where(eq(paymentSettings.tenantId, tenantId))
+            .limit(1);
+
+          if (existing.length > 0) {
+            // Update existing settings
+            await dbInstance
+              .update(paymentSettings)
+              .set({
+                stripeConnectedAccountId: data.stripe_user_id,
+                stripeAccessToken: data.access_token,
+                stripeRefreshToken: data.refresh_token,
+                stripeAccountStatus: "connected",
+                stripeConnectedAt: new Date(),
+                cardEnabled: true,
+              })
+              .where(eq(paymentSettings.tenantId, tenantId));
+          } else {
+            // Create new settings
+            await dbInstance.insert(paymentSettings).values({
+              tenantId,
+              stripeConnectedAccountId: data.stripe_user_id,
+              stripeAccessToken: data.access_token,
+              stripeRefreshToken: data.refresh_token,
+              stripeAccountStatus: "connected",
+              stripeConnectedAt: new Date(),
+              cardEnabled: true,
+              vippsEnabled: false,
+              cashEnabled: true,
+              payAtSalonEnabled: true,
+              stripeTestMode: false,
+            });
+          }
+
+          return {
+            success: true,
+            accountId: data.stripe_user_id,
+          };
+        } catch (error: any) {
+          console.error("Stripe Connect callback error:", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error.message || "Failed to connect Stripe account",
+          });
+        }
+      }),
+
+    // Get connection status
+    getStatus: tenantProcedure.query(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) return { connected: false, accountId: null, status: "disconnected" };
+
+      const { paymentSettings } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+
+      const settings = await dbInstance
+        .select()
+        .from(paymentSettings)
+        .where(eq(paymentSettings.tenantId, ctx.tenantId))
+        .limit(1);
+
+      if (settings.length === 0 || !settings[0].stripeConnectedAccountId) {
+        return {
+          connected: false,
+          accountId: null,
+          status: "disconnected",
+        };
+      }
+
+      return {
+        connected: true,
+        accountId: settings[0].stripeConnectedAccountId,
+        status: settings[0].stripeAccountStatus || "connected",
+        connectedAt: settings[0].stripeConnectedAt,
+      };
+    }),
+
+    // Disconnect Stripe account
+    disconnect: tenantProcedure.mutation(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      }
+
+      const { paymentSettings } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+
+      const settings = await dbInstance
+        .select()
+        .from(paymentSettings)
+        .where(eq(paymentSettings.tenantId, ctx.tenantId))
+        .limit(1);
+
+      if (settings.length === 0 || !settings[0].stripeConnectedAccountId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No connected Stripe account found",
+        });
+      }
+
+      await dbInstance
+        .update(paymentSettings)
+        .set({
+          stripeConnectedAccountId: null,
+          stripeAccessToken: null,
+          stripeRefreshToken: null,
+          stripeAccountStatus: "disconnected",
+          stripeConnectedAt: null,
+          cardEnabled: false,
+        })
+        .where(eq(paymentSettings.tenantId, ctx.tenantId));
+
+      return { success: true };
+    }),
+
+    // Get account details from Stripe
+    getAccountDetails: tenantProcedure.query(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      }
+
+      const { paymentSettings } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const STRIPE_SECRET_KEY = ENV.stripeSecretKey || "";
+
+      const settings = await dbInstance
+        .select()
+        .from(paymentSettings)
+        .where(eq(paymentSettings.tenantId, ctx.tenantId))
+        .limit(1);
+
+      if (settings.length === 0 || !settings[0].stripeConnectedAccountId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No connected Stripe account found",
+        });
+      }
+
+      try {
+        const response = await fetch(
+          `https://api.stripe.com/v1/accounts/${settings[0].stripeConnectedAccountId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${STRIPE_SECRET_KEY}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch account details");
+        }
+
+        const account = await response.json();
+
+        return {
+          id: account.id,
+          email: account.email,
+          displayName: account.settings?.dashboard?.display_name || account.email,
+          country: account.country,
+          currency: account.default_currency,
+          chargesEnabled: account.charges_enabled,
+          payoutsEnabled: account.payouts_enabled,
+        };
+      } catch (error: any) {
+        console.error("Failed to fetch Stripe account details:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch account details",
+        });
+      }
+    }),
+  }),
+  
+  // ============================================================================
   // FIKEN ACCOUNTING INTEGRATION
   // ============================================================================
   fiken: router({
@@ -10364,9 +10619,22 @@ export const appRouter = router({
         }
 
         let apiKey: string | undefined;
+        let connectedAccountId: string | undefined;
 
-        // If providerId specified, get API key from that provider
-        if (input.providerId) {
+        // Check for Stripe Connect first (preferred)
+        const { paymentSettings } = await import("../drizzle/schema");
+        const [settings] = await dbInstance
+          .select()
+          .from(paymentSettings)
+          .where(eq(paymentSettings.tenantId, ctx.tenantId))
+          .limit(1);
+
+        if (settings?.stripeConnectedAccountId && settings?.stripeAccountStatus === "connected") {
+          // Use Stripe Connect (platform key + connected account)
+          connectedAccountId = settings.stripeConnectedAccountId;
+          apiKey = ENV.stripeSecretKey; // Platform key
+        } else if (input.providerId) {
+          // Fallback: Use legacy API key from provider
           const { paymentProviders } = await import("../drizzle/schema");
           const [provider] = await dbInstance
             .select()
@@ -10385,7 +10653,7 @@ export const appRouter = router({
         }
 
         const { createConnectionToken } = await import("./stripeTerminal");
-        const secret = await createConnectionToken(apiKey);
+        const secret = await createConnectionToken(apiKey, connectedAccountId);
         return { secret };
       }),
 
@@ -10401,8 +10669,20 @@ export const appRouter = router({
         }
 
         let apiKey: string | undefined;
+        let connectedAccountId: string | undefined;
 
-        if (input.providerId) {
+        // Check for Stripe Connect first (preferred)
+        const { paymentSettings } = await import("../drizzle/schema");
+        const [settings] = await dbInstance
+          .select()
+          .from(paymentSettings)
+          .where(eq(paymentSettings.tenantId, ctx.tenantId))
+          .limit(1);
+
+        if (settings?.stripeConnectedAccountId && settings?.stripeAccountStatus === "connected") {
+          connectedAccountId = settings.stripeConnectedAccountId;
+          apiKey = ENV.stripeSecretKey;
+        } else if (input.providerId) {
           const { paymentProviders } = await import("../drizzle/schema");
           const [provider] = await dbInstance
             .select()
@@ -10419,7 +10699,7 @@ export const appRouter = router({
         }
 
         const { listReaders } = await import("./stripeTerminal");
-        const readers = await listReaders(apiKey);
+        const readers = await listReaders(apiKey, connectedAccountId);
         return readers;
       }),
 
@@ -10438,8 +10718,20 @@ export const appRouter = router({
         }
 
         let apiKey: string | undefined;
+        let connectedAccountId: string | undefined;
 
-        if (input.providerId) {
+        // Check for Stripe Connect first (preferred)
+        const { paymentSettings } = await import("../drizzle/schema");
+        const [settings] = await dbInstance
+          .select()
+          .from(paymentSettings)
+          .where(eq(paymentSettings.tenantId, ctx.tenantId))
+          .limit(1);
+
+        if (settings?.stripeConnectedAccountId && settings?.stripeAccountStatus === "connected") {
+          connectedAccountId = settings.stripeConnectedAccountId;
+          apiKey = ENV.stripeSecretKey;
+        } else if (input.providerId) {
           const { paymentProviders } = await import("../drizzle/schema");
           const [provider] = await dbInstance
             .select()
@@ -10464,7 +10756,8 @@ export const appRouter = router({
             tenantId: ctx.tenantId,
             userId: ctx.user.id.toString(),
           },
-          apiKey
+          apiKey,
+          connectedAccountId
         );
 
         return {

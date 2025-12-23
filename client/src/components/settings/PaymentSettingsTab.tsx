@@ -10,6 +10,7 @@ import { Loader2, Save, CreditCard, Smartphone, Banknote, Store } from "lucide-r
 import { PayPalReaderPairing } from "./PayPalReaderPairing";
 import { IZettleOAuthConnection } from "./IZettleOAuthConnection";
 import { StripeTerminalSettings } from "./StripeTerminalSettings";
+import { StripeConnectButton } from "./StripeConnectButton";
 
 export function PaymentSettingsTab() {
   const [vippsEnabled, setVippsEnabled] = useState(false);
@@ -91,8 +92,35 @@ export function PaymentSettingsTab() {
       {/* PayPal Reader Pairing */}
       <PayPalReaderPairing />
       
-      {/* Stripe Terminal */}
-      <StripeTerminalSettings />
+      {/* Stripe Connect (OAuth - Recommended) */}
+      <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Stripe Terminal (Anbefalt)</CardTitle>
+            <CardDescription>
+              Koble til din Stripe-konto med ett klikk for å ta betaling med kortleser
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <StripeConnectButton />
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Legacy: Manual Configuration */}
+      <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Manuell konfigurasjon (Legacy)</CardTitle>
+            <CardDescription>
+              Alternativ: Legg inn Stripe API-nøkler manuelt (ikke anbefalt for SaaS)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <StripeTerminalSettings />
+          </CardContent>
+        </Card>
+      </div>
       
       {/* Payment Settings */}
       <Card>

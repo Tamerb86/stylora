@@ -1220,10 +1220,17 @@ export const paymentSettings = mysqlTable("paymentSettings", {
   vippsMerchantSerialNumber: varchar("vippsMerchantSerialNumber", { length: 20 }),
   vippsTestMode: boolean("vippsTestMode").default(true).notNull(),
   
-  // Stripe configuration
+  // Stripe configuration (legacy - manual API keys)
   stripePublishableKey: text("stripePublishableKey"),
   stripeSecretKey: text("stripeSecretKey"),
   stripeTestMode: boolean("stripeTestMode").default(true).notNull(),
+  
+  // Stripe Connect (OAuth - recommended for SaaS)
+  stripeConnectedAccountId: varchar("stripeConnectedAccountId", { length: 255 }),
+  stripeAccessToken: text("stripeAccessToken"),
+  stripeRefreshToken: text("stripeRefreshToken"),
+  stripeAccountStatus: mysqlEnum("stripeAccountStatus", ["connected", "disconnected", "pending"]).default("disconnected"),
+  stripeConnectedAt: timestamp("stripeConnectedAt"),
   
   // Default payment method
   defaultPaymentMethod: mysqlEnum("defaultPaymentMethod", [

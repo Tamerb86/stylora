@@ -50,6 +50,13 @@
       "when": 1766340902190,
       "tag": "0006_lively_thunderbolt",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1766532438850,
+      "tag": "0007_easy_malcolm_colcord",
+      "breakpoints": true
     }
   ]
 }

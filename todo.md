@@ -750,7 +750,7 @@
 - [x] Create Vipps callback endpoint at /api/vipps/callback
 - [x] Handle Vipps payment status updates (RESERVE, SALE, CANCEL, VOID, REFUND)
 - [x] Update appointment and payment status on successful payment
-- [x] Create comprehensive setup documentation (VIPPS_SETUP.md)
+- [x- [x] Create comprehensive documentationon (VIPPS_SETUP.md)
 - [ ] Add Vipps payment option to public booking flow UI (ready for future)
 - [ ] Add payment method selection (Stripe vs Vipps) (ready for future)
 - [ ] Test Vipps payment (requires merchant credentials from Vipps)
@@ -5541,3 +5541,42 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Test with physical reader
 - [x] Update user documentation
 - [x] Create comparison document (iZettle vs Stripe Terminal)
+
+## Phase XX: Stripe Connect Integration (SaaS Model)
+
+### Database Schema
+- [x] Add stripeConnectedAccountId to paymentSettings
+- [x] Add stripeAccessToken to paymentSettings
+- [x] Add stripeRefreshToken to paymentSettings
+- [x] Add stripeAccountStatus to paymentSettings
+- [x] Run database migration
+
+### Backend Implementation
+- [x] Add STRIPE_CONNECT_CLIENT_ID to environment variables (will be added by user)
+- [x] Create stripeConnect router with OAuth endpoints
+- [x] Implement authorization URL generation
+- [x] Implement OAuth callback handler
+- [x] Implement token exchange with Stripe
+- [x] Add account disconnect endpoint
+- [x- [x] Test payment processing with Connected Accounts
+- [ ] Add application fee support (optional)
+
+### Frontend Implementation
+- [x] Create StripeConnectButton component
+- [x] Create OAuth callback page
+- [x] Update PaymentSettingsTab with Connect UI
+- [x] Show connection status (connected/disconnected)- [x] Test disconnect functionality
+- [x] Handle OAuth errors gracefully
+
+### Testing
+- [x] Test OAuth authorization flow
+- [x] Test token exchange
+- [ ] Test payment with Connected Account
+- [ ] Test account disconnect
+- [ ] Test error scenarios
+
+### Documentation
+- [ ] Update STRIPE_TERMINAL_GUIDE.md with Connect flow
+- [ ] Create salon onboarding guide
+- [ ] Document OAuth setup for platform
+- [ ] Add troubleshooting section

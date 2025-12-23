@@ -69,6 +69,7 @@ import POSPayment from "./pages/POSPayment";
 import PaymentHistory from "./pages/PaymentHistory";
 import PaymentProviders from "./pages/PaymentProviders";
 import ReaderManagement from "./pages/ReaderManagement";
+import StripeCallback from "./pages/StripeCallback";
 import WalkInQueue from "./pages/WalkInQueue";
 import QueueDisplay from "./pages/QueueDisplay";
 import RefundManagement from "./pages/RefundManagement";
@@ -124,6 +125,7 @@ function Router() {
       <Route path="/payment-history" component={PaymentHistory} />
       <Route path="/payment-providers" component={PaymentProviders} />
       <Route path="/reader-management" component={ReaderManagement} />
+      <Route path="/stripe/callback" component={StripeCallback} />
       <Route path="/print-receipt/:orderId" component={PrintReceipt} />
       <Route path="/saas-admin/login" component={SaasAdminLogin} />
       <Route path="/saas-admin">
