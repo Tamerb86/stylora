@@ -215,30 +215,52 @@ export async function pairReaderWithCode(
   serialNumber: string;
 }> {
   // Use Zettle Reader Connect API v1 (correct endpoint for PayPal Reader)
+  const requestBody = {
+    code: code.toUpperCase().trim(),
+    tags: {
+      deviceName,
+    },
+  };
+  
+  // Log request details for debugging
+  console.log('[iZettle] Pairing request:', {
+    url: 'https://reader-connect.zettle.com/v1/integrator/link-offers/claim',
+    method: 'POST',
+    body: requestBody,
+    codeLength: code.length,
+    codeRaw: code,
+    codeTrimmed: code.trim(),
+    codeUpperCase: code.toUpperCase().trim(),
+  });
+  
   const response = await fetch("https://reader-connect.zettle.com/v1/integrator/link-offers/claim", {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${accessToken}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      code: code.toUpperCase().trim(),
-      tags: {
-        deviceName,
-      },
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {
-    const error = await response.text();
+    const errorText = await response.text();
     
     // Log detailed error for debugging
     console.error('[iZettle] Pairing failed:', {
       status: response.status,
       statusText: response.statusText,
       code: code,
-      error: error,
+      errorText: errorText,
+      requestBody: requestBody,
     });
+    
+    // Try to parse error as JSON for more details
+    try {
+      const errorJson = JSON.parse(errorText);
+      console.error('[iZettle] Parsed error:', errorJson);
+    } catch (e) {
+      console.error('[iZettle] Error is not JSON:', errorText);
+    }
     
     // Provide user-friendly error messages
     if (response.status === 400) {
@@ -250,7 +272,7 @@ export async function pairReaderWithCode(
     } else if (response.status === 409) {
       throw new Error(`Denne PayPal Reader er allerede koblet til en annen konto.`);
     } else {
-      throw new Error(`Kunne ikke koble til PayPal Reader (${response.status}): ${error}`);
+      throw new Error(`Kunne ikke koble til PayPal Reader (${response.status}): ${errorText}`);
     }
   }
 
