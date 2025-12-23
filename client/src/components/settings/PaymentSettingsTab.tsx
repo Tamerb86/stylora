@@ -9,6 +9,7 @@ import { trpc } from "@/lib/trpc";
 import { Loader2, Save, CreditCard, Smartphone, Banknote, Store } from "lucide-react";
 import { PayPalReaderPairing } from "./PayPalReaderPairing";
 import { IZettleOAuthConnection } from "./IZettleOAuthConnection";
+import { StripeTerminalSettings } from "./StripeTerminalSettings";
 
 export function PaymentSettingsTab() {
   const [vippsEnabled, setVippsEnabled] = useState(false);
@@ -89,6 +90,9 @@ export function PaymentSettingsTab() {
       
       {/* PayPal Reader Pairing */}
       <PayPalReaderPairing />
+      
+      {/* Stripe Terminal */}
+      <StripeTerminalSettings />
       
       {/* Payment Settings */}
       <Card>

@@ -5518,3 +5518,26 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Test end-to-end payment flow with PayPal Reader
 - [ ] Add error handling for WebSocket disconnections
 - [ ] Add timeout handling for payment requests (30s)
+
+## Phase XX: Payment Terminal Integration (Dual Track Approach)
+
+### Track 1: iZettle Support Ticket
+- [x] Prepare comprehensive support ticket documentation
+- [x] Document all error messages and reproduction steps
+- [ ] Submit ticket to Zettle support
+- [ ] Track ticket response and follow up
+
+### Track 2: Stripe Terminal Implementation (Primary Solution)
+- [x] Install Stripe Terminal JavaScript SDK
+- [x] Create connection token endpoint in backend
+- [x] Initialize Stripe Terminal SDK in frontend
+- [x] Implement reader discovery UI
+- [x] Implement reader connection management
+- [x] Add disconnect handling
+- [x] Integrate payment processing with POS
+- [ ] Add payment status tracking
+- [ ] Test with simulated reader
+- [ ] Order physical Stripe reader
+- [ ] Test with physical reader
+- [x] Update user documentation
+- [x] Create comparison document (iZettle vs Stripe Terminal)
