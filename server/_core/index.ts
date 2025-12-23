@@ -229,19 +229,19 @@ async function startServer() {
           } else {
             // Insert new
             console.log("[iZettle Callback] Creating new provider entry");
-            await dbInstance.insert(paymentProviders).values({
+            const insertResult = await dbInstance.insert(paymentProviders).values({
               tenantId: tenantId || 'platform-admin-tenant',
               providerType: "izettle",
               providerName: "iZettle",
               accessToken: encryptToken(tokens.access_token),
               refreshToken: encryptToken(tokens.refresh_token),
               tokenExpiresAt: expiresAt,
-              providerAccountId: "",
-              providerEmail: "",
-              config: "{}",
+              providerAccountId: null,
+              providerEmail: null,
+              config: null,
               isActive: true,
             });
-            console.log("[iZettle Callback] Provider created successfully");
+            console.log("[iZettle Callback] Provider created successfully, insertId:", insertResult.insertId);
           }
         } catch (dbError: any) {
           console.error("[iZettle Callback] Database save failed:", {

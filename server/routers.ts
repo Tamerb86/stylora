@@ -12282,6 +12282,10 @@ export const appRouter = router({
         const { paymentProviders } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
 
+        // Log tenant info for debugging
+        console.log('[pairReader] Current tenant:', ctx.tenantId);
+        console.log('[pairReader] User info:', { userId: ctx.user.id, email: ctx.user.email });
+
         // Get iZettle provider
         const [provider] = await dbInstance
           .select()
@@ -12295,7 +12299,24 @@ export const appRouter = router({
           )
           .limit(1);
 
+        console.log('[pairReader] Provider found:', provider ? {
+          id: provider.id,
+          tenantId: provider.tenantId,
+          providerType: provider.providerType,
+          isActive: provider.isActive,
+          hasAccessToken: !!provider.accessToken,
+        } : null);
+
         if (!provider || !provider.accessToken) {
+          console.error('[pairReader] No connected iZettle provider found for tenant:', ctx.tenantId);
+          
+          // Check if provider exists for ANY tenant (debugging)
+          const allProviders = await dbInstance
+            .select({ tenantId: paymentProviders.tenantId, providerType: paymentProviders.providerType })
+            .from(paymentProviders)
+            .where(eq(paymentProviders.providerType, 'izettle'));
+          console.log('[pairReader] All iZettle providers in DB:', allProviders);
+          
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
             message: "iZettle not connected. Please connect your iZettle account first.",
