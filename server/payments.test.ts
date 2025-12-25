@@ -127,7 +127,7 @@ describe("Payments Router - Stripe Checkout", () => {
     expect(result.sessionId).toMatch(/^cs_test_/);
 
     // Verify payment was created in database
-    const payment = await db.getPaymentById(result.paymentId);
+    const payment = await db.getPaymentById(result.paymentId, testTenantId);
     expect(payment).toBeDefined();
     expect(payment?.tenantId).toBe(testTenantId);
     expect(payment?.appointmentId).toBe(testAppointmentId);

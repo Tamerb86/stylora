@@ -148,7 +148,7 @@ describe("POS Refund System", () => {
 
     const { getRefundsByOrder } = await import("./db");
 
-    const refunds = await getRefundsByOrder(testOrderId);
+    const refunds = await getRefundsByOrder(testOrderId, testTenantId);
 
     expect(refunds.length).toBeGreaterThan(0);
     refunds.forEach((refund) => {
@@ -162,7 +162,7 @@ describe("POS Refund System", () => {
 
     const { getRefundsByPayment } = await import("./db");
 
-    const refunds = await getRefundsByPayment(testPaymentId);
+    const refunds = await getRefundsByPayment(testPaymentId, testTenantId);
 
     expect(refunds.length).toBeGreaterThan(0);
     refunds.forEach((refund) => {

@@ -228,7 +228,7 @@ describe("POS Split Payment System", () => {
 
     const { getSplitsByOrder } = await import("./db");
 
-    const splits = await getSplitsByOrder(testOrderId);
+    const splits = await getSplitsByOrder(testOrderId, testTenantId);
 
     expect(splits.length).toBeGreaterThan(0);
     splits.forEach((split) => {
@@ -255,7 +255,7 @@ describe("POS Split Payment System", () => {
     const paymentId = orderPayments[0].id;
     const { getSplitsByPayment } = await import("./db");
 
-    const splits = await getSplitsByPayment(paymentId);
+    const splits = await getSplitsByPayment(paymentId, testTenantId);
 
     expect(splits.length).toBeGreaterThan(0);
     splits.forEach((split) => {

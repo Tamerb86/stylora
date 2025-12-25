@@ -186,7 +186,7 @@ describe("Stripe Webhook Handler", () => {
     await handleStripeWebhook(mockReq, mockRes);
 
     // Verify payment was updated to "completed"
-    const payment = await db.getPaymentById(testPaymentId);
+    const payment = await db.getPaymentById(testPaymentId, testTenantId);
     expect(payment).toBeDefined();
     expect(payment?.status).toBe("completed");
     expect(payment?.gatewayPaymentId).toBe("pi_test_123456");

@@ -92,7 +92,7 @@ describe("Public Booking with Payment", () => {
     expect(appointment.employeeId).toBe(testEmployeeId);
 
     // Verify payment was created with status "pending"
-    const payment = await db.getPaymentById(result.paymentId);
+    const payment = await db.getPaymentById(result.paymentId, testTenantId);
     expect(payment).toBeDefined();
     expect(payment?.status).toBe("pending");
     expect(payment?.appointmentId).toBe(result.appointmentId);

@@ -1794,8 +1794,8 @@ export const appRouter = router({
 
     getById: tenantProcedure
       .input(z.object({ id: z.number() }))
-      .query(async ({ input }) => {
-        return db.getCustomerById(input.id);
+      .query(async ({ ctx, input }) => {
+        return db.getCustomerById(input.id, ctx.tenantId);
       }),
 
     create: tenantProcedure
@@ -2083,8 +2083,8 @@ export const appRouter = router({
 
     getById: tenantProcedure
       .input(z.object({ id: z.number() }))
-      .query(async ({ input }) => {
-        return db.getServiceById(input.id);
+      .query(async ({ ctx, input }) => {
+        return db.getServiceById(input.id, ctx.tenantId);
       }),
 
     create: tenantProcedure
@@ -2184,8 +2184,8 @@ export const appRouter = router({
 
     getById: tenantProcedure
       .input(z.object({ id: z.number() }))
-      .query(async ({ input }) => {
-        return db.getAppointmentById(input.id);
+      .query(async ({ ctx, input }) => {
+        return db.getAppointmentById(input.id, ctx.tenantId);
       }),
 
     getToday: tenantProcedure
@@ -2398,7 +2398,7 @@ export const appRouter = router({
 
         // Insert services
         for (const serviceId of input.serviceIds) {
-          const service = await db.getServiceById(serviceId);
+          const service = await db.getServiceById(serviceId, ctx.tenantId);
           if (service) {
             await dbInstance.insert(appointmentServices).values({
               appointmentId: Number(appointmentId),
@@ -2417,7 +2417,7 @@ export const appRouter = router({
         newDate: z.string(), // YYYY-MM-DD
         newTime: z.string(), // HH:MM
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
@@ -2425,7 +2425,7 @@ export const appRouter = router({
         const { eq } = await import("drizzle-orm");
         
         // Get existing appointment to calculate duration
-        const existing = await db.getAppointmentById(input.id);
+        const existing = await db.getAppointmentById(input.id, ctx.tenantId);
         if (!existing) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
         }
@@ -2897,8 +2897,8 @@ export const appRouter = router({
       }))
       .query(async ({ ctx, input }) => {
         const { getRefundsByOrder } = await import("./db");
-        const refunds = await getRefundsByOrder(input.orderId);
-        return refunds.filter((r) => r.tenantId === ctx.tenantId);
+        const refunds = await getRefundsByOrder(input.orderId, ctx.tenantId);
+        return refunds;
       }),
 
     // Get refunds by payment
@@ -2908,8 +2908,8 @@ export const appRouter = router({
       }))
       .query(async ({ ctx, input }) => {
         const { getRefundsByPayment } = await import("./db");
-        const refunds = await getRefundsByPayment(input.paymentId);
-        return refunds.filter((r) => r.tenantId === ctx.tenantId);
+        const refunds = await getRefundsByPayment(input.paymentId, ctx.tenantId);
+        return refunds;
       }),
 
     // Get all refunds for tenant
@@ -7681,12 +7681,12 @@ export const appRouter = router({
     getOrderDetails: tenantProcedure
       .input(z.object({ orderId: z.number().int() }))
       .query(async ({ ctx, input }) => {
-        const order = await db.getOrderById(input.orderId);
+        const order = await db.getOrderById(input.orderId, ctx.tenantId);
         if (!order) {
           throw new TRPCError({ code: "NOT_FOUND", message: "Order not found" });
         }
 
-        const items = await db.getOrderItems(input.orderId);
+        const items = await db.getOrderItems(input.orderId, ctx.tenantId);
         
         return {
           order,
