@@ -35,6 +35,10 @@
     
     <!-- Additional SEO -->
     <meta name="theme-color" content="#3b82f6" />
+    
+    <!-- Performance Optimizations -->
+    <link rel="preconnect" href="https://js.stripe.com" />
+    <link rel="dns-prefetch" href="https://js.stripe.com" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -48,8 +52,8 @@
 
   <body>
     <div id="root"></div>
-    <script src="https://js.stripe.com/terminal/v1/"></script>
     <script type="module" src="/src/main.tsx"></script>
+    <script src="https://js.stripe.com/terminal/v1/" defer></script>
   </body>
 
 </html>

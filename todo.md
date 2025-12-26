@@ -5588,3 +5588,16 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add refresh token endpoints to API
 - [x] Update client to use refresh tokens automatically
 - [x] Add tests for refresh token flow
+
+
+## Phase: Performance Optimization (PageSpeed Score 61 → 90+)
+- [x] Optimize images - resize to display dimensions (save 84 KiB)
+- [x] Add preload hints for critical CSS and fonts
+- [x] Defer non-critical JavaScript (Stripe Terminal)
+- [x] Implement code splitting to reduce main bundle size
+- [x] Add longer cache headers for static assets
+- [ ] Lazy load Stripe Terminal only when needed
+- [ ] Optimize font loading with font-display: swap
+- [ ] Add resource hints (preconnect) for external domains
+- [ ] Minify and compress CSS/JS bundles
+- [ ] Remove unused JavaScript from bundles
