@@ -2,11 +2,19 @@ import express from "express";
 import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
+import { validateEnvironmentOrExit, getEnvironmentSummary } from "./_core/validate-env";
+import { logger } from "./_core/logger";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function startServer() {
+  // Validate environment variables before starting
+  validateEnvironmentOrExit();
+  
+  // Log environment summary
+  const envSummary = getEnvironmentSummary();
+  logger.info('Starting server with configuration', envSummary);
   const app = express();
   const server = createServer(app);
 
@@ -26,8 +34,11 @@ async function startServer() {
   const port = process.env.PORT || 3000;
 
   server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}/`);
+    logger.info(`Server running on http://localhost:${port}/`);
   });
 }
 
-startServer().catch(console.error);
+startServer().catch((error) => {
+  logger.error('Failed to start server', { error });
+  process.exit(1);
+});
