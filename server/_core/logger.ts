@@ -54,30 +54,44 @@ const level = () => {
 // Create logs directory path
 const logsDir = path.join(process.cwd(), 'logs');
 
-// Define transports
-const transports = [
+// Define transports based on environment
+const transports: winston.transport[] = [
   // Console transport for all environments
   new winston.transports.Console({
     format: consoleFormat,
   }),
-  
-  // File transport for errors
-  new winston.transports.File({
-    filename: path.join(logsDir, 'error.log'),
-    level: 'error',
-    format,
-    maxsize: 5242880, // 5MB
-    maxFiles: 5,
-  }),
-  
-  // File transport for all logs
-  new winston.transports.File({
-    filename: path.join(logsDir, 'combined.log'),
-    format,
-    maxsize: 5242880, // 5MB
-    maxFiles: 5,
-  }),
 ];
+
+// Only add file transports in development or if we have write permissions
+// In production (Railway, etc.), the filesystem may be read-only
+const isDevelopment = (process.env.NODE_ENV || 'development') === 'development';
+if (isDevelopment) {
+  try {
+    // File transport for errors
+    transports.push(
+      new winston.transports.File({
+        filename: path.join(logsDir, 'error.log'),
+        level: 'error',
+        format,
+        maxsize: 5242880, // 5MB
+        maxFiles: 5,
+      })
+    );
+    
+    // File transport for all logs
+    transports.push(
+      new winston.transports.File({
+        filename: path.join(logsDir, 'combined.log'),
+        format,
+        maxsize: 5242880, // 5MB
+        maxFiles: 5,
+      })
+    );
+  } catch (error) {
+    // If file transports fail, just use console
+    console.warn('Could not initialize file logging, using console only:', error);
+  }
+}
 
 // Create the logger
 export const logger = winston.createLogger({

@@ -5601,3 +5601,9 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Add resource hints (preconnect) for external domains
 - [ ] Minify and compress CSS/JS bundles
 - [ ] Remove unused JavaScript from bundles
+
+
+## Bug Fix: Production Deployment
+- [x] Fix logger permission error in production (EACCES: permission denied, mkdir '/app/logs')
+- [x] Update logger configuration to handle read-only filesystem
+- [ ] Test deployment on production environment
