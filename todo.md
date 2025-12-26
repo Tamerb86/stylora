@@ -5580,3 +5580,11 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Create salon onboarding guide
 - [ ] Document OAuth setup for platform
 - [ ] Add troubleshooting section
+
+## Phase: Refresh Tokens System
+- [x] Design refresh token architecture and database schema
+- [x] Create database migration for refresh tokens table
+- [x] Implement refresh token generation and validation logic
+- [x] Add refresh token endpoints to API
+- [x] Update client to use refresh tokens automatically
+- [x] Add tests for refresh token flow

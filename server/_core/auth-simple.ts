@@ -4,7 +4,7 @@
  */
 
 import { SignJWT, jwtVerify } from "jose";
-import { COOKIE_NAME, THIRTY_DAYS_MS } from "@shared/const";
+import { COOKIE_NAME, THIRTY_DAYS_MS, REFRESH_TOKEN_COOKIE_NAME } from "@shared/const";
 import type { Request, Response, Express } from "express";
 import { parse as parseCookieHeader } from "cookie";
 import * as db from "../db";
@@ -219,19 +219,29 @@ export function registerAuthRoutes(app: Express) {
         return;
       }
 
-      // Create session token
+      // Create session token (30 days)
       const sessionToken = await authService.createSessionToken({
         openId: user.openId,
         appId: ENV.appId,
         name: user.name || email,
         email: user.email || undefined,
       }, {
-        expiresInMs: ONE_YEAR_MS,
+        expiresInMs: THIRTY_DAYS_MS,
       });
 
-      // Set cookie
+      // Create refresh token (90 days)
+      const { createRefreshToken } = await import("./refresh-tokens");
+      const refreshToken = await createRefreshToken(
+        user.id,
+        user.tenantId,
+        req.ip,
+        req.headers["user-agent"]
+      );
+
+      // Set cookies
       const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: THIRTY_DAYS_MS });
+      res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { ...cookieOptions, maxAge: 90 * 24 * 60 * 60 * 1000 }); // 90 days
 
       res.json({ 
         success: true,
@@ -453,9 +463,30 @@ export function registerAuthRoutes(app: Express) {
 
   // Logout endpoint
   app.post("/api/auth/logout", async (req: Request, res: Response) => {
-    const cookieOptions = getSessionCookieOptions(req);
-    res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-    res.json({ success: true });
+    try {
+      // Revoke refresh token if present
+      const cookies = parseCookieHeader(req.headers.cookie || "");
+      const refreshToken = cookies[REFRESH_TOKEN_COOKIE_NAME];
+      
+      if (refreshToken) {
+        const { revokeRefreshToken } = await import("./refresh-tokens");
+        await revokeRefreshToken(refreshToken, "User logout");
+      }
+
+      // Clear cookies
+      const cookieOptions = getSessionCookieOptions(req);
+      res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[Auth] Logout failed", error);
+      // Still clear cookies even if revocation fails
+      const cookieOptions = getSessionCookieOptions(req);
+      res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      res.json({ success: true });
+    }
   });
 
   // Get current user endpoint

@@ -57,6 +57,13 @@
       "when": 1766532438850,
       "tag": "0007_easy_malcolm_colcord",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1766737551850,
+      "tag": "0008_new_madame_hydra",
+      "breakpoints": true
     }
   ]
 }

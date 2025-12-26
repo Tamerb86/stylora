@@ -6,6 +6,7 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { rateLimit } from "express-rate-limit";
 import helmet from "helmet";
 import { registerAuthRoutes } from "./auth-simple";
+import { registerRefreshEndpoint } from "./auth-refresh-endpoint";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -247,6 +248,7 @@ async function startServer() {
               providerEmail: null,
               config: null,
               isActive: true,
+              isDefault: false,
             });
             
             console.log("[iZettle Callback] Insert result:", insertResult);
@@ -325,6 +327,8 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // Simple email/password authentication routes
   registerAuthRoutes(app);
+  // Refresh token endpoint
+  registerRefreshEndpoint(app);
   // tRPC API
   app.use(
     "/api/trpc",

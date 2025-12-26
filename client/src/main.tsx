@@ -6,6 +6,7 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
+import { fetchWithRefresh } from "./lib/refresh-interceptor";
 import "./index.css";
 import { ThermalPrinterProvider } from "@/contexts/ThermalPrinterContext";
 import { UIModeProvider } from "@/contexts/UIModeContext";
@@ -73,7 +74,8 @@ const trpcClient = trpc.createClient({
       url: "/api/trpc",
       transformer: superjson,
       fetch(input, init) {
-        return globalThis.fetch(input, {
+        // Use fetchWithRefresh to automatically handle token refresh on 401
+        return fetchWithRefresh(input as string, {
           ...(init ?? {}),
           credentials: "include",
         });

@@ -97,6 +97,30 @@ export const users = mysqlTable("users", {
 }));
 
 // ============================================================================
+// REFRESH TOKENS (for automatic session renewal)
+// ============================================================================
+
+export const refreshTokens = mysqlTable("refreshTokens", {
+  id: int("id").autoincrement().primaryKey(),
+  token: varchar("token", { length: 255 }).notNull().unique(),
+  userId: int("userId").notNull(),
+  tenantId: varchar("tenantId", { length: 36 }).notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  lastUsedAt: timestamp("lastUsedAt"),
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  userAgent: varchar("userAgent", { length: 500 }),
+  revoked: boolean("revoked").default(false).notNull(),
+  revokedAt: timestamp("revokedAt"),
+  revokedReason: varchar("revokedReason", { length: 255 }),
+}, (table) => ({
+  tokenIdx: uniqueIndex("token_idx").on(table.token),
+  userIdIdx: index("user_id_idx").on(table.userId),
+  tenantIdIdx: index("tenant_id_idx").on(table.tenantId),
+  expiresAtIdx: index("expires_at_idx").on(table.expiresAt),
+}));
+
+// ============================================================================
 // CUSTOMERS
 // ============================================================================
 

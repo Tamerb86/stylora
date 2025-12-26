@@ -10281,6 +10281,10 @@ export const appRouter = router({
             config: input.config || null,
             isActive: true,
             isDefault: input.isDefault,
+            // OAuth fields - empty for non-OAuth providers (cash, manual_card, generic)
+            accessToken: "",
+            refreshToken: "",
+            tokenExpiresAt: new Date(0), // Epoch for non-OAuth providers
           });
 
         return { success: true, providerId: provider.insertId };
