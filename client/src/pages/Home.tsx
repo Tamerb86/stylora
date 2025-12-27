@@ -250,7 +250,6 @@ export default function Home() {
         "@id": "https://stylora.no/#localbusiness",
         "name": "Stylora",
         "image": "https://stylora.no/stylora-logo.webp",
-        "@id": "https://stylora.no",
         "url": "https://stylora.no",
         "telephone": "+47-XXX-XXXXX",
         "priceRange": "299-1299 NOK/måned",

@@ -128,7 +128,7 @@ export default function Reports() {
       ? `salgsrapport_${customStartDate}_til_${customEndDate}`
       : `salgsrapport_${period}`;
     
-    exportToPDF(exportData, columns, "Salgsrapport", filename, totalRevenue);
+    exportToPDF(exportData, columns, "Salgsrapport", filename, { filters: { period } });
   };
 
   const handleExportExcel = () => {

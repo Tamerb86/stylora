@@ -19,7 +19,7 @@ export default function CustomerDetails() {
   const customerId = parseInt(params?.id || "0");
 
   const { data: customer, isLoading: customerLoading } = trpc.customers.getById.useQuery({ id: customerId });
-  const { data: appointments, isLoading: appointmentsLoading } = trpc.appointments.list.useQuery();
+  const { data: appointments, isLoading: appointmentsLoading } = trpc.appointments.list.useQuery({ tenantId: "" });
   const { data: loyaltyPoints } = trpc.loyalty.getPoints.useQuery({ customerId });
 
   // Filter appointments for this customer
@@ -232,11 +232,11 @@ export default function CustomerDetails() {
                             <Scissors className="h-4 w-4 text-muted-foreground" />
                             <span className="text-sm">{/* Service name from join */}</span>
                           </div>
-                          {/* Employee name from join */ false && (
+                                          {apt.employeeId && (
                             <div className="flex items-center gap-3">
                               <User className="h-4 w-4 text-muted-foreground" />
                               <span className="text-sm text-muted-foreground">
-                                Med {apt.employeeName}
+                                Ansatt ID: {apt.employeeId}
                               </span>
                             </div>
                           )}
@@ -254,14 +254,7 @@ export default function CustomerDetails() {
                             <CreditCard className="h-4 w-4" />
                             {/* Price from join */} NOK
                           </div>
-                          {/* Payment method from join */ false && (
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {apt.paymentMethod === "card" && "Kort"}
-                              {apt.paymentMethod === "cash" && "Kontant"}
-                              {apt.paymentMethod === "vipps" && "Vipps"}
-                              {apt.paymentMethod === "invoice" && "Faktura"}
-                            </div>
-                          )}
+
                         </div>
                       </div>
                     </div>

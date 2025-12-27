@@ -2193,7 +2193,7 @@ export const appRouter = router({
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
-        const { appointments, customers, employees, services, appointmentServices } = await import("../drizzle/schema");
+        const { appointments, customers, users, services, appointmentServices } = await import("../drizzle/schema");
         const { eq, and, gte, lt } = await import("drizzle-orm");
 
         // Get today's date range (00:00:00 to 23:59:59)
@@ -2212,13 +2212,13 @@ export const appRouter = router({
             status: appointments.status,
             notes: appointments.notes,
             customerId: appointments.customerId,
-            customerName: customers.name,
+            customerName: customers.firstName,
             employeeId: appointments.employeeId,
-            employeeName: employees.name,
+            employeeName: users.name,
           })
           .from(appointments)
           .leftJoin(customers, eq(appointments.customerId, customers.id))
-          .leftJoin(employees, eq(appointments.employeeId, employees.id))
+          .leftJoin(users, eq(appointments.employeeId, users.id))
           .where(
             and(
               eq(appointments.tenantId, ctx.tenantId),
@@ -6262,7 +6262,7 @@ export const appRouter = router({
           ORDER BY t.employeeId, weekNumber`
         );
 
-        return result[0] as Array<{
+        return result as unknown as Array<{
           employeeId: number;
           employeeName: string;
           weekNumber: number;
@@ -6301,7 +6301,7 @@ export const appRouter = router({
           ORDER BY t.employeeId, month`
         );
 
-        return result[0] as Array<{
+        return result as unknown as Array<{
           employeeId: number;
           employeeName: string;
           month: number;
@@ -6350,7 +6350,7 @@ export const appRouter = router({
           ORDER BY totalHours DESC`
         );
 
-        const employees = result[0] as Array<{
+        const employees = result as unknown as Array<{
           employeeId: number;
           employeeName: string;
           totalHours: string;
@@ -7166,10 +7166,7 @@ export const appRouter = router({
         }
 
         // Use provided linkId or default to first available
-        let linkId = input.linkId;
-        if (!linkId) {
-          linkId = readerLinks[0].linkId;
-        }
+        let linkId: string = input.linkId || readerLinks[0].linkId;
 
         // Verify linkId exists in config
         const linkExists = readerLinks.some((link: any) => link.linkId === linkId);

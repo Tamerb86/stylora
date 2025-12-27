@@ -160,7 +160,6 @@ export async function importServicesFromFile(
       const catResult = await db.insert(serviceCategories).values({
         tenantId,
         name: "Imported Services",
-        description: "Services imported from file",
       });
       categoryId = Array.isArray(catResult) ? catResult[0]?.insertId : (catResult as any).insertId;
     } else {
@@ -278,7 +277,6 @@ export async function importProductsFromFile(
       const catResult = await db.insert(productCategories).values({
         tenantId,
         name: "Imported Products",
-        description: "Products imported from file",
       });
       categoryId = Array.isArray(catResult) ? catResult[0]?.insertId : (catResult as any).insertId;
     } else {
@@ -298,13 +296,13 @@ export async function importProductsFromFile(
           tenantId,
           categoryId: categoryId!,
           name: row.name,
-          description: row.description || null,
+          description: row.description || "",
           retailPrice: String(row.price),
-          costPrice: row.costPrice ? String(row.costPrice) : null,
+          costPrice: row.costPrice ? String(row.costPrice) : "0.00",
           stockQuantity: row.stock ? Number(row.stock) : 0,
           reorderPoint: row.lowStockThreshold ? Number(row.lowStockThreshold) : 5,
-          sku: row.sku || null,
-          barcode: row.barcode || null,
+          sku: row.sku || `IMPORT-${Date.now()}-${i}`,
+          barcode: row.barcode || "",
           isActive: true,
         });
 

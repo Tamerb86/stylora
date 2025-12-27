@@ -69,12 +69,12 @@ export function exportToPDF(
   // Add employee totals if provided
   if (metadata?.totals && metadata.totals.length > 0) {
     doc.setFontSize(11);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text('Total timer per ansatt:', 14, currentY);
     currentY += 6;
     
     doc.setFontSize(9);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
     metadata.totals.forEach((total) => {
       const text = `${total.employeeName}: ${total.totalHours.toFixed(2)} timer (${total.totalShifts} skift)`;
       doc.text(text, 20, currentY);
