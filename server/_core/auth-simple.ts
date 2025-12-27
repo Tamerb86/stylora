@@ -4,7 +4,7 @@
  */
 
 import { SignJWT, jwtVerify } from "jose";
-import { COOKIE_NAME, THIRTY_DAYS_MS, REFRESH_TOKEN_COOKIE_NAME } from "@shared/const";
+import { COOKIE_NAME, THIRTY_DAYS_MS, REFRESH_TOKEN_COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import type { Request, Response, Express } from "express";
 import { parse as parseCookieHeader } from "cookie";
 import * as db from "../db";
@@ -168,6 +168,9 @@ class AuthService {
 }
 
 export const authService = new AuthService();
+
+// Export authenticateRequest for backward compatibility
+export const authenticateRequest = (req: Request) => authService.authenticateRequest(req);
 
 /**
  * Register authentication routes

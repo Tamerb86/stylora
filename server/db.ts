@@ -309,6 +309,40 @@ export async function getPaymentsByTenant(tenantId: string) {
     .where(eq(payments.tenantId, tenantId));
 }
 
+export async function updatePayment(
+  paymentId: number,
+  data: {
+    status?: "pending" | "completed" | "failed" | "refunded" | "cancelled";
+    processedAt?: Date;
+    gatewayPaymentId?: string;
+    gatewayMetadata?: string;
+    errorMessage?: string;
+    paidAt?: Date;
+  }
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not initialized");
+
+  const { payments } = await import("../drizzle/schema");
+  const { eq } = await import("drizzle-orm");
+
+  const updateData: any = {};
+  if (data.status) updateData.status = data.status;
+  if (data.processedAt) updateData.paidAt = data.processedAt;
+  if (data.paidAt) updateData.paidAt = data.paidAt;
+  if (data.gatewayPaymentId) updateData.gatewayPaymentId = data.gatewayPaymentId;
+  if (data.gatewayMetadata) updateData.gatewayMetadata = data.gatewayMetadata;
+  if (data.errorMessage) updateData.errorMessage = data.errorMessage;
+
+  const [updated] = await db
+    .update(payments)
+    .set(updateData)
+    .where(eq(payments.id, paymentId))
+    .returning();
+
+  return updated;
+}
+
 // ============================================================================
 // ORDER HELPERS (for POS)
 // ============================================================================

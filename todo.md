@@ -5648,3 +5648,62 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Set up conversion tracking
 - [ ] Monitor keyword rankings
 - [ ] Track organic traffic growth
+
+
+## Phase: Security Audit - Tenant Isolation
+- [ ] Audit JWT middleware for tenantId extraction
+- [ ] Verify tenantId only comes from JWT (not request body/query/params)
+- [ ] Check all API routes use authentication middleware
+- [ ] Audit database queries for tenant isolation
+- [ ] Create security tests for cross-tenant access prevention
+- [ ] Test: Salon A cannot access Salon B data
+- [ ] Test: JWT manipulation attempts fail
+- [ ] Document security findings and fixes
+
+
+## Phase: MVP Completion - Critical Features
+### Public Booking System
+- [ ] Create public booking page route (/book/:tenantId)
+- [ ] Service selection interface with categories
+- [ ] Employee selection (optional, show availability)
+- [ ] Date picker with available dates
+- [ ] Time slot selection based on employee schedule
+- [ ] Customer information form (name, email, phone)
+- [ ] Booking confirmation page
+- [ ] Booking success/error handling
+- [ ] Email confirmation to customer
+- [ ] Add booking to admin dashboard
+
+### Stripe Payment Integration
+- [ ] Add Stripe checkout session creation endpoint
+- [ ] Implement Stripe webhook handler
+- [ ] Payment status tracking in database
+- [ ] Refund functionality
+- [ ] Manual payment recording (cash, card terminal)
+- [ ] Payment history in admin dashboard
+
+### Notifications System
+- [ ] SMS reminder system (24h before appointment)
+- [ ] SMS reminder system (2h before appointment)
+- [ ] Email confirmation on booking
+- [ ] Email reminder system
+- [ ] Cancellation notifications
+- [ ] Configure SMS provider (Twilio/etc)
+- [ ] Configure email provider (SendGrid/etc)
+
+### Bug Fixes
+- [ ] Fix TypeScript errors in server/routers.ts (updatePayment)
+- [ ] Fix database connection ECONNRESET errors
+- [ ] Fix scheduler errors in AutoClockOut
+- [ ] Add retry logic for database queries
+
+
+## Phase: Fix TypeScript Errors (39 → 33 errors)
+- [x] Add missing updatePayment function in server/db.ts
+- [x] Add ONE_YEAR_MS import to auth-simple.ts
+- [x] Export authenticateRequest from auth-simple.ts
+- [ ] Fix type casting errors in server/routers.ts (ResultSetHeader)
+- [ ] Fix undefined type assignments in client components
+- [ ] Fix missing properties errors
+- [ ] Run tsc to verify no errors
+- [ ] Test build process
