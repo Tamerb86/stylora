@@ -329,6 +329,27 @@ async function startServer() {
   registerAuthRoutes(app);
   // Refresh token endpoint
   registerRefreshEndpoint(app);
+  // SEO routes - sitemap and robots.txt
+  app.get("/sitemap.xml", async (req, res) => {
+    try {
+      const { generateSitemap } = await import("../sitemap");
+      const sitemap = generateSitemap();
+      res.header("Content-Type", "application/xml");
+      res.send(sitemap);
+    } catch (error) {
+      res.status(500).send("Error generating sitemap");
+    }
+  });
+  
+  app.get("/robots.txt", (req, res) => {
+    const robotsTxt = `User-agent: *
+Allow: /
+
+Sitemap: https://www.stylora.no/sitemap.xml`;
+    res.header("Content-Type", "text/plain");
+    res.send(robotsTxt);
+  });
+  
   // tRPC API
   app.use(
     "/api/trpc",

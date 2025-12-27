@@ -246,6 +246,41 @@ export default function Home() {
         }
       },
       {
+        "@type": "LocalBusiness",
+        "@id": "https://stylora.no/#localbusiness",
+        "name": "Stylora",
+        "image": "https://stylora.no/stylora-logo.webp",
+        "@id": "https://stylora.no",
+        "url": "https://stylora.no",
+        "telephone": "+47-XXX-XXXXX",
+        "priceRange": "299-1299 NOK/måned",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "NO"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 59.9139,
+          "longitude": 10.7522
+        },
+        "openingHoursSpecification": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+          ],
+          "opens": "09:00",
+          "closes": "17:00"
+        },
+        "sameAs": [
+          "https://www.facebook.com/stylora",
+          "https://www.instagram.com/stylora"
+        ]
+      },
+      {
         "@type": "WebSite",
         "@id": "https://stylora.no/#website",
         "url": "https://stylora.no",
@@ -271,7 +306,7 @@ export default function Home() {
       <nav className="border-b bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 shadow-sm">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/stylora-logo.webp" alt="Stylora Logo" className="h-10 w-10" loading="lazy" />
+            <img src="/stylora-logo.webp" alt="Stylora - Bookingsystem for Frisørsalonger og Barbershops" className="h-10 w-10" loading="lazy" />
             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
               Stylora
             </span>
@@ -684,7 +719,7 @@ export default function Home() {
                   <img 
                     src="/screenshot-calendar.webp"
                     loading="lazy" 
-                    alt="Stylora Calendar Interface" 
+                    alt="Smart Timebok og Kalender for Frisørsalonger - Stylora Bookingsystem" 
                     className="relative rounded-xl shadow-2xl border-2 border-border"
                   />
                 </div>
@@ -698,7 +733,7 @@ export default function Home() {
                 <img 
                   src="/screenshot-booking.webp"
                   loading="lazy" 
-                  alt="Stylora Online Booking" 
+                  alt="Online Booking og Timebestilling 24/7 - Stylora" 
                   className="relative rounded-xl shadow-2xl border-2 border-border"
                 />
               </div>
@@ -760,7 +795,7 @@ export default function Home() {
                   <img 
                     src="/screenshot-customers.webp"
                     loading="lazy" 
-                    alt="Stylora Customer Management" 
+                    alt="Kundeadministrasjon og CRM for Salonger - Stylora" 
                     className="relative rounded-xl shadow-2xl border-2 border-border"
                   />
                 </div>
@@ -774,7 +809,7 @@ export default function Home() {
                 <img 
                   src="/screenshot-analytics.webp"
                   loading="lazy" 
-                  alt="Stylora Analytics Dashboard" 
+                  alt="Avansert Rapportering og Analyse for Frisørsalonger - Stylora" 
                   className="relative rounded-xl shadow-2xl border-2 border-border"
                 />
               </div>
