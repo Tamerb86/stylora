@@ -184,6 +184,74 @@ export function renderBookingConfirmationEmail(params: {
  * 
  * Sent when an appointment is canceled (by staff or system)
  */
+export function renderBookingRescheduleEmail(params: {
+  salonName: string;
+  customerName: string;
+  oldDate: string;
+  oldTime: string;
+  newDate: string;
+  newTime: string;
+  services: string[];
+}) {
+  const servicesList = params.services.join(", ");
+
+  const subject = `Tidspunkt endret - ${params.salonName}`;
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
+        .container { background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #4F46E5; }
+        .header h1 { color: #4F46E5; margin: 0; font-size: 28px; }
+        .content { margin-bottom: 30px; }
+        .info-box { background-color: #FEF3C7; border-left: 4px solid #F59E0B; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .old-time { text-decoration: line-through; color: #999; }
+        .new-time { color: #059669; font-weight: bold; font-size: 18px; }
+        .details { background-color: #F3F4F6; padding: 20px; border-radius: 6px; margin: 20px 0; }
+        .details p { margin: 10px 0; }
+        .details strong { color: #4F46E5; }
+        .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #E5E7EB; color: #6B7280; font-size: 14px; }
+        .button { display: inline-block; background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: bold; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>📅 Tidspunkt endret</h1>
+        </div>
+        <div class="content">
+          <p>Hei ${params.customerName},</p>
+          <p>Din booking hos <strong>${params.salonName}</strong> har blitt flyttet til et nytt tidspunkt.</p>
+          
+          <div class="info-box">
+            <p><strong>⚠️ Viktig:</strong> Tidspunktet for din avtale er endret.</p>
+          </div>
+
+          <div class="details">
+            <p><strong>Tjeneste:</strong> ${servicesList}</p>
+            <p class="old-time"><strong>Gammelt tidspunkt:</strong> ${params.oldDate} kl. ${params.oldTime}</p>
+            <p class="new-time"><strong>Nytt tidspunkt:</strong> ${params.newDate} kl. ${params.newTime}</p>
+          </div>
+
+          <p>Hvis dette ikke stemmer eller du har spørsmål, vennligst kontakt oss så snart som mulig.</p>
+          <p>Vi gleder oss til å se deg!</p>
+        </div>
+        <div class="footer">
+          <p><strong>${params.salonName}</strong></p>
+          <p>Dette er en automatisk e-post. Vennligst ikke svar på denne meldingen.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return { subject, html };
+}
+
 export function renderBookingCancellationEmail(params: {
   salonName: string;
   customerName: string;

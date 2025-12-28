@@ -13352,6 +13352,137 @@ export const appRouter = router({
         };
       }),
 
+    // Get available time slots for rescheduling
+    getAvailableTimeSlots: protectedProcedure
+      .input(z.object({
+        tenantId: z.string(),
+        appointmentId: z.number(),
+        date: z.string(), // YYYY-MM-DD format
+      }))
+      .query(async ({ input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) return [];
+
+        const { appointments, services, appointmentServices, employeeSchedules } = await import("../drizzle/schema");
+        const { eq, and, or } = await import("drizzle-orm");
+
+        // Get appointment details
+        const [appointment] = await dbInstance
+          .select()
+          .from(appointments)
+          .where(
+            and(
+              eq(appointments.id, input.appointmentId),
+              eq(appointments.tenantId, input.tenantId)
+            )
+          )
+          .limit(1);
+
+        if (!appointment) return [];
+
+        // Get service duration
+        const [aptService] = await dbInstance
+          .select({ serviceId: appointmentServices.serviceId })
+          .from(appointmentServices)
+          .where(eq(appointmentServices.appointmentId, input.appointmentId))
+          .limit(1);
+
+        if (!aptService) return [];
+
+        const [service] = await dbInstance
+          .select({ durationMinutes: services.durationMinutes })
+          .from(services)
+          .where(eq(services.id, aptService.serviceId))
+          .limit(1);
+
+        if (!service) return [];
+
+        // Get employee schedule for the selected date
+        const selectedDate = new Date(input.date);
+        const dayOfWeek = selectedDate.getDay();
+
+        if (!appointment.employeeId) return [];
+
+        const [schedule] = await dbInstance
+          .select()
+          .from(employeeSchedules)
+          .where(
+            and(
+              eq(employeeSchedules.employeeId, appointment.employeeId),
+              eq(employeeSchedules.dayOfWeek, dayOfWeek)
+            )
+          )
+          .limit(1);
+
+        if (!schedule || !schedule.isActive) return [];
+
+        // Parse working hours
+        const startHour = parseInt(schedule.startTime.split(":")[0]);
+        const startMinute = parseInt(schedule.startTime.split(":")[1]);
+        const endHour = parseInt(schedule.endTime.split(":")[0]);
+        const endMinute = parseInt(schedule.endTime.split(":")[1]);
+
+        const workStartMinutes = startHour * 60 + startMinute;
+        const workEndMinutes = endHour * 60 + endMinute;
+
+        // Get existing appointments for this employee on this date
+        const existingAppointments = await dbInstance
+          .select()
+          .from(appointments)
+          .where(
+            and(
+              eq(appointments.tenantId, input.tenantId),
+              eq(appointments.employeeId, appointment.employeeId),
+              eq(appointments.appointmentDate, selectedDate),
+              or(
+                eq(appointments.status, "pending"),
+                eq(appointments.status, "confirmed")
+              )
+            )
+          );
+
+        // Generate time slots (every 30 minutes)
+        const slots: string[] = [];
+        const slotInterval = 30; // minutes
+
+        for (let minutes = workStartMinutes; minutes + service.durationMinutes <= workEndMinutes; minutes += slotInterval) {
+          const hour = Math.floor(minutes / 60);
+          const minute = minutes % 60;
+          const timeStr = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+
+          // Check if this slot conflicts with existing appointments (excluding current appointment)
+          const slotEndMinutes = minutes + service.durationMinutes;
+          let isAvailable = true;
+
+          for (const apt of existingAppointments) {
+            if (apt.id === input.appointmentId) continue; // Skip current appointment
+
+            const aptStartTime = apt.startTime ? apt.startTime.toString() : "00:00:00";
+            const aptEndTime = apt.endTime ? apt.endTime.toString() : "23:59:59";
+            const [aptStartH, aptStartM] = aptStartTime.split(":").map(Number);
+            const [aptEndH, aptEndM] = aptEndTime.split(":").map(Number);
+            const aptStartMinutes = aptStartH * 60 + aptStartM;
+            const aptEndMinutes = aptEndH * 60 + aptEndM;
+
+            // Check for overlap
+            if (
+              (minutes >= aptStartMinutes && minutes < aptEndMinutes) ||
+              (slotEndMinutes > aptStartMinutes && slotEndMinutes <= aptEndMinutes) ||
+              (minutes <= aptStartMinutes && slotEndMinutes >= aptEndMinutes)
+            ) {
+              isAvailable = false;
+              break;
+            }
+          }
+
+          if (isAvailable) {
+            slots.push(timeStr);
+          }
+        }
+
+        return slots;
+      }),
+
     // Reschedule a booking by the authenticated user
     reschedule: protectedProcedure
       .input(z.object({
@@ -13554,16 +13685,36 @@ export const appRouter = router({
           })
           .where(eq(appointments.id, input.appointmentId));
 
-        // TODO: Send reschedule notification
-        // const { sendAppointmentRescheduleIfPossible } = await import("./notifications-appointments");
-        // sendAppointmentRescheduleIfPossible(
-        //   input.appointmentId,
-        //   input.tenantId,
-        //   oldAppointmentDateTime.toISOString(),
-        //   newAppointmentDateTime.toISOString()
-        // ).catch((err: any) => {
-        //   console.error("[MyBookings] Failed to send reschedule email:", err);
-        // });
+        // Send reschedule notification
+        const { sendAppointmentRescheduleIfPossible } = await import("./notifications-appointments");
+        sendAppointmentRescheduleIfPossible(
+          input.appointmentId,
+          input.tenantId,
+          oldAppointmentDateTime.toISOString(),
+          newAppointmentDateTime.toISOString()
+        ).catch((err: any) => {
+          console.error("[MyBookings] Failed to send reschedule email:", err);
+        });
+
+        // Log appointment history
+        const { appointmentHistory } = await import("../drizzle/schema");
+        await dbInstance.insert(appointmentHistory).values({
+          tenantId: input.tenantId,
+          appointmentId: input.appointmentId,
+          changeType: "rescheduled",
+          fieldName: "appointmentDate,startTime",
+          oldValue: JSON.stringify({
+            date: oldAppointmentDateTime.toISOString().split('T')[0],
+            time: String(appointment.startTime).slice(0, 5),
+          }),
+          newValue: JSON.stringify({
+            date: input.newDate,
+            time: input.newTime,
+          }),
+          changedBy: "customer",
+          changedByEmail: ctx.user.email || undefined,
+          notes: "Rescheduled via My Bookings page",
+        });
 
         return {
           success: true,

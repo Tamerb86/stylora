@@ -1300,3 +1300,38 @@ export const dataImports = mysqlTable("dataImports", {
 
 export type DataImport = typeof dataImports.$inferSelect;
 export type InsertDataImport = typeof dataImports.$inferInsert;
+
+// ============================================================================
+// APPOINTMENT HISTORY
+// ============================================================================
+
+export const appointmentHistory = mysqlTable("appointmentHistory", {
+  id: int("id").autoincrement().primaryKey(),
+  tenantId: varchar("tenantId", { length: 36 }).notNull(),
+  appointmentId: int("appointmentId").notNull(),
+  changeType: mysqlEnum("changeType", [
+    "created",
+    "rescheduled",
+    "status_changed",
+    "service_changed",
+    "employee_changed",
+    "canceled",
+    "notes_updated"
+  ]).notNull(),
+  fieldName: varchar("fieldName", { length: 100 }), // e.g., "appointmentDate", "startTime", "status"
+  oldValue: text("oldValue"), // JSON or string representation of old value
+  newValue: text("newValue"), // JSON or string representation of new value
+  changedBy: mysqlEnum("changedBy", ["customer", "staff", "system"]).notNull(),
+  changedByUserId: int("changedByUserId"), // User ID if changed by staff
+  changedByEmail: varchar("changedByEmail", { length: 320 }), // Email if changed by customer
+  notes: text("notes"), // Optional notes about the change
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  appointmentIdx: index("appointment_idx").on(table.appointmentId),
+  tenantIdx: index("tenant_idx").on(table.tenantId),
+  changeTypeIdx: index("change_type_idx").on(table.changeType),
+  createdAtIdx: index("created_at_idx").on(table.createdAt),
+}));
+
+export type AppointmentHistory = typeof appointmentHistory.$inferSelect;
+export type InsertAppointmentHistory = typeof appointmentHistory.$inferInsert;

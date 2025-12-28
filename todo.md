@@ -5781,3 +5781,19 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Testing: Test reschedule restrictions (too close to appointment)
 - [x] Testing: Test reschedule with unavailable time slots
 - [ ] Testing: Verify email notifications are sent (pending notification implementation)
+
+## Phase: Reschedule Enhancements
+- [x] Database: Create appointment_history table for tracking modifications
+- [x] Database: Add fields (appointmentId, changeType, oldValue, newValue, changedBy, changedAt)
+- [x] Database: Run migration to create table
+- [x] Backend: Create helper function to log appointment changes
+- [x] Backend: Implement sendAppointmentRescheduleIfPossible email notification
+- [x] Backend: Update reschedule endpoint to log changes to history
+- [x] Backend: Add getAvailableTimeSlots endpoint for specific date/employee/service
+- [x] Frontend: Replace manual time input with time slot picker
+- [x] Frontend: Fetch and display available time slots when date is selected
+- [x] Frontend: Show loading state while fetching time slots
+- [x] Frontend: Display "no available slots" message when appropriate
+- [x] Testing: Test appointment history logging
+- [x] Testing: Test email notifications for reschedule
+- [x] Testing: Test available time slots display

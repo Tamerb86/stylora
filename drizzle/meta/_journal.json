@@ -64,6 +64,13 @@
       "when": 1766737551850,
       "tag": "0008_new_madame_hydra",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1766882867538,
+      "tag": "0009_nifty_stingray",
+      "breakpoints": true
     }
   ]
 }

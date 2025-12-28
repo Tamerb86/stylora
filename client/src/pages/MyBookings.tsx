@@ -29,6 +29,7 @@ export default function MyBookings() {
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
   const [newDate, setNewDate] = useState("");
   const [newTime, setNewTime] = useState("");
+  const [selectedBookingForReschedule, setSelectedBookingForReschedule] = useState<any>(null);
 
   // Get tenant ID from URL or context (for now, hardcoded - should come from context)
   const tenantId = new URLSearchParams(window.location.search).get("tenantId") || "demo-tenant-barbertime";
@@ -65,6 +66,7 @@ export default function MyBookings() {
       refetch();
       setRescheduleDialogOpen(false);
       setSelectedBooking(null);
+      setSelectedBookingForReschedule(null);
       setNewDate("");
       setNewTime("");
     },
@@ -72,6 +74,18 @@ export default function MyBookings() {
       toast.error(error.message || "Failed to reschedule booking");
     },
   });
+
+  // Fetch available time slots when date changes
+  const { data: availableSlots = [], isLoading: slotsLoading } = trpc.myBookings.getAvailableTimeSlots.useQuery(
+    {
+      tenantId,
+      appointmentId: selectedBooking || 0,
+      date: newDate,
+    },
+    {
+      enabled: !!selectedBooking && !!newDate,
+    }
+  );
 
   const handleCancelClick = (bookingId: number) => {
     setSelectedBooking(bookingId);
@@ -90,6 +104,7 @@ export default function MyBookings() {
 
   const handleRescheduleClick = (booking: any) => {
     setSelectedBooking(booking.id);
+    setSelectedBookingForReschedule(booking);
     // Pre-fill with current date/time
     const currentDate = new Date(booking.appointmentDate);
     setNewDate(currentDate.toISOString().split('T')[0]);
@@ -373,12 +388,31 @@ export default function MyBookings() {
 
             <div className="space-y-2">
               <Label htmlFor="new-time">Ny tid</Label>
-              <Input
-                id="new-time"
-                type="time"
-                value={newTime}
-                onChange={(e) => setNewTime(e.target.value)}
-              />
+              {slotsLoading ? (
+                <div className="text-sm text-gray-500 py-2">Laster ledige tider...</div>
+              ) : availableSlots.length > 0 ? (
+                <select
+                  id="new-time"
+                  value={newTime}
+                  onChange={(e) => setNewTime(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Velg et tidspunkt</option>
+                  {availableSlots.map((slot) => (
+                    <option key={slot} value={slot}>
+                      {slot}
+                    </option>
+                  ))}
+                </select>
+              ) : newDate ? (
+                <div className="text-sm text-red-600 py-2">
+                  Ingen ledige tider tilgjengelig for denne datoen.
+                </div>
+              ) : (
+                <div className="text-sm text-gray-500 py-2">
+                  Velg en dato først for å se ledige tider.
+                </div>
+              )}
             </div>
 
             {policy && (
