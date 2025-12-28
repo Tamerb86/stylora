@@ -81,6 +81,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Onboarding from "./pages/Onboarding";
+import Gallery from "./pages/Gallery";
 
 function Router() {
   return (
@@ -101,6 +102,7 @@ function Router() {
       <Route path="/case-study" component={CaseStudy} />
       <Route path="/about" component={AboutUs} />
       <Route path="/testimonials" component={Testimonials} />
+      <Route path="/gallery" component={Gallery} />
       <Route path="/contact" component={Contact} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />

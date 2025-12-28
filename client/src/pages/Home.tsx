@@ -325,6 +325,9 @@ export default function Home() {
               <Link to="/about">Om oss</Link>
             </Button>
             <Button variant="ghost" asChild className="hidden md:inline-flex">
+              <Link to="/gallery">Galleri</Link>
+            </Button>
+            <Button variant="ghost" asChild className="hidden md:inline-flex">
               <Link to="/testimonials">Kundehistorier</Link>
             </Button>
             {user && (
@@ -410,6 +413,13 @@ export default function Home() {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Om oss
+              </Link>
+              <Link 
+                to="/gallery" 
+                className="block py-3 px-4 text-lg font-medium hover:bg-accent rounded-lg transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Galleri
               </Link>
               <Link 
                 to="/testimonials" 
