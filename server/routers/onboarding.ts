@@ -40,16 +40,27 @@ const onboardingSchema = z.object({
   }),
   employees: z.array(
     z.object({
+      id: z.string(),
       name: z.string(),
-      email: z.string().email().optional(),
+      email: z.string(),
       phone: z.string().optional(),
+      role: z.enum(["employee", "manager", "admin"]),
+      permissions: z.object({
+        viewAppointments: z.boolean(),
+        manageCustomers: z.boolean(),
+        accessReports: z.boolean(),
+      }),
     })
   ).optional(),
   services: z.array(
     z.object({
+      id: z.string(),
       name: z.string(),
+      category: z.string(),
       duration: z.number(),
       price: z.number(),
+      description: z.string().optional(),
+      color: z.string(),
     })
   ).optional(),
   paymentSettings: z.object({
@@ -199,9 +210,14 @@ export const onboardingRouter = router({
             name: emp.name,
             email: emp.email || null,
             phone: emp.phone || null,
-            role: "employee",
+            role: emp.role || "employee",
             pin,
             qrCode: qrCodeUrl,
+            permissions: JSON.stringify(emp.permissions || {
+              viewAppointments: true,
+              manageCustomers: false,
+              accessReports: false,
+            }),
             isActive: true,
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -209,20 +225,30 @@ export const onboardingRouter = router({
         }
       }
 
-      // 7. Create default service category
-      const categoryId = nanoid();
-      await db.insert(serviceCategories).values({
-        id: categoryId,
-        tenantId,
-        name: "خدمات عامة",
-        displayOrder: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      // 8. Create initial services (if provided)
+      // 7. Create service categories and services
+      const categoryMap = new Map<string, string>();
+      
       if (initialServices && initialServices.length > 0) {
+        // Extract unique categories from services
+        const uniqueCategories = [...new Set(initialServices.map(s => s.category))];
+        
+        // Create categories
+        for (let i = 0; i < uniqueCategories.length; i++) {
+          const catId = nanoid();
+          await db.insert(serviceCategories).values({
+            id: catId,
+            tenantId,
+            name: uniqueCategories[i],
+            displayOrder: i + 1,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+          categoryMap.set(uniqueCategories[i], catId);
+        }
+        
+        // Create services
         for (const svc of initialServices) {
+          const categoryId = categoryMap.get(svc.category)!;
           await db.insert(services).values({
             id: nanoid(),
             tenantId,
@@ -230,12 +256,24 @@ export const onboardingRouter = router({
             name: svc.name,
             duration: svc.duration,
             price: svc.price,
+            description: svc.description || null,
+            color: svc.color || "#667eea",
             isActive: true,
             createdAt: new Date(),
             updatedAt: new Date(),
           });
         }
       } else {
+        // Create default category
+        const categoryId = nanoid();
+        await db.insert(serviceCategories).values({
+          id: categoryId,
+          tenantId,
+          name: "خدمات عامة",
+          displayOrder: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
         // Create default services
         const defaultServices = [
           { name: "قص شعر رجالي", duration: 30, price: 250 },
@@ -258,7 +296,31 @@ export const onboardingRouter = router({
         }
       }
 
-      // 9. Send welcome email
+      // 9. Store payment settings (if provided)
+      if (paymentSettings) {
+        if (paymentSettings.stripeEnabled) {
+          await db.insert(settings).values({
+            id: nanoid(),
+            tenantId,
+            key: "stripe_enabled",
+            value: "true",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }
+        if (paymentSettings.vippsEnabled) {
+          await db.insert(settings).values({
+            id: nanoid(),
+            tenantId,
+            key: "vipps_enabled",
+            value: "true",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }
+      }
+
+      // 10. Send welcome email
       try {
         await sendWelcomeEmail({
           salonName: salonInfo.salonName,

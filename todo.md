@@ -6066,3 +6066,83 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Add onboarding reminder emails
 - [ ] Create demo data generator for testing
 - [ ] Test email delivery with real SMTP
+
+## Phase: Complete Onboarding Wizard Steps 4-7
+### Step 4: Employee Management
+- [ ] Create employee input form with add/remove functionality
+- [ ] Add role selection (employee, manager, admin)
+- [ ] Add permission checkboxes (view appointments, manage customers, access reports)
+- [ ] Validate employee email uniqueness
+- [ ] Display employee list with edit/delete options
+- [ ] Generate 4-digit PIN for each employee
+- [ ] Support minimum 1 employee, maximum 10 employees
+
+### Step 5: Service Creation
+- [ ] Create service category input
+- [ ] Create service input form (name, duration, price, description)
+- [ ] Add multiple services with add/remove functionality
+- [ ] Assign services to categories
+- [ ] Set default service (most popular)
+- [ ] Display service list with edit/delete options
+- [ ] Support minimum 1 service, maximum 20 services
+- [ ] Add service color picker for calendar display
+
+### Step 6: Payment Integration
+- [ ] Add Stripe Connect toggle
+- [ ] Add Vipps toggle
+- [ ] Display payment provider logos
+- [ ] Show "Configure later" option
+- [ ] Add payment provider info cards
+- [ ] Validate payment settings (optional step)
+
+### Step 7: Final Review
+- [ ] Display salon information summary
+- [ ] Display owner account summary
+- [ ] Display business hours summary
+- [ ] Display employees list (count + names)
+- [ ] Display services list (count + names)
+- [ ] Display payment providers status
+- [ ] Add "Edit" buttons for each section
+- [ ] Add terms & conditions checkbox
+- [ ] Add "Complete Registration" button
+- [ ] Show loading state during submission
+
+## Phase: Complete Onboarding Wizard Steps 4-7 - COMPLETED
+### Step 4: Employee Management ✅
+- [x] Create employee input form with add/remove functionality
+- [x] Add role selection (employee, manager, admin)
+- [x] Add permission checkboxes (view appointments, manage customers, access reports)
+- [x] Validate employee email uniqueness
+- [x] Display employee list with edit/delete options
+- [x] Generate 4-digit PIN for each employee
+- [x] Support minimum 1 employee, maximum 10 employees
+
+### Step 5: Service Creation ✅
+- [x] Create service category input
+- [x] Create service input form (name, duration, price, description)
+- [x] Add multiple services with add/remove functionality
+- [x] Assign services to categories
+- [x] Set default service (most popular)
+- [x] Display service list with edit/delete options
+- [x] Support minimum 1 service, maximum 20 services
+- [x] Add service color picker for calendar display
+
+### Step 6: Payment Integration ✅
+- [x] Add Stripe Connect toggle
+- [x] Add Vipps toggle
+- [x] Display payment provider logos
+- [x] Show "Configure later" option
+- [x] Add payment provider info cards
+- [x] Validate payment settings (optional step)
+
+### Step 7: Final Review ✅
+- [x] Display salon information summary
+- [x] Display owner account summary
+- [x] Display business hours summary
+- [x] Display employees list (count + names)
+- [x] Display services list (count + names)
+- [x] Display payment providers status
+- [x] Add "Edit" buttons for each section
+- [x] Add terms & conditions checkbox
+- [x] Add "Complete Registration" button
+- [x] Show loading state during submission
