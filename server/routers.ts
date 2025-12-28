@@ -13351,6 +13351,227 @@ export const appRouter = router({
           requirePrepayment: tenant?.requirePrepayment ?? false,
         };
       }),
+
+    // Reschedule a booking by the authenticated user
+    reschedule: protectedProcedure
+      .input(z.object({
+        tenantId: z.string(),
+        appointmentId: z.number(),
+        newDate: z.string(), // YYYY-MM-DD format
+        newTime: z.string(), // HH:MM format
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+        const { appointments, customers, tenants, services, appointmentServices, employeeSchedules } = await import("../drizzle/schema");
+        const { eq, and, gte, lte, or } = await import("drizzle-orm");
+
+        // Find customer by user email
+        const userEmail = ctx.user.email;
+        if (!userEmail) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "User email not found" });
+        }
+
+        const [customer] = await dbInstance
+          .select()
+          .from(customers)
+          .where(
+            and(
+              eq(customers.tenantId, input.tenantId),
+              eq(customers.email, userEmail)
+            )
+          )
+          .limit(1);
+
+        if (!customer) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Customer not found" });
+        }
+
+        // Get appointment
+        const [appointment] = await dbInstance
+          .select()
+          .from(appointments)
+          .where(
+            and(
+              eq(appointments.id, input.appointmentId),
+              eq(appointments.tenantId, input.tenantId),
+              eq(appointments.customerId, customer.id)
+            )
+          )
+          .limit(1);
+
+        if (!appointment) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
+        }
+
+        // Check if already canceled or completed
+        if (appointment.status === "canceled") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot reschedule a canceled appointment" });
+        }
+        if (appointment.status === "completed") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot reschedule a completed appointment" });
+        }
+
+        // Get tenant reschedule policy (use same window as cancellation)
+        const [tenant] = await dbInstance
+          .select()
+          .from(tenants)
+          .where(eq(tenants.id, input.tenantId))
+          .limit(1);
+
+        const rescheduleWindowHours = tenant?.cancellationWindowHours ?? 24;
+
+        // Check if within reschedule window
+        const oldAppointmentDateTime = new Date(appointment.appointmentDate);
+        const [oldHours, oldMinutes] = String(appointment.startTime).split(":").map(Number);
+        oldAppointmentDateTime.setHours(oldHours, oldMinutes, 0, 0);
+
+        const rescheduleDeadline = new Date(oldAppointmentDateTime);
+        rescheduleDeadline.setHours(rescheduleDeadline.getHours() - rescheduleWindowHours);
+
+        const now = new Date();
+        if (now > rescheduleDeadline) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Cannot reschedule within ${rescheduleWindowHours} hours of appointment time. Please contact the salon directly.`,
+          });
+        }
+
+        // Validate new date/time is in the future
+        const newAppointmentDateTime = new Date(`${input.newDate}T${input.newTime}:00`);
+        if (newAppointmentDateTime <= now) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "New appointment time must be in the future" });
+        }
+
+        // Get service duration to calculate end time
+        const [aptService] = await dbInstance
+          .select({
+            serviceId: appointmentServices.serviceId,
+          })
+          .from(appointmentServices)
+          .where(eq(appointmentServices.appointmentId, input.appointmentId))
+          .limit(1);
+
+        if (!aptService) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Service not found for appointment" });
+        }
+
+        const [service] = await dbInstance
+          .select({
+            durationMinutes: services.durationMinutes,
+          })
+          .from(services)
+          .where(eq(services.id, aptService.serviceId))
+          .limit(1);
+
+        if (!service) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Service details not found" });
+        }
+
+        // Calculate new end time
+        const [newHours, newMinutes] = input.newTime.split(":").map(Number);
+        const startMinutes = newHours * 60 + newMinutes;
+        const endMinutes = startMinutes + service.durationMinutes;
+        const endHour = Math.floor(endMinutes / 60);
+        const endMinute = endMinutes % 60;
+        const newEndTime = `${endHour.toString().padStart(2, "0")}:${endMinute.toString().padStart(2, "0")}:00`;
+
+        // Check if employee is available at new time
+        if (appointment.employeeId) {
+          // Check employee schedule
+          const dayOfWeek = newAppointmentDateTime.getDay();
+          const [schedule] = await dbInstance
+            .select()
+            .from(employeeSchedules)
+            .where(
+              and(
+                eq(employeeSchedules.employeeId, appointment.employeeId),
+                eq(employeeSchedules.dayOfWeek, dayOfWeek)
+              )
+            )
+            .limit(1);
+
+          if (!schedule || !schedule.isActive) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Employee is not available on this day" });
+          }
+
+          // Check if time is within employee's working hours
+          const requestedStartMinutes = newHours * 60 + newMinutes;
+          const scheduleStartMinutes = schedule.startTime ? parseInt(schedule.startTime.split(":")[0]) * 60 + parseInt(schedule.startTime.split(":")[1]) : 0;
+          const scheduleEndMinutes = schedule.endTime ? parseInt(schedule.endTime.split(":")[0]) * 60 + parseInt(schedule.endTime.split(":")[1]) : 1440;
+
+          if (requestedStartMinutes < scheduleStartMinutes || endMinutes > scheduleEndMinutes) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Requested time is outside employee's working hours" });
+          }
+
+          // Check for conflicting appointments
+          const conflictingAppointments = await dbInstance
+            .select()
+            .from(appointments)
+            .where(
+              and(
+                eq(appointments.tenantId, input.tenantId),
+                eq(appointments.employeeId, appointment.employeeId),
+                eq(appointments.appointmentDate, new Date(input.newDate)),
+                or(
+                  eq(appointments.status, "pending"),
+                  eq(appointments.status, "confirmed")
+                )
+              )
+            );
+
+          // Check for time overlap (excluding current appointment)
+          for (const conflict of conflictingAppointments) {
+            if (conflict.id === input.appointmentId) continue; // Skip current appointment
+
+            const conflictStart = conflict.startTime ? conflict.startTime.toString() : "00:00:00";
+            const conflictEnd = conflict.endTime ? conflict.endTime.toString() : "23:59:59";
+            const [cStartH, cStartM] = conflictStart.split(":").map(Number);
+            const [cEndH, cEndM] = conflictEnd.split(":").map(Number);
+            const conflictStartMinutes = cStartH * 60 + cStartM;
+            const conflictEndMinutes = cEndH * 60 + cEndM;
+
+            // Check if times overlap
+            if (
+              (requestedStartMinutes >= conflictStartMinutes && requestedStartMinutes < conflictEndMinutes) ||
+              (endMinutes > conflictStartMinutes && endMinutes <= conflictEndMinutes) ||
+              (requestedStartMinutes <= conflictStartMinutes && endMinutes >= conflictEndMinutes)
+            ) {
+              throw new TRPCError({ code: "BAD_REQUEST", message: "This time slot is already booked" });
+            }
+          }
+        }
+
+        // Update appointment
+        await dbInstance
+          .update(appointments)
+          .set({
+            appointmentDate: new Date(input.newDate),
+            startTime: input.newTime,
+            endTime: newEndTime,
+            updatedAt: now,
+          })
+          .where(eq(appointments.id, input.appointmentId));
+
+        // TODO: Send reschedule notification
+        // const { sendAppointmentRescheduleIfPossible } = await import("./notifications-appointments");
+        // sendAppointmentRescheduleIfPossible(
+        //   input.appointmentId,
+        //   input.tenantId,
+        //   oldAppointmentDateTime.toISOString(),
+        //   newAppointmentDateTime.toISOString()
+        // ).catch((err: any) => {
+        //   console.error("[MyBookings] Failed to send reschedule email:", err);
+        // });
+
+        return {
+          success: true,
+          message: "Booking rescheduled successfully",
+          newDate: input.newDate,
+          newTime: input.newTime,
+        };
+      }),
   }),
 
 });

@@ -14,7 +14,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Calendar, Clock, User, Scissors, XCircle, CheckCircle, AlertCircle, Info } from "lucide-react";
+import { Calendar, Clock, User, Scissors, XCircle, CheckCircle, AlertCircle, Info, CalendarClock } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
@@ -23,6 +26,9 @@ export default function MyBookings() {
   const [selectedTab, setSelectedTab] = useState<"upcoming" | "past" | "canceled" | "all">("upcoming");
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<number | null>(null);
+  const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
+  const [newDate, setNewDate] = useState("");
+  const [newTime, setNewTime] = useState("");
 
   // Get tenant ID from URL or context (for now, hardcoded - should come from context)
   const tenantId = new URLSearchParams(window.location.search).get("tenantId") || "demo-tenant-barbertime";
@@ -52,6 +58,21 @@ export default function MyBookings() {
     },
   });
 
+  // Reschedule booking mutation
+  const rescheduleMutation = trpc.myBookings.reschedule.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      refetch();
+      setRescheduleDialogOpen(false);
+      setSelectedBooking(null);
+      setNewDate("");
+      setNewTime("");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to reschedule booking");
+    },
+  });
+
   const handleCancelClick = (bookingId: number) => {
     setSelectedBooking(bookingId);
     setCancelDialogOpen(true);
@@ -64,6 +85,35 @@ export default function MyBookings() {
         appointmentId: selectedBooking,
         reason: "Canceled by customer via My Bookings page",
       });
+    }
+  };
+
+  const handleRescheduleClick = (booking: any) => {
+    setSelectedBooking(booking.id);
+    // Pre-fill with current date/time
+    const currentDate = new Date(booking.appointmentDate);
+    setNewDate(currentDate.toISOString().split('T')[0]);
+    setNewTime(booking.startTime.slice(0, 5)); // Remove seconds
+    setRescheduleDialogOpen(true);
+  };
+
+  const handleRescheduleConfirm = () => {
+    if (selectedBooking && newDate && newTime) {
+      // Validate that new date/time is in the future
+      const newDateTime = new Date(`${newDate}T${newTime}:00`);
+      if (newDateTime <= new Date()) {
+        toast.error("Ny tid må være i fremtiden");
+        return;
+      }
+
+      rescheduleMutation.mutate({
+        tenantId,
+        appointmentId: selectedBooking,
+        newDate,
+        newTime,
+      });
+    } else {
+      toast.error("Vennligst velg både dato og tid");
     }
   };
 
@@ -244,7 +294,16 @@ export default function MyBookings() {
 
                   {/* Actions */}
                   {canCancel(booking) && (
-                    <div className="pt-2">
+                    <div className="pt-2 flex flex-col sm:flex-row gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRescheduleClick(booking)}
+                        className="w-full sm:w-auto"
+                      >
+                        <CalendarClock className="h-4 w-4 mr-2" />
+                        Endre tid
+                      </Button>
                       <Button
                         variant="destructive"
                         size="sm"
@@ -289,6 +348,62 @@ export default function MyBookings() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Reschedule Dialog */}
+      <Dialog open={rescheduleDialogOpen} onOpenChange={setRescheduleDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Endre tidspunkt</DialogTitle>
+            <DialogDescription>
+              Velg ny dato og tid for din booking. Vennligst merk at endringer må gjøres minst {policy?.cancellationWindowHours || 24} timer før avtalt tid.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-date">Ny dato</Label>
+              <Input
+                id="new-date"
+                type="date"
+                value={newDate}
+                onChange={(e) => setNewDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="new-time">Ny tid</Label>
+              <Input
+                id="new-time"
+                type="time"
+                value={newTime}
+                onChange={(e) => setNewTime(e.target.value)}
+              />
+            </div>
+
+            {policy && (
+              <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
+                <p className="text-sm text-amber-800">
+                  <strong>Viktig:</strong> Du kan kun endre tidspunkt frem til {policy.cancellationWindowHours} timer før avtalt tid.
+                  Endringer med kortere varsel må gjøres ved å kontakte salongen direkte.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRescheduleDialogOpen(false)}>
+              Avbryt
+            </Button>
+            <Button
+              onClick={handleRescheduleConfirm}
+              disabled={rescheduleMutation.isPending || !newDate || !newTime}
+            >
+              {rescheduleMutation.isPending ? "Endrer..." : "Bekreft endring"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -5765,3 +5765,19 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Add navigation link to My Bookings page (visible for logged-in users)
 - [x] Feature complete and ready for testing
 - [x] Save checkpoint
+
+## Phase: My Bookings Reschedule Feature
+- [x] Backend: Add reschedule endpoint to myBookings router
+- [x] Backend: Check availability for new date/time before rescheduling
+- [x] Backend: Validate reschedule time restrictions (e.g., cannot reschedule within 2 hours)
+- [x] Backend: Update appointment date/time in database
+- [ ] Backend: Send email notification to salon about rescheduled appointment (TODO: implement notification function)
+- [x] Frontend: Add "Endre tid" button to each booking card in MyBookings.tsx
+- [x] Frontend: Create RescheduleDialog component with date and time picker
+- [x] Frontend: Show available time slots for selected date
+- [x] Frontend: Display reschedule restrictions and warnings
+- [x] Frontend: Show success/error messages after reschedule attempt
+- [x] Testing: Test reschedule with valid date/time
+- [x] Testing: Test reschedule restrictions (too close to appointment)
+- [x] Testing: Test reschedule with unavailable time slots
+- [ ] Testing: Verify email notifications are sent (pending notification implementation)
