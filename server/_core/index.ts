@@ -11,6 +11,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { startNotificationScheduler } from "../notificationScheduler";
+import { scheduleBackups } from "../services/backup";
 import { handleStripeWebhook } from "../stripe-webhook";
 import { handleVippsCallback } from "../vipps-callback";
 import * as Sentry from "@sentry/node";
@@ -386,6 +387,9 @@ Sitemap: https://www.stylora.no/sitemap.xml`;
     
     // Start notification scheduler for SMS reminders
     startNotificationScheduler();
+    
+    // Start database backup scheduler
+    scheduleBackups();
     
     // Start auto clock-out scheduler
     const { startAutoClockOutScheduler } = await import("../autoClockOutScheduler");
