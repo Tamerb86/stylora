@@ -72,6 +72,7 @@ import ReaderManagement from "./pages/ReaderManagement";
 import StripeCallback from "./pages/StripeCallback";
 import WalkInQueue from "./pages/WalkInQueue";
 import QueueDisplay from "./pages/QueueDisplay";
+import MyBookings from "./pages/MyBookings";
 import RefundManagement from "./pages/RefundManagement";
 import POSFinancialReports from "./pages/POSFinancialReports";
 import Login from "./pages/Login";
@@ -94,6 +95,7 @@ function Router() {
       <Route path="/book" component={PublicBooking} />
       <Route path="/book/success" component={BookingSuccess} />
       <Route path="/manage-booking/:token" component={ManageBooking} />
+      <Route path="/my-bookings" component={MyBookings} />
       <Route path="/case-study" component={CaseStudy} />
       <Route path="/about" component={AboutUs} />
       <Route path="/testimonials" component={Testimonials} />

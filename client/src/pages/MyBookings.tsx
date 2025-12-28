@@ -1,0 +1,294 @@
+import { useState } from "react";
+import { trpc } from "@/lib/trpc";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Calendar, Clock, User, Scissors, XCircle, CheckCircle, AlertCircle, Info } from "lucide-react";
+import { format } from "date-fns";
+import { nb } from "date-fns/locale";
+import { toast } from "sonner";
+
+export default function MyBookings() {
+  const [selectedTab, setSelectedTab] = useState<"upcoming" | "past" | "canceled" | "all">("upcoming");
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<number | null>(null);
+
+  // Get tenant ID from URL or context (for now, hardcoded - should come from context)
+  const tenantId = new URLSearchParams(window.location.search).get("tenantId") || "demo-tenant-barbertime";
+
+  // Fetch bookings
+  const { data: bookings = [], isLoading, refetch } = trpc.myBookings.list.useQuery({
+    tenantId,
+    status: selectedTab,
+  });
+
+  // Fetch cancellation policy
+  const { data: policy } = trpc.myBookings.getCancellationPolicy.useQuery({ tenantId });
+
+  // Cancel booking mutation
+  const cancelMutation = trpc.myBookings.cancel.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      if (data.isLateCancellation) {
+        toast.warning("This was a late cancellation. Cancellation fees may apply.");
+      }
+      refetch();
+      setCancelDialogOpen(false);
+      setSelectedBooking(null);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to cancel booking");
+    },
+  });
+
+  const handleCancelClick = (bookingId: number) => {
+    setSelectedBooking(bookingId);
+    setCancelDialogOpen(true);
+  };
+
+  const handleCancelConfirm = () => {
+    if (selectedBooking) {
+      cancelMutation.mutate({
+        tenantId,
+        appointmentId: selectedBooking,
+        reason: "Canceled by customer via My Bookings page",
+      });
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; icon: React.ReactNode }> = {
+      pending: { variant: "outline", icon: <Clock className="h-3 w-3 mr-1" /> },
+      confirmed: { variant: "default", icon: <CheckCircle className="h-3 w-3 mr-1" /> },
+      completed: { variant: "secondary", icon: <CheckCircle className="h-3 w-3 mr-1" /> },
+      canceled: { variant: "destructive", icon: <XCircle className="h-3 w-3 mr-1" /> },
+      no_show: { variant: "destructive", icon: <AlertCircle className="h-3 w-3 mr-1" /> },
+    };
+
+    const config = variants[status] || variants.pending;
+
+    return (
+      <Badge variant={config.variant} className="flex items-center w-fit">
+        {config.icon}
+        {status === "pending" && "Venter"}
+        {status === "confirmed" && "Bekreftet"}
+        {status === "completed" && "Fullført"}
+        {status === "canceled" && "Kansellert"}
+        {status === "no_show" && "Ikke møtt"}
+      </Badge>
+    );
+  };
+
+  const canCancel = (booking: any) => {
+    if (booking.status === "canceled" || booking.status === "completed" || booking.status === "no_show") {
+      return false;
+    }
+
+    // Check if appointment is in the future
+    const appointmentDateTime = new Date(booking.appointmentDate);
+    const [hours, minutes] = String(booking.startTime).split(":").map(Number);
+    appointmentDateTime.setHours(hours, minutes, 0, 0);
+
+    return appointmentDateTime > new Date();
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container max-w-6xl py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Laster dine bookinger...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container max-w-6xl py-8">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+          Mine Bookinger
+        </h1>
+        <p className="text-gray-600">Se og administrer dine avtaler</p>
+      </div>
+
+      {/* Cancellation Policy Info */}
+      {policy && (
+        <Card className="mb-6 border-blue-200 bg-blue-50/50">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-gray-700">
+                <p className="font-medium mb-1">Kanselleringsregler:</p>
+                <p>
+                  Du kan kansellere bookingen din gratis frem til <strong>{policy.cancellationWindowHours} timer</strong> før avtalt tid.
+                  Kansellering med kortere varsel kan medføre gebyr.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tabs */}
+      <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as any)} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="upcoming">Kommende</TabsTrigger>
+          <TabsTrigger value="past">Tidligere</TabsTrigger>
+          <TabsTrigger value="canceled">Kansellert</TabsTrigger>
+          <TabsTrigger value="all">Alle</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value={selectedTab} className="space-y-4">
+          {bookings.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 text-lg">Ingen bookinger funnet</p>
+                <p className="text-gray-500 text-sm mt-2">
+                  {selectedTab === "upcoming" && "Du har ingen kommende avtaler"}
+                  {selectedTab === "past" && "Du har ingen tidligere avtaler"}
+                  {selectedTab === "canceled" && "Du har ingen kansellerte avtaler"}
+                  {selectedTab === "all" && "Du har ingen bookinger ennå"}
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            bookings.map((booking: any) => (
+              <Card key={booking.id} className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <CardTitle className="text-xl">
+                        {format(new Date(booking.appointmentDate), "EEEE, d. MMMM yyyy", { locale: nb })}
+                      </CardTitle>
+                      <CardDescription className="flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        {booking.startTime} - {booking.endTime}
+                      </CardDescription>
+                    </div>
+                    {getStatusBadge(booking.status)}
+                  </div>
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  {/* Employee */}
+                  {booking.employeeName && (
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <User className="h-4 w-4 text-gray-500" />
+                      <span className="font-medium">{booking.employeeName}</span>
+                    </div>
+                  )}
+
+                  {/* Services */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-gray-700 font-medium">
+                      <Scissors className="h-4 w-4 text-gray-500" />
+                      <span>Tjenester:</span>
+                    </div>
+                    <div className="ml-6 space-y-1">
+                      {booking.services.map((service: any, idx: number) => (
+                        <div key={idx} className="flex items-center justify-between text-sm">
+                          <span>{service.serviceName}</span>
+                          <div className="flex items-center gap-3 text-gray-600">
+                            <span>{service.serviceDuration} min</span>
+                            <span className="font-medium">{parseFloat(service.servicePrice).toFixed(0)} kr</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Total Price */}
+                  <div className="flex items-center justify-between pt-2 border-t">
+                    <span className="font-semibold">Totalt:</span>
+                    <span className="text-lg font-bold text-blue-600">
+                      {booking.services.reduce((sum: number, s: any) => sum + parseFloat(s.servicePrice), 0).toFixed(0)} kr
+                    </span>
+                  </div>
+
+                  {/* Notes */}
+                  {booking.notes && (
+                    <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+                      <p className="font-medium mb-1">Notater:</p>
+                      <p>{booking.notes}</p>
+                    </div>
+                  )}
+
+                  {/* Cancellation Info */}
+                  {booking.status === "canceled" && (
+                    <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
+                      <p className="font-medium mb-1">Kansellert:</p>
+                      <p>{booking.cancellationReason}</p>
+                      {booking.canceledAt && (
+                        <p className="text-xs text-red-500 mt-1">
+                          {format(new Date(booking.canceledAt), "d. MMM yyyy 'kl.' HH:mm", { locale: nb })}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  {canCancel(booking) && (
+                    <div className="pt-2">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleCancelClick(booking.id)}
+                        className="w-full sm:w-auto"
+                      >
+                        <XCircle className="h-4 w-4 mr-2" />
+                        Kanseller booking
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Cancel Confirmation Dialog */}
+      <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Kanseller booking?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Er du sikker på at du vil kansellere denne bookingen? Denne handlingen kan ikke angres.
+              {policy && (
+                <p className="mt-2 text-amber-600 font-medium">
+                  Merk: Kansellering med mindre enn {policy.cancellationWindowHours} timers varsel kan medføre gebyr.
+                </p>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelConfirm}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={cancelMutation.isPending}
+            >
+              {cancelMutation.isPending ? "Kansellerer..." : "Ja, kanseller"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}

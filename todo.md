@@ -5744,3 +5744,24 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Add disabled state for buttons during loading
 - [ ] Add smooth transitions between loading and loaded states
 - [ ] Test all loading states work correctly
+
+## Phase 24: User Booking Cancellation Feature
+- [ ] Create API endpoint for user to cancel their own booking
+- [ ] Add cancellation time restrictions (e.g., minimum 2 hours before appointment)
+- [ ] Create "My Bookings" page for users to view their appointments
+- [ ] Add cancellation button with confirmation dialog
+- [ ] Show cancellation policy clearly
+- [ ] Send cancellation notification email/SMS
+- [ ] Update appointment status to "canceled"
+- [ ] Add cancellation reason field (optional)
+- [ ] Test cancellation flow end-to-end
+
+## Phase 24: User Booking Cancellation Feature
+- [x] Add myBookings router to server/routers.ts
+- [x] Create API endpoints (list, cancel, getCancellationPolicy)
+- [x] Create MyBookings.tsx page with tabs (upcoming, past, canceled, all)
+- [x] Add cancellation dialog with confirmation
+- [x] Implement time-based cancellation restrictions (cancellationWindowHours)
+- [x] Add navigation link to My Bookings page (visible for logged-in users)
+- [x] Feature complete and ready for testing
+- [x] Save checkpoint

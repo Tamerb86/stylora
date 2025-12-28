@@ -13101,6 +13101,258 @@ export const appRouter = router({
       }),
   }),
 
+  // ============================================================================
+  // MY BOOKINGS (Customer Portal)
+  // ============================================================================
+  myBookings: router({
+    // Get all bookings for the authenticated user (by email)
+    list: protectedProcedure
+      .input(z.object({
+        tenantId: z.string(),
+        status: z.enum(["upcoming", "past", "canceled", "all"]).optional().default("all"),
+      }))
+      .query(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+        const { appointments, customers, services, appointmentServices, users } = await import("../drizzle/schema");
+        const { eq, and, gte, lt, desc, or } = await import("drizzle-orm");
+
+        // Find customer by user email
+        const userEmail = ctx.user.email;
+        if (!userEmail) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "User email not found" });
+        }
+
+        const [customer] = await dbInstance
+          .select()
+          .from(customers)
+          .where(
+            and(
+              eq(customers.tenantId, input.tenantId),
+              eq(customers.email, userEmail)
+            )
+          )
+          .limit(1);
+
+        if (!customer) {
+          return []; // No customer found with this email
+        }
+
+        // Build status filter
+        const now = new Date();
+        const today = new Date(now);
+        today.setHours(0, 0, 0, 0);
+
+        let statusConditions = [];
+        if (input.status === "upcoming") {
+          statusConditions.push(
+            and(
+              gte(appointments.appointmentDate, today),
+              or(
+                eq(appointments.status, "pending"),
+                eq(appointments.status, "confirmed")
+              )
+            )
+          );
+        } else if (input.status === "past") {
+          statusConditions.push(
+            or(
+              lt(appointments.appointmentDate, today),
+              eq(appointments.status, "completed")
+            )
+          );
+        } else if (input.status === "canceled") {
+          statusConditions.push(eq(appointments.status, "canceled"));
+        }
+
+        // Fetch appointments
+        const query = dbInstance
+          .select({
+            id: appointments.id,
+            appointmentDate: appointments.appointmentDate,
+            startTime: appointments.startTime,
+            endTime: appointments.endTime,
+            status: appointments.status,
+            notes: appointments.notes,
+            employeeId: appointments.employeeId,
+            employeeName: users.name,
+            cancellationReason: appointments.cancellationReason,
+            canceledAt: appointments.canceledAt,
+            canceledBy: appointments.canceledBy,
+            managementToken: appointments.managementToken,
+          })
+          .from(appointments)
+          .leftJoin(users, eq(appointments.employeeId, users.id))
+          .where(
+            and(
+              eq(appointments.tenantId, input.tenantId),
+              eq(appointments.customerId, customer.id),
+              ...(statusConditions.length > 0 ? statusConditions : [])
+            )
+          )
+          .orderBy(desc(appointments.appointmentDate), desc(appointments.startTime));
+
+        const bookings = await query;
+
+        // Fetch services for each booking
+        const bookingsWithServices = await Promise.all(
+          bookings.map(async (booking) => {
+            const aptServices = await dbInstance
+              .select({
+                serviceName: services.name,
+                servicePrice: appointmentServices.price,
+                serviceDuration: services.durationMinutes,
+              })
+              .from(appointmentServices)
+              .leftJoin(services, eq(appointmentServices.serviceId, services.id))
+              .where(eq(appointmentServices.appointmentId, booking.id));
+
+            return {
+              ...booking,
+              services: aptServices,
+            };
+          })
+        );
+
+        return bookingsWithServices;
+      }),
+
+    // Cancel a booking by the authenticated user
+    cancel: protectedProcedure
+      .input(z.object({
+        tenantId: z.string(),
+        appointmentId: z.number(),
+        reason: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+        const { appointments, customers, tenants } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+
+        // Find customer by user email
+        const userEmail = ctx.user.email;
+        if (!userEmail) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "User email not found" });
+        }
+
+        const [customer] = await dbInstance
+          .select()
+          .from(customers)
+          .where(
+            and(
+              eq(customers.tenantId, input.tenantId),
+              eq(customers.email, userEmail)
+            )
+          )
+          .limit(1);
+
+        if (!customer) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Customer not found" });
+        }
+
+        // Get appointment
+        const [appointment] = await dbInstance
+          .select()
+          .from(appointments)
+          .where(
+            and(
+              eq(appointments.id, input.appointmentId),
+              eq(appointments.tenantId, input.tenantId),
+              eq(appointments.customerId, customer.id)
+            )
+          )
+          .limit(1);
+
+        if (!appointment) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
+        }
+
+        // Check if already canceled
+        if (appointment.status === "canceled") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Appointment is already canceled" });
+        }
+
+        // Check if already completed
+        if (appointment.status === "completed") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot cancel a completed appointment" });
+        }
+
+        // Get tenant cancellation policy
+        const [tenant] = await dbInstance
+          .select()
+          .from(tenants)
+          .where(eq(tenants.id, input.tenantId))
+          .limit(1);
+
+        const cancellationWindowHours = tenant?.cancellationWindowHours ?? 24;
+
+        // Check if within cancellation window
+        const appointmentDateTime = new Date(appointment.appointmentDate);
+        const [hours, minutes] = String(appointment.startTime).split(":").map(Number);
+        appointmentDateTime.setHours(hours, minutes, 0, 0);
+
+        const cancellationDeadline = new Date(appointmentDateTime);
+        cancellationDeadline.setHours(cancellationDeadline.getHours() - cancellationWindowHours);
+
+        const now = new Date();
+        const isLateCancellation = now > cancellationDeadline;
+
+        // Update appointment status
+        await dbInstance
+          .update(appointments)
+          .set({
+            status: "canceled",
+            canceledAt: now,
+            canceledBy: "customer",
+            cancellationReason: input.reason || "Canceled by customer",
+            isLateCancellation,
+          })
+          .where(eq(appointments.id, input.appointmentId));
+
+        // Send cancellation notification
+        const { sendAppointmentCancellationIfPossible } = await import("./notifications-appointments");
+        sendAppointmentCancellationIfPossible(input.appointmentId, input.tenantId).catch((err) => {
+          console.error("[MyBookings] Failed to send cancellation email:", err);
+        });
+
+        return {
+          success: true,
+          isLateCancellation,
+          message: isLateCancellation
+            ? `Booking canceled. Note: This is a late cancellation (less than ${cancellationWindowHours} hours notice).`
+            : "Booking canceled successfully.",
+        };
+      }),
+
+    // Get cancellation policy for tenant
+    getCancellationPolicy: protectedProcedure
+      .input(z.object({ tenantId: z.string() }))
+      .query(async ({ input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+        const { tenants } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+
+        const [tenant] = await dbInstance
+          .select({
+            cancellationWindowHours: tenants.cancellationWindowHours,
+            requirePrepayment: tenants.requirePrepayment,
+          })
+          .from(tenants)
+          .where(eq(tenants.id, input.tenantId))
+          .limit(1);
+
+        return {
+          cancellationWindowHours: tenant?.cancellationWindowHours ?? 24,
+          requirePrepayment: tenant?.requirePrepayment ?? false,
+        };
+      }),
+  }),
+
 });
 
 export type AppRouter = typeof appRouter;

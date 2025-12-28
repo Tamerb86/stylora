@@ -327,6 +327,14 @@ export default function Home() {
             <Button variant="ghost" asChild className="hidden md:inline-flex">
               <Link to="/testimonials">Kundehistorier</Link>
             </Button>
+            {user && (
+              <Button asChild variant="ghost" className="hidden md:inline-flex">
+                <Link to="/my-bookings">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Mine Bookinger
+                </Link>
+              </Button>
+            )}
             {isOwner && (
               <Button asChild variant="outline" className="hidden md:inline-flex border-2 border-primary/50 hover:bg-primary/10">
                 <Link to="/saas-admin">
@@ -335,11 +343,13 @@ export default function Home() {
                 </Link>
               </Button>
             )}
-            <Button asChild variant="outline" className="hidden md:inline-flex">
-              <a href={getLoginUrl()}>
-                Logg inn
-              </a>
-            </Button>
+            {!user && (
+              <Button asChild variant="outline" className="hidden md:inline-flex">
+                <a href={getLoginUrl()}>
+                  Logg inn
+                </a>
+              </Button>
+            )}
             <Button asChild className="hidden md:inline-flex bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-white shadow-lg">
               <Link to="/signup">
                 Prøv gratis i 14 dager
