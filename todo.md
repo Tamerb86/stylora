@@ -5816,3 +5816,53 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Testing: Test SMS notification sending
 - [x] Testing: Test reschedule limit enforcement
 - [ ] Testing: Test booking history display (deferred - not critical)
+
+## Phase: Historikk Page (Appointment History Timeline)
+- [x] Backend: Create getAppointmentHistory endpoint in myBookings router
+- [x] Backend: Fetch all history records for a specific appointment
+- [x] Backend: Format history data with change details (old/new values)
+- [x] Frontend: Create Historikk page/section in MyBookings
+- [x] Frontend: Display timeline of changes with icons
+- [x] Frontend: Show who made the change (customer/admin/system)
+- [x] Frontend: Format dates and times in Norwegian
+- [x] Frontend: Add visual indicators for different change types
+- [ ] Testing: Test history retrieval for appointments
+- [ ] Testing: Test timeline display with multiple changes
+
+## Phase: Google Calendar Integration
+- [x] Backend: Install Google Calendar API SDK (@googleapis/calendar)
+- [x] Backend: Set up OAuth2 authentication for Google Calendar
+- [x] Backend: Create calendar sync service module
+- [x] Backend: Implement createCalendarEvent function
+- [x] Backend: Implement updateCalendarEvent function
+- [x] Backend: Implement deleteCalendarEvent function
+- [ ] Backend: Add Google Calendar sync to appointment creation (requires OAuth setup)
+- [ ] Backend: Add Google Calendar sync to appointment reschedule (requires OAuth setup)
+- [ ] Backend: Add Google Calendar sync to appointment cancellation (requires OAuth setup)
+- [ ] Database: Add googleCalendarEventId field to appointments table
+- [ ] Frontend: Add "Sync to Google Calendar" toggle in settings
+- [ ] Frontend: OAuth flow for Google Calendar authorization
+- [ ] Testing: Test calendar event creation
+- [ ] Testing: Test calendar event updates
+- [ ] Testing: Test calendar event deletion
+
+## Phase: Loyalty Points System
+- [x] Backend: Verify loyaltyPoints tables exist (already created)
+- [x] Backend: Create loyalty router with points management endpoints
+- [x] Backend: Implement earnPoints function (triggered on appointment completion)
+- [x] Backend: Implement getCustomerPoints endpoint
+- [x] Backend: Implement getAvailableRewards endpoint
+- [x] Backend: Implement redeemReward endpoint
+- [x] Backend: Add points calculation logic (e.g., 1 point per 100 kr spent)
+- [x] Database: Verify loyalty tables schema (loyaltyPoints, loyaltyTransactions, loyaltyRewards, loyaltyRedemptions)
+- [x] Frontend: Create Loyalty page for customers (LoyaltyCustomer.tsx)
+- [x] Frontend: Display current points balance
+- [x] Frontend: Show available rewards catalog
+- [x] Frontend: Implement reward redemption UI
+- [x] Frontend: Show transaction history
+- [x] Admin: Create loyalty rewards management page (Loyalty.tsx already exists)
+- [x] Admin: Allow admin to create/edit rewards
+- [x] Admin: Set points required for each reward
+- [ ] Testing: Test points earning on appointment completion
+- [ ] Testing: Test reward redemption
+- [ ] Testing: Test points balance calculation

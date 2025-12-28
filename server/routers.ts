@@ -14,6 +14,7 @@ import { fikenSettings, fikenSyncLog, fikenCustomerMapping, fikenInvoiceMapping 
 import { nanoid } from "nanoid";
 import { eq, and, or, gte, lte, sql, desc } from "drizzle-orm";
 import { exportRouter } from "./export";
+import { loyaltyRouter } from "./loyalty-router";
 import { ENV } from "./_core/env";
 
 // ============================================================================
@@ -105,6 +106,7 @@ const platformAdminProcedure = protectedProcedure.use(({ ctx, next }) => {
 export const appRouter = router({
   system: systemRouter,
   export: exportRouter,
+  loyalty: loyaltyRouter,
   
   // ============================================================================
   // STRIPE CONNECT (OAuth for SaaS)
@@ -13736,6 +13738,73 @@ export const appRouter = router({
           newDate: input.newDate,
           newTime: input.newTime,
         };
+      }),
+
+    // Get appointment history
+    getAppointmentHistory: protectedProcedure
+      .input(
+        z.object({
+          tenantId: z.string(),
+          appointmentId: z.number(),
+        })
+      )
+      .query(async ({ input, ctx }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+        const { appointments, customers: customersSchema } = await import("../drizzle/schema");
+        const customers = customersSchema;
+
+        // Verify customer owns this appointment
+        const [customer] = await dbInstance
+          .select()
+          .from(customers)
+          .where(
+            and(
+              eq(customers.tenantId, input.tenantId),
+              eq(customers.phone, ctx.user.phone || "")
+            )
+          )
+          .limit(1);
+
+        if (!customer) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Customer not found" });
+        }
+
+        // Verify appointment belongs to customer
+        const [appointment] = await dbInstance
+          .select()
+          .from(appointments)
+          .where(
+            and(
+              eq(appointments.id, input.appointmentId),
+              eq(appointments.tenantId, input.tenantId),
+              eq(appointments.customerId, customer.id)
+            )
+          )
+          .limit(1);
+
+        if (!appointment) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Booking not found",
+          });
+        }
+
+        // Fetch history records
+        const { appointmentHistory } = await import("../drizzle/schema");
+        const history = await dbInstance
+          .select()
+          .from(appointmentHistory)
+          .where(
+            and(
+              eq(appointmentHistory.appointmentId, input.appointmentId),
+              eq(appointmentHistory.tenantId, input.tenantId)
+            )
+          )
+          .orderBy(desc(appointmentHistory.createdAt));
+
+        return history;
       }),
   }),
 

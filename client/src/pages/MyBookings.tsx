@@ -14,7 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Calendar, Clock, User, Scissors, XCircle, CheckCircle, AlertCircle, Info, CalendarClock } from "lucide-react";
+import { Calendar, Clock, User, Scissors, XCircle, CheckCircle, AlertCircle, Info, CalendarClock, History } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,8 @@ export default function MyBookings() {
   const [newDate, setNewDate] = useState("");
   const [newTime, setNewTime] = useState("");
   const [selectedBookingForReschedule, setSelectedBookingForReschedule] = useState<any>(null);
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [selectedBookingForHistory, setSelectedBookingForHistory] = useState<number | null>(null);
 
   // Get tenant ID from URL or context (for now, hardcoded - should come from context)
   const tenantId = new URLSearchParams(window.location.search).get("tenantId") || "demo-tenant-barbertime";
@@ -87,6 +89,17 @@ export default function MyBookings() {
     }
   );
 
+  // Fetch appointment history
+  const { data: appointmentHistory = [], isLoading: historyLoading } = trpc.myBookings.getAppointmentHistory.useQuery(
+    {
+      tenantId,
+      appointmentId: selectedBookingForHistory || 0,
+    },
+    {
+      enabled: !!selectedBookingForHistory && historyDialogOpen,
+    }
+  );
+
   const handleCancelClick = (bookingId: number) => {
     setSelectedBooking(bookingId);
     setCancelDialogOpen(true);
@@ -110,6 +123,11 @@ export default function MyBookings() {
     setNewDate(currentDate.toISOString().split('T')[0]);
     setNewTime(booking.startTime.slice(0, 5)); // Remove seconds
     setRescheduleDialogOpen(true);
+  };
+
+  const handleHistoryClick = (bookingId: number) => {
+    setSelectedBookingForHistory(bookingId);
+    setHistoryDialogOpen(true);
   };
 
   const handleRescheduleConfirm = () => {
@@ -321,29 +339,40 @@ export default function MyBookings() {
                   )}
 
                   {/* Actions */}
-                  {canCancel(booking) && (
-                    <div className="pt-2 flex flex-col sm:flex-row gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleRescheduleClick(booking)}
-                        className="w-full sm:w-auto"
-                        disabled={booking.rescheduleCount >= 2}
-                      >
-                        <CalendarClock className="h-4 w-4 mr-2" />
-                        Endre tid
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleCancelClick(booking.id)}
-                        className="w-full sm:w-auto"
-                      >
-                        <XCircle className="h-4 w-4 mr-2" />
-                        Kanseller booking
-                      </Button>
-                    </div>
-                  )}
+                  <div className="pt-2 flex flex-col sm:flex-row gap-2">
+                    {canCancel(booking) && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleRescheduleClick(booking)}
+                          className="w-full sm:w-auto"
+                          disabled={booking.rescheduleCount >= 2}
+                        >
+                          <CalendarClock className="h-4 w-4 mr-2" />
+                          Endre tid
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleCancelClick(booking.id)}
+                          className="w-full sm:w-auto"
+                        >
+                          <XCircle className="h-4 w-4 mr-2" />
+                          Kanseller booking
+                        </Button>
+                      </>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleHistoryClick(booking.id)}
+                      className="w-full sm:w-auto"
+                    >
+                      <History className="h-4 w-4 mr-2" />
+                      Historikk
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))
@@ -448,6 +477,146 @@ export default function MyBookings() {
               disabled={rescheduleMutation.isPending || !newDate || !newTime}
             >
               {rescheduleMutation.isPending ? "Endrer..." : "Bekreft endring"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* History Dialog */}
+      <Dialog open={historyDialogOpen} onOpenChange={setHistoryDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Historikk</DialogTitle>
+            <DialogDescription>
+              Alle endringer som er gjort på denne bookingen
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {historyLoading ? (
+              <div className="text-center py-8 text-gray-500">Laster historikk...</div>
+            ) : appointmentHistory.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <History className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                <p>Ingen endringer registrert</p>
+              </div>
+            ) : (
+              <div className="relative">
+                {/* Timeline line */}
+                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200" />
+
+                {/* History items */}
+                <div className="space-y-6">
+                  {appointmentHistory.map((record: any, idx: number) => {
+                    const isFirst = idx === 0;
+                    const changeTypeLabels: Record<string, string> = {
+                      created: "Opprettet",
+                      rescheduled: "Endret tidspunkt",
+                      status_changed: "Status endret",
+                      service_changed: "Tjeneste endret",
+                      employee_changed: "Ansatt endret",
+                      canceled: "Kansellert",
+                      notes_updated: "Notater oppdatert",
+                    };
+
+                    const changeTypeIcons: Record<string, any> = {
+                      created: CheckCircle,
+                      rescheduled: CalendarClock,
+                      status_changed: AlertCircle,
+                      service_changed: Scissors,
+                      employee_changed: User,
+                      canceled: XCircle,
+                      notes_updated: Info,
+                    };
+
+                    const changeTypeColors: Record<string, string> = {
+                      created: "text-green-600 bg-green-50 border-green-200",
+                      rescheduled: "text-blue-600 bg-blue-50 border-blue-200",
+                      status_changed: "text-amber-600 bg-amber-50 border-amber-200",
+                      service_changed: "text-purple-600 bg-purple-50 border-purple-200",
+                      employee_changed: "text-indigo-600 bg-indigo-50 border-indigo-200",
+                      canceled: "text-red-600 bg-red-50 border-red-200",
+                      notes_updated: "text-gray-600 bg-gray-50 border-gray-200",
+                    };
+
+                    const IconComponent = changeTypeIcons[record.changeType] || Info;
+                    const colorClass = changeTypeColors[record.changeType] || "text-gray-600 bg-gray-50 border-gray-200";
+
+                    let oldValue, newValue;
+                    try {
+                      oldValue = record.oldValue ? JSON.parse(record.oldValue) : null;
+                      newValue = record.newValue ? JSON.parse(record.newValue) : null;
+                    } catch {
+                      oldValue = record.oldValue;
+                      newValue = record.newValue;
+                    }
+
+                    return (
+                      <div key={record.id} className="relative flex gap-4">
+                        {/* Timeline dot */}
+                        <div className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full border-2 ${colorClass} ${isFirst ? 'ring-4 ring-blue-100' : ''}`}>
+                          <IconComponent className="h-4 w-4" />
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 pb-6">
+                          <div className="bg-white border rounded-lg p-4 shadow-sm">
+                            <div className="flex items-start justify-between mb-2">
+                              <h4 className="font-semibold text-gray-900">
+                                {changeTypeLabels[record.changeType] || record.changeType}
+                              </h4>
+                              <span className="text-xs text-gray-500">
+                                {format(new Date(record.createdAt), "d. MMM yyyy 'kl.' HH:mm", { locale: nb })}
+                              </span>
+                            </div>
+
+                            {/* Change details */}
+                            {record.changeType === "rescheduled" && oldValue && newValue && (
+                              <div className="space-y-2 text-sm">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-gray-600">Fra:</span>
+                                  <span className="text-gray-900 font-medium">
+                                    {oldValue.date} kl. {oldValue.time}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-gray-600">Til:</span>
+                                  <span className="text-blue-600 font-medium">
+                                    {newValue.date} kl. {newValue.time}
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Changed by */}
+                            <div className="mt-3 pt-3 border-t text-xs text-gray-500">
+                              <span>
+                                Endret av: {record.changedBy === "customer" ? "Kunde" : record.changedBy === "staff" ? "Personale" : "System"}
+                              </span>
+                              {record.changedByEmail && (
+                                <span className="ml-2">({record.changedByEmail})</span>
+                              )}
+                            </div>
+
+                            {/* Notes */}
+                            {record.notes && (
+                              <div className="mt-2 text-xs text-gray-600 italic">
+                                {record.notes}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setHistoryDialogOpen(false)}>
+              Lukk
             </Button>
           </DialogFooter>
         </DialogContent>
