@@ -15,6 +15,7 @@ import { nanoid } from "nanoid";
 import { eq, and, or, gte, lte, sql, desc } from "drizzle-orm";
 import { exportRouter } from "./export";
 import { loyaltyRouter } from "./loyalty-router";
+import { onboardingRouter } from "./routers/onboarding";
 import { ENV } from "./_core/env";
 
 // ============================================================================
@@ -107,6 +108,7 @@ export const appRouter = router({
   system: systemRouter,
   export: exportRouter,
   loyalty: loyaltyRouter,
+  onboarding: onboardingRouter,
   
   // ============================================================================
   // STRIPE CONNECT (OAuth for SaaS)

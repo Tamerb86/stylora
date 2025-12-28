@@ -5975,3 +5975,94 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Document monitoring and alerts
 - [x] Document troubleshooting procedures
 - [x] Document maintenance tasks
+
+## Phase: Multi-Tenant Onboarding System
+### Onboarding Wizard UI
+- [ ] Create onboarding page route (/onboard)
+- [ ] Design multi-step wizard component with progress indicator
+- [ ] Step 1: Salon information (name, address, phone, email, logo upload)
+- [ ] Step 2: Owner/admin account setup (name, email, password)
+- [ ] Step 3: Business hours configuration (weekly schedule)
+- [ ] Step 4: Initial employees setup (add 1-3 employees)
+- [ ] Step 5: Initial services setup (add 3-5 services)
+- [ ] Step 6: Payment settings (Stripe/Vipps configuration - optional)
+- [ ] Step 7: Review and confirmation
+- [ ] Add form validation for each step
+- [ ] Add "Save and Continue Later" functionality
+- [ ] Mobile-responsive design
+
+### Backend API
+- [ ] Create tenant registration endpoint (tRPC)
+- [ ] Validate subdomain availability
+- [ ] Create tenant record in database
+- [ ] Create owner user account
+- [ ] Set up initial business hours
+- [ ] Create initial employees
+- [ ] Create initial services
+- [ ] Generate tenant-specific settings
+- [ ] Handle logo upload to S3
+- [ ] Create onboarding progress tracking
+
+### Welcome Email System
+- [ ] Create email template for welcome message
+- [ ] Include quick start guide in email
+- [ ] Add login credentials and dashboard link
+- [ ] Include video tutorial links (optional)
+- [ ] Send email after successful onboarding
+- [ ] Create email service function
+- [ ] Test email delivery
+
+### QR Code System
+- [ ] Install QR code generation library
+- [ ] Generate unique QR code for each employee
+- [ ] Create QR code check-in page
+- [ ] Scan QR code to clock in/out
+- [ ] Display QR code in employee profile
+- [ ] Add QR code download/print functionality
+
+### Additional Features
+- [ ] Create onboarding analytics dashboard (admin)
+- [ ] Track onboarding completion rate
+- [ ] Add onboarding reminder emails
+- [ ] Create demo data generator for testing
+
+## Phase: Multi-Tenant Onboarding System - PROGRESS UPDATE
+### Completed Tasks
+- [x] Create onboarding page route (/onboard)
+- [x] Design multi-step wizard component with progress indicator
+- [x] Step 1: Salon information (name, address, phone, email)
+- [x] Step 2: Owner/admin account setup (name, email, password)
+- [x] Step 3: Business hours configuration (weekly schedule)
+- [x] Add form validation for each step
+- [x] Mobile-responsive design
+- [x] Create tenant registration endpoint (tRPC)
+- [x] Validate subdomain availability
+- [x] Create tenant record in database
+- [x] Create owner user account
+- [x] Set up initial business hours
+- [x] Create initial employees (with QR codes)
+- [x] Create initial services
+- [x] Generate tenant-specific settings
+- [x] Create onboarding progress tracking
+- [x] Create email template for welcome message
+- [x] Include quick start guide in email
+- [x] Add login credentials and dashboard link
+- [x] Send email after successful onboarding
+- [x] Create email service function
+- [x] Install QR code generation library
+- [x] Generate unique QR code for each employee
+- [x] Add QR code to employee profile
+
+### Remaining Tasks (Optional Enhancements)
+- [ ] Step 4-7: Complete remaining wizard steps (employees, services, payment, review)
+- [ ] Add "Save and Continue Later" functionality
+- [ ] Handle logo upload to S3
+- [ ] Create QR code check-in page
+- [ ] Scan QR code to clock in/out
+- [ ] Display QR code in employee profile UI
+- [ ] Add QR code download/print functionality
+- [ ] Create onboarding analytics dashboard (admin)
+- [ ] Track onboarding completion rate
+- [ ] Add onboarding reminder emails
+- [ ] Create demo data generator for testing
+- [ ] Test email delivery with real SMTP

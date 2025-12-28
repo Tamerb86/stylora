@@ -80,6 +80,7 @@ import Demo from "./pages/Demo";
 import ForgotPassword from "./pages/ForgotPassword";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import Onboarding from "./pages/Onboarding";
 
 function Router() {
   return (
@@ -89,6 +90,7 @@ function Router() {
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/demo" component={Demo} />
       <Route path="/signup" component={SignUp} />
+      <Route path="/onboard" component={Onboarding} />
       <Route path="/verify-email" component={VerifyEmail} />
       <Route path="/email-verification-required" component={EmailVerificationRequired} />
       <Route path="/setup-wizard" component={SetupWizard} />
