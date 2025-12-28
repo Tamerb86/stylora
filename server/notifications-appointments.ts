@@ -266,6 +266,22 @@ export async function sendAppointmentRescheduleIfPossible(
     });
 
     console.log("[Email] Reschedule email sent for appointment:", appointmentId);
+
+    // Send SMS if customer has phone number
+    if (customer.phone) {
+      const { sendRescheduleSMS } = await import("./sms");
+      
+      await sendRescheduleSMS(
+        customer.phone,
+        tenant.name,
+        oldDateStr,
+        oldTimeStr,
+        newDateStr,
+        newTimeStr,
+        tenantId
+      );
+      console.log(`[SMS] Reschedule SMS sent for appointment ${appointmentId}`);
+    }
   } catch (error) {
     console.error("[Email] Failed to send reschedule email:", error);
     // Don't throw - email failure should not break main logic

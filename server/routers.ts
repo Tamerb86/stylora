@@ -13181,6 +13181,7 @@ export const appRouter = router({
             canceledAt: appointments.canceledAt,
             canceledBy: appointments.canceledBy,
             managementToken: appointments.managementToken,
+            rescheduleCount: appointments.rescheduleCount,
           })
           .from(appointments)
           .leftJoin(users, eq(appointments.employeeId, users.id))
@@ -13253,21 +13254,32 @@ export const appRouter = router({
           throw new TRPCError({ code: "NOT_FOUND", message: "Customer not found" });
         }
 
-        // Get appointment
+        // Check if appointment exists and belongs to user's tenant
         const [appointment] = await dbInstance
           .select()
           .from(appointments)
           .where(
             and(
               eq(appointments.id, input.appointmentId),
-              eq(appointments.tenantId, input.tenantId),
-              eq(appointments.customerId, customer.id)
+              eq(appointments.tenantId, input.tenantId)
             )
           )
           .limit(1);
 
         if (!appointment) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Booking not found",
+          });
+        }
+
+        // Check reschedule limit (max 2 times)
+        const MAX_RESCHEDULES = 2;
+        if (appointment.rescheduleCount >= MAX_RESCHEDULES) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Du har nådd maksimalt antall endringer (${MAX_RESCHEDULES}) for denne bookingen`,
+          });
         }
 
         // Check if already canceled
@@ -13674,13 +13686,15 @@ export const appRouter = router({
           }
         }
 
-        // Update appointment
+        // Update appointment and increment reschedule counter
+        const newAppointmentDate = new Date(input.newDate);
         await dbInstance
           .update(appointments)
           .set({
-            appointmentDate: new Date(input.newDate),
+            appointmentDate: newAppointmentDate,
             startTime: input.newTime,
             endTime: newEndTime,
+            rescheduleCount: appointment.rescheduleCount + 1,
             updatedAt: now,
           })
           .where(eq(appointments.id, input.appointmentId));

@@ -71,6 +71,13 @@
       "when": 1766882867538,
       "tag": "0009_nifty_stingray",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1766883965638,
+      "tag": "0010_steep_wolf_cub",
+      "breakpoints": true
     }
   ]
 }

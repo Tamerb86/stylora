@@ -202,6 +202,7 @@ export const appointments = mysqlTable("appointments", {
   managementToken: varchar("managementToken", { length: 64 }).unique(), // Unique token for customer to manage booking
   notes: text("notes"),
   recurrenceRuleId: int("recurrenceRuleId"),
+  rescheduleCount: int("rescheduleCount").default(0).notNull(), // Track number of times rescheduled
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => ({

@@ -317,3 +317,31 @@ export function validateNorwegianPhone(phone: string): boolean {
   const pattern = /^\+47[49]\d{7}$/;
   return pattern.test(phone);
 }
+
+/**
+ * Send reschedule notification SMS
+ * @param customerPhone - Customer phone number
+ * @param salonName - Salon name
+ * @param oldDate - Old appointment date (YYYY-MM-DD)
+ * @param oldTime - Old appointment time (HH:MM)
+ * @param newDate - New appointment date (YYYY-MM-DD)
+ * @param newTime - New appointment time (HH:MM)
+ * @param tenantId - Tenant ID for tenant-specific SMS settings
+ */
+export async function sendRescheduleSMS(
+  customerPhone: string,
+  salonName: string,
+  oldDate: string,
+  oldTime: string,
+  newDate: string,
+  newTime: string,
+  tenantId?: string
+): Promise<{ success: boolean; error?: string }> {
+  const message = `Hei! Din time hos ${salonName} er endret:\n\nFra: ${oldDate} kl. ${oldTime}\nTil: ${newDate} kl. ${newTime}\n\nHvis dette ikke stemmer, vennligst kontakt oss.`;
+
+  return await sendSMS({
+    to: customerPhone,
+    message,
+    tenantId,
+  });
+}

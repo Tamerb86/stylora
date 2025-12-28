@@ -5797,3 +5797,22 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Testing: Test appointment history logging
 - [x] Testing: Test email notifications for reschedule
 - [x] Testing: Test available time slots display
+
+## Phase: SMS Notifications & History Display
+- [x] Backend: Install Twilio SDK package
+- [x] Backend: Add Twilio credentials to environment variables (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER)
+- [x] Backend: Create sendSMS helper function
+- [x] Backend: Implement sendRescheduleSMS notification function
+- [x] Backend: Integrate SMS notification into reschedule endpoint
+- [x] Database: Add rescheduleCount field to appointments table
+- [x] Backend: Implement reschedule limit validation (max 2 times)
+- [x] Backend: Increment rescheduleCount when rescheduling
+- [x] Backend: Return error when limit exceeded
+- [ ] Backend: Add getBookingHistory endpoint to fetch appointment history (deferred - not critical)
+- [ ] Frontend: Create Historikk section in MyBookings page (deferred - not critical)
+- [ ] Frontend: Display timeline of all changes for each booking (deferred - not critical)
+- [x] Frontend: Show reschedule limit warning (e.g., "1 av 2 endringer brukt")
+- [x] Frontend: Disable reschedule button when limit reached
+- [x] Testing: Test SMS notification sending
+- [x] Testing: Test reschedule limit enforcement
+- [ ] Testing: Test booking history display (deferred - not critical)

@@ -307,6 +307,19 @@ export default function MyBookings() {
                     </div>
                   )}
 
+                  {/* Reschedule Limit Warning */}
+                  {booking.rescheduleCount > 0 && booking.status !== "canceled" && (
+                    <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-md flex items-start gap-2">
+                      <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium">Endringer brukt: {booking.rescheduleCount} av 2</p>
+                        {booking.rescheduleCount >= 2 && (
+                          <p className="text-xs mt-1">Du har nådd maksimalt antall endringer for denne bookingen.</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Actions */}
                   {canCancel(booking) && (
                     <div className="pt-2 flex flex-col sm:flex-row gap-2">
@@ -315,6 +328,7 @@ export default function MyBookings() {
                         size="sm"
                         onClick={() => handleRescheduleClick(booking)}
                         className="w-full sm:w-auto"
+                        disabled={booking.rescheduleCount >= 2}
                       >
                         <CalendarClock className="h-4 w-4 mr-2" />
                         Endre tid
