@@ -6231,3 +6231,14 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] إضافة Dark Mode مع theme switcher وgradients مخصصة للوضع الداكن
 - [x] تحسين الرسوم البيانية بإحصائيات تفاعلية متقدمة مع Chart.js
 - [x] توحيد التصميم عبر جميع الصفحات الإدارية
+
+
+## Phase: Employee Payroll PDF & Paid Leave System
+- [x] Create Payroll page with monthly overview
+- [x] Add payroll router with getMonthlyPayroll and getEmployeePayslip endpoints
+- [x] Implement PDF payslip generation for printing
+- [x] Add calculateLeaveDeductionsForPayroll function to leave.ts
+- [x] Add getEmployeeLeaveSummary function to leave.ts
+- [x] Link paid/unpaid leave to salary calculations
+- [x] Add Payroll menu item to sidebar (Lønn section)
+- [x] Write vitest tests for payroll system

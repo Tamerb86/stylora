@@ -415,3 +415,148 @@ export async function deleteSalonHoliday(holidayId: number, tenantId: string) {
 
   return { success: true };
 }
+
+
+/**
+ * Calculate leave deductions for payroll
+ * Returns the number of unpaid leave days and their monetary value
+ */
+export async function calculateLeaveDeductionsForPayroll(
+  employeeId: number,
+  tenantId: string,
+  month: number,
+  year: number,
+  dailyRate: number
+) {
+  const dbInstance = await getDb();
+  if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+  const { employeeLeaves } = await import("../drizzle/schema");
+
+  // Calculate date range for the month
+  const startDate = new Date(year, month - 1, 1);
+  const endDate = new Date(year, month, 0);
+
+  // Get all approved leaves for this period
+  const leaves = await dbInstance
+    .select()
+    .from(employeeLeaves)
+    .where(
+      and(
+        eq(employeeLeaves.tenantId, tenantId),
+        eq(employeeLeaves.employeeId, employeeId),
+        eq(employeeLeaves.status, "approved"),
+        lte(employeeLeaves.startDate, endDate),
+        gte(employeeLeaves.endDate, startDate)
+      )
+    );
+
+  let paidLeaveDays = 0;
+  let unpaidLeaveDays = 0;
+  let sickLeaveDays = 0;
+  let emergencyLeaveDays = 0;
+
+  for (const leave of leaves) {
+    const leaveStart = new Date(leave.startDate);
+    const leaveEnd = new Date(leave.endDate);
+    
+    // Calculate effective dates within the month
+    const effectiveStart = leaveStart < startDate ? startDate : leaveStart;
+    const effectiveEnd = leaveEnd > endDate ? endDate : leaveEnd;
+    
+    // Calculate working days (excluding weekends)
+    let days = 0;
+    const current = new Date(effectiveStart);
+    while (current <= effectiveEnd) {
+      const dayOfWeek = current.getDay();
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Not Sunday or Saturday
+        days++;
+      }
+      current.setDate(current.getDate() + 1);
+    }
+
+    switch (leave.leaveType) {
+      case "annual":
+        paidLeaveDays += days;
+        break;
+      case "sick":
+        sickLeaveDays += days;
+        break;
+      case "emergency":
+        emergencyLeaveDays += days;
+        break;
+      case "unpaid":
+        unpaidLeaveDays += days;
+        break;
+    }
+  }
+
+  // Calculate deduction amount for unpaid leave
+  const unpaidLeaveDeduction = unpaidLeaveDays * dailyRate;
+
+  return {
+    paidLeaveDays,
+    unpaidLeaveDays,
+    sickLeaveDays,
+    emergencyLeaveDays,
+    totalLeaveDays: paidLeaveDays + unpaidLeaveDays + sickLeaveDays + emergencyLeaveDays,
+    unpaidLeaveDeduction,
+    dailyRate,
+  };
+}
+
+/**
+ * Get leave summary for an employee for a specific period
+ */
+export async function getEmployeeLeaveSummary(
+  employeeId: number,
+  tenantId: string,
+  startDate: Date,
+  endDate: Date
+) {
+  const dbInstance = await getDb();
+  if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+  const { employeeLeaves } = await import("../drizzle/schema");
+
+  const leaves = await dbInstance
+    .select()
+    .from(employeeLeaves)
+    .where(
+      and(
+        eq(employeeLeaves.tenantId, tenantId),
+        eq(employeeLeaves.employeeId, employeeId),
+        eq(employeeLeaves.status, "approved"),
+        lte(employeeLeaves.startDate, endDate),
+        gte(employeeLeaves.endDate, startDate)
+      )
+    );
+
+  const summary = {
+    annual: { days: 0, leaves: [] as any[] },
+    sick: { days: 0, leaves: [] as any[] },
+    emergency: { days: 0, leaves: [] as any[] },
+    unpaid: { days: 0, leaves: [] as any[] },
+  };
+
+  for (const leave of leaves) {
+    const leaveStart = new Date(leave.startDate);
+    const leaveEnd = new Date(leave.endDate);
+    const effectiveStart = leaveStart < startDate ? startDate : leaveStart;
+    const effectiveEnd = leaveEnd > endDate ? endDate : leaveEnd;
+    const days = Math.ceil((effectiveEnd.getTime() - effectiveStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+    if (leave.leaveType in summary) {
+      summary[leave.leaveType as keyof typeof summary].days += days;
+      summary[leave.leaveType as keyof typeof summary].leaves.push({
+        id: leave.id,
+        startDate: leave.startDate,
+        endDate: leave.endDate,
+        reason: leave.reason,
+        daysInPeriod: days,
+      });
+    }
+  }
+
+  return summary;
+}
