@@ -167,7 +167,7 @@ export default function Monitoring() {
                     </Badge>
                   </div>
                   <div className="text-2xl font-bold">
-                    {systemHealth.components.unimicro.metrics.successRate.toFixed(1)}%
+                    {(systemHealth.components.unimicro.metrics?.successRate ?? 0).toFixed(1)}%
                   </div>
                   <p className="text-xs text-muted-foreground">Suksessrate</p>
                 </CardContent>
@@ -186,7 +186,7 @@ export default function Monitoring() {
                     </Badge>
                   </div>
                   <div className="text-2xl font-bold">
-                    {systemHealth.components.email.metrics.successRate.toFixed(1)}%
+                    {(systemHealth.components.email.metrics?.successRate ?? 0).toFixed(1)}%
                   </div>
                   <p className="text-xs text-muted-foreground">Leveringsrate</p>
                 </CardContent>
@@ -205,7 +205,7 @@ export default function Monitoring() {
                     </Badge>
                   </div>
                   <div className="text-2xl font-bold">
-                    {systemHealth.components.sms.metrics.successRate.toFixed(1)}%
+                    {(systemHealth.components.sms.metrics?.successRate ?? 0).toFixed(1)}%
                   </div>
                   <p className="text-xs text-muted-foreground">Leveringsrate</p>
                 </CardContent>
@@ -224,7 +224,7 @@ export default function Monitoring() {
                     </Badge>
                   </div>
                   <div className="text-2xl font-bold">
-                    {systemHealth.components.endpoints.metrics.errorRate.toFixed(1)}%
+                    {(systemHealth.components.endpoints.metrics?.errorRate ?? 0).toFixed(1)}%
                   </div>
                   <p className="text-xs text-muted-foreground">Feilrate</p>
                 </CardContent>
@@ -315,7 +315,7 @@ export default function Monitoring() {
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold flex items-center gap-2">
                     <Clock className="h-5 w-5 text-muted-foreground" />
-                    {unimicroMetrics.averageDuration.toFixed(1)}s
+                    {(unimicroMetrics?.averageDuration ?? 0).toFixed(1)}s
                   </div>
                   <p className="text-xs text-muted-foreground">Gjennomsnittlig varighet</p>
                 </CardContent>
@@ -394,7 +394,7 @@ export default function Monitoring() {
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold">
-                    {emailMetrics.successRate.toFixed(1)}%
+                    {(emailMetrics?.successRate ?? 0).toFixed(1)}%
                   </div>
                   <p className="text-xs text-muted-foreground">Suksessrate</p>
                 </CardContent>
@@ -436,7 +436,7 @@ export default function Monitoring() {
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-2xl font-bold">
-                    {smsMetrics.successRate.toFixed(1)}%
+                    {(smsMetrics?.successRate ?? 0).toFixed(1)}%
                   </div>
                   <p className="text-xs text-muted-foreground">Suksessrate</p>
                 </CardContent>
