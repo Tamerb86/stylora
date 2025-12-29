@@ -334,7 +334,13 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6 bg-gradient-to-br from-white to-blue-50/30">
-                <AppointmentsChart data={appointmentsOverTime} />
+                {appointmentsOverTime ? (
+                  <AppointmentsChart data={appointmentsOverTime} />
+                ) : (
+                  <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+                    {t('dashboard.noData', 'No data available')}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -350,7 +356,13 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6 bg-gradient-to-br from-white to-purple-50/30">
-                <StatusDistributionChart data={statusDistribution} />
+                {statusDistribution ? (
+                  <StatusDistributionChart data={statusDistribution} />
+                ) : (
+                  <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+                    {t('dashboard.noData', 'No data available')}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
