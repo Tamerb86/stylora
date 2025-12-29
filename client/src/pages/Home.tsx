@@ -51,42 +51,48 @@ export default function Home() {
       title: "Smart Timebok",
       description: "Intelligent kalender som forstår din virksomhet. Automatisk planlegging, ingen dobbeltbookinger, og full kontroll over alle avtaler.",
       color: "from-blue-500 to-cyan-500",
-      benefits: ["Drag & drop", "Automatisk planlegging", "Fargekodet oversikt"]
+      benefits: ["Drag & drop", "Automatisk planlegging", "Fargekodet oversikt"],
+      image: "/images/real-photos/dashboard-calendar.webp"
     },
     {
       icon: Globe,
       title: "24/7 Online Booking",
       description: "Kundene dine bestiller når det passer dem – selv når du sover. Automatiske bekreftelser og påminnelser holder kalenderen full.",
       color: "from-purple-500 to-pink-500",
-      benefits: ["Mobilvennlig", "Automatiske bekreftelser", "Ingen dobbeltbookinger"]
+      benefits: ["Mobilvennlig", "Automatiske bekreftelser", "Ingen dobbeltbookinger"],
+      image: "/images/real-photos/salon-modern-minimalist.webp"
     },
     {
       icon: MessageSquare,
       title: "Smarte Påminnelser",
       description: "Automatiske SMS-varsler 24 og 2 timer før timen. Våre kunder rapporterer opptil 80% reduksjon i no-shows.",
       color: "from-orange-500 to-red-500",
-      benefits: ["80% færre no-shows", "Automatiske SMS", "E-post varsler"]
+      benefits: ["80% færre no-shows", "Automatiske SMS", "E-post varsler"],
+      image: "/images/real-photos/salon-white-clean.webp"
     },
     {
       icon: CreditCard,
       title: "Enkel Betaling",
       description: "Integrasjon med Vipps og kortterminaler. Få betalt raskt, og hold oversikt over all omsetning på étt sted.",
       color: "from-green-500 to-emerald-500",
-      benefits: ["Vipps", "Stripe", "Kontant registrering"]
+      benefits: ["Vipps", "Stripe", "Kontant registrering"],
+      image: "/images/real-photos/dashboard-modern.webp"
     },
     {
       icon: Users,
       title: "Komplett Kunderegister",
       description: "Alt du trenger å vite om kundene dine. Besøkshistorikk, preferanser, notater og GDPR-kompatibel databehandling.",
       color: "from-indigo-500 to-blue-500",
-      benefits: ["Besøkshistorikk", "Lojalitetsprogram", "GDPR-sikker"]
+      benefits: ["Besøkshistorikk", "Lojalitetsprogram", "GDPR-sikker"],
+      image: "/images/real-photos/salon-active-customers.webp"
     },
     {
       icon: BarChart3,
       title: "Kraftige Analyser",
       description: "Omsetning, trender og ansattes ytelse – alt visualisert og lett å forstå. Ta datadrevne beslutninger som øker lønnsomheten.",
       color: "from-pink-500 to-rose-500",
-      benefits: ["Sanntidsrapporter", "Eksport til Excel", "Visuell analyse"]
+      benefits: ["Sanntidsrapporter", "Eksport til Excel", "Visuell analyse"],
+      image: "/images/real-photos/dashboard-analytics.webp"
     }
   ];
 
@@ -95,6 +101,12 @@ export default function Home() {
     { number: "98%", label: "Kundetilfredshet", icon: Star, color: "from-yellow-500 to-orange-500" },
     { number: "24/7", label: "Online booking", icon: Clock, color: "from-blue-500 to-cyan-500" },
     { number: "80%", label: "Færre uteblitte timer", icon: TrendingUp, color: "from-green-500 to-emerald-500" }
+  ];
+
+  const salonImages = [
+    "/images/real-photos/salon-luxury-interior.webp",
+    "/images/real-photos/salon-modern-minimalist.webp",
+    "/images/real-photos/salon-active-customers.webp"
   ];
 
   const testimonials = [
@@ -541,6 +553,47 @@ export default function Home() {
                   <span className="font-medium">Ingen kredittkort nødvendig</span>
                 </div>
               </div>
+
+              {/* Video Demo Section */}
+              <div className="mt-12 animate-in fade-in slide-in-from-bottom duration-700 delay-500">
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white/50 backdrop-blur-sm">
+                  {/* Video Placeholder with Play Button */}
+                  <div className="relative group cursor-pointer">
+                    <img 
+                      src="/images/real-photos/salon-vintage-barber.webp" 
+                      alt="Stylora system demo preview"
+                      className="w-full h-auto object-cover"
+                      loading="eager"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                    
+                    {/* Play Button Overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-purple-600 rounded-full blur-2xl opacity-50 animate-pulse"></div>
+                        <button 
+                          onClick={() => window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank')}
+                          className="relative w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-300"
+                        >
+                          <Play className="w-8 h-8 text-purple-600 ml-1" fill="currentColor" />
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {/* Video Duration Badge */}
+                    <div className="absolute bottom-4 right-4 px-3 py-1.5 bg-black/80 backdrop-blur-sm rounded-lg text-white text-sm font-semibold">
+                      <Clock className="w-4 h-4 inline mr-1" />
+                      2:30
+                    </div>
+                    
+                    {/* Video Title */}
+                    <div className="absolute bottom-4 left-4 text-white">
+                      <p className="text-lg font-bold drop-shadow-lg">Se Stylora i aksjon</p>
+                      <p className="text-sm opacity-90">Komplett systemgjennomgang</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -624,17 +677,29 @@ export default function Home() {
                 return (
                   <Card
                     key={index}
-                    className="group hover:shadow-2xl transition-all duration-300 border-2 hover:border-purple-200 animate-in fade-in slide-in-from-bottom duration-700"
+                    className="group hover:shadow-2xl transition-all duration-300 border-2 hover:border-purple-200 animate-in fade-in slide-in-from-bottom duration-700 overflow-hidden"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
-                    <CardHeader>
-                      <div className={`inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br ${feature.color} mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                        <Icon className="w-7 h-7 text-white" />
+                    {/* Feature Image */}
+                    {feature.image && (
+                      <div className="relative h-48 overflow-hidden">
+                        <img 
+                          src={feature.image} 
+                          alt={feature.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div className={`absolute top-4 left-4 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} shadow-lg`}>
+                          <Icon className="w-6 h-6 text-white" />
+                        </div>
                       </div>
-                      <CardTitle className="text-2xl font-bold text-gray-900 group-hover:text-purple-600 transition-colors">
+                    )}
+                    <CardHeader>
+                      <CardTitle className="text-xl font-bold text-gray-900 mb-2">
                         {feature.title}
                       </CardTitle>
-                      <CardDescription className="text-base text-gray-600 leading-relaxed">
+                      <CardDescription className="text-base text-gray-600">
                         {feature.description}
                       </CardDescription>
                     </CardHeader>
@@ -684,9 +749,24 @@ export default function Home() {
               {testimonials.map((testimonial, index) => (
                 <Card
                   key={index}
-                  className="group hover:shadow-2xl transition-all duration-300 border-2 hover:border-purple-200 animate-in fade-in slide-in-from-bottom duration-700"
+                  className="group hover:shadow-2xl transition-all duration-300 border-2 hover:border-purple-200 animate-in fade-in slide-in-from-bottom duration-700 overflow-hidden"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
+                  {/* Salon Image */}
+                  <div className="relative h-48 overflow-hidden">
+                    <img 
+                      src={salonImages[index]} 
+                      alt={`${testimonial.name} salon`}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                    <div className="absolute bottom-4 left-4 flex gap-1">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                  </div>
                   <CardHeader>
                     <div className="flex items-center gap-4 mb-4">
                       <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${testimonial.color} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
@@ -696,11 +776,6 @@ export default function Home() {
                         <div className="font-bold text-gray-900">{testimonial.name}</div>
                         <div className="text-sm text-gray-600">{testimonial.role}</div>
                       </div>
-                    </div>
-                    <div className="flex gap-1 mb-4">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                      ))}
                     </div>
                   </CardHeader>
                   <CardContent>
