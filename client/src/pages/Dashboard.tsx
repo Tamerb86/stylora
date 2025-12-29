@@ -16,7 +16,10 @@ import {
   Sparkles,
   Users,
   Star,
-  Package
+  Package,
+  ArrowUpRight,
+  Activity,
+  Zap
 } from "lucide-react";
 import { useTranslation } from 'react-i18next';
 import AppointmentsChart from '@/components/charts/AppointmentsChart';
@@ -56,7 +59,7 @@ export default function Dashboard() {
           <div className="animate-pulse space-y-6">
             <div className="grid grid-cols-2 gap-6">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-[120px] bg-muted rounded-xl"></div>
+                <div key={i} className="h-[140px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl"></div>
               ))}
             </div>
           </div>
@@ -69,34 +72,38 @@ export default function Dashboard() {
     {
       label: t('dashboard.todayAppointments'),
       value: stats?.todayAppointments || 0,
-      bgColor: "bg-gradient-to-br from-blue-50 to-blue-100",
-      textColor: "text-blue-700",
+      gradient: "from-blue-500 via-blue-600 to-indigo-600",
       icon: CalendarPlus,
-      iconBg: "bg-blue-500",
+      iconBg: "bg-white/20",
+      trend: "+12%",
+      trendUp: true,
     },
     {
       label: t('dashboard.pending'),
       value: stats?.pendingAppointments || 0,
-      bgColor: "bg-gradient-to-br from-amber-50 to-amber-100",
-      textColor: "text-amber-700",
+      gradient: "from-amber-500 via-orange-500 to-red-500",
       icon: AlertCircle,
-      iconBg: "bg-amber-500",
+      iconBg: "bg-white/20",
+      trend: "-5%",
+      trendUp: false,
     },
     {
       label: t('dashboard.completed'),
       value: stats?.completedAppointments || 0,
-      bgColor: "bg-gradient-to-br from-emerald-50 to-emerald-100",
-      textColor: "text-emerald-700",
+      gradient: "from-emerald-500 via-green-500 to-teal-500",
       icon: CheckCircle2,
-      iconBg: "bg-emerald-500",
+      iconBg: "bg-white/20",
+      trend: "+18%",
+      trendUp: true,
     },
     {
       label: t('dashboard.totalCustomers'),
       value: stats?.totalCustomers || 0,
-      bgColor: "bg-gradient-to-br from-purple-50 to-purple-100",
-      textColor: "text-purple-700",
+      gradient: "from-purple-500 via-violet-500 to-pink-500",
       icon: User,
-      iconBg: "bg-purple-500",
+      iconBg: "bg-white/20",
+      trend: "+24%",
+      trendUp: true,
     },
   ];
 
@@ -105,19 +112,22 @@ export default function Dashboard() {
       label: t('dashboard.quickBooking', 'Quick Booking'),
       icon: CalendarPlus,
       onClick: () => setShowQuickBooking(true),
-      color: "from-blue-600 via-blue-500 to-cyan-500",
+      gradient: "from-blue-600 via-cyan-500 to-teal-500",
+      description: "Book new appointment",
     },
     {
       label: t('dashboard.newCustomer'),
       icon: UserPlus,
       onClick: () => setLocation("/customers"),
-      color: "from-purple-600 via-purple-500 to-pink-500",
+      gradient: "from-purple-600 via-pink-500 to-rose-500",
+      description: "Add new customer",
     },
     {
       label: t('dashboard.newSale'),
       icon: ShoppingCart,
       onClick: () => setLocation("/pos"),
-      color: "from-orange-600 via-orange-500 to-red-500",
+      gradient: "from-orange-600 via-amber-500 to-yellow-500",
+      description: "Create new sale",
     },
   ];
 
@@ -144,114 +154,106 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
-      <div className="p-4 md:p-6 space-y-5">
-        {/* Welcome Header - Smaller */}
-        <div className="mb-4">
-          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center gap-2">
-            <Sparkles className="w-6 h-6 md:w-8 md:h-8 text-blue-600" />
-            {t('dashboard.title')}
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm md:text-base">
-            {t('dashboard.welcome')}
-          </p>
+      <div className="p-4 md:p-8 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 min-h-screen">
+        {/* Welcome Header - Enhanced with Animation */}
+        <div className="mb-6 animate-in fade-in slide-in-from-top duration-700">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-3 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-2xl shadow-lg animate-pulse">
+              <Sparkles className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                {t('dashboard.title')}
+              </h1>
+              <p className="text-muted-foreground text-sm md:text-base flex items-center gap-2">
+                <Activity className="w-4 h-4" />
+                {t('dashboard.welcome')}
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Stats Grid - Smaller Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {/* Stats Grid - Enhanced Cards with Gradients */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {statCards.map((card, index) => {
             const Icon = card.icon;
             return (
-              <Card 
-                key={index} 
-                className="overflow-hidden border-0 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+              <div
+                key={index}
+                className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 animate-in fade-in slide-in-from-bottom"
+                style={{ animationDelay: `${index * 100}ms` }}
               >
-                <CardContent className={`${card.bgColor} p-4 relative`}>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-2">
-                      <p className={`${card.textColor} text-xs font-semibold opacity-90`}>
+                {/* Gradient Background */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-100`}></div>
+                
+                {/* Animated Background Pattern */}
+                <div className="absolute inset-0 opacity-10">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.8),rgba(255,255,255,0))]"></div>
+                </div>
+
+                {/* Content */}
+                <CardContent className="relative p-6 text-white">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="space-y-1">
+                      <p className="text-white/90 text-sm font-medium">
                         {card.label}
                       </p>
-                      <p className={`${card.textColor} text-3xl md:text-4xl font-bold tracking-tight`}>
+                      <p className="text-5xl font-bold tracking-tight">
                         {card.value}
                       </p>
                     </div>
-                    <div className={`${card.iconBg} p-2.5 rounded-xl shadow-md`}>
-                      <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                    <div className={`${card.iconBg} p-3 rounded-xl backdrop-blur-sm group-hover:scale-110 transition-transform duration-300`}>
+                      <Icon className="w-7 h-7 text-white" />
                     </div>
                   </div>
+
+                  {/* Trend Indicator */}
+                  <div className="flex items-center gap-2">
+                    <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
+                      card.trendUp ? 'bg-white/20' : 'bg-black/20'
+                    }`}>
+                      <ArrowUpRight className={`w-3 h-3 ${card.trendUp ? '' : 'rotate-90'}`} />
+                      {card.trend}
+                    </div>
+                    <span className="text-xs text-white/80">vs last week</span>
+                  </div>
                 </CardContent>
-              </Card>
+              </div>
             );
           })}
         </div>
 
-        {/* Today's Appointments Widget */}
-        <TodayAppointments />
-
-        {/* Salon Insights - NEW */}
-        <Card className="border-0 shadow-md">
-          <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <div className="p-1.5 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg">
-                <TrendingUp className="w-4 h-4 text-white" />
-              </div>
-              {t('dashboard.salonInsights')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="p-3 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border border-blue-100">
-                <div className="flex items-center gap-2 mb-1">
-                  <Users className="w-4 h-4 text-blue-600" />
-                  <p className="text-xs font-semibold text-blue-700">{t('dashboard.activeStaff')}</p>
-                </div>
-                <p className="text-2xl font-bold text-blue-800">{activeEmployees}</p>
-              </div>
-
-              <div className="p-3 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border border-purple-100">
-                <div className="flex items-center gap-2 mb-1">
-                  <Package className="w-4 h-4 text-purple-600" />
-                  <p className="text-xs font-semibold text-purple-700">{t('dashboard.totalServices')}</p>
-                </div>
-                <p className="text-2xl font-bold text-purple-800">{totalServices}</p>
-              </div>
-
-              <div className="p-3 bg-gradient-to-br from-emerald-50 to-green-50 rounded-lg border border-emerald-100 col-span-2">
-                <div className="flex items-center gap-2 mb-1">
-                  <Star className="w-4 h-4 text-emerald-600" />
-                  <p className="text-xs font-semibold text-emerald-700">{t('dashboard.popularService')}</p>
-                </div>
-                <p className="text-lg font-bold text-emerald-800 truncate">{mostPopularService}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Quick Actions - Smaller Buttons */}
-        <Card className="border-0 shadow-md">
-          <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <div className="p-1.5 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg">
-                <TrendingUp className="w-4 h-4 text-white" />
+        {/* Quick Actions - Enhanced with Gradients */}
+        <Card className="border-0 shadow-xl rounded-2xl overflow-hidden animate-in fade-in slide-in-from-bottom duration-700">
+          <CardHeader className="bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 text-white pb-4">
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
+                <Zap className="w-5 h-5" />
               </div>
               {t('dashboard.quickActions')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <CardContent className="pt-6 bg-gradient-to-br from-white to-slate-50">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {quickActions.map((action, index) => {
                 const Icon = action.icon;
                 return (
                   <Button
                     key={index}
                     onClick={action.onClick}
-                    className={`h-20 bg-gradient-to-r ${action.color} hover:opacity-90 transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg border-0`}
+                    className={`group relative h-28 bg-gradient-to-br ${action.gradient} hover:opacity-90 transition-all duration-500 hover:scale-105 shadow-lg hover:shadow-2xl border-0 overflow-hidden`}
                   >
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="p-2 bg-white/20 rounded-full backdrop-blur-sm">
-                        <Icon className="w-5 h-5" />
+                    {/* Animated Background */}
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.3),rgba(255,255,255,0))] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    
+                    <div className="relative flex flex-col items-center gap-3">
+                      <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                        <Icon className="w-7 h-7" />
                       </div>
-                      <span className="text-sm font-bold">{action.label}</span>
+                      <div className="text-center">
+                        <span className="text-base font-bold block">{action.label}</span>
+                        <span className="text-xs opacity-90">{action.description}</span>
+                      </div>
                     </div>
                   </Button>
                 );
@@ -260,200 +262,123 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Upcoming Appointments - Smaller */}
-          <Card className="border-0 shadow-md">
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50 pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <div className="p-1.5 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg">
-                  <Clock className="w-4 h-4 text-white" />
-                </div>
-                {t('dashboard.upcomingAppointments')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              {upcomingAppointments && upcomingAppointments.length > 0 ? (
-                <div className="space-y-2">
-                  {upcomingAppointments.slice(0, 5).map((appointment: any) => (
-                    <div
-                      key={appointment.id}
-                      className="flex items-center justify-between p-3 bg-gradient-to-r from-slate-50 to-slate-100 rounded-lg hover:from-slate-100 hover:to-slate-200 transition-all duration-300 cursor-pointer border border-slate-200 hover:shadow-sm"
-                      onClick={() => setLocation("/appointments")}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm shadow-md">
-                          {appointment.customerFirstName?.[0] || "?"}
-                        </div>
-                        <div>
-                          <p className="font-bold text-sm">
-                            {appointment.customerFirstName} {appointment.customerLastName}
-                          </p>
-                          <p className="text-xs text-muted-foreground font-medium">
-                            {formatDate(appointment.appointmentDate)} • {formatTime(appointment.appointmentDate, appointment.startTime)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm ${
-                        appointment.status === 'confirmed' ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white' :
-                        appointment.status === 'pending' ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-white' :
-                        'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
-                      }`}>
-                        {appointment.status === 'confirmed' ? t('dashboard.confirmed') :
-                         appointment.status === 'pending' ? t('dashboard.pendingStatus') :
-                         appointment.status}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full flex items-center justify-center">
-                    <Clock className="w-8 h-8 opacity-50" />
-                  </div>
-                  <p className="text-sm font-semibold mb-1">{t('dashboard.noAppointments')}</p>
-                  <p className="text-xs mb-3">{t('dashboard.createAppointment')}</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-2 border-2 hover:bg-blue-50 hover:border-blue-500 hover:text-blue-600 transition-all"
-                    onClick={() => setLocation("/appointments")}
-                  >
-                    {t('dashboard.createAppointment')}
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Today's Performance - Smaller */}
-          <Card className="border-0 shadow-md">
-            <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <div className="p-1.5 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg">
-                  <DollarSign className="w-4 h-4 text-white" />
-                </div>
-                {t('dashboard.todayPerformance')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200 shadow-sm hover:shadow-md transition-all">
-                  <div>
-                    <p className="text-xs text-blue-700 font-bold mb-1">{t('dashboard.totalAppointments')}</p>
-                    <p className="text-3xl font-black text-blue-800">
-                      {stats?.todayAppointments || 0}
-                    </p>
-                  </div>
-                  <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl shadow-md">
-                    <CalendarPlus className="w-7 h-7 text-white" />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-gradient-to-r from-emerald-50 to-green-50 rounded-lg border border-emerald-200 shadow-sm hover:shadow-md transition-all">
-                  <div>
-                    <p className="text-xs text-emerald-700 font-bold mb-1">{t('dashboard.completedCount')}</p>
-                    <p className="text-3xl font-black text-emerald-800">
-                      {stats?.completedAppointments || 0}
-                    </p>
-                  </div>
-                  <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-500 rounded-xl shadow-md">
-                    <CheckCircle2 className="w-7 h-7 text-white" />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200 shadow-sm hover:shadow-md transition-all">
-                  <div>
-                    <p className="text-xs text-amber-700 font-bold mb-1">{t('dashboard.pendingCount')}</p>
-                    <p className="text-3xl font-black text-amber-800">
-                      {stats?.pendingAppointments || 0}
-                    </p>
-                  </div>
-                  <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl shadow-md">
-                    <AlertCircle className="w-7 h-7 text-white" />
-                  </div>
-                </div>
-
-                <Button
-                  variant="outline"
-                  className="w-full h-12 text-sm font-bold border-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:border-blue-500 hover:text-blue-600 transition-all"
-                  onClick={() => setLocation("/analytics")}
-                >
-                  {t('dashboard.viewFullAnalytics')}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Today's Appointments Widget */}
+        <div className="animate-in fade-in slide-in-from-bottom duration-700">
+          <TodayAppointments />
         </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Appointments Trend Chart */}
-          <Card className="border-0 shadow-md lg:col-span-2">
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <div className="p-1.5 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg">
-                  <BarChart3 className="w-4 h-4 text-white" />
-                </div>
-                {t('dashboard.appointmentsTrend')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              {appointmentsOverTime && appointmentsOverTime.length > 0 ? (
-                <AppointmentsChart data={appointmentsOverTime} />
-              ) : (
-                <div className="h-[250px] flex items-center justify-center text-muted-foreground">
-                  <p className="text-sm">{t('dashboard.noData')}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Status Distribution Chart */}
-          <Card className="border-0 shadow-md">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 pb-3">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <div className="p-1.5 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg">
-                  <PieChart className="w-4 h-4 text-white" />
-                </div>
-                {t('dashboard.statusDistribution')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              {statusDistribution ? (
-                <StatusDistributionChart data={statusDistribution} />
-              ) : (
-                <div className="h-[250px] flex items-center justify-center text-muted-foreground">
-                  <p className="text-sm">{t('dashboard.noData')}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Mini Calendar */}
-        <Card className="border-0 shadow-md">
-          <CardHeader className="bg-gradient-to-r from-teal-50 to-cyan-50 pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <div className="p-1.5 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-lg">
-                <CalendarIcon className="w-4 h-4 text-white" />
+        {/* Salon Insights - Enhanced */}
+        <Card className="border-0 shadow-xl rounded-2xl overflow-hidden animate-in fade-in slide-in-from-bottom duration-700">
+          <CardHeader className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white pb-4">
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
+                <TrendingUp className="w-5 h-5" />
               </div>
-              {t('dashboard.monthlyCalendar')}
+              {t('dashboard.salonInsights')}
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-4">
-            {upcomingAppointments ? (
-              <MiniCalendar appointments={upcomingAppointments as any} />
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <p className="text-sm">{t('dashboard.noData')}</p>
+          <CardContent className="pt-6 bg-gradient-to-br from-white to-slate-50">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="group relative p-6 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.3),rgba(255,255,255,0))]"></div>
+                <div className="relative">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <p className="text-sm font-semibold text-white/90">{t('dashboard.activeStaff')}</p>
+                  </div>
+                  <p className="text-4xl font-bold text-white">{activeEmployees}</p>
+                </div>
               </div>
-            )}
+
+              <div className="group relative p-6 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.3),rgba(255,255,255,0))]"></div>
+                <div className="relative">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                      <Package className="w-6 h-6 text-white" />
+                    </div>
+                    <p className="text-sm font-semibold text-white/90">{t('dashboard.totalServices')}</p>
+                  </div>
+                  <p className="text-4xl font-bold text-white">{totalServices}</p>
+                </div>
+              </div>
+
+              <div className="group relative p-6 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.3),rgba(255,255,255,0))]"></div>
+                <div className="relative">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                      <Star className="w-6 h-6 text-white" />
+                    </div>
+                    <p className="text-sm font-semibold text-white/90">{t('dashboard.popularService')}</p>
+                  </div>
+                  <p className="text-xl font-bold text-white truncate">{mostPopularService}</p>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
+
+        {/* Charts Section - Enhanced */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 animate-in fade-in slide-in-from-left duration-700">
+            <Card className="border-0 shadow-xl rounded-2xl overflow-hidden h-full">
+              <CardHeader className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+                <CardTitle className="flex items-center gap-3">
+                  <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
+                    <BarChart3 className="w-5 h-5" />
+                  </div>
+                  {t('dashboard.appointmentsTrend')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6 bg-gradient-to-br from-white to-blue-50/30">
+                <AppointmentsChart data={appointmentsOverTime} />
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="animate-in fade-in slide-in-from-right duration-700">
+            <Card className="border-0 shadow-xl rounded-2xl overflow-hidden h-full">
+              <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                <CardTitle className="flex items-center gap-3">
+                  <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
+                    <PieChart className="w-5 h-5" />
+                  </div>
+                  {t('dashboard.statusDistribution')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6 bg-gradient-to-br from-white to-purple-50/30">
+                <StatusDistributionChart data={statusDistribution} />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Mini Calendar - Enhanced */}
+        <div className="animate-in fade-in slide-in-from-bottom duration-700">
+          <Card className="border-0 shadow-xl rounded-2xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
+              <CardTitle className="flex items-center gap-3">
+                <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
+                  <CalendarIcon className="w-5 h-5" />
+                </div>
+                {t('dashboard.monthlyCalendar')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6 bg-gradient-to-br from-white to-emerald-50/30">
+              <MiniCalendar />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Booking Dialog */}
+        <QuickBookingDialog 
+          open={showQuickBooking} 
+          onOpenChange={setShowQuickBooking}
+        />
       </div>
-      
-      {/* Quick Booking Dialog */}
-      <QuickBookingDialog open={showQuickBooking} onOpenChange={setShowQuickBooking} />
     </DashboardLayout>
   );
 }
