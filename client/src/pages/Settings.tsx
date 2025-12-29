@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Building2, Clock, Bell, CreditCard, Globe, Palette, Printer, MessageSquare } from "lucide-react";
+import { Building2, Clock, Bell, CreditCard, Globe, Palette, Printer, MessageSquare, Database } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { BookingSettingsSection } from "@/components/BookingSettingsSection";
@@ -14,6 +14,7 @@ import { DomainSettingsTab } from "@/components/DomainSettingsTab";
 import { BrandingSettingsTab } from "@/components/BrandingSettingsTab";
 import { PrintSettingsTab } from "@/components/settings/PrintSettingsTab";
 import { SMSSettingsTab } from "@/components/settings/SMSSettingsTab";
+import { DefaultDataTab } from "@/components/settings/DefaultDataTab";
 import { PaymentSettingsTab } from "@/components/settings/PaymentSettingsTab";
 import { BusinessHoursTab } from "@/components/BusinessHoursTab";
 import { trpc } from "@/lib/trpc";
@@ -105,7 +106,7 @@ export default function Settings() {
         </div>
 
         <Tabs defaultValue="salon" className="space-y-6">
-          <TabsList className={`grid w-full ${isSimpleMode ? 'grid-cols-6' : 'grid-cols-9'}`}>
+          <TabsList className={`grid w-full ${isSimpleMode ? 'grid-cols-7' : 'grid-cols-10'}`}>
             <TabsTrigger value="salon">
               <Building2 className="h-4 w-4 mr-2" />
               Salong
@@ -129,6 +130,10 @@ export default function Settings() {
             <TabsTrigger value="domain">
               <Globe className="h-4 w-4 mr-2" />
               Domene
+            </TabsTrigger>
+            <TabsTrigger value="defaultdata">
+              <Database className="h-4 w-4 mr-2" />
+              Startdata
             </TabsTrigger>
             {!isSimpleMode && (
               <>
@@ -328,6 +333,11 @@ export default function Settings() {
           {/* SMS Settings Tab */}
           <TabsContent value="sms">
             <SMSSettingsTab />
+          </TabsContent>
+
+          {/* Default Data Tab */}
+          <TabsContent value="defaultdata">
+            <DefaultDataTab />
           </TabsContent>
 
           {/* Business Hours Tab */}

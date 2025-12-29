@@ -1788,6 +1788,174 @@ export const appRouter = router({
           message: "Test-SMS sendt!",
         };
       }),
+
+    // Load Default Services and Products
+    loadDefaultData: adminProcedure
+      .input(
+        z.object({
+          loadServices: z.boolean().default(true),
+          loadProducts: z.boolean().default(true),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        }
+
+        const { services, serviceCategories, products, productCategories } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const { 
+          defaultServiceCategories, 
+          defaultServices, 
+          defaultProductCategories, 
+          defaultProducts 
+        } = await import("./services/defaultData");
+
+        let servicesAdded = 0;
+        let productsAdded = 0;
+        let serviceCategoriesAdded = 0;
+        let productCategoriesAdded = 0;
+
+        // Load Services
+        if (input.loadServices) {
+          const categoryMap = new Map<string, number>();
+          
+          for (const cat of defaultServiceCategories) {
+            const existingCat = await dbInstance
+              .select()
+              .from(serviceCategories)
+              .where(eq(serviceCategories.tenantId, ctx.tenantId));
+            
+            const found = existingCat.find(c => c.name === cat.name);
+            
+            if (found) {
+              categoryMap.set(cat.name, found.id);
+            } else {
+              const [inserted] = await dbInstance
+                .insert(serviceCategories)
+                .values({
+                  tenantId: ctx.tenantId,
+                  name: cat.name,
+                  displayOrder: cat.displayOrder,
+                });
+              const insertId = (inserted as any).insertId;
+              categoryMap.set(cat.name, insertId);
+              serviceCategoriesAdded++;
+            }
+          }
+
+          for (const service of defaultServices) {
+            const categoryId = categoryMap.get(service.categoryName);
+            
+            const existingServices = await dbInstance
+              .select()
+              .from(services)
+              .where(eq(services.tenantId, ctx.tenantId));
+            
+            const exists = existingServices.find(s => s.name === service.name);
+            
+            if (!exists) {
+              await dbInstance.insert(services).values({
+                tenantId: ctx.tenantId,
+                categoryId: categoryId || null,
+                name: service.name,
+                description: service.description,
+                durationMinutes: service.durationMinutes,
+                price: service.price.toString(),
+                isActive: true,
+              });
+              servicesAdded++;
+            }
+          }
+        }
+
+        // Load Products
+        if (input.loadProducts) {
+          const productCategoryMap = new Map<string, number>();
+          
+          for (const cat of defaultProductCategories) {
+            const existingCat = await dbInstance
+              .select()
+              .from(productCategories)
+              .where(eq(productCategories.tenantId, ctx.tenantId));
+            
+            const found = existingCat.find(c => c.name === cat.name);
+            
+            if (found) {
+              productCategoryMap.set(cat.name, found.id);
+            } else {
+              const [inserted] = await dbInstance
+                .insert(productCategories)
+                .values({
+                  tenantId: ctx.tenantId,
+                  name: cat.name,
+                  displayOrder: cat.displayOrder,
+                });
+              const insertId = (inserted as any).insertId;
+              productCategoryMap.set(cat.name, insertId);
+              productCategoriesAdded++;
+            }
+          }
+
+          for (const product of defaultProducts) {
+            const categoryId = productCategoryMap.get(product.categoryName);
+            
+            const existingProducts = await dbInstance
+              .select()
+              .from(products)
+              .where(eq(products.tenantId, ctx.tenantId));
+            
+            const exists = existingProducts.find(p => p.sku === product.sku || p.name === product.name);
+            
+            if (!exists) {
+              await dbInstance.insert(products).values({
+                tenantId: ctx.tenantId,
+                categoryId: categoryId || null,
+                sku: product.sku,
+                name: product.name,
+                description: product.description,
+                costPrice: product.costPrice.toString(),
+                retailPrice: product.retailPrice.toString(),
+                stockQuantity: product.stockQuantity,
+                reorderPoint: product.reorderPoint,
+                isActive: true,
+              });
+              productsAdded++;
+            }
+          }
+        }
+
+        return {
+          success: true,
+          message: `Lagt til ${servicesAdded} tjenester, ${serviceCategoriesAdded} tjenestekategorier, ${productsAdded} produkter, ${productCategoriesAdded} produktkategorier`,
+          stats: {
+            servicesAdded,
+            serviceCategoriesAdded,
+            productsAdded,
+            productCategoriesAdded,
+          },
+        };
+      }),
+
+    // Get default data preview
+    getDefaultDataPreview: tenantProcedure.query(async () => {
+      const { 
+        defaultServiceCategories, 
+        defaultServices, 
+        defaultProductCategories, 
+        defaultProducts,
+        defaultDataSummary,
+      } = await import("./services/defaultData");
+
+      return {
+        summary: defaultDataSummary,
+        serviceCategories: defaultServiceCategories,
+        services: defaultServices,
+        productCategories: defaultProductCategories,
+        products: defaultProducts,
+      };
+    }),
   }),
 
   // ============================================================================
