@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, Calendar, Scissors, UserCog, Package, BarChart3, Settings as SettingsIcon, Bell, Gift, DollarSign, TrendingUp, Clock, ShoppingCart, Receipt, Search, RefreshCw, Plane, CalendarCheck, Database, Building2, CreditCard, History, ChevronDown, MessageCircle, Send, UserCheck, Mail, Shield, Wallet, FileText, Settings, X } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, Calendar, Scissors, UserCog, Package, BarChart3, Settings as SettingsIcon, Bell, Gift, DollarSign, TrendingUp, Clock, ShoppingCart, Receipt, Search, RefreshCw, Plane, CalendarCheck, Database, Building2, CreditCard, History, ChevronDown, MessageCircle, Send, UserCheck, Mail, Shield, Wallet, FileText, Settings, X, Activity } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -97,6 +97,7 @@ const settingsMenuItems = [
   ] },
   { icon: Database, label: "Sikkerhetskopier", path: "/backups", adminOnly: true, advancedOnly: true, tooltip: "Administrer sikkerhetskopier" },
   { icon: FileText, label: "Importer Data", path: "/import", adminOnly: true, advancedOnly: true, tooltip: "Importer kunder, tjenester og produkter" },
+  { icon: Activity, label: "Systemovervåking", path: "/monitoring", adminOnly: true, advancedOnly: true, tooltip: "Overvåk systemytelse og integrasjoner" },
 ];
 
 const paymentsMenuItems = [
