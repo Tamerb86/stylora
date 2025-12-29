@@ -23,15 +23,52 @@ describe("POS Financial Reports", () => {
     }
     testTenantId = existingTenants[0].id;
 
-    // Get two employees
-    const existingEmployees = await dbInstance
+    // Get or create two employees
+    let existingEmployees = await dbInstance
       .select()
       .from(users)
       .where(eq(users.tenantId, testTenantId))
       .limit(2);
 
+    // Create employees if not enough exist
     if (existingEmployees.length < 2) {
-      throw new Error("Need at least 2 employees for testing");
+      const employeesToCreate = 2 - existingEmployees.length;
+      for (let i = 0; i < employeesToCreate; i++) {
+        const [newEmployee] = await dbInstance.insert(users).values({
+          tenantId: testTenantId,
+          openId: `test-employee-${Date.now()}-${i}`,
+          email: `test-employee-${i}@test.com`,
+          name: `Test Employee ${i + 1}`,
+          role: "employee",
+          isActive: true,
+        });
+        existingEmployees.push({
+          id: newEmployee.insertId,
+          tenantId: testTenantId,
+          openId: `test-employee-${Date.now()}-${i}`,
+          email: `test-employee-${i}@test.com`,
+          name: `Test Employee ${i + 1}`,
+          role: "employee" as const,
+          isActive: true,
+          phone: null,
+          loginMethod: null,
+          pin: null,
+          passwordHash: null,
+          deactivatedAt: null,
+          commissionType: "percentage" as const,
+          commissionRate: null,
+          annualLeaveTotal: 25,
+          annualLeaveUsed: 0,
+          sickLeaveUsed: 0,
+          uiMode: "simple" as const,
+          sidebarOpen: false,
+          onboardingCompleted: false,
+          onboardingStep: 0,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          lastSignedIn: new Date(),
+        });
+      }
     }
     testEmployeeId = existingEmployees[0].id;
     testEmployee2Id = existingEmployees[1].id;
