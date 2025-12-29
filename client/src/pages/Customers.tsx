@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Search, Phone, Mail, Calendar, Users, Gift, CalendarPlus, Receipt, Trash2, MessageSquare } from "lucide-react";
+import { Plus, Search, Phone, Mail, Calendar, Users, Gift, CalendarPlus, Receipt, Trash2, MessageSquare, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { useBulkSelection } from "@/hooks/useBulkSelection";
 import { BulkActionToolbar } from "@/components/BulkActionToolbar";
@@ -132,6 +132,12 @@ export default function Customers() {
     createCustomer.mutate(formData);
   };
 
+  // Calculate stats
+  const totalCustomers = customers?.length || 0;
+  const totalRevenue = customers?.reduce((sum, c) => sum + (c.totalRevenue || 0), 0) || 0;
+  const totalVisits = customers?.reduce((sum, c) => sum + (c.totalVisits || 0), 0) || 0;
+  const avgRevenuePerCustomer = totalCustomers > 0 ? totalRevenue / totalCustomers : 0;
+
   return (
     <DashboardLayout
       breadcrumbs={[
@@ -147,15 +153,21 @@ export default function Customers() {
         isLoading={deleteCustomer.isPending}
       />
       
+      {/* Background gradient */}
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-blue-50 via-purple-50 to-orange-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900"></div>
+      
       <div className="p-8 space-y-6">
-        <div className="flex justify-between items-center">
+        {/* Header with gradient */}
+        <div className="flex justify-between items-center animate-fade-in">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">Kunder</h1>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-orange-500 bg-clip-text text-transparent">
+              Kunder
+            </h1>
             <p className="text-muted-foreground mt-1">Administrer kunderegisteret</p>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-white shadow-lg">
+              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                 <Plus className="mr-2 h-4 w-4" />
                 Ny kunde
               </Button>
@@ -280,26 +292,101 @@ export default function Customers() {
           </Dialog>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Søk etter navn, telefon eller e-post..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-sm"
-          />
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          <Card className="relative overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 opacity-90"></div>
+            <CardHeader className="relative pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-white/90">Totalt kunder</CardTitle>
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                  <Users className="h-4 w-4 text-white" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="relative">
+              <div className="text-3xl font-bold text-white">{totalCustomers}</div>
+              <p className="text-xs text-white/80 mt-1">Registrerte kunder</p>
+            </CardContent>
+          </Card>
+
+          <Card className="relative overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-emerald-600 opacity-90"></div>
+            <CardHeader className="relative pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-white/90">Total omsetning</CardTitle>
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                  <Receipt className="h-4 w-4 text-white" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="relative">
+              <div className="text-3xl font-bold text-white">{totalRevenue.toFixed(0)} kr</div>
+              <p className="text-xs text-white/80 mt-1">Fra alle kunder</p>
+            </CardContent>
+          </Card>
+
+          <Card className="relative overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-purple-600 opacity-90"></div>
+            <CardHeader className="relative pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-white/90">Totalt besøk</CardTitle>
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                  <CalendarPlus className="h-4 w-4 text-white" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="relative">
+              <div className="text-3xl font-bold text-white">{totalVisits}</div>
+              <p className="text-xs text-white/80 mt-1">Fullførte avtaler</p>
+            </CardContent>
+          </Card>
+
+          <Card className="relative overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-orange-600 opacity-90"></div>
+            <CardHeader className="relative pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-white/90">Snitt per kunde</CardTitle>
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                  <TrendingUp className="h-4 w-4 text-white" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="relative">
+              <div className="text-3xl font-bold text-white">{avgRevenuePerCustomer.toFixed(0)} kr</div>
+              <p className="text-xs text-white/80 mt-1">Gjennomsnittlig verdi</p>
+            </CardContent>
+          </Card>
         </div>
 
+        {/* Search Bar */}
+        <div className="flex items-center space-x-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Søk etter navn, telefon eller e-post..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 bg-white/80 backdrop-blur-sm border-gray-200 shadow-sm"
+            />
+          </div>
+        </div>
+
+        {/* Customer Cards */}
         {isLoading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-24 bg-muted animate-pulse rounded-lg"></div>
+              <div key={i} className="h-32 bg-gradient-to-r from-gray-100 to-gray-200 animate-pulse rounded-lg"></div>
             ))}
           </div>
         ) : filteredCustomers && filteredCustomers.length > 0 ? (
-          <div className="grid gap-4">
-            {filteredCustomers.map((customer) => (
-              <Card key={customer.id} className="hover:shadow-md transition-shadow">
+          <div className="grid gap-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            {filteredCustomers.map((customer, index) => (
+              <Card 
+                key={customer.id} 
+                className="hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border-none bg-white/80 backdrop-blur-sm animate-slide-in"
+                style={{ animationDelay: `${0.05 * index}s` }}
+              >
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div className="flex items-start gap-3">
@@ -309,7 +396,7 @@ export default function Customers() {
                         className="mt-1"
                       />
                       <div>
-                        <CardTitle>
+                        <CardTitle className="text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                           {customer.firstName} {customer.lastName}
                         </CardTitle>
                         <CardDescription className="space-y-1 mt-2">
@@ -333,15 +420,21 @@ export default function Customers() {
                         </CardDescription>
                       </div>
                     </div>
-                    <div className="text-right text-sm text-muted-foreground">
-                      <div>Besøk: {customer.totalVisits}</div>
-                      <div>Omsetning: {customer.totalRevenue} NOK</div>
+                    <div className="text-right">
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 text-sm font-semibold text-blue-700 mb-2">
+                        <Users className="h-3 w-3" />
+                        {customer.totalVisits} besøk
+                      </div>
+                      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-100 to-green-100 text-sm font-semibold text-emerald-700">
+                        <Receipt className="h-3 w-3" />
+                        {customer.totalRevenue} kr
+                      </div>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {customer.notes && (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground bg-gray-50 p-3 rounded-lg">
                       <strong>Notater:</strong> {customer.notes}
                     </p>
                   )}
@@ -349,7 +442,7 @@ export default function Customers() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="flex-1 gap-2"
+                      className="flex-1 gap-2 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-300"
                       onClick={() => setLocation(`/customers/${customer.id}`)}
                     >
                       <Users className="h-4 w-4" />
@@ -357,8 +450,7 @@ export default function Customers() {
                     </Button>
                     <Button
                       size="sm"
-                      variant="outline"
-                      className="flex-1 gap-2"
+                      className="flex-1 gap-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white transition-all duration-300"
                       onClick={() => setLocation("/appointments")}
                     >
                       <CalendarPlus className="h-4 w-4" />
@@ -370,9 +462,11 @@ export default function Customers() {
             ))}
           </div>
         ) : (
-          <Card>
+          <Card className="border-none bg-white/80 backdrop-blur-sm shadow-lg">
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <Users className="h-12 w-12 text-muted-foreground mb-4" />
+              <div className="p-4 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full mb-4">
+                <Users className="h-12 w-12 text-blue-600" />
+              </div>
               {searchTerm ? (
                 <>
                   <h3 className="text-lg font-semibold mb-2">Ingen kunder funnet</h3>
@@ -385,7 +479,10 @@ export default function Customers() {
                     Legg til kunder for å booke avtaler, spore lojalitetspoeng og se kjøpshistorikk.
                   </p>
                   <div className="flex gap-3">
-                    <Button onClick={() => setIsDialogOpen(true)}>
+                    <Button 
+                      onClick={() => setIsDialogOpen(true)}
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                    >
                       <Plus className="h-4 w-4 mr-2" />
                       Opprett første kunde
                     </Button>

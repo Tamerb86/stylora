@@ -199,7 +199,7 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider
         defaultTheme="light"
-        // switchable
+        switchable
       >
         <StripeTerminalProvider providerId={import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ""}>
           <ThermalPrinterProvider>

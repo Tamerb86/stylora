@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, UserCog, Mail, Phone, Edit, Lock, Unlock, Key } from "lucide-react";
+import { Plus, UserCog, Mail, Phone, Edit, Lock, Unlock, Key, Users, Award, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Employees() {
@@ -129,19 +129,36 @@ export default function Employees() {
     }
   };
 
+  // Calculate stats
+  const totalEmployees = employees?.length || 0;
+  const activeEmployees = employees?.filter(e => e.isActive).length || 0;
+  const avgCommission = employees?.length ? employees.reduce((sum, e) => sum + (parseFloat(e.commissionRate) || 0), 0) / employees.length : 0;
+  const employeesWithPin = employees?.filter(e => e.pin).length || 0;
+
   return (
-    <DashboardLayout>
+    <DashboardLayout
+      breadcrumbs={[
+        { label: "Dashboard", href: "/dashboard" },
+        { label: "Ansatte" },
+      ]}
+    >
+      {/* Background gradient */}
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-gray-900"></div>
+      
       <div className="p-8 space-y-6">
-        <div className="flex justify-between items-center">
+        {/* Header */}
+        <div className="flex justify-between items-center animate-fade-in">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">Ansatte</h1>
-            <p className="text-muted-foreground">Administrer behandlere og personale</p>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 bg-clip-text text-transparent">
+              Ansatte
+            </h1>
+            <p className="text-muted-foreground mt-1">Administrer behandlere og personale</p>
           </div>
           
           {/* Create Dialog */}
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-white shadow-lg">
+              <Button className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                 <Plus className="mr-2 h-4 w-4" />
                 Ny ansatt
               </Button>
@@ -229,6 +246,73 @@ export default function Employees() {
               </form>
             </DialogContent>
           </Dialog>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          <Card className="relative overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-indigo-600 opacity-90"></div>
+            <CardHeader className="relative pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-white/90">Totalt ansatte</CardTitle>
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                  <Users className="h-4 w-4 text-white" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="relative">
+              <div className="text-3xl font-bold text-white">{totalEmployees}</div>
+              <p className="text-xs text-white/80 mt-1">Registrerte ansatte</p>
+            </CardContent>
+          </Card>
+
+          <Card className="relative overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 opacity-90"></div>
+            <CardHeader className="relative pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-white/90">Aktive ansatte</CardTitle>
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                  <UserCog className="h-4 w-4 text-white" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="relative">
+              <div className="text-3xl font-bold text-white">{activeEmployees}</div>
+              <p className="text-xs text-white/80 mt-1">Kan booke avtaler</p>
+            </CardContent>
+          </Card>
+
+          <Card className="relative overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-cyan-600 opacity-90"></div>
+            <CardHeader className="relative pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-white/90">Snitt provisjon</CardTitle>
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                  <Award className="h-4 w-4 text-white" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="relative">
+              <div className="text-3xl font-bold text-white">{avgCommission.toFixed(0)}%</div>
+              <p className="text-xs text-white/80 mt-1">Gjennomsnittlig sats</p>
+            </CardContent>
+          </Card>
+
+          <Card className="relative overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-emerald-600 opacity-90"></div>
+            <CardHeader className="relative pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-white/90">Med PIN-kode</CardTitle>
+                <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
+                  <Key className="h-4 w-4 text-white" />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="relative">
+              <div className="text-3xl font-bold text-white">{employeesWithPin}</div>
+              <p className="text-xs text-white/80 mt-1">Kan stemple inn/ut</p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Edit Dialog */}
@@ -325,33 +409,41 @@ export default function Employees() {
           </DialogContent>
         </Dialog>
 
+        {/* Employees Grid */}
         {isLoading ? (
           <div className="grid gap-4 md:grid-cols-2">
             {[1, 2].map((i) => (
-              <div key={i} className="h-32 bg-muted animate-pulse rounded-lg"></div>
+              <div key={i} className="h-40 bg-gradient-to-r from-gray-100 to-gray-200 animate-pulse rounded-lg"></div>
             ))}
           </div>
         ) : employees && employees.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2">
-            {employees.map((employee) => (
+          <div className="grid gap-4 md:grid-cols-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            {employees.map((employee, index) => (
               <Card 
                 key={employee.id} 
-                className={`hover:shadow-md transition-shadow ${!employee.isActive ? "opacity-60 border-red-300" : ""}`}
+                className={`hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border-none bg-white/80 backdrop-blur-sm animate-slide-in ${!employee.isActive ? "opacity-60" : ""}`}
+                style={{ animationDelay: `${0.05 * index}s` }}
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      <UserCog className={`h-5 w-5 ${employee.isActive ? "text-primary" : "text-muted-foreground"}`} />
+                    <div className="flex items-center gap-3">
+                      <div className={`p-3 rounded-lg ${employee.isActive ? "bg-gradient-to-br from-indigo-100 to-blue-100" : "bg-gray-100"}`}>
+                        <UserCog className={`h-6 w-6 ${employee.isActive ? "text-indigo-600" : "text-gray-400"}`} />
+                      </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <CardTitle>{employee.name}</CardTitle>
+                          <CardTitle className={employee.isActive ? "bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent" : ""}>
+                            {employee.name}
+                          </CardTitle>
                           {!employee.isActive && (
-                            <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">
+                            <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
                               Deaktivert
                             </span>
                           )}
                           {employee.pin && (
-                            <Key className="h-3 w-3 text-green-600" />
+                            <div className="p-1 bg-green-100 rounded">
+                              <Key className="h-3 w-3 text-green-600" />
+                            </div>
                           )}
                         </div>
                         <CardDescription className="mt-1">
@@ -364,14 +456,16 @@ export default function Employees() {
                         variant="ghost"
                         size="sm"
                         onClick={() => openEditDialog(employee)}
+                        className="hover:bg-indigo-50 transition-colors"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-4 w-4 text-indigo-600" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleToggleActive(employee)}
                         disabled={deactivateEmployee.isPending || activateEmployee.isPending}
+                        className={employee.isActive ? "hover:bg-red-50" : "hover:bg-green-50"}
                       >
                         {employee.isActive ? (
                           <Lock className="h-4 w-4 text-red-600" />
@@ -384,26 +478,23 @@ export default function Employees() {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {employee.email && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground bg-gray-50 p-2 rounded">
                       <Mail className="h-3 w-3" />
                       {employee.email}
                     </div>
                   )}
                   {employee.phone && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground bg-gray-50 p-2 rounded">
                       <Phone className="h-3 w-3" />
                       {employee.phone}
                     </div>
                   )}
                   {employee.commissionRate && (
-                    <div className="text-sm text-muted-foreground">
-                      Provisjon: {employee.commissionRate}% ({employee.commissionType})
-                    </div>
-                  )}
-                  {employee.pin && (
-                    <div className="flex items-center gap-2 text-sm text-green-600">
-                      <Key className="h-3 w-3" />
-                      PIN: ••••
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-cyan-100 to-blue-100">
+                      <Award className="h-3 w-3 text-cyan-700" />
+                      <span className="text-sm font-semibold text-cyan-700">
+                        Provisjon: {employee.commissionRate}% ({employee.commissionType})
+                      </span>
                     </div>
                   )}
                 </CardContent>
@@ -411,12 +502,22 @@ export default function Employees() {
             ))}
           </div>
         ) : (
-          <Card>
+          <Card className="border-none bg-white/80 backdrop-blur-sm shadow-lg">
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <UserCog className="h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">
-                Ingen ansatte ennå. Opprett din første ansatt!
+              <div className="p-4 bg-gradient-to-br from-indigo-100 to-blue-100 rounded-full mb-4">
+                <UserCog className="h-12 w-12 text-indigo-600" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Ingen ansatte ennå</h3>
+              <p className="text-muted-foreground mb-6">
+                Opprett din første ansatt for å begynne å administrere personalet ditt!
               </p>
+              <Button 
+                onClick={() => setIsCreateDialogOpen(true)}
+                className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Opprett første ansatt
+              </Button>
             </CardContent>
           </Card>
         )}
