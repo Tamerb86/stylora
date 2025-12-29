@@ -25,7 +25,8 @@ import { Communications } from "@/pages/Communications";
 import { BulkMessaging } from "@/pages/BulkMessaging";
 import { CampaignAnalytics } from "@/pages/CampaignAnalytics";
 import { EmailTemplates } from "@/pages/EmailTemplates";
-import Analytics from "@/pages/Analytics";
+import Analytics from '@/pages/Analytics';
+import Monitoring from '@/pages/Monitoring';
 import EmployeeDashboard from "@/pages/EmployeeDashboard";
 import PublicBooking from "@/pages/PublicBooking";
 import BookingSuccess from "@/pages/BookingSuccess";
@@ -179,6 +180,7 @@ function Router() {
       <Route path="/campaign-analytics" component={CampaignAnalytics} />
       <Route path="/email-templates" component={EmailTemplates} />
       <Route path="/analytics" component={Analytics} />
+      <Route path="/monitoring" component={Monitoring} />
       <Route path="/employee" component={EmployeeDashboard} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
