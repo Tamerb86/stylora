@@ -232,10 +232,9 @@ export const onboardingRouter = router({
             tenantId,
             categoryId: categoryId || null,
             name: svc.name,
-            duration: svc.duration,
+            durationMinutes: svc.duration,
             price: String(svc.price),
             description: svc.description || null,
-            color: svc.color || "#667eea",
             isActive: true,
           });
         }
@@ -260,7 +259,7 @@ export const onboardingRouter = router({
             tenantId,
             categoryId,
             name: svc.name,
-            duration: svc.duration,
+            durationMinutes: svc.duration,
             price: svc.price,
             isActive: true,
           });
