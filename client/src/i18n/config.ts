@@ -1,6 +1,5 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
 
 // Import translation files
 import translationNO from './locales/no.json';
@@ -23,21 +22,30 @@ const resources = {
   }
 };
 
+// Check if user has previously selected a language
+const savedLanguage = localStorage.getItem('i18nextLng');
+
+// Only use saved language if it's one of our supported languages
+const supportedLanguages = ['no', 'ar', 'en', 'uk'];
+const initialLanguage = savedLanguage && supportedLanguages.includes(savedLanguage) 
+  ? savedLanguage 
+  : 'no'; // Default to Norwegian
+
 i18n
-  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
+    lng: initialLanguage, // Use saved language or Norwegian as default
     fallbackLng: 'no',
-    lng: 'no', // Default language - Norwegian
     debug: false,
     interpolation: {
       escapeValue: false // React already escapes values
-    },
-    detection: {
-      order: ['localStorage'],  // Only check localStorage, not browser language
-      caches: ['localStorage']
     }
   });
+
+// Save language preference when it changes
+i18n.on('languageChanged', (lng) => {
+  localStorage.setItem('i18nextLng', lng);
+});
 
 export default i18n;
