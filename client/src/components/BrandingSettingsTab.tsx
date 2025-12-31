@@ -56,7 +56,7 @@ export function BrandingSettingsTab() {
     setIsUploading(true);
 
     try {
-      // Upload to Manus storage
+      // Upload to storage
       const formData = new FormData();
       formData.append("file", file);
 

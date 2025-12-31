@@ -7,13 +7,42 @@ import { SignJWT, jwtVerify } from "jose";
 import type { User } from "../../drizzle/schema";
 import * as db from "../db";
 import { ENV } from "./env";
-import type {
-  ExchangeTokenRequest,
-  ExchangeTokenResponse,
-  GetUserInfoResponse,
-  GetUserInfoWithJwtRequest,
-  GetUserInfoWithJwtResponse,
-} from "./types/manusTypes";
+
+// Local type definitions
+interface ExchangeTokenRequest {
+  clientId: string;
+  grantType: string;
+  code: string;
+  redirectUri: string;
+}
+
+interface ExchangeTokenResponse {
+  accessToken: string;
+  refreshToken?: string;
+  expiresIn?: number;
+}
+
+interface GetUserInfoResponse {
+  openId: string;
+  name?: string;
+  email?: string;
+  platform?: string;
+  loginMethod?: string;
+}
+
+interface GetUserInfoWithJwtRequest {
+  jwtToken: string;
+  projectId: string;
+}
+
+interface GetUserInfoWithJwtResponse {
+  openId: string;
+  name?: string;
+  email?: string;
+  platform?: string;
+  loginMethod?: string;
+}
+
 // Utility function
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.length > 0;
@@ -31,11 +60,11 @@ const GET_USER_INFO_WITH_JWT_PATH = `/webdev.v1.WebDevAuthPublicService/GetUserI
 
 class OAuthService {
   constructor(private client: ReturnType<typeof axios.create>) {
-    console.log("[OAuth] Initialized with baseURL:", ENV.oAuthServerUrl);
-    if (!ENV.oAuthServerUrl) {
-      console.error(
-        "[OAuth] ERROR: OAUTH_SERVER_URL is not configured! Set OAUTH_SERVER_URL environment variable."
-      );
+    // OAuth service is optional - only used if OAUTH_SERVER_URL is configured
+    if (process.env.OAUTH_SERVER_URL) {
+      console.log("[OAuth] Initialized with external OAuth server");
+    } else {
+      console.log("[OAuth] Using local email/password authentication");
     }
   }
 
@@ -79,7 +108,7 @@ class OAuthService {
 
 const createOAuthHttpClient = (): AxiosInstance =>
   axios.create({
-    baseURL: ENV.oAuthServerUrl,
+    baseURL: process.env.OAUTH_SERVER_URL || "http://localhost:3000",
     timeout: AXIOS_TIMEOUT_MS,
   });
 
@@ -161,7 +190,7 @@ class SDKServer {
   }
 
   /**
-   * Create a session token for a Manus user openId
+   * Create a session token for a user openId
    * @example
    * const sessionToken = await sdk.createSessionToken(userInfo.openId);
    */
@@ -281,13 +310,13 @@ class SDKServer {
       }
     }
 
-    // If user not in DB, sync from OAuth server automatically
-    if (!user) {
+    // If user not in DB, sync from OAuth server automatically (if configured)
+    if (!user && process.env.OAUTH_SERVER_URL) {
       try {
         const userInfo = await this.getUserInfoWithJwt(sessionCookie ?? "");
         await db.upsertUser({
           openId: userInfo.openId,
-          tenantId: 'default-tenant', // TODO: Implement proper tenant selection
+          tenantId: 'default-tenant',
           role: userInfo.openId === ENV.ownerOpenId ? 'owner' : 'employee',
           name: userInfo.name || null,
           email: userInfo.email ?? null,

@@ -1,10 +1,14 @@
 /**
- * Quick example (matches curl usage):
+ * External Data API Integration
+ * 
+ * This module provides a generic interface for calling external APIs.
+ * Configure the appropriate API credentials in environment variables.
+ * 
+ * Example usage:
  *   await callDataApi("Youtube/search", {
- *     query: { gl: "US", hl: "en", q: "manus" },
+ *     query: { gl: "US", hl: "en", q: "search term" },
  *   })
  */
-import { ENV } from "./env";
 
 export type DataApiCallOptions = {
   query?: Record<string, unknown>;
@@ -13,52 +17,29 @@ export type DataApiCallOptions = {
   formData?: Record<string, unknown>;
 };
 
+/**
+ * Call an external data API
+ * 
+ * Note: This function requires configuration of external API services.
+ * For production, integrate with specific APIs like:
+ * - RapidAPI for various data sources
+ * - Direct API integrations (YouTube Data API, etc.)
+ * 
+ * @param apiId - The API identifier
+ * @param options - Request options
+ * @returns API response data
+ */
 export async function callDataApi(
   apiId: string,
   options: DataApiCallOptions = {}
 ): Promise<unknown> {
-  if (!ENV.forgeApiUrl) {
-    throw new Error("BUILT_IN_FORGE_API_URL is not configured");
-  }
-  if (!ENV.forgeApiKey) {
-    throw new Error("BUILT_IN_FORGE_API_KEY is not configured");
-  }
-
-  // Build the full URL by appending the service path to the base URL
-  const baseUrl = ENV.forgeApiUrl.endsWith("/") ? ENV.forgeApiUrl : `${ENV.forgeApiUrl}/`;
-  const fullUrl = new URL("webdevtoken.v1.WebDevService/CallApi", baseUrl).toString();
-
-  const response = await fetch(fullUrl, {
-    method: "POST",
-    headers: {
-      accept: "application/json",
-      "content-type": "application/json",
-      "connect-protocol-version": "1",
-      authorization: `Bearer ${ENV.forgeApiKey}`,
-    },
-    body: JSON.stringify({
-      apiId,
-      query: options.query,
-      body: options.body,
-      path_params: options.pathParams,
-      multipart_form_data: options.formData,
-    }),
-  });
-
-  if (!response.ok) {
-    const detail = await response.text().catch(() => "");
-    throw new Error(
-      `Data API request failed (${response.status} ${response.statusText})${detail ? `: ${detail}` : ""}`
-    );
-  }
-
-  const payload = await response.json().catch(() => ({}));
-  if (payload && typeof payload === "object" && "jsonData" in payload) {
-    try {
-      return JSON.parse((payload as Record<string, string>).jsonData ?? "{}");
-    } catch {
-      return (payload as Record<string, unknown>).jsonData;
-    }
-  }
-  return payload;
+  // This is a placeholder for external API integration
+  // Configure your preferred API service here
+  
+  console.warn(`[DataAPI] External API call to "${apiId}" - not configured`);
+  console.warn("[DataAPI] To enable, integrate with RapidAPI or direct API services");
+  
+  throw new Error(
+    `Data API not configured. To call "${apiId}", please configure external API integration.`
+  );
 }

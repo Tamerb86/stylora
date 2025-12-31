@@ -11,7 +11,7 @@ function createTestContext(): TrpcContext {
     openId: "test-user",
     email: "test@example.com",
     name: "Test User",
-    loginMethod: "manus",
+    loginMethod: "email",
     role: "admin",
     tenantId: tenantId,
     createdAt: new Date(),

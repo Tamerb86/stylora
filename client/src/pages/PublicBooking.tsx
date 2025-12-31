@@ -29,8 +29,8 @@ export default function PublicBooking() {
     const hostname = window.location.hostname;
     console.log('[Booking] Hostname:', hostname);
     
-    // Check if it's a development/Manus URL (contains manusvm or localhost)
-    if (hostname.includes('manusvm') || hostname.includes('localhost') || hostname.includes('railway')) {
+    // Check if it's a development URL (localhost or railway)
+    if (hostname.includes('localhost') || hostname.includes('railway')) {
       // In development, require tenantId parameter
       console.warn('[Booking] Development environment detected. Please provide ?tenantId=xxx parameter.');
       return null; // Return null to show error message
@@ -269,8 +269,7 @@ export default function PublicBooking() {
 
   // Show error if tenant not found
   if (!tenantData && !tenantLoading) {
-    const isDevEnvironment = window.location.hostname.includes('manusvm') || 
-                            window.location.hostname.includes('localhost') || 
+    const isDevEnvironment = window.location.hostname.includes('localhost') || 
                             window.location.hostname.includes('railway');
     
     return (

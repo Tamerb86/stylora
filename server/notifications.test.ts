@@ -11,7 +11,7 @@ function createTestContext(): { ctx: TrpcContext } {
     openId: "test-owner",
     email: "owner@barbertime.no",
     name: "Test Owner",
-    loginMethod: "manus",
+    loginMethod: "email",
     role: "owner",
     tenantId: 1,
     createdAt: new Date(),

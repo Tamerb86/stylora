@@ -145,7 +145,7 @@ function renderVerificationEmail(params: {
 // Generate test email
 const testEmail = renderVerificationEmail({
   email: "test@example.com",
-  verificationUrl: "https://stylora.manus.space/verify-email?token=abc123def456",
+  verificationUrl: "https://www.stylora.no/verify-email?token=abc123def456",
 });
 
 // Write to file

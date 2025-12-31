@@ -11,7 +11,7 @@ function createTestContext(tenantId: string, role: "admin" | "user" = "admin"): 
     openId: `test-user-${tenantId}`,
     email: "test@example.com",
     name: "Test User",
-    loginMethod: "manus",
+    loginMethod: "email",
     role,
     tenantId,
     createdAt: new Date(),

@@ -6280,3 +6280,11 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 ## Current Issues (Dec 31, 2024)
 - [x] إصلاح خطأ 500 في onboarding API - مشكلة الحقول المفقودة في جدول users
 - [ ] اختبار نموذج التسجيل الكامل بعد الإصلاحات
+
+## Manus Removal Tasks (Priority Analysis)
+- [x] تحليل MANUS_REMOVAL_TODO.md وتصنيف العناصر
+- [x] البحث عن كل references لـ Manus في الكود
+- [x] تحليل imports و functions المرتبطة بـ Manus
+- [x] فحص الملفات المولدة (*.generated.ts, manus-types.ts)
+- [x] إنشاء خطة استبدال/تغليف شاملة
+- [ ] التأكد من استقلالية المشروع 100% عن Manus

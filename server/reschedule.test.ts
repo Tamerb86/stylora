@@ -51,7 +51,7 @@ describe("appointments.reschedule", () => {
         email: user.email,
         name: user.name,
         role: "owner",
-        loginMethod: "manus",
+        loginMethod: "email",
         createdAt: new Date(),
         updatedAt: new Date(),
         lastSignedIn: new Date(),

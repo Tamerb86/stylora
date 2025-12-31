@@ -10,7 +10,7 @@ describe("Analytics API", () => {
       openId: "test-open-id",
       email: "test@example.com",
       name: "Test User",
-      loginMethod: "manus",
+      loginMethod: "email",
       role: "admin",
       tenantId: "test-tenant-id",
       createdAt: new Date(),

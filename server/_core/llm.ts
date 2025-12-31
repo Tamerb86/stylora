@@ -1,5 +1,3 @@
-import { ENV } from "./env";
-
 export type Role = "system" | "user" | "assistant" | "tool" | "function";
 
 export type TextContent = {
@@ -209,15 +207,18 @@ const normalizeToolChoice = (
   return toolChoice;
 };
 
-const resolveApiUrl = () =>
-  ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
-    ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
-    : "https://forge.manus.im/v1/chat/completions";
-
-const assertApiKey = () => {
-  if (!ENV.forgeApiKey) {
-    throw new Error("OPENAI_API_KEY is not configured");
+const resolveApiUrl = () => {
+  const openaiKey = process.env.OPENAI_API_KEY;
+  if (openaiKey) {
+    return "https://api.openai.com/v1/chat/completions";
   }
+  throw new Error("No LLM API configured. Set OPENAI_API_KEY environment variable.");
+};
+
+const getApiKey = () => {
+  const openaiKey = process.env.OPENAI_API_KEY;
+  if (openaiKey) return openaiKey;
+  throw new Error("No LLM API key configured. Set OPENAI_API_KEY environment variable.");
 };
 
 const normalizeResponseFormat = ({
@@ -265,14 +266,13 @@ const normalizeResponseFormat = ({
   };
 };
 
+/**
+ * Invoke LLM for AI-powered features
+ * Configure OPENAI_API_KEY environment variable to enable
+ */
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
-  // DISABLED: Manus LLM integration removed for external deployment
-  // To enable AI features, integrate with OpenAI, Anthropic, or another LLM provider
-  throw new Error("LLM integration disabled. Please configure OpenAI or another LLM provider.");
-  
-  // Original Manus implementation (commented out):
-  /*
-  assertApiKey();
+  const apiKey = getApiKey();
+  const apiUrl = resolveApiUrl();
 
   const {
     messages,
@@ -283,10 +283,12 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     output_schema,
     responseFormat,
     response_format,
+    maxTokens,
+    max_tokens,
   } = params;
 
   const payload: Record<string, unknown> = {
-    model: "gemini-2.5-flash",
+    model: "gpt-4o-mini",
     messages: messages.map(normalizeMessage),
   };
 
@@ -302,10 +304,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.tool_choice = normalizedToolChoice;
   }
 
-  payload.max_tokens = 32768
-  payload.thinking = {
-    "budget_tokens": 128
-  }
+  payload.max_tokens = maxTokens || max_tokens || 4096;
 
   const normalizedResponseFormat = normalizeResponseFormat({
     responseFormat,
@@ -318,11 +317,11 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.response_format = normalizedResponseFormat;
   }
 
-  const response = await fetch(resolveApiUrl(), {
+  const response = await fetch(apiUrl, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${ENV.forgeApiKey}`,
+      authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify(payload),
   });
@@ -335,5 +334,4 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   }
 
   return (await response.json()) as InvokeResult;
-  */
 }
