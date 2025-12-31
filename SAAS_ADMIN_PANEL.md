@@ -195,7 +195,7 @@ The platform owner is identified by:
 OWNER_OPEN_ID=<platform-owner-openid>
 ```
 
-This is automatically set by the Manus platform and available in `ENV.ownerOpenId`.
+This is automatically set by the Stylora platform and available in `ENV.ownerOpenId`.
 
 ### Frontend Protection
 While routes are not explicitly protected on the frontend, all backend procedures use `platformAdminProcedure` which throws `FORBIDDEN` error if accessed by non-owner.

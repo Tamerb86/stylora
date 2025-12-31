@@ -25,7 +25,7 @@ export const ENV = {
 };
 ```
 
-These are automatically injected by the Manus platform and don't need manual configuration.
+These are automatically injected by the Stylora platform and don't need manual configuration.
 
 ### 3. **Stripe Client Helper**
 **File:** `server/stripe.ts` (NEW)

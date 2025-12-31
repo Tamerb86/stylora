@@ -53,7 +53,7 @@ All tests pass successfully.
 
 ### Development
 ```
-https://3000-itzsdhy1gfur2rzx2q9re-eab29df4.manusvm.computer/api/stripe/webhook
+https://www.stylora.no/api/stripe/webhook
 ```
 
 ### Production
@@ -93,7 +93,7 @@ After creating the endpoint, Stripe will show:
 Signing secret: whsec_xxxxxxxxxxxxxxxxxxxxx
 ```
 
-**This is your `STRIPE_WEBHOOK_SECRET`** - it's already configured in the Manus platform environment variables.
+**This is your `STRIPE_WEBHOOK_SECRET`** - it's already configured in the Stylora platform environment variables.
 
 ### Step 4: Test the Webhook
 

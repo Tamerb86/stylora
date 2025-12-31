@@ -324,7 +324,7 @@ DATABASE_URL=mysql://user:password@host:port/database
 
 # Authentication
 JWT_SECRET=your-secret-key
-OAUTH_SERVER_URL=https://oauth.manus.im
+# OAUTH_SERVER_URL is no longer required (email/password auth is used)
 OWNER_NAME=admin
 OWNER_OPEN_ID=admin-open-id
 

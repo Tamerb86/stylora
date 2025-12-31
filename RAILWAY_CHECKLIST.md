@@ -41,13 +41,13 @@
 ### Step 3: Configure Environment Variables
 - [ ] Go to service → **"Variables"** tab
 - [ ] Add required variables (see list below)
-- [ ] Verify all Manus variables are present
+- [ ] Verify all Stylora variables are present
 - [ ] Add optional integration variables (Stripe, Email, etc.)
 - [ ] Click **"Deploy"** to apply changes
 
 #### Required Variables:
 ```
-✅ Auto-injected by Manus:
+✅ Auto-injected by Stylora:
 - BUILT_IN_FORGE_API_KEY
 - BUILT_IN_FORGE_API_URL
 - JWT_SECRET

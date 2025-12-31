@@ -252,7 +252,7 @@ railway logs --filter "ERROR"
 
 #### Option 1: Rollback to Previous Checkpoint
 ```bash
-# Via Manus UI
+# Via Dashboard UI
 # 1. Go to Management UI → Code
 # 2. Find previous checkpoint (before integration fixes)
 # 3. Click "Rollback"

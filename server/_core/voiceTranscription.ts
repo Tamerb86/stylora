@@ -1,5 +1,5 @@
 /**
- * Voice transcription helper using internal Speech-to-Text service
+ * Voice transcription helper using OpenAI Whisper API
  *
  * Frontend implementation guide:
  * 1. Capture audio using MediaRecorder API
@@ -24,8 +24,9 @@
  *   prompt: 'Transcribe the meeting' // optional
  * });
  * ```
+ * 
+ * Note: Requires OPENAI_API_KEY environment variable
  */
-import { ENV } from "./env";
 
 export type TranscribeOptions = {
   audioUrl: string; // URL to the audio file (e.g., S3 URL)
@@ -65,7 +66,7 @@ export type TranscriptionError = {
 };
 
 /**
- * Transcribe audio to text using the internal Speech-to-Text service
+ * Transcribe audio to text using OpenAI Whisper API
  * 
  * @param options - Audio data and metadata
  * @returns Transcription result or error
@@ -75,18 +76,13 @@ export async function transcribeAudio(
 ): Promise<TranscriptionResponse | TranscriptionError> {
   try {
     // Step 1: Validate environment configuration
-    if (!ENV.forgeApiUrl) {
+    const apiKey = process.env.OPENAI_API_KEY;
+    
+    if (!apiKey) {
       return {
         error: "Voice transcription service is not configured",
         code: "SERVICE_ERROR",
-        details: "BUILT_IN_FORGE_API_URL is not set"
-      };
-    }
-    if (!ENV.forgeApiKey) {
-      return {
-        error: "Voice transcription service authentication is missing",
-        code: "SERVICE_ERROR",
-        details: "BUILT_IN_FORGE_API_KEY is not set"
+        details: "OPENAI_API_KEY is not set"
       };
     }
 
@@ -106,13 +102,13 @@ export async function transcribeAudio(
       audioBuffer = Buffer.from(await response.arrayBuffer());
       mimeType = response.headers.get('content-type') || 'audio/mpeg';
       
-      // Check file size (16MB limit)
+      // Check file size (25MB limit for OpenAI Whisper)
       const sizeMB = audioBuffer.length / (1024 * 1024);
-      if (sizeMB > 16) {
+      if (sizeMB > 25) {
         return {
           error: "Audio file exceeds maximum size limit",
           code: "FILE_TOO_LARGE",
-          details: `File size is ${sizeMB.toFixed(2)}MB, maximum allowed is 16MB`
+          details: `File size is ${sizeMB.toFixed(2)}MB, maximum allowed is 25MB`
         };
       }
     } catch (error) {
@@ -142,21 +138,16 @@ export async function transcribeAudio(
     );
     formData.append("prompt", prompt);
 
-    // Step 4: Call the transcription service
-    const baseUrl = ENV.forgeApiUrl.endsWith("/")
-      ? ENV.forgeApiUrl
-      : `${ENV.forgeApiUrl}/`;
-    
-    const fullUrl = new URL(
-      "v1/audio/transcriptions",
-      baseUrl
-    ).toString();
+    // Add language if specified
+    if (options.language) {
+      formData.append("language", options.language);
+    }
 
-    const response = await fetch(fullUrl, {
+    // Step 4: Call OpenAI Whisper API
+    const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
       method: "POST",
       headers: {
-        authorization: `Bearer ${ENV.forgeApiKey}`,
-        "Accept-Encoding": "identity",
+        "Authorization": `Bearer ${apiKey}`,
       },
       body: formData,
     });
@@ -192,6 +183,13 @@ export async function transcribeAudio(
       details: error instanceof Error ? error.message : "An unexpected error occurred"
     };
   }
+}
+
+/**
+ * Check if voice transcription is available
+ */
+export function isVoiceTranscriptionAvailable(): boolean {
+  return !!process.env.OPENAI_API_KEY;
 }
 
 /**

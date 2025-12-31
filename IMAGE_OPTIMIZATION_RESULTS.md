@@ -302,7 +302,7 @@ The image optimization plan has been successfully implemented 100%, achieving:
 
 ---
 
-**تم إعداد التقرير بواسطة / Report Prepared by:** Manus AI  
+**تم إعداد التقرير بواسطة / Report Prepared by:** Stylora Team  
 **التاريخ / Date:** 7 ديسمبر 2025 / December 7, 2025  
 **الحالة / Status:** ✅ **مكتمل ومختبر / Completed & Tested**
 

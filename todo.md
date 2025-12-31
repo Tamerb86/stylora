@@ -1554,7 +1554,7 @@
 
 ### Frontend - Branding Settings UI
 - [x] Create /settings/branding tab in Settings page
-- [x] Add logo uploader component (uses Manus storage)
+- [x] Add logo uploader component (uses Stylora storage)
 - [x] Add primary color picker
 - [x] Add accent color picker
 - [x] Add welcome title input field
@@ -4527,7 +4527,7 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [ ] Create demo data: `railway run node scripts/seed-demo-account.mjs`
 
 
-## Replace Manus OAuth with Email/Password Authentication
+## Replace Email/Password Auth with Email/Password Authentication
 - [x] Add passwordHash column to users table in schema
 - [x] Create simple JWT-based authentication system
 - [x] Create Login page with email/password form
@@ -4995,10 +4995,10 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Save checkpoint
 
 ## Phase 63: Fix Backup System Storage Errors
-- [x] Investigate backup system code and identify Manus storage dependencies
-- [x] Replace Manus storage with Railway-compatible solution (S3 or direct download)
+- [x] Investigate backup system code and identify Stylora storage dependencies
+- [x] Replace Stylora storage with Railway-compatible solution (S3 or direct download)
 - [x] Update backup creation to use new storage method
-- [x] Update backup download to work without Manus storage proxy
+- [x] Update backup download to work without Stylora storage proxy
 - [x] Test backup creation and download
 - [x] Save checkpoint
 
@@ -6281,10 +6281,11 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] إصلاح خطأ 500 في onboarding API - مشكلة الحقول المفقودة في جدول users
 - [ ] اختبار نموذج التسجيل الكامل بعد الإصلاحات
 
-## Manus Removal Tasks (Priority Analysis)
+## Stylora Removal Tasks (Priority Analysis)
 - [x] تحليل MANUS_REMOVAL_TODO.md وتصنيف العناصر
-- [x] البحث عن كل references لـ Manus في الكود
-- [x] تحليل imports و functions المرتبطة بـ Manus
+- [x] البحث عن كل references لـ Stylora في الكود
+- [x] تحليل imports و functions المرتبطة بـ Stylora
 - [x] فحص الملفات المولدة (*.generated.ts, manus-types.ts)
 - [x] إنشاء خطة استبدال/تغليف شاملة
-- [ ] التأكد من استقلالية المشروع 100% عن Manus
+- [ ] التأكد من استقلالية المشروع 100% عن Stylora
+- [x] إنشاء BUYER_GUIDE.md - دليل شامل للمشتري الجديد

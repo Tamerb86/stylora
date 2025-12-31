@@ -185,6 +185,6 @@ Image optimization successfully completed with:
 
 ---
 
-**Prepared by:** Manus AI  
+**Prepared by:** Stylora Team  
 **Date:** December 7, 2025  
 **Status:** ✅ **Completed & Tested**

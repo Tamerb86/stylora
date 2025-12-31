@@ -1,6 +1,6 @@
 # Vipps Payment Integration Guide for BarberTime
 
-**Author:** Manus AI  
+**Author:** Stylora Team  
 **Last Updated:** December 18, 2024  
 **Version:** 1.0
 

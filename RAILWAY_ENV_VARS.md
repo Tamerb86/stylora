@@ -2,8 +2,8 @@
 
 ## 📋 Required Environment Variables
 
-### ✅ Already Configured in Manus (Auto-injected)
-These variables are automatically provided by Manus platform:
+### ✅ Already Configured in Stylora (Auto-injected)
+These variables are automatically provided by Stylora platform:
 
 ```
 BUILT_IN_FORGE_API_KEY
@@ -153,7 +153,7 @@ railway variables set --from-file .env
 - [ ] `DATABASE_URL` automatically set
 - [ ] `NODE_ENV=production` set
 - [ ] `PORT=3000` set
-- [ ] All Manus variables confirmed (auto-injected)
+- [ ] All Stylora variables confirmed (auto-injected)
 
 ### Optional Integrations:
 - [ ] Stripe keys added (if using payments)

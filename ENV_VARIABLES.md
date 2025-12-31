@@ -2,12 +2,12 @@
 
 This document lists all environment variables needed for the BarberTime application.
 
-## Already Configured (via Manus)
+## Already Configured (via Stylora)
 
-These are automatically provided by the Manus platform:
+These are automatically provided by the Stylora platform:
 
-- `BUILT_IN_FORGE_API_KEY` - Manus Forge API key
-- `BUILT_IN_FORGE_API_URL` - Manus Forge API URL
+- `BUILT_IN_FORGE_API_KEY` - Stylora Forge API key
+- `BUILT_IN_FORGE_API_URL` - Stylora Forge API URL
 - `JWT_SECRET` - JWT signing secret
 - `OAUTH_SERVER_URL` - OAuth server URL
 - `OWNER_NAME` - Owner name

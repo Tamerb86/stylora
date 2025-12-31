@@ -44,10 +44,20 @@ export function useAuth(options?: UseAuthOptions) {
   }, [logoutMutation, utils]);
 
   const state = useMemo(() => {
-    localStorage.setItem(
-      "stylora-user-info",
-      JSON.stringify(meQuery.data)
-    );
+    // Safely store user info in localStorage
+    try {
+      if (meQuery.data) {
+        localStorage.setItem(
+          "stylora-user-info",
+          JSON.stringify(meQuery.data)
+        );
+      } else {
+        localStorage.removeItem("stylora-user-info");
+      }
+    } catch (e) {
+      // localStorage might be unavailable in some contexts
+      console.warn("Failed to access localStorage:", e);
+    }
     return {
       user: meQuery.data ?? null,
       loading: meQuery.isLoading || logoutMutation.isPending,

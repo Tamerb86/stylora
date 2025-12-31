@@ -30,8 +30,17 @@ const REQUIRED_ENV_VARS = [
 const RECOMMENDED_ENV_VARS = [
   'VITE_APP_TITLE',
   'VITE_APP_LOGO',
-  'OAUTH_SERVER_URL',
-  'VITE_OAUTH_PORTAL_URL',
+] as const;
+
+/**
+ * Optional environment variables for external integrations
+ */
+const OPTIONAL_ENV_VARS = [
+  'OPENAI_API_KEY',           // For AI features (image generation, voice transcription)
+  'VITE_GOOGLE_MAPS_API_KEY', // For Google Maps integration
+  'SMTP_HOST',                // For email notifications
+  'AWS_ACCESS_KEY_ID',        // For S3 storage
+  'STRIPE_SECRET_KEY',        // For payment processing
 ] as const;
 
 /**
@@ -163,7 +172,8 @@ export function getEnvironmentSummary(): Record<string, string> {
     NODE_ENV: process.env.NODE_ENV || 'development',
     DATABASE_CONFIGURED: process.env.DATABASE_URL ? 'Yes' : 'No',
     JWT_CONFIGURED: process.env.JWT_SECRET ? 'Yes' : 'No',
-    OAUTH_CONFIGURED: process.env.OAUTH_SERVER_URL ? 'Yes' : 'No',
+    OPENAI_CONFIGURED: process.env.OPENAI_API_KEY ? 'Yes' : 'No',
+    GOOGLE_MAPS_CONFIGURED: process.env.VITE_GOOGLE_MAPS_API_KEY ? 'Yes' : 'No',
     STRIPE_CONFIGURED: process.env.STRIPE_SECRET_KEY ? 'Yes' : 'No',
     APP_ID: process.env.VITE_APP_ID || 'Not set',
     APP_TITLE: process.env.VITE_APP_TITLE || 'Not set',

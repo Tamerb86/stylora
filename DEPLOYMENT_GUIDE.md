@@ -1,6 +1,6 @@
 # دليل النشر - BarberTime Deployment Guide
 
-## 🎉 تم إزالة اعتماديات Manus بنجاح!
+## 🎉 تم إزالة external dependencies بنجاح!
 
 هذا الدليل يشرح كيفية نشر BarberTime على استضافة خارجية.
 
@@ -8,10 +8,10 @@
 
 ## ✅ التعديلات المنجزة - Completed Modifications
 
-### 1. إزالة Manus Plugins
+### 1. إزالة Development Plugins
 - ✅ حذف `vite-plugin-manus-runtime` من package.json
-- ✅ تنظيف vite.config.ts من Manus hosts
-- ✅ إزالة HMR configuration الخاصة بـ Manus
+- ✅ تنظيف vite.config.ts من development hosts
+- ✅ إزالة HMR configuration الخاصة بـ Stylora
 
 ### 2. استبدال نظام OAuth
 - ✅ إنشاء نظام مصادقة بسيط مبني على JWT
@@ -19,9 +19,9 @@
 - ✅ تحديث server/_core/index.ts
 - ✅ ملف جديد: `server/_core/auth-simple.ts`
 
-### 3. تعطيل ميزات Manus الاختيارية
+### 3. تعطيل ميزات Stylora الاختيارية
 - ✅ تعطيل AI integration (server/_core/llm.ts)
-- ✅ تعطيل Manus notification system (server/_core/notification.ts)
+- ✅ تعطيل notification system (server/_core/notification.ts)
 
 ---
 
@@ -275,7 +275,7 @@ DATABASE_URL=mysql://user:password@host:3306/database?ssl={"rejectUnauthorized":
 
 **الجواب**: تم تعطيل AI features عمداً. لتفعيلها:
 1. افتح `server/_core/llm.ts`
-2. استبدل Manus API بـ OpenAI أو Anthropic
+2. استبدل OpenAI API بـ OpenAI أو Anthropic
 3. أضف API key في متغيرات البيئة
 
 ---
@@ -347,5 +347,5 @@ DATABASE_URL=mysql://user:password@host:3306/database?ssl={"rejectUnauthorized":
 
 ---
 
-**تم إنشاء هذا الدليل بواسطة Manus AI**  
+**تم إنشاء هذا الدليل بواسطة Stylora Team**  
 **تاريخ**: 14 ديسمبر 2024

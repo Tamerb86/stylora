@@ -1,6 +1,6 @@
 # BarberTime Testing Strategy
 
-**Author:** Manus AI  
+**Author:** Stylora Team  
 **Last Updated:** December 10, 2024
 
 ## Overview

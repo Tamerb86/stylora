@@ -652,8 +652,8 @@
 - **Database:** MySQL/TiDB
 - **ORM:** Drizzle ORM
 - **Query Builder:** Kysely
-- **Authentication:** Manus OAuth + JWT
-- **File Storage:** S3 (via Manus)
+- **Authentication:** Email/Password Auth + JWT
+- **File Storage:** S3 (via Stylora)
 
 ### Integrations
 - **Payment:** Stripe, Vipps (Norwegian)
