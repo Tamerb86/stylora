@@ -6242,3 +6242,36 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
 - [x] Link paid/unpaid leave to salary calculations
 - [x] Add Payroll menu item to sidebar (Lønn section)
 - [x] Write vitest tests for payroll system
+
+## Bug Fixes
+- [x] إصلاح مشكلة اللغة - فرض النرويجية كلغة افتراضية مع خيار التغيير
+
+## Phase: Visma Online Integration
+- [ ] إعداد بيئة التطوير وتكوين OAuth
+  - [ ] الحصول على Visma API credentials من Spiris Partner Programme
+  - [ ] تكوين متغيرات البيئة (VISMA_CLIENT_ID, VISMA_CLIENT_SECRET, VISMA_REDIRECT_URI)
+  - [ ] إعداد redirect URIs في Visma Developer Portal
+
+- [ ] بناء خدمة Visma OAuth والمصادقة
+  - [ ] إنشاء server/services/visma.ts مع OAuth flow
+  - [ ] تطبيق authorization code flow
+  - [ ] حفظ وتحديث الـ tokens في قاعدة البيانات
+  - [ ] معالجة token refresh عند انتهاء الصلاحية
+
+- [ ] تطوير واجهة المستخدم لربط حساب Visma
+  - [ ] إنشاء VismaSettings component في Settings page
+  - [ ] إضافة Connect with Visma button
+  - [ ] عرض حالة الاتصال والمعلومات المتصلة
+  - [ ] إضافة Disconnect button
+
+- [ ] بناء خدمة مزامنة البيانات
+  - [ ] مزامنة الفواتير من BarberTime إلى Visma
+  - [ ] مزامنة العملاء من BarberTime إلى Visma
+  - [ ] مزامنة المنتجات/الخدمات من BarberTime إلى Visma
+  - [ ] معالجة الأخطاء والمحاولات الجديدة
+
+- [ ] اختبار وتوثيق التكامل
+  - [ ] كتابة unit tests للـ OAuth flow
+  - [ ] كتابة integration tests للمزامنة
+  - [ ] توثيق الـ API والإعدادات
+  - [ ] دليل الإعداد للمستخدمين

@@ -158,8 +158,15 @@ export const logDb = {
   connected: (database: string) => {
     logger.info('Database connected', { database, event: 'db.connected' });
   },
-  error: (operation: string, error: Error) => {
-    logError(`Database error during ${operation}`, error, { event: 'db.error' });
+  info: (message: string, context?: Record<string, unknown>) => {
+    logger.info(message, { ...context, event: 'db.info' });
+  },
+  error: (operation: string, error?: Error | Record<string, unknown>) => {
+    if (error instanceof Error) {
+      logError(`Database error during ${operation}`, error, { event: 'db.error' });
+    } else {
+      logger.error(`Database error during ${operation}`, { error, event: 'db.error' });
+    }
   },
   queryError: (query: string, error: Error) => {
     logError('Database query failed', error, { query, event: 'db.query.error' });
@@ -206,6 +213,9 @@ export const logSecurity = {
       endpoint,
       event: 'security.rate_limit.exceeded',
     });
+  },
+  error: (message: string, context?: Record<string, unknown>) => {
+    logger.error(message, { ...context, event: 'security.error' });
   },
 };
 

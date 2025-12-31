@@ -29,13 +29,13 @@ i18n
   .init({
     resources,
     fallbackLng: 'no',
-    lng: 'no', // Default language
+    lng: 'no', // Default language - Norwegian
     debug: false,
     interpolation: {
       escapeValue: false // React already escapes values
     },
     detection: {
-      order: ['localStorage', 'navigator'],
+      order: ['localStorage'],  // Only check localStorage, not browser language
       caches: ['localStorage']
     }
   });
