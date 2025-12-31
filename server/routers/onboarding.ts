@@ -96,12 +96,12 @@ export const onboardingRouter = router({
   complete: publicProcedure
     .input(onboardingSchema)
     .mutation(async ({ input }) => {
-      const { salonInfo, ownerAccount, businessHours, employees: initialEmployees, services: initialServices } = input;
+      const { salonInfo, ownerAccount, businessHours, employees: initialEmployees, services: initialServices, paymentSettings } = input;
 
       const db = await getDb();
       if (!db) throw new Error("Database not available");
 
-      // 2. Check subdomain availability
+      // 1. Check subdomain availability
       const existingTenant = await db
         .select()
         .from(tenants)
@@ -119,13 +119,10 @@ export const onboardingRouter = router({
         name: salonInfo.salonName,
         subdomain: salonInfo.subdomain,
         address: salonInfo.address,
-        city: salonInfo.city,
         phone: salonInfo.phone,
         email: salonInfo.email,
-        subscriptionStatus: "trial",
-        subscriptionPlan: "professional",
+        status: "trial",
         trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days trial
-        isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -150,12 +147,12 @@ export const onboardingRouter = router({
 
       // 4. Create settings with business hours
       const businessHoursJson = {
-        monday: businessHours.sundayClosed && false ? null : { open: businessHours.mondayOpen, close: businessHours.mondayClose },
-        tuesday: businessHours.sundayClosed && false ? null : { open: businessHours.tuesdayOpen, close: businessHours.tuesdayClose },
-        wednesday: businessHours.sundayClosed && false ? null : { open: businessHours.wednesdayOpen, close: businessHours.wednesdayClose },
-        thursday: businessHours.sundayClosed && false ? null : { open: businessHours.thursdayOpen, close: businessHours.thursdayClose },
-        friday: businessHours.sundayClosed && false ? null : { open: businessHours.fridayOpen, close: businessHours.fridayClose },
-        saturday: businessHours.sundayClosed && false ? null : { open: businessHours.saturdayOpen, close: businessHours.saturdayClose },
+        monday: { open: businessHours.mondayOpen, close: businessHours.mondayClose },
+        tuesday: { open: businessHours.tuesdayOpen, close: businessHours.tuesdayClose },
+        wednesday: { open: businessHours.wednesdayOpen, close: businessHours.wednesdayClose },
+        thursday: { open: businessHours.thursdayOpen, close: businessHours.thursdayClose },
+        friday: { open: businessHours.fridayOpen, close: businessHours.fridayClose },
+        saturday: { open: businessHours.saturdayOpen, close: businessHours.saturdayClose },
         sunday: businessHours.sundayClosed ? null : { open: "10:00", close: "16:00" },
       };
 
@@ -190,14 +187,6 @@ export const onboardingRouter = router({
         for (const emp of initialEmployees) {
           const empId = nanoid();
           const pin = Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit PIN
-          
-          // Generate QR code for employee
-          const qrCodeData = JSON.stringify({
-            employeeId: empId,
-            tenantId,
-            type: "checkin",
-          });
-          const qrCodeUrl = await QRCode.toDataURL(qrCodeData);
 
           await db.insert(users).values({
             tenantId,
@@ -217,77 +206,68 @@ export const onboardingRouter = router({
       }
 
       // 7. Create service categories and services
-      const categoryMap = new Map<string, string>();
+      // serviceCategories.id is autoincrement, so we need to insert and get the ID back
       
       if (initialServices && initialServices.length > 0) {
         // Extract unique categories from services
         const uniqueCategories = [...new Set(initialServices.map(s => s.category))];
+        const categoryMap = new Map<string, number>();
         
-        // Create categories
+        // Create categories (id is autoincrement, don't pass it)
         for (let i = 0; i < uniqueCategories.length; i++) {
-          const catId = nanoid();
-          await db.insert(serviceCategories).values({
-            id: catId,
+          const result = await db.insert(serviceCategories).values({
             tenantId,
             name: uniqueCategories[i],
             displayOrder: i + 1,
-            createdAt: new Date(),
-            updatedAt: new Date(),
           });
-          categoryMap.set(uniqueCategories[i], catId);
+          // Get the inserted ID
+          const insertedId = Number(result[0].insertId);
+          categoryMap.set(uniqueCategories[i], insertedId);
         }
         
         // Create services
         for (const svc of initialServices) {
-          const categoryId = categoryMap.get(svc.category)!;
+          const categoryId = categoryMap.get(svc.category);
           await db.insert(services).values({
-            id: nanoid(),
             tenantId,
-            categoryId,
+            categoryId: categoryId || null,
             name: svc.name,
             duration: svc.duration,
-            price: svc.price,
+            price: String(svc.price),
             description: svc.description || null,
             color: svc.color || "#667eea",
             isActive: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
           });
         }
       } else {
-        // Create default category
-        const categoryId = nanoid();
-        await db.insert(serviceCategories).values({
-          id: categoryId,
+        // Create default category (id is autoincrement)
+        const result = await db.insert(serviceCategories).values({
           tenantId,
           name: "خدمات عامة",
           displayOrder: 1,
-          createdAt: new Date(),
-          updatedAt: new Date(),
         });
+        const categoryId = Number(result[0].insertId);
+        
         // Create default services
         const defaultServices = [
-          { name: "قص شعر رجالي", duration: 30, price: 250 },
-          { name: "حلاقة ذقن", duration: 20, price: 150 },
-          { name: "قص شعر + حلاقة", duration: 45, price: 350 },
+          { name: "قص شعر رجالي", duration: 30, price: "250" },
+          { name: "حلاقة ذقن", duration: 20, price: "150" },
+          { name: "قص شعر + حلاقة", duration: 45, price: "350" },
         ];
 
         for (const svc of defaultServices) {
           await db.insert(services).values({
-            id: nanoid(),
             tenantId,
             categoryId,
             name: svc.name,
             duration: svc.duration,
             price: svc.price,
             isActive: true,
-            createdAt: new Date(),
-            updatedAt: new Date(),
           });
         }
       }
 
-      // 9. Store payment settings (if provided)
+      // 8. Store payment settings (if provided)
       if (paymentSettings) {
         if (paymentSettings.stripeEnabled) {
           await db.insert(settings).values({
@@ -305,7 +285,7 @@ export const onboardingRouter = router({
         }
       }
 
-      // 10. Send welcome email
+      // 9. Send welcome email
       try {
         await sendWelcomeEmail({
           salonName: salonInfo.salonName,
