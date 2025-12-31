@@ -160,12 +160,9 @@ export const onboardingRouter = router({
       };
 
       await db.insert(settings).values({
-        id: nanoid(),
         tenantId,
-        key: "business_hours",
-        value: JSON.stringify(businessHoursJson),
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        settingKey: "business_hours",
+        settingValue: JSON.stringify(businessHoursJson),
       });
 
       // 5. Create default settings
@@ -182,12 +179,9 @@ export const onboardingRouter = router({
 
       for (const setting of defaultSettings) {
         await db.insert(settings).values({
-          id: nanoid(),
           tenantId,
-          key: setting.key,
-          value: setting.value,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          settingKey: setting.key,
+          settingValue: setting.value,
         });
       }
 
@@ -297,22 +291,16 @@ export const onboardingRouter = router({
       if (paymentSettings) {
         if (paymentSettings.stripeEnabled) {
           await db.insert(settings).values({
-            id: nanoid(),
             tenantId,
-            key: "stripe_enabled",
-            value: "true",
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            settingKey: "stripe_enabled",
+            settingValue: "true",
           });
         }
         if (paymentSettings.vippsEnabled) {
           await db.insert(settings).values({
-            id: nanoid(),
             tenantId,
-            key: "vipps_enabled",
-            value: "true",
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            settingKey: "vipps_enabled",
+            settingValue: "true",
           });
         }
       }
