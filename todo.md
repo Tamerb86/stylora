@@ -6275,3 +6275,8 @@ Note: The red boxes in calendar were from browser inspector highlighting empty d
   - [ ] كتابة integration tests للمزامنة
   - [ ] توثيق الـ API والإعدادات
   - [ ] دليل الإعداد للمستخدمين
+
+
+## Current Issues (Dec 31, 2024)
+- [x] إصلاح خطأ 500 في onboarding API - مشكلة الحقول المفقودة في جدول users
+- [ ] اختبار نموذج التسجيل الكامل بعد الإصلاحات

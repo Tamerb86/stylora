@@ -135,15 +135,17 @@ export const onboardingRouter = router({
       const userId = nanoid();
       
       await db.insert(users).values({
-        id: userId,
         tenantId,
+        openId: `owner-${userId}`,
         name: ownerAccount.ownerName,
         email: ownerAccount.ownerEmail,
-        password: hashedPassword,
+        passwordHash: hashedPassword,
         role: "owner",
         isActive: true,
+        deactivatedAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        lastSignedIn: new Date(),
       });
 
       // 4. Create settings with business hours
@@ -204,7 +206,6 @@ export const onboardingRouter = router({
           const qrCodeUrl = await QRCode.toDataURL(qrCodeData);
 
           await db.insert(users).values({
-            id: empId,
             tenantId,
             openId: `employee-${empId}`,
             name: emp.name,
@@ -212,15 +213,11 @@ export const onboardingRouter = router({
             phone: emp.phone || null,
             role: emp.role || "employee",
             pin,
-            qrCode: qrCodeUrl,
-            permissions: JSON.stringify(emp.permissions || {
-              viewAppointments: true,
-              manageCustomers: false,
-              accessReports: false,
-            }),
             isActive: true,
+            deactivatedAt: null,
             createdAt: new Date(),
             updatedAt: new Date(),
+            lastSignedIn: new Date(),
           });
         }
       }
