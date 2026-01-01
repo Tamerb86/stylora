@@ -1,9 +1,0 @@
-{
-  "query": "INSERT INTO businessHours (tenantId, dayOfWeek, openTime, closeTime) VALUES \n('demo-tenant-001', 0, '10:00', '16:00'),\n('demo-tenant-001', 1, '09:00', '18:00'),\n('demo-tenant-001', 2, '09:00', '18:00'),\n('demo-tenant-001', 3, '09:00', '18:00'),\n('demo-tenant-001', 4, '09:00', '18:00'),\n('demo-tenant-001', 5, '09:00', '18:00');",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute INSERT INTO businessHours (tenantId, dayOfWeek, openTime, closeTime) VALUES \n('demo-tenant-001', 0, '10:00', '16:00'),\n('demo-tenant-001', 1, '09:00', '18:00'),\n('demo-tenant-001', 2, '09:00', '18:00'),\n('demo-tenant-001', 3, '09:00', '18:00'),\n('demo-tenant-001', 4, '09:00', '18:00'),\n('demo-tenant-001', 5, '09:00', '18:00');",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 73
-}

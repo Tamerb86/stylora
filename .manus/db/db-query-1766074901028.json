@@ -1,9 +1,0 @@
-{
-  "query": "CREATE UNIQUE INDEX appointments_management_token_idx ON appointments(managementToken);",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute CREATE UNIQUE INDEX appointments_management_token_idx ON appointments(managementToken);",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 531
-}

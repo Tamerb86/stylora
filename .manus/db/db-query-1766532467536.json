@@ -1,9 +1,0 @@
-{
-  "query": "ALTER TABLE paymentSettings \nADD COLUMN stripeConnectedAccountId VARCHAR(255) NULL,\nADD COLUMN stripeAccessToken TEXT NULL,\nADD COLUMN stripeRefreshToken TEXT NULL,\nADD COLUMN stripeAccountStatus ENUM('connected', 'disconnected', 'pending') DEFAULT 'disconnected',\nADD COLUMN stripeConnectedAt TIMESTAMP NULL;",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute ALTER TABLE paymentSettings \nADD COLUMN stripeConnectedAccountId VARCHAR(255) NULL,\nADD COLUMN stripeAccessToken TEXT NULL,\nADD COLUMN stripeRefreshToken TEXT NULL,\nADD COLUMN stripeAccountStatus ENUM('connected', 'disconnected', 'pending') DEFAULT 'disconnected',\nADD COLUMN stripeConnectedAt TIMESTAMP NULL;",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 1559
-}

@@ -1,8 +1,0 @@
-{
-  "query": "INSERT INTO tenants (id, name, subdomain, email, phone, address, organizationNumber, description, createdAt, updatedAt)\nVALUES (\n  'ks-frisor-tenant',\n  'K S Frisør',\n  'ks-frisor',\n  'khaled@ksfrisor.no',\n  '+47 123 45 678',\n  'Storgata 122 C, 3915 Porsgrunn',\n  '931096710',\n  'Luksus OG Rimelige PRISER! Hei! mitt navn er Khaled og jeg er eieren av K S frisør. Jeg har over 8 års erfaring, og jeg vet at det er ikke noe som en frisk ny haircut, rett barbering eller avslappende hodemassasje for å få deg til å føle som en ny mann. Det er derfor vi tar oss god tid til hver kunde. Vi vil at du skal føle deg som kongelig når du går gjennom dørene våre.',\n  NOW(),\n  NOW()\n);",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute INSERT INTO tenants (id, name, subdomain, email, phone, address, organizationNumber, description, createdAt, updatedAt)\nVALUES (\n  'ks-frisor-tenant',\n  'K S Frisør',\n  'ks-frisor',\n  'khaled@ksfrisor.no',\n  '+47 123 45 678',\n  'Storgata 122 C, 3915 Porsgrunn',\n  '931096710',\n  'Luksus OG Rimelige PRISER! Hei! mitt navn er Khaled og jeg er eieren av K S frisør. Jeg har over 8 års erfaring, og jeg vet at det er ikke noe som en frisk ny haircut, rett barbering eller avslappende hodemassasje for å få deg til å føle som en ny mann. Det er derfor vi tar oss god tid til hver kunde. Vi vil at du skal føle deg som kongelig når du går gjennom dørene våre.',\n  NOW(),\n  NOW()\n);",
-  "returncode": 1,
-  "logs": [
-    "ERROR 1054 (42S22) at line 1: Unknown column 'organizationNumber' in 'field list'"
-  ]
-}

@@ -1,8 +1,0 @@
-{
-  "query": "ALTER TABLE paymentSettings \nADD COLUMN stripeConnectedAccountId VARCHAR(255) AFTER stripeTestMode,\nADD COLUMN stripeAccessToken TEXT AFTER stripeConnectedAccountId,\nADD COLUMN stripeRefreshToken TEXT AFTER stripeAccessToken,\nADD COLUMN stripeAccountStatus ENUM('connected', 'disconnected', 'pending') DEFAULT 'disconnected' AFTER stripeRefreshToken,\nADD COLUMN stripeConnectedAt TIMESTAMP NULL AFTER stripeAccountStatus;",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute ALTER TABLE paymentSettings \nADD COLUMN stripeConnectedAccountId VARCHAR(255) AFTER stripeTestMode,\nADD COLUMN stripeAccessToken TEXT AFTER stripeConnectedAccountId,\nADD COLUMN stripeRefreshToken TEXT AFTER stripeAccessToken,\nADD COLUMN stripeAccountStatus ENUM('connected', 'disconnected', 'pending') DEFAULT 'disconnected' AFTER stripeRefreshToken,\nADD COLUMN stripeConnectedAt TIMESTAMP NULL AFTER stripeAccountStatus;",
-  "returncode": 1,
-  "logs": [
-    "ERROR 1054 (42S22) at line 1: Unknown column 'stripeconnectedaccountid' in 'paymentSettings'"
-  ]
-}

@@ -1,9 +1,0 @@
-{
-  "query": "ALTER TABLE `paymentProviders`\n  MODIFY `accessToken` TEXT NOT NULL,\n  MODIFY `refreshToken` TEXT NOT NULL,\n  MODIFY `tokenExpiresAt` DATETIME(3) NOT NULL,\n  MODIFY `providerAccountId` VARCHAR(255) NULL,\n  MODIFY `providerEmail` VARCHAR(255) NULL,\n  MODIFY `config` JSON NULL,\n  MODIFY `lastSyncAt` DATETIME(3) NULL,\n  MODIFY `lastErrorAt` DATETIME(3) NULL,\n  MODIFY `lastErrorMessage` TEXT NULL;",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute ALTER TABLE `paymentProviders`\n  MODIFY `accessToken` TEXT NOT NULL,\n  MODIFY `refreshToken` TEXT NOT NULL,\n  MODIFY `tokenExpiresAt` DATETIME(3) NOT NULL,\n  MODIFY `providerAccountId` VARCHAR(255) NULL,\n  MODIFY `providerEmail` VARCHAR(255) NULL,\n  MODIFY `config` JSON NULL,\n  MODIFY `lastSyncAt` DATETIME(3) NULL,\n  MODIFY `lastErrorAt` DATETIME(3) NULL,\n  MODIFY `lastErrorMessage` TEXT NULL;",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 3338
-}

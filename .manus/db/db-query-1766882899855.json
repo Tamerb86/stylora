@@ -1,9 +1,0 @@
-{
-  "query": "CREATE TABLE IF NOT EXISTS `appointmentHistory` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `tenantId` varchar(36) NOT NULL,\n  `appointmentId` int NOT NULL,\n  `changeType` enum('created','rescheduled','status_changed','service_changed','employee_changed','canceled','notes_updated') NOT NULL,\n  `fieldName` varchar(100),\n  `oldValue` text,\n  `newValue` text,\n  `changedBy` enum('customer','staff','system') NOT NULL,\n  `changedByUserId` int,\n  `changedByEmail` varchar(320),\n  `notes` text,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  CONSTRAINT `appointmentHistory_id` PRIMARY KEY(`id`),\n  INDEX `appointment_idx` (`appointmentId`),\n  INDEX `tenant_idx` (`tenantId`),\n  INDEX `change_type_idx` (`changeType`),\n  INDEX `created_at_idx` (`createdAt`)\n);",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute CREATE TABLE IF NOT EXISTS `appointmentHistory` (\n  `id` int AUTO_INCREMENT NOT NULL,\n  `tenantId` varchar(36) NOT NULL,\n  `appointmentId` int NOT NULL,\n  `changeType` enum('created','rescheduled','status_changed','service_changed','employee_changed','canceled','notes_updated') NOT NULL,\n  `fieldName` varchar(100),\n  `oldValue` text,\n  `newValue` text,\n  `changedBy` enum('customer','staff','system') NOT NULL,\n  `changedByUserId` int,\n  `changedByEmail` varchar(320),\n  `notes` text,\n  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,\n  CONSTRAINT `appointmentHistory_id` PRIMARY KEY(`id`),\n  INDEX `appointment_idx` (`appointmentId`),\n  INDEX `tenant_idx` (`tenantId`),\n  INDEX `change_type_idx` (`changeType`),\n  INDEX `created_at_idx` (`createdAt`)\n);",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 330
-}

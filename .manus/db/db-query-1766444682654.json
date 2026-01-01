@@ -1,9 +1,0 @@
-{
-  "query": "SELECT id, tenantId, providerType, isActive FROM paymentProviders WHERE tenantId = 'platform-admin-tenant';",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3VZWkmDdVMGTAoV.53e2061c2123 --database FUrq59UAJ9LE4f7MefV9tg --execute SELECT id, tenantId, providerType, isActive FROM paymentProviders WHERE tenantId = 'platform-admin-tenant';",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 52
-}
