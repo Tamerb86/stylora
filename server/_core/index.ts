@@ -141,7 +141,7 @@ async function startServer() {
       directives: {
         "script-src": ["'self'", "https://js.stripe.com"],
         "frame-src": ["'self'", "https://js.stripe.com", "https://checkout.stripe.com"],
-        "connect-src": ["'self'", "https://api.stripe.com"],
+        "connect-src": ["'self'", "https://api.stripe.com", "https://gator.stripe.com"],
         "img-src": ["'self'", "data:", "https:"],
       },
     },

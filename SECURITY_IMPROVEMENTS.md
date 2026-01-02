@@ -2,7 +2,93 @@
 
 This document describes the security enhancements made to the Stylora application.
 
-## Changes Made
+## Recent Updates (January 2026)
+
+### 1. Content Security Policy - Stripe Terminal Support ✅
+**Location:** `server/_core/index.ts`
+
+**Problem:** CSP violations preventing Stripe Terminal from connecting to `https://gator.stripe.com`
+
+**Solution:** Updated CSP `connect-src` directive:
+```typescript
+"connect-src": ["'self'", "https://api.stripe.com", "https://gator.stripe.com"]
+```
+
+**Impact:** Stripe Terminal can now communicate with all necessary Stripe backend services for payment processing.
+
+### 2. Enhanced Login Error Handling ✅
+**Location:** `server/_core/auth-simple.ts`
+
+**Problems:**
+- 500 errors when database connection fails
+- Login failures when refresh token creation fails
+- Poor error messages for users
+
+**Solutions:**
+
+#### A. Database Connection Error Handling
+```typescript
+let dbInstance;
+try {
+  dbInstance = await db.getDb();
+  if (!dbInstance) {
+    throw new Error("Database connection returned null");
+  }
+} catch (dbError) {
+  console.error("[Auth] Database connection error:", dbError);
+  res.status(500).json({ 
+    error: "Tjenesten er midlertidig utilgjengelig", 
+    hint: "Vi har problemer med å koble til databasen. Vennligst prøv igjen om noen minutter."
+  });
+  return;
+}
+```
+
+#### B. Database Query Error Handling
+```typescript
+let user;
+try {
+  [user] = await dbInstance
+    .select()
+    .from(users)
+    .where(sql`LOWER(${users.email}) = LOWER(${trimmedEmail})`)
+    .limit(1);
+} catch (queryError) {
+  console.error("[Auth] Database query error during login:", queryError);
+  res.status(500).json({ 
+    error: "En databasefeil oppstod",
+    hint: "Det oppstod en feil ved oppslag i brukerdatabasen. Vennligst prøv igjen senere."
+  });
+  return;
+}
+```
+
+#### C. Graceful Refresh Token Creation
+```typescript
+// Create refresh token (90 days) - handle failures gracefully
+let refreshToken: string | null = null;
+try {
+  const { createRefreshToken } = await import("./refresh-tokens");
+  refreshToken = await createRefreshToken(
+    user.id,
+    user.tenantId,
+    req.ip,
+    req.headers["user-agent"]
+  );
+} catch (refreshError) {
+  // Log the error but don't fail the login
+  console.error("[Auth] Failed to create refresh token:", refreshError);
+  // Continue with session token only - user can still log in
+}
+```
+
+**Impact:**
+- ✅ Users can log in even if refresh token table has issues
+- ✅ Clear, actionable error messages
+- ✅ Better debugging with detailed logs
+- ✅ Improved reliability
+
+## Changes Made (Previous Updates)
 
 ### 1. Trust Proxy Configuration
 **Location:** `server/_core/index.ts`
