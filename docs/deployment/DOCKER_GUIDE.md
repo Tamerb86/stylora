@@ -111,7 +111,7 @@ docker-compose logs -f db
 
 # الدخول إلى container
 docker-compose exec app sh
-docker-compose exec db mysql -u stylora_user -p barbertime
+docker-compose exec db mysql -u stylora_user -p stylora
 
 # إيقاف الخدمات
 docker-compose stop
@@ -167,13 +167,13 @@ docker run --rm \
 docker-compose exec db mysqldump \
   -u stylora_user \
   -pstylora_password \
-  barbertime > backup.sql
+  stylora > backup.sql
 
 # Restore
 docker-compose exec -T db mysql \
   -u stylora_user \
   -pstylora_password \
-  barbertime < backup.sql
+  stylora < backup.sql
 ```
 
 ---

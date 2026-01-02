@@ -35,7 +35,7 @@ The `build` script has been updated to run migrations automatically:
 
 ### Step 3: Redeploy in Railway
 1. Go to Railway dashboard
-2. Open **barbertime** service
+2. Open **stylora** service
 3. Click **"Deployments"** tab
 4. Click **"Redeploy"** on the latest deployment
 

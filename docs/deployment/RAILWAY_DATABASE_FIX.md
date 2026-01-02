@@ -13,7 +13,7 @@ The Stylora application was experiencing "Database connection error" when trying
 ### Step 1: Add DATABASE_URL Variable Reference
 
 1. Open your Railway project dashboard
-2. Click on the **barbertime** service (NOT the MySQL service)
+2. Click on the **stylora** service (NOT the MySQL service)
 3. Go to the **Variables** tab
 4. Click **+ New Variable**
 5. Configure as follows:
@@ -80,7 +80,7 @@ mysql://root:rQskZdQhNxeaTZCOxWFGKQCYZBGcyHlJ@containers-us-west-xxx.railway.app
 ## Troubleshooting
 
 ### Error: "Cannot connect to mysql.railway.internal"
-- Ensure both services (barbertime and MySQL) are in the **same Railway project**
+- Ensure both services (stylora and MySQL) are in the **same Railway project**
 - Verify MySQL service is **Online**
 
 ### Error: "Access denied for user 'root'"
