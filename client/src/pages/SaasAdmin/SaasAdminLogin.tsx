@@ -33,6 +33,19 @@ export default function SaasAdminLogin() {
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error("Ugyldig e-postformat");
+      return;
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      toast.error("Passordet må være minst 6 tegn");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -52,10 +65,20 @@ export default function SaasAdminLogin() {
           window.location.href = "/saas-admin";
         }, 500);
       } else {
-        toast.error(data.error || "Innlogging feilet");
+        // Provide more specific error messages
+        if (response.status === 401) {
+          toast.error("Ugyldig e-post eller passord");
+        } else if (response.status === 403) {
+          toast.error(data.error || "Kontoen er deaktivert");
+        } else if (response.status === 500) {
+          toast.error("Serverfeil. Vennligst prøv igjen senere.");
+        } else {
+          toast.error(data.error || "Innlogging feilet");
+        }
       }
     } catch (error) {
-      toast.error("Noe gikk galt. Prøv igjen.");
+      console.error("Login error:", error);
+      toast.error("Nettverksfeil. Sjekk internettforbindelsen din og prøv igjen.");
     } finally {
       setIsSubmitting(false);
     }

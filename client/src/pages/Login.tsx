@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,20 +12,51 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, LogIn, ArrowLeft, Shield } from "lucide-react";
-import { Link } from "wouter";
 
 export default function Login() {
   const [, setLocation] = useLocation();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [error, setError] = useState("");
   const [errorHint, setErrorHint] = useState("");
+
   const [isLoading, setIsLoading] = useState(false);
+
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
+
+  const validateForm = () => {
+    const errors: { email?: string; password?: string } = {};
+
+    if (!email) {
+      errors.email = "E-post er påkrevd";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = "Ugyldig e-postformat";
+    }
+
+    if (!password) {
+      errors.password = "Passord er påkrevd";
+    } else if (password.length < 6) {
+      errors.password = "Passordet må være minst 6 tegn";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setError("");
     setErrorHint("");
+
+    // validate + show field errors
+    if (!validateForm()) return;
+
     setIsLoading(true);
 
     try {
@@ -36,18 +67,19 @@ export default function Login() {
         credentials: "include",
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        setError(data.error || "Innlogging feilet");
-        setErrorHint(data.hint || "");
+        // Prefer backend message + hint if available
+        setError(data?.error || "Innlogging feilet");
+        setErrorHint(data?.hint || "");
         return;
       }
 
-      // Redirect to dashboard on success
       setLocation("/dashboard");
     } catch (err) {
-      setError("Noe gikk galt. Prøv igjen.");
+      console.error("Login error:", err);
+      setError("Nettverksfeil. Prøv igjen.");
       setErrorHint("");
     } finally {
       setIsLoading(false);
@@ -76,6 +108,7 @@ export default function Login() {
               Skriv inn e-post og passord for å fortsette
             </CardDescription>
           </CardHeader>
+
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
@@ -96,10 +129,19 @@ export default function Login() {
                   type="email"
                   placeholder="din@epost.no"
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (fieldErrors.email) {
+                      setFieldErrors({ ...fieldErrors, email: undefined });
+                    }
+                  }}
                   required
                   autoComplete="email"
+                  className={fieldErrors.email ? "border-red-500" : ""}
                 />
+                {fieldErrors.email && (
+                  <p className="text-sm text-red-500">{fieldErrors.email}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -112,15 +154,25 @@ export default function Login() {
                     Glemt passord?
                   </Link>
                 </div>
+
                 <Input
                   id="password"
                   type="password"
                   placeholder="••••••••"
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (fieldErrors.password) {
+                      setFieldErrors({ ...fieldErrors, password: undefined });
+                    }
+                  }}
                   required
                   autoComplete="current-password"
+                  className={fieldErrors.password ? "border-red-500" : ""}
                 />
+                {fieldErrors.password && (
+                  <p className="text-sm text-red-500">{fieldErrors.password}</p>
+                )}
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
@@ -165,7 +217,6 @@ export default function Login() {
               </Button>
             </Link>
 
-            {/* SaaS Admin Login Button */}
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-200"></div>

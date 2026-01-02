@@ -20,6 +20,7 @@ import bcrypt from "bcrypt";
 import { users, tenants } from "../../drizzle/schema";
 import { eq, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { logAuth, logError, logInfo, logDb } from "./logger";
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.length > 0;
@@ -27,9 +28,6 @@ const isNonEmptyString = (value: unknown): value is string =>
 // Email validation regex - RFC 5322 simplified
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/**
- * Validate and normalize email address
- */
 function validateEmail(email: string): string | null {
   const trimmed = email.trim();
   if (!trimmed || !EMAIL_REGEX.test(trimmed)) return null;
@@ -78,8 +76,11 @@ class AuthService {
       .sign(this.getSessionSecret());
   }
 
-  async verifySession(cookieValue?: string | null): Promise<SessionPayload | null> {
+  async verifySession(
+    cookieValue?: string | null
+  ): Promise<SessionPayload | null> {
     if (!cookieValue) return null;
+
     try {
       const { payload } = await jwtVerify(cookieValue, this.getSessionSecret(), {
         algorithms: ["HS256"],
@@ -106,7 +107,8 @@ class AuthService {
             ? impersonatedTenantId
             : null,
       };
-    } catch {
+    } catch (error) {
+      logAuth.sessionInvalid(String(error));
       return null;
     }
   }
@@ -124,6 +126,7 @@ class AuthService {
     let user = await db.getUserByOpenId(session.openId);
     if (!user) return null;
 
+    // Handle impersonation
     if (session.impersonatedTenantId && session.openId === ENV.ownerOpenId) {
       user = { ...user, tenantId: session.impersonatedTenantId };
     }
@@ -135,7 +138,10 @@ class AuthService {
       lastSignedIn: new Date(),
     });
 
-    return { user, impersonatedTenantId: session.impersonatedTenantId ?? null };
+    return {
+      user,
+      impersonatedTenantId: session.impersonatedTenantId ?? null,
+    };
   }
 }
 
@@ -144,61 +150,134 @@ export const authenticateRequest = (req: Request) =>
   authService.authenticateRequest(req);
 
 export function registerAuthRoutes(app: Express) {
+  // Login endpoint
   app.post("/api/auth/login", async (req: Request, res: Response) => {
+    const clientIp =
+      (req.ip as string) ||
+      (req.headers["x-forwarded-for"] as string) ||
+      "unknown";
+
     try {
-      const { email, password } = req.body;
+      const { email, password } = req.body ?? {};
+
       if (!email || !password) {
+        logAuth.loginFailed(String(email || "no-email"), "Missing credentials", clientIp);
         res.status(400).json({ error: "E-post og passord er påkrevd" });
         return;
       }
 
-      const trimmedEmail = validateEmail(email);
+      const trimmedEmail = validateEmail(String(email));
       if (!trimmedEmail) {
+        logAuth.loginFailed(String(email), "Invalid email format", clientIp);
         res.status(400).json({ error: "Ugyldig e-postadresse" });
         return;
       }
 
-      // DB connect
+      // DB instance
       let dbInstance;
       try {
         dbInstance = await db.getDb();
-        if (!dbInstance) throw new Error("DB null");
-      } catch {
-        res.status(500).json({ error: "Database utilgjengelig" });
+        if (!dbInstance) throw new Error("Database connection returned null");
+      } catch (dbError) {
+        logDb.error("login-db-connect", dbError as Error);
+        res.status(500).json({
+          error: "Tjenesten er midlertidig utilgjengelig",
+          hint: "Vi har problemer med å koble til databasen. Prøv igjen om litt.",
+        });
         return;
       }
 
-      let user;
+      // User lookup (case-insensitive)
+      let user: any;
       try {
         [user] = await dbInstance
           .select()
           .from(users)
           .where(sql`LOWER(${users.email}) = LOWER(${trimmedEmail})`)
           .limit(1);
-      } catch {
-        res.status(500).json({ error: "Databasefeil" });
+      } catch (queryError) {
+        logDb.error("login-user-lookup", queryError as Error);
+        res.status(500).json({
+          error: "En databasefeil oppstod",
+          hint: "Vennligst prøv igjen senere.",
+        });
         return;
       }
 
+      // Generic message to prevent enumeration
       if (!user || !user.passwordHash) {
-        res.status(401).json({ error: "Ugyldig e-post eller passord" });
+        logAuth.loginFailed(trimmedEmail, "User not found or no password", clientIp);
+        res.status(401).json({
+          error: "Ugyldig e-post eller passord",
+          hint: "Sjekk e-post og passord og prøv igjen.",
+        });
         return;
       }
 
-      if (!(await authService.verifyPassword(password, user.passwordHash))) {
-        res.status(401).json({ error: "Ugyldig e-post eller passord" });
-        return;
-      }
-
-      let tenant;
+      // Password verify
+      let ok = false;
       try {
-        tenant = await db.getTenantById(user.tenantId);
-        if (!tenant) throw new Error("Tenant missing");
-      } catch {
-        res.status(500).json({ error: "Kontokonfigurasjonsfeil" });
+        ok = await authService.verifyPassword(String(password), user.passwordHash);
+      } catch (bcryptError) {
+        logError("[Auth] Password verification error", bcryptError as Error, {
+          email: trimmedEmail,
+          ip: clientIp,
+        });
+        res.status(500).json({ error: "Autentiseringsfeil. Prøv igjen." });
         return;
       }
 
+      if (!ok) {
+        logAuth.loginFailed(trimmedEmail, "Invalid password", clientIp);
+        res.status(401).json({
+          error: "Ugyldig e-post eller passord",
+          hint: "Sjekk e-post og passord og prøv igjen.",
+        });
+        return;
+      }
+
+      // Account active check (if field exists)
+      if (user.isActive === false) {
+        logAuth.loginFailed(trimmedEmail, "Account deactivated", clientIp);
+        res.status(403).json({
+          error: "Kontoen er deaktivert",
+          hint: "Kontakt support for å aktivere kontoen.",
+        });
+        return;
+      }
+
+      // Tenant check (if you use multi-tenant)
+      try {
+        const tenant = await db.getTenantById(user.tenantId);
+        if (!tenant) {
+          logDb.error("login-tenant-missing", new Error("Tenant not found"));
+          res.status(500).json({
+            error: "Kontokonfigurasjonsfeil",
+            hint: "Kontakt support for hjelp.",
+          });
+          return;
+        }
+        if (tenant.status === "suspended" || tenant.status === "canceled") {
+          logAuth.loginFailed(trimmedEmail, `Tenant ${tenant.status}`, clientIp);
+          res.status(403).json({
+            error:
+              tenant.status === "suspended"
+                ? "Abonnementet er suspendert"
+                : "Abonnementet er avsluttet",
+            hint: "Kontakt support for å reaktivere abonnementet.",
+          });
+          return;
+        }
+      } catch (tenantError) {
+        logDb.error("login-tenant-fetch", tenantError as Error);
+        res.status(500).json({
+          error: "Kunne ikke hente kontoinformasjon",
+          hint: "Prøv igjen senere.",
+        });
+        return;
+      }
+
+      // Create session
       const sessionToken = await authService.createSessionToken(
         {
           openId: user.openId,
@@ -209,6 +288,7 @@ export function registerAuthRoutes(app: Express) {
         { expiresInMs: THIRTY_DAYS_MS }
       );
 
+      // Create refresh token (optional)
       let refreshToken: string | null = null;
       try {
         const { createRefreshToken } = await import("./refresh-tokens");
@@ -218,7 +298,12 @@ export function registerAuthRoutes(app: Express) {
           req.ip,
           req.headers["user-agent"]
         );
-      } catch {}
+      } catch (refreshError) {
+        logError("[Auth] Failed to create refresh token", refreshError as Error, {
+          email: trimmedEmail,
+          ip: clientIp,
+        });
+      }
 
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, {
@@ -233,9 +318,265 @@ export function registerAuthRoutes(app: Express) {
         });
       }
 
+      logAuth.loginSuccess(trimmedEmail, clientIp);
+
+      res.json({
+        success: true,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          tenantId: user.tenantId,
+        },
+      });
+    } catch (error) {
+      logError("[Auth] Login failed with unexpected error", error as Error, {
+        email: req.body?.email,
+        ip: clientIp,
+      });
+      res.status(500).json({
+        error: "En uventet feil oppstod",
+        hint: "Vennligst prøv igjen. Hvis problemet vedvarer, kontakt support.",
+      });
+    }
+  });
+
+  // Demo login endpoint
+  app.post("/api/auth/demo-login", async (req: Request, res: Response) => {
+    try {
+      const DEMO_EMAIL = "demo@stylora.no";
+
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        res.status(500).json({ error: "Database ikke tilgjengelig" });
+        return;
+      }
+
+      const [user] = await dbInstance
+        .select()
+        .from(users)
+        .where(sql`LOWER(${users.email}) = LOWER(${DEMO_EMAIL})`)
+        .limit(1);
+
+      if (!user) {
+        res.status(404).json({ error: "Demo-konto ikke funnet" });
+        return;
+      }
+
+      const sessionToken = await authService.createSessionToken(
+        {
+          openId: user.openId,
+          appId: ENV.appId,
+          name: user.name || "Demo User",
+          email: user.email || undefined,
+        },
+        { expiresInMs: ONE_YEAR_MS }
+      );
+
+      const cookieOptions = getSessionCookieOptions(req);
+      res.cookie(COOKIE_NAME, sessionToken, {
+        ...cookieOptions,
+        maxAge: ONE_YEAR_MS,
+      });
+
+      res.json({
+        success: true,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          tenantId: user.tenantId,
+        },
+      });
+    } catch (error) {
+      logError("[Auth] Demo login failed", error as Error);
+      res.status(500).json({ error: "Demo-innlogging feilet" });
+    }
+  });
+
+  // Register endpoint (kept minimal; adjust as needed)
+  app.post("/api/auth/register", async (req: Request, res: Response) => {
+    try {
+      const { email, password, name, salonName, phone } = req.body ?? {};
+
+      if (!email || !password) {
+        res.status(400).json({ error: "E-post og passord er påkrevd" });
+        return;
+      }
+
+      const trimmedEmail = validateEmail(String(email));
+      if (!trimmedEmail) {
+        res.status(400).json({ error: "Ugyldig e-postadresse" });
+        return;
+      }
+
+      if (String(password).length < 6) {
+        res.status(400).json({ error: "Passordet må være minst 6 tegn" });
+        return;
+      }
+
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        res.status(500).json({ error: "Database ikke tilgjengelig" });
+        return;
+      }
+
+      // Check if email exists (case-insensitive)
+      const [existingUser] = await dbInstance
+        .select()
+        .from(users)
+        .where(sql`LOWER(${users.email}) = LOWER(${trimmedEmail})`)
+        .limit(1);
+
+      if (existingUser) {
+        res.status(400).json({
+          error: "E-postadressen er allerede registrert",
+          hint: "Logg inn eller bruk 'Glemt passord?'",
+        });
+        return;
+      }
+
+      // Create tenant
+      const tenantId = `tenant-${nanoid(12)}`;
+      const subdomain =
+        trimmedEmail
+          .split("@")[0]
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "") +
+        "-" +
+        nanoid(6);
+
+      await dbInstance.insert(tenants).values({
+        id: tenantId,
+        name: salonName || `${name || trimmedEmail.split("@")[0]}'s Salong`,
+        subdomain,
+        email: trimmedEmail,
+        phone: phone || null,
+        status: "trial",
+        trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        emailVerified: true,
+        emailVerifiedAt: new Date(),
+        onboardingCompleted: false,
+        onboardingStep: "welcome",
+      });
+
+      // Create user
+      const passwordHash = await authService.hashPassword(String(password));
+      const openId = `user-${nanoid(16)}`;
+
+      await dbInstance.insert(users).values({
+        tenantId,
+        openId,
+        email: trimmedEmail,
+        name: name || trimmedEmail.split("@")[0],
+        phone: phone || null,
+        passwordHash,
+        role: "owner",
+        loginMethod: "email",
+        isActive: true,
+        commissionType: "percentage",
+        commissionRate: "50.00",
+        uiMode: "advanced",
+        onboardingCompleted: false,
+      });
+
+      const sessionToken = await authService.createSessionToken(
+        {
+          openId,
+          appId: ENV.appId,
+          name: name || trimmedEmail.split("@")[0],
+          email: trimmedEmail,
+        },
+        { expiresInMs: ONE_YEAR_MS }
+      );
+
+      const cookieOptions = getSessionCookieOptions(req);
+      res.cookie(COOKIE_NAME, sessionToken, {
+        ...cookieOptions,
+        maxAge: ONE_YEAR_MS,
+      });
+
+      res.json({ success: true, message: "Registrering vellykket!" });
+    } catch (error) {
+      logError("[Auth] Registration failed", error as Error);
+      res.status(500).json({ error: "Registrering feilet" });
+    }
+  });
+
+  // Forgot password (safe placeholder: don't reveal if user exists)
+  app.post("/api/auth/forgot-password", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body ?? {};
+      const trimmedEmail = email ? validateEmail(String(email)) : null;
+
+      // Always respond success (prevent enumeration)
+      if (trimmedEmail) {
+        logInfo("[Auth] Password reset requested", { email: trimmedEmail });
+        // TODO: implement real reset flow (password_resets table + email sending)
+      } else {
+        logInfo("[Auth] Password reset requested (invalid email)");
+      }
+
+      res.json({
+        success: true,
+        message:
+          "Hvis e-postadressen finnes i systemet, vil du motta en e-post med instruksjoner.",
+      });
+    } catch (error) {
+      logError("[Auth] Forgot password error", error as Error);
+      res.status(500).json({ error: "Noe gikk galt" });
+    }
+  });
+
+  // Logout endpoint
+  app.post("/api/auth/logout", async (req: Request, res: Response) => {
+    try {
+      const cookies = parseCookieHeader(req.headers.cookie || "");
+      const refreshToken = cookies[REFRESH_TOKEN_COOKIE_NAME];
+
+      if (refreshToken) {
+        const { revokeRefreshToken } = await import("./refresh-tokens");
+        await revokeRefreshToken(refreshToken, "User logout");
+      }
+
+      const cookieOptions = getSessionCookieOptions(req);
+      res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+
       res.json({ success: true });
-    } catch {
-      res.status(500).json({ error: "Uventet feil" });
+    } catch (error) {
+      logError("[Auth] Logout failed", error as Error);
+      const cookieOptions = getSessionCookieOptions(req);
+      res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      res.json({ success: true });
+    }
+  });
+
+  // Current user endpoint
+  app.get("/api/auth/me", async (req: Request, res: Response) => {
+    try {
+      const result = await authService.authenticateRequest(req);
+      if (!result) {
+        res.status(401).json({ error: "Ikke autentisert" });
+        return;
+      }
+
+      res.json({
+        user: {
+          id: result.user.id,
+          openId: result.user.openId,
+          name: result.user.name,
+          email: result.user.email,
+          role: result.user.role,
+          tenantId: result.user.tenantId,
+        },
+      });
+    } catch (error) {
+      logError("[Auth] Get user failed", error as Error);
+      res.status(500).json({ error: "Kunne ikke hente bruker" });
     }
   });
 }

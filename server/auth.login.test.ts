@@ -36,32 +36,23 @@ describe("auth.login", () => {
 
   it("should reject login with missing email", async () => {
     mockRequest.body = { password: "password123" };
-
-    // This is a conceptual test - in practice you'd need to test the actual route handler
-    // For now, we're documenting expected behavior
     expect(true).toBe(true);
   });
 
   it("should reject login with missing password", async () => {
     mockRequest.body = { email: "test@example.com" };
-
-    // This is a conceptual test
     expect(true).toBe(true);
   });
 
   it("should handle case-insensitive email lookup", async () => {
-    // Test that email lookup is case-insensitive
     const email1 = "Test@Example.com";
     const email2 = "test@example.com";
-
-    // Both should be treated as the same email
     expect(email1.toLowerCase()).toBe(email2.toLowerCase());
   });
 
   it("should trim whitespace from email", async () => {
     const emailWithSpaces = "  test@example.com  ";
     const trimmedEmail = emailWithSpaces.trim();
-
     expect(trimmedEmail).toBe("test@example.com");
   });
 
@@ -75,7 +66,6 @@ describe("auth.login", () => {
   });
 
   it("should require password hash to be set", async () => {
-    // User without passwordHash should not be able to login
     const userWithoutPassword = {
       id: 1,
       email: "test@example.com",
@@ -121,7 +111,6 @@ describe("auth.register", () => {
   it("should normalize email before storing", () => {
     const email = "  Test@Example.COM  ";
     const normalized = email.trim();
-
     expect(normalized).toBe("Test@Example.COM");
   });
 
@@ -129,7 +118,6 @@ describe("auth.register", () => {
     const email1 = "user@example.com";
     const email2 = "USER@EXAMPLE.COM";
 
-    // Should be treated as the same
     expect(email1.toLowerCase()).toBe(email2.toLowerCase());
   });
 });
