@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import { safeToFixed } from './utils';
 
 interface ExportColumn {
   header: string;
@@ -76,7 +77,7 @@ export function exportToPDF(
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     metadata.totals.forEach((total) => {
-      const text = `${total.employeeName}: ${total.totalHours.toFixed(2)} timer (${total.totalShifts} skift)`;
+      const text = `${total.employeeName}: ${safeToFixed(total.totalHours, 2)} timer (${total.totalShifts} skift)`;
       doc.text(text, 20, currentY);
       currentY += 5;
     });
@@ -94,7 +95,7 @@ export function exportToPDF(
       }
       // Format numbers
       if (typeof value === 'number') {
-        return value.toFixed(2);
+        return safeToFixed(value, 2);
       }
       return value?.toString() || '';
     })
@@ -143,7 +144,7 @@ export function exportToExcel(
       }
       // Format numbers
       else if (typeof value === 'number') {
-        formattedRow[col.header] = parseFloat(value.toFixed(2));
+        formattedRow[col.header] = parseFloat(safeToFixed(value, 2));
       }
       else {
         formattedRow[col.header] = value?.toString() || '';
@@ -178,7 +179,7 @@ export function exportToExcel(
  */
 export function formatHours(hours: number | string): string {
   const numHours = typeof hours === 'string' ? parseFloat(hours) : hours;
-  return Math.abs(numHours).toFixed(2);
+  return safeToFixed(Math.abs(numHours), 2);
 }
 
 /**

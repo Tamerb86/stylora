@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Calendar, TrendingUp, Users, Briefcase, DollarSign, Activity } from "lucide-react";
 import { format, subDays, subMonths, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns";
+import { safeToFixed } from "@/lib/utils";
 
 type DateRange = "7days" | "30days" | "thisMonth" | "lastMonth" | "thisYear";
 
@@ -133,7 +134,7 @@ function AnalyticsContent() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalRevenue.toFixed(2)} kr</div>
+            <div className="text-2xl font-bold">{safeToFixed(totalRevenue, 2)} kr</div>
             <p className="text-xs text-muted-foreground">Fra fullførte avtaler</p>
           </CardContent>
         </Card>
@@ -299,7 +300,7 @@ function AnalyticsContent() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => `${name}: ${safeToFixed(percent * 100, 0)}%`}
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"

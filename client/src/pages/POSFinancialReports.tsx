@@ -11,6 +11,7 @@ import { TrendingUp, DollarSign, ShoppingCart, Users, Download, Calendar, Filter
 import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
 import { format, subDays, startOfMonth, endOfMonth, startOfDay, endOfDay } from "date-fns";
 import { nb } from "date-fns/locale";
+import { safeToFixed } from "@/lib/utils";
 
 const COLORS = ["#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#6366f1"];
 
@@ -205,7 +206,7 @@ export default function POSFinancialReports() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {parseFloat(report.summary.totalSales).toFixed(2)} NOK
+                    {safeToFixed(report.summary.totalSales, 2)} NOK
                   </div>
                 </CardContent>
               </Card>
@@ -233,7 +234,7 @@ export default function POSFinancialReports() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {parseFloat(report.summary.averageOrderValue).toFixed(2)} NOK
+                    {safeToFixed(report.summary.averageOrderValue, 2)} NOK
                   </div>
                 </CardContent>
               </Card>
@@ -247,7 +248,7 @@ export default function POSFinancialReports() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-green-600">
-                    {parseFloat(report.summary.netRevenue).toFixed(2)} NOK
+                    {safeToFixed(report.summary.netRevenue, 2)} NOK
                   </div>
                 </CardContent>
               </Card>
@@ -289,7 +290,7 @@ export default function POSFinancialReports() {
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        label={(entry) => `${entry.name}: ${entry.value.toFixed(0)} NOK`}
+                        label={(entry) => `${entry.name}: ${safeToFixed(entry.value, 0)} NOK`}
                         outerRadius={80}
                         fill="#8884d8"
                         dataKey="value"
@@ -348,7 +349,7 @@ export default function POSFinancialReports() {
                           <TableCell className="font-medium">{service.serviceName}</TableCell>
                           <TableCell className="text-right">{service.count}</TableCell>
                           <TableCell className="text-right font-semibold">
-                            {parseFloat(service.totalRevenue).toFixed(2)} NOK
+                            {safeToFixed(service.totalRevenue, 2)} NOK
                           </TableCell>
                         </TableRow>
                       ))}
@@ -378,7 +379,7 @@ export default function POSFinancialReports() {
                           <TableCell className="font-medium">{product.productName}</TableCell>
                           <TableCell className="text-right">{product.quantity}</TableCell>
                           <TableCell className="text-right font-semibold">
-                            {parseFloat(product.totalRevenue).toFixed(2)} NOK
+                            {safeToFixed(product.totalRevenue, 2)} NOK
                           </TableCell>
                         </TableRow>
                       ))}
@@ -410,7 +411,7 @@ export default function POSFinancialReports() {
                         <TableRow key={split.orderId}>
                           <TableCell className="font-medium">#{split.orderId}</TableCell>
                           <TableCell className="font-semibold">
-                            {parseFloat(split.totalAmount).toFixed(2)} NOK
+                            {safeToFixed(split.totalAmount, 2)} NOK
                           </TableCell>
                           <TableCell>{split.methodsUsed}</TableCell>
                           <TableCell>
