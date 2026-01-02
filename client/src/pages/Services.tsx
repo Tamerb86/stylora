@@ -41,6 +41,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
+import { safeToFixed } from "@/lib/utils";
 
 type Service = {
   id: number;
@@ -325,7 +326,7 @@ export default function Services() {
             </CardHeader>
             <CardContent className="relative">
               <div className="text-3xl font-bold text-white">
-                {avgPrice.toFixed(0)} kr
+                {safeToFixed(avgPrice, 0)} kr
               </div>
               <p className="text-xs text-white/80 mt-1">Per tjeneste</p>
             </CardContent>
@@ -345,7 +346,7 @@ export default function Services() {
             </CardHeader>
             <CardContent className="relative">
               <div className="text-3xl font-bold text-white">
-                {avgDuration.toFixed(0)} min
+                {safeToFixed(avgDuration, 0)} min
               </div>
               <p className="text-xs text-white/80 mt-1">Gjennomsnittlig tid</p>
             </CardContent>
@@ -365,7 +366,7 @@ export default function Services() {
             </CardHeader>
             <CardContent className="relative">
               <div className="text-3xl font-bold text-white">
-                {totalRevenuePotential.toFixed(0)} kr
+                {safeToFixed(totalRevenuePotential, 0)} kr
               </div>
               <p className="text-xs text-white/80 mt-1">Sum alle tjenester</p>
             </CardContent>

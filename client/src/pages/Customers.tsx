@@ -50,6 +50,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { safeToFixed } from "@/lib/utils";
 
 function CustomerLoyaltyPoints({ customerId }: { customerId: number }) {
   const { data: loyaltyPoints } = trpc.loyalty.getPoints.useQuery({
@@ -168,7 +169,7 @@ export default function Customers() {
   // Calculate stats
   const totalCustomers = customers?.length || 0;
   const totalRevenue =
-    customers?.reduce((sum, c) => sum + (c.totalRevenue || 0), 0) || 0;
+    customers?.reduce((sum, c) => sum + (parseFloat(String(c.totalRevenue || 0)) || 0), 0) || 0;
   const totalVisits =
     customers?.reduce((sum, c) => sum + (c.totalVisits || 0), 0) || 0;
   const avgRevenuePerCustomer =
@@ -397,7 +398,7 @@ export default function Customers() {
             </CardHeader>
             <CardContent className="relative">
               <div className="text-3xl font-bold text-white">
-                {totalRevenue.toFixed(0)} kr
+                {safeToFixed(totalRevenue, 0)} kr
               </div>
               <p className="text-xs text-white/80 mt-1">Fra alle kunder</p>
             </CardContent>
@@ -435,7 +436,7 @@ export default function Customers() {
             </CardHeader>
             <CardContent className="relative">
               <div className="text-3xl font-bold text-white">
-                {avgRevenuePerCustomer.toFixed(0)} kr
+                {safeToFixed(avgRevenuePerCustomer, 0)} kr
               </div>
               <p className="text-xs text-white/80 mt-1">
                 Gjennomsnittlig verdi
