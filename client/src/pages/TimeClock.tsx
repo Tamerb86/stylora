@@ -328,9 +328,9 @@ export default function TimeClock() {
         </div>
       </div>
 
-      {/* Active Employees Display - Top Right Below Clock */}
+      {/* Active Employees Display - Bottom Right */}
       {activeEmployees.length > 0 && (
-        <div className="fixed top-24 right-4 z-40">
+        <div className="fixed bottom-4 right-4 z-40">
           <Card className="p-4 bg-white/95 backdrop-blur-xl border-gray-200 shadow-2xl max-w-xs">
             <div className="flex items-center gap-2 mb-3">
               <Users className="w-4 h-4 text-green-400" />
