@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -106,11 +106,11 @@ export default function Onboarding() {
   });
   const [, setLocation] = useLocation();
   
-  // Create schemas with current translations
-  const { salonInfoSchema, ownerAccountSchema } = createSchemas(t);
+  // Create schemas with current translations (memoized)
+  const { salonInfoSchema, ownerAccountSchema } = useMemo(() => createSchemas(t), [t]);
 
-  // Define steps with translations
-  const steps = [
+  // Define steps with translations (memoized)
+  const steps = useMemo(() => [
     { id: 1, name: t("onboarding.steps.salonInfo"), icon: Building2 },
     { id: 2, name: t("onboarding.steps.ownerAccount"), icon: User },
     { id: 3, name: t("onboarding.steps.businessHours"), icon: Clock },
@@ -118,10 +118,10 @@ export default function Onboarding() {
     { id: 5, name: t("onboarding.steps.services"), icon: Scissors },
     { id: 6, name: t("onboarding.steps.paymentSettings"), icon: CreditCard },
     { id: 7, name: t("onboarding.steps.review"), icon: FileCheck },
-  ];
+  ], [t]);
 
-  // Service colors with translations
-  const serviceColors = [
+  // Service colors with translations (memoized)
+  const serviceColors = useMemo(() => [
     { value: "#667eea", label: t("onboarding.services.colorOptions.purple") },
     { value: "#f56565", label: t("onboarding.services.colorOptions.red") },
     { value: "#48bb78", label: t("onboarding.services.colorOptions.green") },
@@ -130,7 +130,7 @@ export default function Onboarding() {
     { value: "#9f7aea", label: t("onboarding.services.colorOptions.violet") },
     { value: "#ed64a6", label: t("onboarding.services.colorOptions.pink") },
     { value: "#38b2ac", label: t("onboarding.services.colorOptions.teal") },
-  ];
+  ], [t]);
   
   // Employee form state
   const [newEmployee, setNewEmployee] = useState<Partial<Employee>>({
@@ -145,8 +145,8 @@ export default function Onboarding() {
     },
   });
   
-  // Get default category translation
-  const defaultCategory = t("onboarding.services.defaultCategory");
+  // Get default category translation (memoized)
+  const defaultCategory = useMemo(() => t("onboarding.services.defaultCategory"), [t]);
   
   // Service form state
   const [newService, setNewService] = useState<Partial<Service>>({
