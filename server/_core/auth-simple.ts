@@ -14,6 +14,7 @@ import bcrypt from "bcrypt";
 import { users, tenants } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { logAuth, logError, logInfo, logDb } from "./logger";
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.length > 0;
@@ -178,47 +179,85 @@ export const authenticateRequest = (req: Request) => authService.authenticateReq
 export function registerAuthRoutes(app: Express) {
   // Login endpoint - email/password
   app.post("/api/auth/login", async (req: Request, res: Response) => {
+    const clientIp = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+    
     try {
       const { email, password } = req.body;
 
+      // Validate input
       if (!email || !password) {
+        logAuth.loginFailed(email || 'no-email', 'Missing credentials', clientIp);
         res.status(400).json({ error: "E-post og passord er påkrevd" });
         return;
       }
 
-      // Get user from database
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        logAuth.loginFailed(email, 'Invalid email format', clientIp);
+        res.status(400).json({ error: "Ugyldig e-postformat" });
+        return;
+      }
+
+      // Get database connection
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        res.status(500).json({ error: "Database ikke tilgjengelig" });
+        logDb.error('login', new Error('Database connection unavailable'));
+        res.status(500).json({ error: "Database ikke tilgjengelig. Vennligst prøv igjen senere." });
         return;
       }
 
-      const [user] = await dbInstance
-        .select()
-        .from(users)
-        .where(eq(users.email, email))
-        .limit(1);
+      // Get user from database
+      let user;
+      try {
+        const result = await dbInstance
+          .select()
+          .from(users)
+          .where(eq(users.email, email))
+          .limit(1);
+        user = result[0];
+      } catch (dbError) {
+        logDb.error('user lookup', dbError as Error);
+        res.status(500).json({ error: "Database feil. Vennligst prøv igjen senere." });
+        return;
+      }
 
       if (!user) {
+        logAuth.loginFailed(email, 'User not found', clientIp);
+        // Use generic message to prevent email enumeration
         res.status(401).json({ error: "Ugyldig e-post eller passord" });
         return;
       }
 
-      // Check password
+      // Check if password hash exists
       if (!user.passwordHash) {
-        res.status(401).json({ error: "Ugyldig e-post eller passord" });
+        logAuth.loginFailed(email, 'No password hash', clientIp);
+        res.status(401).json({ error: "Denne kontoen bruker en annen innloggingsmetode" });
         return;
       }
 
-      const isValidPassword = await authService.verifyPassword(password, user.passwordHash);
+      // Verify password
+      let isValidPassword = false;
+      try {
+        isValidPassword = await authService.verifyPassword(password, user.passwordHash);
+      } catch (bcryptError) {
+        logError('[Auth] Password verification error', bcryptError as Error, { email });
+        res.status(500).json({ error: "Autentiseringsfeil. Vennligst prøv igjen." });
+        return;
+      }
+
       if (!isValidPassword) {
+        logAuth.loginFailed(email, 'Invalid password', clientIp);
         res.status(401).json({ error: "Ugyldig e-post eller passord" });
         return;
       }
 
       // Check if user is active
       if (!user.isActive) {
-        res.status(403).json({ error: "Kontoen er deaktivert" });
+        logAuth.loginFailed(email, 'Account deactivated', clientIp);
+        res.status(403).json({ 
+          error: "Kontoen er deaktivert. Vennligst kontakt administrator." 
+        });
         return;
       }
 
@@ -246,6 +285,9 @@ export function registerAuthRoutes(app: Express) {
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: THIRTY_DAYS_MS });
       res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { ...cookieOptions, maxAge: 90 * 24 * 60 * 60 * 1000 }); // 90 days
 
+      // Log successful login
+      logAuth.loginSuccess(email, clientIp);
+
       res.json({ 
         success: true,
         user: {
@@ -257,8 +299,11 @@ export function registerAuthRoutes(app: Express) {
         }
       });
     } catch (error) {
-      console.error("[Auth] Login failed", error);
-      res.status(500).json({ error: "Innlogging feilet" });
+      logError('[Auth] Login failed with unexpected error', error as Error, { 
+        email: req.body?.email,
+        ip: clientIp 
+      });
+      res.status(500).json({ error: "Innlogging feilet. Vennligst prøv igjen senere." });
     }
   });
 
@@ -428,14 +473,23 @@ export function registerAuthRoutes(app: Express) {
   app.post("/api/auth/forgot-password", async (req: Request, res: Response) => {
     try {
       const { email } = req.body;
+      const clientIp = req.ip || req.headers['x-forwarded-for'] || 'unknown';
       
       if (!email) {
         res.status(400).json({ error: "E-post er påkrevd" });
         return;
       }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        res.status(400).json({ error: "Ugyldig e-postformat" });
+        return;
+      }
       
       const dbInstance = await db.getDb();
       if (!dbInstance) {
+        logDb.error('forgot-password', new Error('Database not available'));
         res.status(500).json({ error: "Database ikke tilgjengelig" });
         return;
       }
@@ -448,19 +502,89 @@ export function registerAuthRoutes(app: Express) {
         .limit(1);
       
       // Always return success to prevent email enumeration
-      // In production, you would send an email here
       if (user) {
-        console.log(`[Auth] Password reset requested for ${email}`);
-        // TODO: Send password reset email
+        logInfo(`[Auth] Password reset requested for ${email}`, { ip: clientIp });
+        
+        // Create a temporary reset token (valid for 1 hour)
+        const resetToken = nanoid(32);
+        const resetExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+        
+        // Store token in session (or you could create a password_resets table)
+        // For now, we'll use JWT to encode the reset token
+        const resetJWT = await authService.createSessionToken({
+          openId: user.openId,
+          appId: ENV.appId,
+          name: user.name || email,
+          email: user.email || undefined,
+        }, {
+          expiresInMs: 60 * 60 * 1000, // 1 hour
+        });
+        
+        // Send password reset email
+        try {
+          const { sendEmail } = await import("../email");
+          const baseUrl = process.env.VITE_APP_URL || "http://localhost:3000";
+          const resetUrl = `${baseUrl}/reset-password?token=${resetJWT}`;
+          
+          await sendEmail({
+            to: email,
+            subject: "Tilbakestill passord - Stylora",
+            html: `
+              <!DOCTYPE html>
+              <html>
+                <head>
+                  <meta charset="utf-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                </head>
+                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+                  <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px;">
+                    <h1 style="color: #2563eb; margin-bottom: 20px;">Tilbakestill passord</h1>
+                    <p>Hei ${user.name || 'bruker'},</p>
+                    <p>Vi har mottatt en forespørsel om å tilbakestille passordet ditt for Stylora-kontoen din.</p>
+                    <p>Klikk på knappen nedenfor for å tilbakestille passordet ditt:</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                      <a href="${resetUrl}" style="background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                        Tilbakestill passord
+                      </a>
+                    </div>
+                    <p style="color: #666; font-size: 14px;">
+                      Eller kopier og lim inn denne lenken i nettleseren din:
+                      <br>
+                      <a href="${resetUrl}" style="color: #2563eb; word-break: break-all;">${resetUrl}</a>
+                    </p>
+                    <p style="color: #666; font-size: 14px; margin-top: 30px;">
+                      <strong>Viktig:</strong> Denne lenken utløper om 1 time.
+                    </p>
+                    <p style="color: #666; font-size: 14px;">
+                      Hvis du ikke ba om å tilbakestille passordet ditt, kan du ignorere denne e-posten.
+                    </p>
+                    <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+                    <p style="color: #999; font-size: 12px; text-align: center;">
+                      © ${new Date().getFullYear()} Stylora. Alle rettigheter reservert.
+                    </p>
+                  </div>
+                </body>
+              </html>
+            `,
+          });
+          
+          logInfo(`[Auth] Password reset email sent to ${email}`);
+        } catch (emailError) {
+          logError('[Auth] Failed to send password reset email', emailError as Error, { email });
+          // Don't reveal that email sending failed
+        }
+      } else {
+        logInfo(`[Auth] Password reset requested for non-existent email: ${email}`, { ip: clientIp });
       }
       
+      // Always return success message to prevent email enumeration
       res.json({ 
         success: true, 
         message: "Hvis e-postadressen finnes i systemet, vil du motta en e-post med instruksjoner." 
       });
     } catch (error) {
-      console.error("[Auth] Forgot password error:", error);
-      res.status(500).json({ error: "Noe gikk galt" });
+      logError("[Auth] Forgot password error", error as Error);
+      res.status(500).json({ error: "Noe gikk galt. Vennligst prøv igjen senere." });
     }
   });
 

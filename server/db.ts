@@ -10,6 +10,7 @@ import {
   appointments 
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
+import { logDb, logError, logInfo } from './_core/logger';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 let _connection: mysql.Connection | null = null;
@@ -18,20 +19,24 @@ let _connection: mysql.Connection | null = null;
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      console.log("[Database] Connecting to:", process.env.DATABASE_URL?.replace(/:\/\/.*@/, "://***@"));
+      const maskedUrl = process.env.DATABASE_URL?.replace(/:\/\/.*@/, "://***@");
+      logInfo(`[Database] Attempting connection to: ${maskedUrl}`);
       
       // Create MySQL connection
       _connection = await mysql.createConnection(process.env.DATABASE_URL);
       
       // Test connection
       await _connection.ping();
-      console.log("[Database] Connection successful!");
+      logDb.connected(maskedUrl);
       
       // Create Drizzle instance with the connection
       _db = drizzle(_connection);
     } catch (error: any) {
-      console.error("[Database] Failed to connect:", error.message);
-      console.error("[Database] Stack:", error.stack);
+      logDb.error('connection', error);
+      logError("[Database] Failed to connect", error, {
+        hasUrl: !!process.env.DATABASE_URL,
+        urlPrefix: process.env.DATABASE_URL?.substring(0, 15)
+      });
       _db = null;
       _connection = null;
     }
@@ -45,7 +50,7 @@ export async function closeDb() {
     await _connection.end();
     _connection = null;
     _db = null;
-    console.log("[Database] Connection closed");
+    logInfo("[Database] Connection closed");
   }
 }
 

@@ -14,10 +14,36 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{email?: string; password?: string}>({});
+
+  const validateForm = () => {
+    const errors: {email?: string; password?: string} = {};
+    
+    if (!email) {
+      errors.email = "E-post er påkrevd";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = "Ugyldig e-postformat";
+    }
+    
+    if (!password) {
+      errors.password = "Passord er påkrevd";
+    } else if (password.length < 6) {
+      errors.password = "Passordet må være minst 6 tegn";
+    }
+    
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setFieldErrors({});
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setIsLoading(true);
 
     try {
@@ -31,14 +57,24 @@ export default function Login() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Innlogging feilet");
+        // Provide more specific error messages based on status
+        if (response.status === 401) {
+          setError("Ugyldig e-post eller passord. Vennligst sjekk innloggingsinformasjonen din.");
+        } else if (response.status === 403) {
+          setError(data.error || "Kontoen din er deaktivert. Kontakt administrator for hjelp.");
+        } else if (response.status === 500) {
+          setError("Serverfeil. Vennligst prøv igjen senere eller kontakt support.");
+        } else {
+          setError(data.error || "Innlogging feilet. Vennligst prøv igjen.");
+        }
         return;
       }
 
       // Redirect to dashboard on success
       setLocation("/dashboard");
     } catch (err) {
-      setError("Noe gikk galt. Prøv igjen.");
+      console.error("Login error:", err);
+      setError("Nettverksfeil. Sjekk internettforbindelsen din og prøv igjen.");
     } finally {
       setIsLoading(false);
     }
@@ -78,10 +114,19 @@ export default function Login() {
                   type="email"
                   placeholder="din@epost.no"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (fieldErrors.email) {
+                      setFieldErrors({ ...fieldErrors, email: undefined });
+                    }
+                  }}
                   required
                   autoComplete="email"
+                  className={fieldErrors.email ? "border-red-500" : ""}
                 />
+                {fieldErrors.email && (
+                  <p className="text-sm text-red-500">{fieldErrors.email}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -96,10 +141,19 @@ export default function Login() {
                   type="password"
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (fieldErrors.password) {
+                      setFieldErrors({ ...fieldErrors, password: undefined });
+                    }
+                  }}
                   required
                   autoComplete="current-password"
+                  className={fieldErrors.password ? "border-red-500" : ""}
                 />
+                {fieldErrors.password && (
+                  <p className="text-sm text-red-500">{fieldErrors.password}</p>
+                )}
               </div>
 
               <Button
