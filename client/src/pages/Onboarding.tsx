@@ -607,7 +607,7 @@ export default function Onboarding() {
             {currentStep === 3 && (
               <form className="space-y-4">
                 <p className="text-sm text-gray-600 mb-4">
-                  {t("onboarding.stepDescriptions.businessHours")} لكل يوم من أيام الأسبوع
+                  {t("onboarding.businessHours.title")}
                 </p>
 
                 {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"].map((day) => {
@@ -704,8 +704,8 @@ export default function Onboarding() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="employee">{t("onboarding.employees.roleEmployee")}</SelectItem>
-                          <SelectItem value="manager">مدير</SelectItem>
-                          <SelectItem value="admin">مسؤول</SelectItem>
+                          <SelectItem value="manager">{t("onboarding.employees.roleManager")}</SelectItem>
+                          <SelectItem value="admin">{t("onboarding.employees.roleAdmin")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -783,9 +783,9 @@ export default function Onboarding() {
                           <p className="font-medium">{emp.name}</p>
                           <p className="text-sm text-gray-600">{emp.email}</p>
                           <p className="text-xs text-gray-500">
-                            {emp.role === "employee" && "{t('onboarding.employees.roleEmployee')}"}
-                            {emp.role === "manager" && "{t('onboarding.employees.roleManager')}"}
-                            {emp.role === "admin" && "{t('onboarding.employees.roleAdmin')}"}
+                            {emp.role === "employee" && t("onboarding.employees.roleEmployee")}
+                            {emp.role === "manager" && t("onboarding.employees.roleManager")}
+                            {emp.role === "admin" && t("onboarding.employees.roleAdmin")}
                           </p>
                         </div>
                         <Button
@@ -1042,7 +1042,6 @@ export default function Onboarding() {
                 <div className="bg-gray-50 border rounded-lg p-4">
                   <p className="text-sm text-gray-700">
                     {t("onboarding.payment.setupNote")}
-                    بعد التسجيل من لوحة التحكم.
                   </p>
                 </div>
               </div>
@@ -1098,9 +1097,9 @@ export default function Onboarding() {
                     </Button>
                   </div>
                   <div className="text-sm">
-                    <p>monday - friday: 09:00 - 18:00</p>
-                    <p>saturday: 10:00 - 16:00</p>
-                    <p>الأحد: مغلق</p>
+                    <p>{t("onboarding.review.weekdayHours")}</p>
+                    <p>{t("onboarding.review.saturdayHours")}</p>
+                    <p>{t("onboarding.review.sundayHours")}</p>
                   </div>
                 </div>
 
