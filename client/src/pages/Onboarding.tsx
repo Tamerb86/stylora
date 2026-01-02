@@ -145,8 +145,8 @@ export default function Onboarding() {
     },
   });
   
-  // Get default category translation (memoized)
-  const defaultCategory = useMemo(() => t("onboarding.services.defaultCategory"), [t]);
+  // Get default category translation (memoized with fallback)
+  const defaultCategory = useMemo(() => t("onboarding.services.defaultCategory") || "General Services", [t]);
   
   // Service form state
   const [newService, setNewService] = useState<Partial<Service>>({
@@ -165,8 +165,10 @@ export default function Onboarding() {
   // Initialize category with translation when it becomes available
   useEffect(() => {
     if (defaultCategory) {
-      setNewService(prev => ({ ...prev, category: defaultCategory }));
-      setServiceCategories([defaultCategory]);
+      // Only initialize if categories are empty (first load)
+      setServiceCategories(prev => prev.length === 0 ? [defaultCategory] : prev);
+      // Only update newService category if it's still empty
+      setNewService(prev => prev.category === "" ? { ...prev, category: defaultCategory } : prev);
     }
   }, [defaultCategory]);
 
