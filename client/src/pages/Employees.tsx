@@ -41,6 +41,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { toast } from "sonner";
+import { safeToFixed } from "@/lib/utils";
 
 export default function Employees() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -396,7 +397,7 @@ export default function Employees() {
             </CardHeader>
             <CardContent className="relative">
               <div className="text-3xl font-bold text-white">
-                {avgCommission.toFixed(0)}%
+                {safeToFixed(avgCommission, 0)}%
               </div>
               <p className="text-xs text-white/80 mt-1">Gjennomsnittlig sats</p>
             </CardContent>

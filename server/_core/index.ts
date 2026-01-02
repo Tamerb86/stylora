@@ -46,10 +46,13 @@ const generalLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   skip: req => {
-    // Skip rate limiting for specific webhook and callback URLs only
-    // Use req.url to include query parameters in comparison (prevents bypass)
+    // Skip rate limiting for specific webhook, callback, and tRPC URLs
+    // Use req.path to get the path without query parameters for consistent matching
+    const path = req.path || req.url || "";
     return (
-      req.url === "/api/stripe/webhook" || req.url === "/api/vipps/callback"
+      path.startsWith("/api/trpc") || // Exclude tRPC requests
+      req.url === "/api/stripe/webhook" ||
+      req.url === "/api/vipps/callback"
     );
   },
 });

@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { exportToPDF, exportToExcel } from "@/lib/exportUtils";
+import { safeToFixed } from "@/lib/utils";
 
 export default function Reports() {
   const [period, setPeriod] = useState("week");
@@ -561,9 +562,10 @@ export default function Reports() {
                       <p className="text-sm text-muted-foreground">
                         Snitt:{" "}
                         {emp.orderCount > 0
-                          ? (
-                              parseFloat(emp.totalRevenue) / emp.orderCount
-                            ).toFixed(0)
+                          ? safeToFixed(
+                              parseFloat(emp.totalRevenue) / emp.orderCount,
+                              0
+                            )
                           : 0}{" "}
                         kr
                       </p>

@@ -45,6 +45,7 @@ import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
+import { safeToFixed } from "@/lib/utils";
 
 export default function MyBookings() {
   const [selectedTab, setSelectedTab] = useState<
@@ -372,7 +373,7 @@ export default function MyBookings() {
                           <div className="flex items-center gap-3 text-gray-600">
                             <span>{service.serviceDuration} min</span>
                             <span className="font-medium">
-                              {parseFloat(service.servicePrice).toFixed(0)} kr
+                              {safeToFixed(parseFloat(service.servicePrice), 0)} kr
                             </span>
                           </div>
                         </div>
@@ -384,13 +385,14 @@ export default function MyBookings() {
                   <div className="flex items-center justify-between pt-2 border-t">
                     <span className="font-semibold">Totalt:</span>
                     <span className="text-lg font-bold text-blue-600">
-                      {booking.services
-                        .reduce(
+                      {safeToFixed(
+                        booking.services.reduce(
                           (sum: number, s: any) =>
                             sum + parseFloat(s.servicePrice),
                           0
-                        )
-                        .toFixed(0)}{" "}
+                        ),
+                        0
+                      )}{" "}
                       kr
                     </span>
                   </div>
