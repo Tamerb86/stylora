@@ -46,7 +46,8 @@ const generalLimiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   skip: (req) => {
     // Skip rate limiting for specific webhook and callback paths only
-    return req.path === "/api/stripe/webhook" || req.path === "/api/vipps/callback";
+    // Use req.url to include query parameters in comparison
+    return req.url === "/api/stripe/webhook" || req.url === "/api/vipps/callback";
   },
 });
 
@@ -62,7 +63,7 @@ const generalLimiter = rateLimit({
     legacyHeaders: false,
   });
 
-  // Webhook/callback rate limiter - lighter limits for payment webhooks
+// Webhook/callback rate limiter - lighter limits for payment webhooks
 const webhookLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 100, // Allow up to 100 webhook calls per minute
@@ -335,9 +336,8 @@ async function startServer() {
     try {
       // Authentication check
       const { authenticateRequest } = await import("./auth-simple");
-      try {
-        await authenticateRequest(req);
-      } catch (authError) {
+      const authResult = await authenticateRequest(req);
+      if (!authResult) {
         return res.status(401).json({ error: "Authentication required" });
       }
       

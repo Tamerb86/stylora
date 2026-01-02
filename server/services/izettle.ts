@@ -26,6 +26,12 @@ function generateStateSignature(payload: string): string {
  */
 function verifyStateSignature(payload: string, signature: string): boolean {
   const expectedSignature = generateStateSignature(payload);
+  
+  // Check length before timing-safe comparison to prevent errors
+  if (signature.length !== expectedSignature.length) {
+    return false;
+  }
+  
   return crypto.timingSafeEqual(
     Buffer.from(signature),
     Buffer.from(expectedSignature)
