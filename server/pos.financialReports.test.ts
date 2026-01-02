@@ -13,7 +13,8 @@ describe("POS Financial Reports", () => {
     dbInstance = await getDb();
     if (!dbInstance) throw new Error("Database not available");
 
-    const { tenants, users, orders, payments, orderItems, services } = await import("../drizzle/schema");
+    const { tenants, users, orders, payments, orderItems, services } =
+      await import("../drizzle/schema");
     const { eq } = await import("drizzle-orm");
 
     // Get existing tenant
@@ -173,8 +174,12 @@ describe("POS Financial Reports", () => {
     const { inArray } = await import("drizzle-orm");
 
     // Clean up test data
-    await dbInstance.delete(orderItems).where(inArray(orderItems.orderId, testOrderIds));
-    await dbInstance.delete(payments).where(inArray(payments.orderId, testOrderIds));
+    await dbInstance
+      .delete(orderItems)
+      .where(inArray(orderItems.orderId, testOrderIds));
+    await dbInstance
+      .delete(payments)
+      .where(inArray(payments.orderId, testOrderIds));
     await dbInstance.delete(orders).where(inArray(orders.id, testOrderIds));
   });
 
@@ -235,8 +240,12 @@ describe("POS Financial Reports", () => {
 
     expect(salesByEmployee.length).toBeGreaterThanOrEqual(2);
 
-    const employee1Sales = salesByEmployee.find((s) => s.employeeId === testEmployeeId);
-    const employee2Sales = salesByEmployee.find((s) => s.employeeId === testEmployee2Id);
+    const employee1Sales = salesByEmployee.find(
+      s => s.employeeId === testEmployeeId
+    );
+    const employee2Sales = salesByEmployee.find(
+      s => s.employeeId === testEmployee2Id
+    );
 
     expect(employee1Sales).toBeDefined();
     expect(employee2Sales).toBeDefined();
@@ -272,8 +281,8 @@ describe("POS Financial Reports", () => {
 
     expect(salesByMethod.length).toBeGreaterThanOrEqual(2);
 
-    const cashSales = salesByMethod.find((s) => s.paymentMethod === "cash");
-    const cardSales = salesByMethod.find((s) => s.paymentMethod === "card");
+    const cashSales = salesByMethod.find(s => s.paymentMethod === "cash");
+    const cardSales = salesByMethod.find(s => s.paymentMethod === "card");
 
     expect(cashSales || cardSales).toBeDefined();
   });
@@ -297,7 +306,10 @@ describe("POS Financial Reports", () => {
         )
       );
 
-    const totalSales = ordersData.reduce((sum, o) => sum + parseFloat(o.total), 0);
+    const totalSales = ordersData.reduce(
+      (sum, o) => sum + parseFloat(o.total),
+      0
+    );
     const avgOrderValue = totalSales / ordersData.length;
 
     expect(avgOrderValue).toBeGreaterThan(0);
@@ -325,7 +337,7 @@ describe("POS Financial Reports", () => {
       );
 
     expect(employee1Orders.length).toBeGreaterThanOrEqual(3);
-    employee1Orders.forEach((order) => {
+    employee1Orders.forEach(order => {
       expect(order.employeeId).toBe(testEmployeeId);
     });
   });
@@ -352,7 +364,7 @@ describe("POS Financial Reports", () => {
       );
 
     expect(cardPayments.length).toBeGreaterThanOrEqual(1);
-    cardPayments.forEach((row) => {
+    cardPayments.forEach(row => {
       expect(row.payments.paymentMethod).toBe("card");
     });
   });
@@ -379,12 +391,12 @@ describe("POS Financial Reports", () => {
           lte(orders.orderDate, today)
         )
       )
-      .groupBy(sql.raw('HOUR(orderTime)'))
-      .orderBy(sql.raw('HOUR(orderTime)'));
+      .groupBy(sql.raw("HOUR(orderTime)"))
+      .orderBy(sql.raw("HOUR(orderTime)"));
 
     expect(salesByHour.length).toBeGreaterThan(0);
 
-    salesByHour.forEach((hourData) => {
+    salesByHour.forEach(hourData => {
       expect(hourData.hour).toBeGreaterThanOrEqual(0);
       expect(hourData.hour).toBeLessThan(24);
       expect(hourData.orderCount).toBeGreaterThan(0);
@@ -399,7 +411,9 @@ describe("POS Financial Reports", () => {
     const { eq, and, gte, lte } = await import("drizzle-orm");
 
     const today = new Date().toISOString().split("T")[0];
-    const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+    const tomorrow = new Date(Date.now() + 86400000)
+      .toISOString()
+      .split("T")[0];
 
     const ordersToday = await dbInstance
       .select()
@@ -446,7 +460,10 @@ describe("POS Financial Reports", () => {
         )
       );
 
-    const totalSales = ordersData.reduce((sum, o) => sum + parseFloat(o.total), 0);
+    const totalSales = ordersData.reduce(
+      (sum, o) => sum + parseFloat(o.total),
+      0
+    );
 
     const refundsData = await dbInstance
       .select()
@@ -460,7 +477,10 @@ describe("POS Financial Reports", () => {
         )
       );
 
-    const totalRefunded = refundsData.reduce((sum, r) => sum + parseFloat(r.amount), 0);
+    const totalRefunded = refundsData.reduce(
+      (sum, r) => sum + parseFloat(r.amount),
+      0
+    );
     const netRevenue = totalSales - totalRefunded;
 
     expect(netRevenue).toBeLessThanOrEqual(totalSales);
@@ -486,7 +506,7 @@ describe("POS Financial Reports", () => {
         )
       );
 
-    ordersData.forEach((order) => {
+    ordersData.forEach(order => {
       expect(order.tenantId).toBe(testTenantId);
     });
   });

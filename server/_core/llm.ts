@@ -17,7 +17,12 @@ export type FileContent = {
   type: "file_url";
   file_url: {
     url: string;
-    mime_type?: "audio/mpeg" | "audio/wav" | "application/pdf" | "audio/mp4" | "video/mp4" ;
+    mime_type?:
+      | "audio/mpeg"
+      | "audio/wav"
+      | "application/pdf"
+      | "audio/mp4"
+      | "video/mp4";
   };
 };
 
@@ -212,13 +217,17 @@ const resolveApiUrl = () => {
   if (openaiKey) {
     return "https://api.openai.com/v1/chat/completions";
   }
-  throw new Error("No LLM API configured. Set OPENAI_API_KEY environment variable.");
+  throw new Error(
+    "No LLM API configured. Set OPENAI_API_KEY environment variable."
+  );
 };
 
 const getApiKey = () => {
   const openaiKey = process.env.OPENAI_API_KEY;
   if (openaiKey) return openaiKey;
-  throw new Error("No LLM API key configured. Set OPENAI_API_KEY environment variable.");
+  throw new Error(
+    "No LLM API key configured. Set OPENAI_API_KEY environment variable."
+  );
 };
 
 const normalizeResponseFormat = ({

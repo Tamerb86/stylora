@@ -1,9 +1,11 @@
 # Railway Database Connection Fix Guide
 
 ## Problem
+
 The Stylora application was experiencing "Database connection error" when trying to save iZettle OAuth tokens because the `DATABASE_URL` environment variable was not properly configured in Railway.
 
 ## Root Cause
+
 - The application code uses `process.env.DATABASE_URL` to connect to MySQL
 - Railway MySQL service provides `MYSQL_URL` and `MYSQL_PUBLIC_URL` variables
 - The stylora service did not have a `DATABASE_URL` variable that references the MySQL service
@@ -24,11 +26,13 @@ The Stylora application was experiencing "Database connection error" when trying
 ### Step 2: Verify the Configuration
 
 After adding the variable, you should see:
+
 ```
 DATABASE_URL = ${{MySQL.MYSQL_URL}}
 ```
 
 This will automatically resolve to:
+
 ```
 mysql://root:rQskZdQhNxeaTZCOxWFGKQCYZBGcyHlJ@mysql.railway.internal:3306/railway
 ```
@@ -63,6 +67,7 @@ DATABASE_URL=${{MySQL.MYSQL_PUBLIC_URL}}
 ```
 
 This resolves to:
+
 ```
 mysql://root:rQskZdQhNxeaTZCOxWFGKQCYZBGcyHlJ@containers-us-west-xxx.railway.app:57194/railway
 ```
@@ -80,14 +85,17 @@ mysql://root:rQskZdQhNxeaTZCOxWFGKQCYZBGcyHlJ@containers-us-west-xxx.railway.app
 ## Troubleshooting
 
 ### Error: "Cannot connect to mysql.railway.internal"
+
 - Ensure both services (stylora and MySQL) are in the **same Railway project**
 - Verify MySQL service is **Online**
 
 ### Error: "Access denied for user 'root'"
+
 - Check that the password in `MYSQL_URL` matches `MYSQL_ROOT_PASSWORD`
 - Verify the MySQL service variables are correct
 
 ### Error: "Unknown database 'railway'"
+
 - Ensure the database name in the URL matches `MYSQL_DATABASE` variable
 - Default is usually `railway`
 

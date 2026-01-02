@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
-import { sendSMS, formatAppointmentReminder, validateNorwegianPhone } from "./sms";
+import {
+  sendSMS,
+  formatAppointmentReminder,
+  validateNorwegianPhone,
+} from "./sms";
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
@@ -123,8 +127,10 @@ describe("Notifications API", () => {
 
 describe("Notification Scheduler", () => {
   it("should process reminders without errors", async () => {
-    const { processAppointmentReminders } = await import("./notificationScheduler");
-    
+    const { processAppointmentReminders } = await import(
+      "./notificationScheduler"
+    );
+
     const result = await processAppointmentReminders();
 
     expect(result).toBeDefined();

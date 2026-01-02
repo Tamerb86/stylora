@@ -1,7 +1,17 @@
 import { useEffect, useState } from "react";
 import { useLocation, Link } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { CheckCircle2, Calendar, Clock, User, CreditCard, Phone, Mail, Home, Loader2 } from "lucide-react";
+import {
+  CheckCircle2,
+  Calendar,
+  Clock,
+  User,
+  CreditCard,
+  Phone,
+  Mail,
+  Home,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -18,7 +28,11 @@ export default function BookingSuccess() {
     }
   }, []);
 
-  const { data: booking, isLoading, error } = trpc.publicBooking.getBookingDetails.useQuery(
+  const {
+    data: booking,
+    isLoading,
+    error,
+  } = trpc.publicBooking.getBookingDetails.useQuery(
     { bookingId: bookingId! },
     { enabled: !!bookingId }
   );
@@ -73,9 +87,12 @@ END:VCALENDAR`;
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl">❌</span>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Booking ikke funnet</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Booking ikke funnet
+          </h2>
           <p className="text-gray-600 mb-6">
-            Vi kunne ikke finne bookingdetaljene dine. Vennligst kontakt oss hvis du har spørsmål.
+            Vi kunne ikke finne bookingdetaljene dine. Vennligst kontakt oss
+            hvis du har spørsmål.
           </p>
           <Link href="/">
             <Button className="bg-gradient-to-r from-[#4a90e2] to-[#7b68ee] hover:opacity-90">
@@ -108,7 +125,9 @@ END:VCALENDAR`;
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full mb-4 animate-bounce">
             <CheckCircle2 className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Betaling vellykket!</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            Betaling vellykket!
+          </h1>
           <p className="text-xl text-gray-600">Din time er bekreftet</p>
         </div>
 
@@ -132,7 +151,9 @@ END:VCALENDAR`;
               </div>
               <div>
                 <p className="text-sm text-gray-600">Tjeneste</p>
-                <p className="text-lg font-semibold text-gray-900">{booking.serviceName}</p>
+                <p className="text-lg font-semibold text-gray-900">
+                  {booking.serviceName}
+                </p>
               </div>
             </div>
 
@@ -143,7 +164,9 @@ END:VCALENDAR`;
               </div>
               <div>
                 <p className="text-sm text-gray-600">Dato</p>
-                <p className="text-lg font-semibold text-gray-900 capitalize">{formattedDate}</p>
+                <p className="text-lg font-semibold text-gray-900 capitalize">
+                  {formattedDate}
+                </p>
               </div>
             </div>
 
@@ -154,7 +177,9 @@ END:VCALENDAR`;
               </div>
               <div>
                 <p className="text-sm text-gray-600">Tid</p>
-                <p className="text-lg font-semibold text-gray-900">{formattedTime}</p>
+                <p className="text-lg font-semibold text-gray-900">
+                  {formattedTime}
+                </p>
               </div>
             </div>
 
@@ -166,7 +191,9 @@ END:VCALENDAR`;
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Frisør</p>
-                  <p className="text-lg font-semibold text-gray-900">{booking.employeeName}</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {booking.employeeName}
+                  </p>
                 </div>
               </div>
             )}
@@ -196,7 +223,9 @@ END:VCALENDAR`;
               <div>
                 <p className="text-sm text-gray-600">Betalingsmetode</p>
                 <p className="text-lg font-semibold text-gray-900">
-                  {booking.paymentMethod === "stripe" ? "Kort (Stripe)" : "Vipps"}
+                  {booking.paymentMethod === "stripe"
+                    ? "Kort (Stripe)"
+                    : "Vipps"}
                 </p>
               </div>
             </div>
@@ -241,7 +270,8 @@ END:VCALENDAR`;
               Administrer din booking
             </h2>
             <p className="text-gray-600 mb-4">
-              Du kan endre eller avbestille timen din ved å bruke lenken nedenfor.
+              Du kan endre eller avbestille timen din ved å bruke lenken
+              nedenfor.
             </p>
             <Link href={`/manage-booking/${booking.managementToken}`}>
               <Button className="w-full bg-gradient-to-r from-[#4a90e2] to-[#7b68ee] hover:opacity-90 text-white">
@@ -278,7 +308,10 @@ END:VCALENDAR`;
           </p>
           <p className="text-sm">
             Har du spørsmål? Kontakt oss på{" "}
-            <a href="tel:+4712345678" className="text-[#4a90e2] hover:underline">
+            <a
+              href="tel:+4712345678"
+              className="text-[#4a90e2] hover:underline"
+            >
               +47 123 45 678
             </a>
           </p>

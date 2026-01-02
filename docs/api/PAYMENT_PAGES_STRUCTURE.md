@@ -1,16 +1,19 @@
 # Payment Pages Structure - Stylora
 
 ## Overview
+
 Stylora has **4 different payment-related pages**, each serving a distinct purpose. There are **NO duplicate pages**.
 
 ## Page Breakdown
 
 ### 1. Payment Providers (`/payment-providers`)
+
 **File**: `client/src/pages/PaymentProviders.tsx`
 
 **Purpose**: Manage payment terminal providers and methods
 
 **Features**:
+
 - Add/edit/delete payment providers
 - Configure different provider types:
   - Stripe Terminal
@@ -30,11 +33,13 @@ Stylora has **4 different payment-related pages**, each serving a distinct purpo
 ---
 
 ### 2. iZettle Settings (`/izettle-settings`)
+
 **File**: `client/src/pages/IZettleSettings.tsx`
 
 **Purpose**: Configure iZettle payment integration via OAuth
 
 **Features**:
+
 - Connect to iZettle account via OAuth
 - View connection status
 - Disconnect iZettle account
@@ -51,11 +56,13 @@ Stylora has **4 different payment-related pages**, each serving a distinct purpo
 ---
 
 ### 3. Reader Management (`/reader-management`)
+
 **File**: `client/src/pages/ReaderManagement.tsx`
 
 **Purpose**: Manage Stripe Terminal card readers
 
 **Features**:
+
 - Initialize Stripe Terminal SDK
 - Discover available card readers
 - Connect to card readers
@@ -73,11 +80,13 @@ Stylora has **4 different payment-related pages**, each serving a distinct purpo
 ---
 
 ### 4. Payment History (`/payment-history`)
+
 **File**: `client/src/pages/PaymentHistory.tsx`
 
 **Purpose**: View historical payment transactions
 
 **Features**:
+
 - List all payment transactions
 - Filter by date range
 - Filter by payment method
@@ -93,11 +102,13 @@ Stylora has **4 different payment-related pages**, each serving a distinct purpo
 ---
 
 ### 5. POS Payment (`/pos-payment`)
+
 **File**: `client/src/pages/POSPayment.tsx`
 
 **Purpose**: Process point-of-sale payments in salon
 
 **Features**:
+
 - Quick payment processing interface
 - Select payment method
 - Enter payment amount
@@ -157,20 +168,25 @@ Dashboard
 ## Database Tables Used
 
 ### Payment Providers Page
+
 - `paymentProviders` - Stores provider configurations
 
 ### iZettle Settings Page
+
 - `paymentProviders` - Stores iZettle OAuth tokens (encrypted)
 
 ### Reader Management Page
+
 - Uses Stripe API (no local database storage)
 
 ### Payment History Page
+
 - `payments` - Transaction records
 - `appointments` - Linked appointments
 - `orders` - Linked orders
 
 ### POS Payment Page
+
 - `payments` - Creates new payment records
 - `appointments` - Links to appointments
 - `orders` - Links to orders
@@ -178,6 +194,7 @@ Dashboard
 ## API Endpoints
 
 ### Payment Providers
+
 - `trpc.paymentTerminal.listProviders`
 - `trpc.paymentTerminal.addProvider`
 - `trpc.paymentTerminal.updateProvider`
@@ -185,22 +202,26 @@ Dashboard
 - `trpc.paymentTerminal.testConnection`
 
 ### iZettle Settings
+
 - `trpc.izettle.getStatus`
 - `trpc.izettle.getAuthUrl`
 - `trpc.izettle.disconnect`
 - `/api/izettle/callback` (OAuth callback)
 
 ### Reader Management
+
 - `trpc.stripeTerminal.createConnectionToken`
 - `trpc.stripeTerminal.listReaders`
 - Uses Stripe Terminal SDK client-side
 
 ### Payment History
+
 - `trpc.payments.list`
 - `trpc.payments.getById`
 - `trpc.payments.export`
 
 ### POS Payment
+
 - `trpc.payments.create`
 - `trpc.payments.processCard`
 - `trpc.payments.recordCash`

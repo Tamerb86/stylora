@@ -10,14 +10,14 @@ export function EmailVerificationBanner() {
   const utils = trpc.useUtils();
 
   const resendMutation = trpc.signup.resendVerification.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       if (data.success) {
         toast.success(data.message);
       } else {
         toast.error(data.message);
       }
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Kunne ikke sende e-post");
     },
   });
@@ -29,9 +29,12 @@ export function EmailVerificationBanner() {
   if (dismissed || !user || !user.tenantId) return null;
 
   // Check if tenant email is verified using special procedure that doesn't require verification
-  const { data: tenant } = trpc.tenants.getVerificationStatus.useQuery(undefined, {
-    enabled: !!user.tenantId,
-  });
+  const { data: tenant } = trpc.tenants.getVerificationStatus.useQuery(
+    undefined,
+    {
+      enabled: !!user.tenantId,
+    }
+  );
 
   if (!tenant || tenant.emailVerified) return null;
 
@@ -42,8 +45,10 @@ export function EmailVerificationBanner() {
           <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0" />
           <div className="flex-1">
             <p className="text-sm text-yellow-800">
-              <strong>Bekreft e-postadressen din</strong> - Vi har sendt en bekreftelseslenke til{" "}
-              <span className="font-medium">{tenant.email}</span>. Sjekk innboksen din.
+              <strong>Bekreft e-postadressen din</strong> - Vi har sendt en
+              bekreftelseslenke til{" "}
+              <span className="font-medium">{tenant.email}</span>. Sjekk
+              innboksen din.
             </p>
           </div>
         </div>

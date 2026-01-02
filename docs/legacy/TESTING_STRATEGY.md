@@ -33,13 +33,13 @@ Creates a complete test environment with a verified tenant and admin user.
 
 **Default Configuration:**
 
-| Field | Default Value | Description |
-|-------|---------------|-------------|
-| `emailVerified` | `true` | Tenant email verification status |
-| `emailVerifiedAt` | Current date | Timestamp of email verification |
-| `status` | `"active"` | Tenant subscription status |
-| `onboardingCompleted` | `true` | Onboarding completion flag |
-| `role` | `"admin"` | User role in the system |
+| Field                 | Default Value | Description                      |
+| --------------------- | ------------- | -------------------------------- |
+| `emailVerified`       | `true`        | Tenant email verification status |
+| `emailVerifiedAt`     | Current date  | Timestamp of email verification  |
+| `status`              | `"active"`    | Tenant subscription status       |
+| `onboardingCompleted` | `true`        | Onboarding completion flag       |
+| `role`                | `"admin"`     | User role in the system          |
 
 **Returns:**
 
@@ -99,7 +99,7 @@ Creates a standalone test tenant with all required fields.
 const { tenantId, tenant } = await createTestTenant({
   name: "Custom Salon",
   status: "trial",
-  emailVerified: false
+  emailVerified: false,
 });
 ```
 
@@ -121,7 +121,7 @@ Creates a test user associated with a specific tenant.
 const { userId, user } = await createTestUser(tenantId, {
   firstName: "John",
   lastName: "Doe",
-  role: "owner"
+  role: "owner",
 });
 ```
 
@@ -273,9 +273,9 @@ describe("Role-Based Access Control", () => {
 
   it("should reject employees from performing action", async () => {
     const caller = appRouter.createCaller(employeeContext);
-    await expect(
-      caller.admin.action()
-    ).rejects.toThrow("Admin access required");
+    await expect(caller.admin.action()).rejects.toThrow(
+      "Admin access required"
+    );
   });
 });
 ```
@@ -290,10 +290,10 @@ it("should handle unverified tenant", async () => {
   );
 
   const caller = appRouter.createCaller(customEnv.mockContext);
-  
-  await expect(
-    caller.feature.requiresVerification()
-  ).rejects.toThrow("Email verification required");
+
+  await expect(caller.feature.requiresVerification()).rejects.toThrow(
+    "Email verification required"
+  );
 
   await cleanupTestTenant(customEnv.tenantId);
 });
@@ -303,11 +303,11 @@ it("should handle unverified tenant", async () => {
 
 Use the predefined timeout constants from `TEST_TIMEOUTS` to ensure consistent timeout behavior:
 
-| Constant | Value | Use Case |
-|----------|-------|----------|
-| `TEST_TIMEOUTS.SHORT` | 5 seconds | Simple database queries |
-| `TEST_TIMEOUTS.MEDIUM` | 10 seconds | Test setup with multiple inserts |
-| `TEST_TIMEOUTS.LONG` | 30 seconds | Complex operations or external API calls |
+| Constant               | Value      | Use Case                                 |
+| ---------------------- | ---------- | ---------------------------------------- |
+| `TEST_TIMEOUTS.SHORT`  | 5 seconds  | Simple database queries                  |
+| `TEST_TIMEOUTS.MEDIUM` | 10 seconds | Test setup with multiple inserts         |
+| `TEST_TIMEOUTS.LONG`   | 30 seconds | Complex operations or external API calls |
 
 **Example:**
 
@@ -351,7 +351,7 @@ const caller = appRouter.createCaller({
     id: userId,
     tenantId: tenantId,
     // Missing required fields!
-  }
+  },
 });
 
 // ✅ Good: Helper provides complete context
@@ -369,24 +369,24 @@ const caller = appRouter.createCaller(mockContext);
 // ❌ Bad: No cleanup
 describe("Feature", () => {
   let tenantId: string;
-  
+
   beforeAll(async () => {
     const env = await createTestEnvironment();
     tenantId = env.tenantId;
   });
-  
+
   // Tests run but leave data behind
 });
 
 // ✅ Good: Proper cleanup
 describe("Feature", () => {
   let tenantId: string;
-  
+
   beforeAll(async () => {
     const env = await createTestEnvironment();
     tenantId = env.tenantId;
   });
-  
+
   afterAll(async () => {
     await cleanupTestTenant(tenantId);
   });
@@ -516,7 +516,7 @@ it("should retrieve saved branding settings", async () => {
 it("should save and retrieve branding settings", async () => {
   const result = await caller.salonSettings.updateBranding(newBranding);
   expect(result.success).toBe(true);
-  
+
   const branding = await caller.salonSettings.getBranding();
   expect(branding.logoUrl).toBe("https://example.com/logo.png");
 });
@@ -533,7 +533,7 @@ expect(result.success).toBe(true);
 // ✅ Good: Partial object matching
 expect(result.branding).toMatchObject({
   logoUrl: "https://example.com/logo.png",
-  primaryColor: "#ff0000"
+  primaryColor: "#ff0000",
 });
 
 // ❌ Bad: Too vague
@@ -590,16 +590,16 @@ describe("Feature", () => {
   });
 
   it("should reject invalid input", async () => {
-    await expect(
-      caller.feature.method(invalidInput)
-    ).rejects.toThrow("Validation error");
+    await expect(caller.feature.method(invalidInput)).rejects.toThrow(
+      "Validation error"
+    );
   });
 
   it("should enforce permission requirements", async () => {
     const employeeCaller = appRouter.createCaller(employeeContext);
-    await expect(
-      employeeCaller.feature.method(validInput)
-    ).rejects.toThrow("Admin access required");
+    await expect(employeeCaller.feature.method(validInput)).rejects.toThrow(
+      "Admin access required"
+    );
   });
 });
 ```

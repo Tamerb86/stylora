@@ -8,15 +8,28 @@ import * as db from "./db";
 import { contactMessages } from "../drizzle/schema";
 // Fiken imports
 import { FikenClient } from "./fiken/client";
-import { syncCustomerToFiken, bulkSyncCustomers, getUnsyncedCustomersCount } from "./fiken/customers";
-import { syncOrderToFiken, bulkSyncOrders, getUnsyncedOrdersCount } from "./fiken/invoices";
-import { fikenSettings, fikenSyncLog, fikenCustomerMapping, fikenInvoiceMapping } from "../drizzle/schema";
+import {
+  syncCustomerToFiken,
+  bulkSyncCustomers,
+  getUnsyncedCustomersCount,
+} from "./fiken/customers";
+import {
+  syncOrderToFiken,
+  bulkSyncOrders,
+  getUnsyncedOrdersCount,
+} from "./fiken/invoices";
+import {
+  fikenSettings,
+  fikenSyncLog,
+  fikenCustomerMapping,
+  fikenInvoiceMapping,
+} from "../drizzle/schema";
 import { nanoid } from "nanoid";
 import { eq, and, or, gte, lte, sql, desc } from "drizzle-orm";
 import { exportRouter } from "./export";
 import { loyaltyRouter } from "./loyalty-router";
-import { onboardingRouter } from './routers/onboarding';
-import { monitoringRouter } from './routers/monitoring';
+import { onboardingRouter } from "./routers/onboarding";
+import { monitoringRouter } from "./routers/monitoring";
 import { ENV } from "./_core/env";
 
 // ============================================================================
@@ -28,11 +41,14 @@ const tenantProcedure = protectedProcedure.use(async ({ ctx, next }) => {
   if (!ctx.user.tenantId) {
     throw new TRPCError({ code: "FORBIDDEN", message: "No tenant access" });
   }
-  
+
   // Check email verification
   const dbInstance = await db.getDb();
   if (!dbInstance) {
-    throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Database not available",
+    });
   }
 
   const { tenants } = await import("../drizzle/schema");
@@ -49,12 +65,12 @@ const tenantProcedure = protectedProcedure.use(async ({ ctx, next }) => {
   }
 
   if (!tenant.emailVerified) {
-    throw new TRPCError({ 
-      code: "FORBIDDEN", 
+    throw new TRPCError({
+      code: "FORBIDDEN",
       message: "EMAIL_NOT_VERIFIED",
     });
   }
-  
+
   return next({
     ctx: {
       ...ctx,
@@ -68,7 +84,7 @@ const wizardProcedure = protectedProcedure.use(async ({ ctx, next }) => {
   if (!ctx.user.tenantId) {
     throw new TRPCError({ code: "FORBIDDEN", message: "No tenant access" });
   }
-  
+
   return next({
     ctx: {
       ...ctx,
@@ -80,15 +96,25 @@ const wizardProcedure = protectedProcedure.use(async ({ ctx, next }) => {
 // Middleware for owner/admin only
 const adminProcedure = tenantProcedure.use(({ ctx, next }) => {
   if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
-    throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Admin access required",
+    });
   }
   return next({ ctx });
 });
 
 // Middleware for employees (including admins)
 const employeeProcedure = tenantProcedure.use(({ ctx, next }) => {
-  if (ctx.user.role !== "owner" && ctx.user.role !== "admin" && ctx.user.role !== "employee") {
-    throw new TRPCError({ code: "FORBIDDEN", message: "Employee access required" });
+  if (
+    ctx.user.role !== "owner" &&
+    ctx.user.role !== "admin" &&
+    ctx.user.role !== "employee"
+  ) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Employee access required",
+    });
   }
   return next({ ctx });
 });
@@ -96,7 +122,10 @@ const employeeProcedure = tenantProcedure.use(({ ctx, next }) => {
 // Middleware for platform owner (SaaS admin)
 const platformAdminProcedure = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.user.openId !== ENV.ownerOpenId) {
-    throw new TRPCError({ code: "FORBIDDEN", message: "Platform admin access required" });
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Platform admin access required",
+    });
   }
   return next({ ctx });
 });
@@ -111,7 +140,7 @@ export const appRouter = router({
   loyalty: loyaltyRouter,
   onboarding: onboardingRouter,
   monitoring: monitoringRouter,
-  
+
   // ============================================================================
   // STRIPE CONNECT (OAuth for SaaS)
   // ============================================================================
@@ -119,8 +148,9 @@ export const appRouter = router({
     // Get Stripe Connect authorization URL
     getAuthUrl: tenantProcedure.query(async ({ ctx }) => {
       const STRIPE_CONNECT_CLIENT_ID = ENV.stripeConnectClientId || "";
-      const FRONTEND_URL = process.env.VITE_FRONTEND_URL || "http://localhost:3000";
-      
+      const FRONTEND_URL =
+        process.env.VITE_FRONTEND_URL || "http://localhost:3000";
+
       if (!STRIPE_CONNECT_CLIENT_ID) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -164,28 +194,36 @@ export const appRouter = router({
         try {
           const dbInstance = await db.getDb();
           if (!dbInstance) {
-            throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message: "Database not available",
+            });
           }
 
           const { paymentSettings } = await import("../drizzle/schema");
           const { eq } = await import("drizzle-orm");
 
           // Exchange authorization code for access token
-          const response = await fetch("https://connect.stripe.com/oauth/token", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: new URLSearchParams({
-              client_secret: STRIPE_SECRET_KEY,
-              code,
-              grant_type: "authorization_code",
-            }),
-          });
+          const response = await fetch(
+            "https://connect.stripe.com/oauth/token",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              body: new URLSearchParams({
+                client_secret: STRIPE_SECRET_KEY,
+                code,
+                grant_type: "authorization_code",
+              }),
+            }
+          );
 
           if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.error_description || "Failed to connect to Stripe");
+            throw new Error(
+              error.error_description || "Failed to connect to Stripe"
+            );
           }
 
           const data = await response.json();
@@ -243,7 +281,8 @@ export const appRouter = router({
     // Get connection status
     getStatus: tenantProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
-      if (!dbInstance) return { connected: false, accountId: null, status: "disconnected" };
+      if (!dbInstance)
+        return { connected: false, accountId: null, status: "disconnected" };
 
       const { paymentSettings } = await import("../drizzle/schema");
       const { eq } = await import("drizzle-orm");
@@ -274,7 +313,10 @@ export const appRouter = router({
     disconnect: tenantProcedure.mutation(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { paymentSettings } = await import("../drizzle/schema");
@@ -312,7 +354,10 @@ export const appRouter = router({
     getAccountDetails: tenantProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { paymentSettings } = await import("../drizzle/schema");
@@ -351,7 +396,8 @@ export const appRouter = router({
         return {
           id: account.id,
           email: account.email,
-          displayName: account.settings?.dashboard?.display_name || account.email,
+          displayName:
+            account.settings?.dashboard?.display_name || account.email,
           country: account.country,
           currency: account.default_currency,
           chargesEnabled: account.charges_enabled,
@@ -366,59 +412,66 @@ export const appRouter = router({
       }
     }),
   }),
-  
+
   // ============================================================================
   // FIKEN ACCOUNTING INTEGRATION
   // ============================================================================
   fiken: router({
     // Get Fiken settings
-    getSettings: adminProcedure
-      .query(async ({ ctx }) => {
-        const dbInstance = await db.getDb();
-        if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-        }
+    getSettings: adminProcedure.query(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
+      }
 
-        const [settings] = await dbInstance
-          .select()
-          .from(fikenSettings)
-          .where(eq(fikenSettings.tenantId, ctx.tenantId))
-          .limit(1);
+      const [settings] = await dbInstance
+        .select()
+        .from(fikenSettings)
+        .where(eq(fikenSettings.tenantId, ctx.tenantId))
+        .limit(1);
 
-        if (!settings) {
-          return null;
-        }
+      if (!settings) {
+        return null;
+      }
 
-        // Don't expose sensitive data
-        return {
-          id: settings.id,
-          enabled: settings.enabled,
-          companySlug: settings.companySlug,
-          companyName: settings.companyName,
-          organizationNumber: settings.organizationNumber,
-          syncFrequency: settings.syncFrequency,
-          autoSyncCustomers: settings.autoSyncCustomers,
-          autoSyncInvoices: settings.autoSyncInvoices,
-          autoSyncPayments: settings.autoSyncPayments,
-          autoSyncProducts: settings.autoSyncProducts,
-          lastSyncAt: settings.lastSyncAt,
-          lastSyncStatus: settings.lastSyncStatus,
-          lastSyncError: settings.lastSyncError,
-          hasCredentials: !!(settings.clientId && settings.clientSecret),
-          isConnected: !!(settings.accessToken && settings.companySlug),
-        };
-      }),
+      // Don't expose sensitive data
+      return {
+        id: settings.id,
+        enabled: settings.enabled,
+        companySlug: settings.companySlug,
+        companyName: settings.companyName,
+        organizationNumber: settings.organizationNumber,
+        syncFrequency: settings.syncFrequency,
+        autoSyncCustomers: settings.autoSyncCustomers,
+        autoSyncInvoices: settings.autoSyncInvoices,
+        autoSyncPayments: settings.autoSyncPayments,
+        autoSyncProducts: settings.autoSyncProducts,
+        lastSyncAt: settings.lastSyncAt,
+        lastSyncStatus: settings.lastSyncStatus,
+        lastSyncError: settings.lastSyncError,
+        hasCredentials: !!(settings.clientId && settings.clientSecret),
+        isConnected: !!(settings.accessToken && settings.companySlug),
+      };
+    }),
 
     // Save OAuth credentials
     saveCredentials: adminProcedure
-      .input(z.object({
-        clientId: z.string().min(1),
-        clientSecret: z.string().min(1),
-      }))
+      .input(
+        z.object({
+          clientId: z.string().min(1),
+          clientSecret: z.string().min(1),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const [existing] = await dbInstance
@@ -450,13 +503,18 @@ export const appRouter = router({
 
     // Get OAuth authorization URL
     getAuthUrl: adminProcedure
-      .input(z.object({
-        redirectUri: z.string().url(),
-      }))
+      .input(
+        z.object({
+          redirectUri: z.string().url(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const [settings] = await dbInstance
@@ -466,9 +524,9 @@ export const appRouter = router({
           .limit(1);
 
         if (!settings || !settings.clientId) {
-          throw new TRPCError({ 
-            code: "BAD_REQUEST", 
-            message: "Please save OAuth credentials first" 
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Please save OAuth credentials first",
           });
         }
 
@@ -484,21 +542,29 @@ export const appRouter = router({
 
     // Handle OAuth callback
     handleCallback: adminProcedure
-      .input(z.object({
-        code: z.string(),
-        state: z.string(),
-        redirectUri: z.string().url(),
-      }))
+      .input(
+        z.object({
+          code: z.string(),
+          state: z.string(),
+          redirectUri: z.string().url(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         // Verify state matches tenant
-        const [tenantId] = input.state.split(':');
+        const [tenantId] = input.state.split(":");
         if (tenantId !== ctx.tenantId) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid state parameter" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid state parameter",
+          });
         }
 
         const [settings] = await dbInstance
@@ -508,9 +574,9 @@ export const appRouter = router({
           .limit(1);
 
         if (!settings || !settings.clientId || !settings.clientSecret) {
-          throw new TRPCError({ 
-            code: "BAD_REQUEST", 
-            message: "OAuth credentials not found" 
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "OAuth credentials not found",
           });
         }
 
@@ -527,7 +593,7 @@ export const appRouter = router({
 
           // Initialize client to get company info
           const client = new FikenClient(ctx.tenantId);
-          
+
           // Temporarily set tokens
           await dbInstance
             .update(fikenSettings)
@@ -569,133 +635,157 @@ export const appRouter = router({
         } catch (error) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: error instanceof Error ? error.message : "Failed to connect to Fiken",
+            message:
+              error instanceof Error
+                ? error.message
+                : "Failed to connect to Fiken",
           });
         }
       }),
 
     // Disconnect Fiken
-    disconnect: adminProcedure
-      .mutation(async ({ ctx }) => {
-        const dbInstance = await db.getDb();
-        if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-        }
+    disconnect: adminProcedure.mutation(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
+      }
 
-        await dbInstance
-          .update(fikenSettings)
-          .set({
-            enabled: false,
-            accessToken: null,
-            refreshToken: null,
-            tokenExpiresAt: null,
-            companySlug: null,
-            companyName: null,
-            organizationNumber: null,
-            updatedAt: new Date(),
-          })
-          .where(eq(fikenSettings.tenantId, ctx.tenantId));
+      await dbInstance
+        .update(fikenSettings)
+        .set({
+          enabled: false,
+          accessToken: null,
+          refreshToken: null,
+          tokenExpiresAt: null,
+          companySlug: null,
+          companyName: null,
+          organizationNumber: null,
+          updatedAt: new Date(),
+        })
+        .where(eq(fikenSettings.tenantId, ctx.tenantId));
 
-        return { success: true };
-      }),
+      return { success: true };
+    }),
 
     // Test connection
-    testConnection: adminProcedure
-      .mutation(async ({ ctx }) => {
-        try {
-          const client = new FikenClient(ctx.tenantId);
-          await client.initialize();
-          const result = await client.testConnection();
+    testConnection: adminProcedure.mutation(async ({ ctx }) => {
+      try {
+        const client = new FikenClient(ctx.tenantId);
+        await client.initialize();
+        const result = await client.testConnection();
 
-          const dbInstance = await db.getDb();
-          if (dbInstance) {
-            await dbInstance.insert(fikenSyncLog).values({
-              tenantId: ctx.tenantId,
-              operation: "test_connection",
-              status: result.success ? "success" : "failed",
-              errorMessage: result.error,
-              triggeredBy: "manual",
-            });
-          }
-
-          return result;
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : "Unknown error";
-          
-          const dbInstance = await db.getDb();
-          if (dbInstance) {
-            await dbInstance.insert(fikenSyncLog).values({
-              tenantId: ctx.tenantId,
-              operation: "test_connection",
-              status: "failed",
-              errorMessage,
-              triggeredBy: "manual",
-            });
-          }
-
-          return {
-            success: false,
-            error: errorMessage,
-          };
+        const dbInstance = await db.getDb();
+        if (dbInstance) {
+          await dbInstance.insert(fikenSyncLog).values({
+            tenantId: ctx.tenantId,
+            operation: "test_connection",
+            status: result.success ? "success" : "failed",
+            errorMessage: result.error,
+            triggeredBy: "manual",
+          });
         }
-      }),
 
-    // Get sync status
-    getSyncStatus: adminProcedure
-      .query(async ({ ctx }) => {
-        const unsyncedCustomers = await getUnsyncedCustomersCount(ctx.tenantId);
-        const unsyncedOrders = await getUnsyncedOrdersCount(ctx.tenantId);
+        return result;
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+
+        const dbInstance = await db.getDb();
+        if (dbInstance) {
+          await dbInstance.insert(fikenSyncLog).values({
+            tenantId: ctx.tenantId,
+            operation: "test_connection",
+            status: "failed",
+            errorMessage,
+            triggeredBy: "manual",
+          });
+        }
 
         return {
-          unsyncedCustomers,
-          unsyncedOrders,
+          success: false,
+          error: errorMessage,
         };
-      }),
+      }
+    }),
+
+    // Get sync status
+    getSyncStatus: adminProcedure.query(async ({ ctx }) => {
+      const unsyncedCustomers = await getUnsyncedCustomersCount(ctx.tenantId);
+      const unsyncedOrders = await getUnsyncedOrdersCount(ctx.tenantId);
+
+      return {
+        unsyncedCustomers,
+        unsyncedOrders,
+      };
+    }),
 
     // Sync single customer
     syncCustomer: adminProcedure
-      .input(z.object({
-        customerId: z.number(),
-      }))
+      .input(
+        z.object({
+          customerId: z.number(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
-        const result = await syncCustomerToFiken(ctx.tenantId, input.customerId);
+        const result = await syncCustomerToFiken(
+          ctx.tenantId,
+          input.customerId
+        );
         return result;
       }),
 
     // Sync all customers
-    syncAllCustomers: adminProcedure
-      .mutation(async ({ ctx }) => {
-        const result = await bulkSyncCustomers(ctx.tenantId);
-        return result;
-      }),
+    syncAllCustomers: adminProcedure.mutation(async ({ ctx }) => {
+      const result = await bulkSyncCustomers(ctx.tenantId);
+      return result;
+    }),
 
     // Sync single order
     syncOrder: adminProcedure
-      .input(z.object({
-        orderId: z.number(),
-      }))
+      .input(
+        z.object({
+          orderId: z.number(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const result = await syncOrderToFiken(ctx.tenantId, input.orderId);
         return result;
       }),
 
     // Sync all orders
-    syncAllOrders: adminProcedure
-      .mutation(async ({ ctx }) => {
-        const result = await bulkSyncOrders(ctx.tenantId);
-        return result;
-      }),
+    syncAllOrders: adminProcedure.mutation(async ({ ctx }) => {
+      const result = await bulkSyncOrders(ctx.tenantId);
+      return result;
+    }),
 
     // Get sync logs
     getSyncLogs: adminProcedure
-      .input(z.object({
-        limit: z.number().min(1).max(100).default(50),
-        operation: z.enum(["customer_sync", "invoice_sync", "payment_sync", "product_sync", "full_sync", "test_connection", "oauth_refresh"]).optional(),
-      }))
+      .input(
+        z.object({
+          limit: z.number().min(1).max(100).default(50),
+          operation: z
+            .enum([
+              "customer_sync",
+              "invoice_sync",
+              "payment_sync",
+              "product_sync",
+              "full_sync",
+              "test_connection",
+              "oauth_refresh",
+            ])
+            .optional(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         let query = dbInstance
@@ -709,10 +799,12 @@ export const appRouter = router({
           query = dbInstance
             .select()
             .from(fikenSyncLog)
-            .where(and(
-              eq(fikenSyncLog.tenantId, ctx.tenantId),
-              eq(fikenSyncLog.operation, input.operation)
-            ))
+            .where(
+              and(
+                eq(fikenSyncLog.tenantId, ctx.tenantId),
+                eq(fikenSyncLog.operation, input.operation)
+              )
+            )
             .orderBy(desc(fikenSyncLog.createdAt))
             .limit(input.limit);
         }
@@ -723,117 +815,141 @@ export const appRouter = router({
 
     // Sync single payment
     syncPayment: adminProcedure
-      .input(z.object({
-        paymentId: z.number(),
-      }))
+      .input(
+        z.object({
+          paymentId: z.number(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const { FikenClient } = await import("./fiken/client");
         const { syncPaymentToFiken } = await import("./fiken/payments");
-        
+
         const client = new FikenClient(ctx.tenantId);
         await client.initialize();
-        
-        const result = await syncPaymentToFiken(client, ctx.tenantId, input.paymentId);
+
+        const result = await syncPaymentToFiken(
+          client,
+          ctx.tenantId,
+          input.paymentId
+        );
         return result;
       }),
 
     // Sync single service
     syncService: adminProcedure
-      .input(z.object({
-        serviceId: z.number(),
-      }))
+      .input(
+        z.object({
+          serviceId: z.number(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const { FikenClient } = await import("./fiken/client");
         const { syncServiceToFiken } = await import("./fiken/products");
-        
+
         const client = new FikenClient(ctx.tenantId);
         await client.initialize();
-        
-        const result = await syncServiceToFiken(client, ctx.tenantId, input.serviceId);
+
+        const result = await syncServiceToFiken(
+          client,
+          ctx.tenantId,
+          input.serviceId
+        );
         return result;
       }),
 
     // Sync single product
     syncProduct: adminProcedure
-      .input(z.object({
-        productId: z.number(),
-      }))
+      .input(
+        z.object({
+          productId: z.number(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const { FikenClient } = await import("./fiken/client");
         const { syncProductToFiken } = await import("./fiken/products");
-        
+
         const client = new FikenClient(ctx.tenantId);
         await client.initialize();
-        
-        const result = await syncProductToFiken(client, ctx.tenantId, input.productId);
+
+        const result = await syncProductToFiken(
+          client,
+          ctx.tenantId,
+          input.productId
+        );
         return result;
       }),
 
     // Sync all services
-    syncAllServices: adminProcedure
-      .mutation(async ({ ctx }) => {
-        const { FikenClient } = await import("./fiken/client");
-        const { bulkSyncServices } = await import("./fiken/products");
-        
-        const client = new FikenClient(ctx.tenantId);
-        await client.initialize();
-        
-        const result = await bulkSyncServices(client, ctx.tenantId);
-        return result;
-      }),
+    syncAllServices: adminProcedure.mutation(async ({ ctx }) => {
+      const { FikenClient } = await import("./fiken/client");
+      const { bulkSyncServices } = await import("./fiken/products");
+
+      const client = new FikenClient(ctx.tenantId);
+      await client.initialize();
+
+      const result = await bulkSyncServices(client, ctx.tenantId);
+      return result;
+    }),
 
     // Sync all products
-    syncAllProducts: adminProcedure
-      .mutation(async ({ ctx }) => {
-        const { FikenClient } = await import("./fiken/client");
-        const { bulkSyncProducts } = await import("./fiken/products");
-        
-        const client = new FikenClient(ctx.tenantId);
-        await client.initialize();
-        
-        const result = await bulkSyncProducts(client, ctx.tenantId);
-        return result;
-      }),
+    syncAllProducts: adminProcedure.mutation(async ({ ctx }) => {
+      const { FikenClient } = await import("./fiken/client");
+      const { bulkSyncProducts } = await import("./fiken/products");
+
+      const client = new FikenClient(ctx.tenantId);
+      await client.initialize();
+
+      const result = await bulkSyncProducts(client, ctx.tenantId);
+      return result;
+    }),
 
     // Manual full sync (all data types)
-    manualFullSync: adminProcedure
-      .mutation(async ({ ctx }) => {
-        const { FikenClient } = await import("./fiken/client");
-        const { bulkSyncCustomers } = await import("./fiken/customers");
-        const { bulkSyncOrders } = await import("./fiken/invoices");
-        const { bulkSyncServices, bulkSyncProducts } = await import("./fiken/products");
-        
-        const client = new FikenClient(ctx.tenantId);
-        await client.initialize();
-        
-        // Sync all data types
-        const customers = await bulkSyncCustomers(ctx.tenantId);
-        const services = await bulkSyncServices(client, ctx.tenantId);
-        const products = await bulkSyncProducts(client, ctx.tenantId);
-        const orders = await bulkSyncOrders(ctx.tenantId);
-        
-        return {
-          success: true,
-          customers,
-          services,
-          products,
-          orders,
-        };
-      }),
+    manualFullSync: adminProcedure.mutation(async ({ ctx }) => {
+      const { FikenClient } = await import("./fiken/client");
+      const { bulkSyncCustomers } = await import("./fiken/customers");
+      const { bulkSyncOrders } = await import("./fiken/invoices");
+      const { bulkSyncServices, bulkSyncProducts } = await import(
+        "./fiken/products"
+      );
+
+      const client = new FikenClient(ctx.tenantId);
+      await client.initialize();
+
+      // Sync all data types
+      const customers = await bulkSyncCustomers(ctx.tenantId);
+      const services = await bulkSyncServices(client, ctx.tenantId);
+      const products = await bulkSyncProducts(client, ctx.tenantId);
+      const orders = await bulkSyncOrders(ctx.tenantId);
+
+      return {
+        success: true,
+        customers,
+        services,
+        products,
+        orders,
+      };
+    }),
 
     // Update settings
     updateSettings: adminProcedure
-      .input(z.object({
-        syncFrequency: z.enum(["manual", "daily", "weekly", "monthly"]).optional(),
-        autoSyncCustomers: z.boolean().optional(),
-        autoSyncInvoices: z.boolean().optional(),
-        autoSyncPayments: z.boolean().optional(),
-        autoSyncProducts: z.boolean().optional(),
-      }))
+      .input(
+        z.object({
+          syncFrequency: z
+            .enum(["manual", "daily", "weekly", "monthly"])
+            .optional(),
+          autoSyncCustomers: z.boolean().optional(),
+          autoSyncInvoices: z.boolean().optional(),
+          autoSyncPayments: z.boolean().optional(),
+          autoSyncProducts: z.boolean().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const [existing] = await dbInstance
@@ -843,7 +959,10 @@ export const appRouter = router({
           .limit(1);
 
         if (!existing) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Fiken settings not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Fiken settings not found",
+          });
         }
 
         await dbInstance
@@ -857,24 +976,36 @@ export const appRouter = router({
         return { success: true };
       }),
   }),
-  
+
   // ============================================================================
   // TENANT SIGNUP (Public)
   // ============================================================================
   signup: router({
     createTenant: publicProcedure
-      .input(z.object({
-        salonName: z.string().min(2, "Salon name must be at least 2 characters"),
-        ownerEmail: z.string().email("Invalid email address"),
-        ownerPhone: z.string().min(8, "Phone number must be at least 8 digits"),
-        password: z.string().min(6, "Password must be at least 6 characters").optional(),
-        address: z.string().optional(),
-        orgNumber: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          salonName: z
+            .string()
+            .min(2, "Salon name must be at least 2 characters"),
+          ownerEmail: z.string().email("Invalid email address"),
+          ownerPhone: z
+            .string()
+            .min(8, "Phone number must be at least 8 digits"),
+          password: z
+            .string()
+            .min(6, "Password must be at least 6 characters")
+            .optional(),
+          address: z.string().optional(),
+          orgNumber: z.string().optional(),
+        })
+      )
       .mutation(async ({ input, ctx }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { tenants, users } = await import("../drizzle/schema");
@@ -897,7 +1028,7 @@ export const appRouter = router({
             .from(tenants)
             .where(eq(tenants.subdomain, subdomain))
             .limit(1);
-          
+
           if (!existing) {
             isUnique = true;
           } else {
@@ -907,7 +1038,10 @@ export const appRouter = router({
         }
 
         if (!isUnique) {
-          throw new TRPCError({ code: "CONFLICT", message: "Could not generate unique subdomain" });
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Could not generate unique subdomain",
+          });
         }
 
         // Calculate trial end date (30 days from now)
@@ -933,14 +1067,14 @@ export const appRouter = router({
 
         // Create owner user with unique openId
         const ownerOpenId = `owner-${tenantId}-${nanoid()}`;
-        
+
         // Hash password if provided
         let passwordHash = null;
         if (input.password) {
           const bcrypt = await import("bcrypt");
           passwordHash = await bcrypt.hash(input.password, 10);
         }
-        
+
         await dbInstance.insert(users).values({
           tenantId,
           openId: ownerOpenId,
@@ -957,9 +1091,14 @@ export const appRouter = router({
         try {
           const { sendVerificationEmail } = await import("./emailService");
           await sendVerificationEmail(tenantId, input.ownerEmail);
-          console.log(`[Signup] Verification email sent to ${input.ownerEmail}`);
+          console.log(
+            `[Signup] Verification email sent to ${input.ownerEmail}`
+          );
         } catch (emailError) {
-          console.error(`[Signup] Failed to send verification email:`, emailError);
+          console.error(
+            `[Signup] Failed to send verification email:`,
+            emailError
+          );
           // Don't fail signup if email fails, just log it
         }
 
@@ -973,7 +1112,10 @@ export const appRouter = router({
 
         // Set session cookie
         const cookieOptions = getSessionCookieOptions(ctx.req);
-        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        ctx.res.cookie(COOKIE_NAME, sessionToken, {
+          ...cookieOptions,
+          maxAge: ONE_YEAR_MS,
+        });
 
         return {
           success: true,
@@ -982,26 +1124,27 @@ export const appRouter = router({
           trialEndsAt,
         };
       }),
-    
+
     verifyEmail: publicProcedure
-      .input(z.object({
-        token: z.string(),
-      }))
+      .input(
+        z.object({
+          token: z.string(),
+        })
+      )
       .mutation(async ({ input }) => {
         const { verifyEmailToken } = await import("./emailService");
         return await verifyEmailToken(input.token);
       }),
-    
-    resendVerification: protectedProcedure
-      .mutation(async ({ ctx }) => {
-        if (!ctx.user.tenantId) {
-          throw new TRPCError({ code: "FORBIDDEN", message: "No tenant access" });
-        }
-        const { resendVerificationEmail } = await import("./emailService");
-        return await resendVerificationEmail(ctx.user.tenantId);
-      }),
+
+    resendVerification: protectedProcedure.mutation(async ({ ctx }) => {
+      if (!ctx.user.tenantId) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "No tenant access" });
+      }
+      const { resendVerificationEmail } = await import("./emailService");
+      return await resendVerificationEmail(ctx.user.tenantId);
+    }),
   }),
-  
+
   // Global search
   search: router({
     global: tenantProcedure
@@ -1010,7 +1153,7 @@ export const appRouter = router({
         return await db.globalSearch(ctx.tenantId, input.query);
       }),
   }),
-  
+
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
@@ -1023,7 +1166,10 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { users } = await import("../drizzle/schema");
@@ -1041,7 +1187,10 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { users } = await import("../drizzle/schema");
@@ -1059,7 +1208,10 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { users } = await import("../drizzle/schema");
@@ -1072,40 +1224,52 @@ export const appRouter = router({
 
         return { success: true, step: input.step };
       }),
-    completeOnboarding: protectedProcedure
-      .mutation(async ({ ctx }) => {
-        const dbInstance = await db.getDb();
-        if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-        }
+    completeOnboarding: protectedProcedure.mutation(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
+      }
 
-        const { users } = await import("../drizzle/schema");
-        const { eq } = await import("drizzle-orm");
+      const { users } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
 
-        await dbInstance
-          .update(users)
-          .set({ onboardingCompleted: true, onboardingStep: 0, updatedAt: new Date() })
-          .where(eq(users.id, ctx.user.id));
+      await dbInstance
+        .update(users)
+        .set({
+          onboardingCompleted: true,
+          onboardingStep: 0,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, ctx.user.id));
 
-        return { success: true };
-      }),
-    resetOnboarding: protectedProcedure
-      .mutation(async ({ ctx }) => {
-        const dbInstance = await db.getDb();
-        if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-        }
+      return { success: true };
+    }),
+    resetOnboarding: protectedProcedure.mutation(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
+      }
 
-        const { users } = await import("../drizzle/schema");
-        const { eq } = await import("drizzle-orm");
+      const { users } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
 
-        await dbInstance
-          .update(users)
-          .set({ onboardingCompleted: false, onboardingStep: 0, updatedAt: new Date() })
-          .where(eq(users.id, ctx.user.id));
+      await dbInstance
+        .update(users)
+        .set({
+          onboardingCompleted: false,
+          onboardingStep: 0,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, ctx.user.id));
 
-        return { success: true };
-      }),
+      return { success: true };
+    }),
   }),
 
   // ============================================================================
@@ -1116,7 +1280,10 @@ export const appRouter = router({
     getVerificationStatus: protectedProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { tenants } = await import("../drizzle/schema");
@@ -1143,7 +1310,10 @@ export const appRouter = router({
     getCurrent: tenantProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { tenants } = await import("../drizzle/schema");
@@ -1170,7 +1340,10 @@ export const appRouter = router({
     getBookingSettings: tenantProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { tenants } = await import("../drizzle/schema");
@@ -1199,13 +1372,21 @@ export const appRouter = router({
         z.object({
           requirePrepayment: z.boolean(),
           cancellationWindowHours: z.number().int().min(1).max(168), // 1h – 7 days
-          noShowThresholdForPrepayment: z.number().int().min(0).max(10).optional(),
+          noShowThresholdForPrepayment: z
+            .number()
+            .int()
+            .min(0)
+            .max(10)
+            .optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { tenants } = await import("../drizzle/schema");
@@ -1218,7 +1399,8 @@ export const appRouter = router({
         };
 
         if (input.noShowThresholdForPrepayment !== undefined) {
-          updateData.noShowThresholdForPrepayment = input.noShowThresholdForPrepayment;
+          updateData.noShowThresholdForPrepayment =
+            input.noShowThresholdForPrepayment;
         }
 
         await dbInstance
@@ -1238,7 +1420,10 @@ export const appRouter = router({
           .where(eq(tenants.id, ctx.tenantId));
 
         if (!updated) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Tenant not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Tenant not found",
+          });
         }
 
         return updated;
@@ -1248,7 +1433,10 @@ export const appRouter = router({
     getDomainInfo: tenantProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { tenants } = await import("../drizzle/schema");
@@ -1280,7 +1468,10 @@ export const appRouter = router({
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { tenants } = await import("../drizzle/schema");
@@ -1317,7 +1508,10 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { tenants } = await import("../drizzle/schema");
@@ -1357,7 +1551,10 @@ export const appRouter = router({
     getBranding: tenantProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { salonSettings } = await import("../drizzle/schema");
@@ -1393,8 +1590,12 @@ export const appRouter = router({
       .input(
         z.object({
           logoUrl: z.string().url().nullable(),
-          primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Must be a valid hex color"),
-          accentColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Must be a valid hex color"),
+          primaryColor: z
+            .string()
+            .regex(/^#[0-9A-Fa-f]{6}$/, "Must be a valid hex color"),
+          accentColor: z
+            .string()
+            .regex(/^#[0-9A-Fa-f]{6}$/, "Must be a valid hex color"),
           welcomeTitle: z.string().min(1).max(100),
           welcomeSubtitle: z.string().min(1).max(200),
           showStaffSection: z.boolean(),
@@ -1404,7 +1605,10 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { salonSettings } = await import("../drizzle/schema");
@@ -1441,7 +1645,10 @@ export const appRouter = router({
     getPrintSettings: tenantProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { salonSettings } = await import("../drizzle/schema");
@@ -1498,7 +1705,10 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { salonSettings } = await import("../drizzle/schema");
@@ -1542,11 +1752,19 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         // Validate image type
-        const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+        const allowedTypes = [
+          "image/jpeg",
+          "image/jpg",
+          "image/png",
+          "image/webp",
+        ];
         if (!allowedTypes.includes(input.mimeType)) {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -1604,7 +1822,10 @@ export const appRouter = router({
     removeReceiptLogo: adminProcedure.mutation(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { salonSettings } = await import("../drizzle/schema");
@@ -1625,7 +1846,10 @@ export const appRouter = router({
     getSalonInfo: tenantProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { tenants } = await import("../drizzle/schema");
@@ -1658,14 +1882,21 @@ export const appRouter = router({
         z.object({
           name: z.string().min(1, "Salongnavn er påkrevd"),
           phone: z.string().optional(),
-          email: z.string().email("Ugyldig e-postadresse").optional().or(z.literal("")),
+          email: z
+            .string()
+            .email("Ugyldig e-postadresse")
+            .optional()
+            .or(z.literal("")),
           address: z.string().optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { tenants } = await import("../drizzle/schema");
@@ -1689,7 +1920,10 @@ export const appRouter = router({
     getSmsSettings: tenantProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { tenants } = await import("../drizzle/schema");
@@ -1720,8 +1954,17 @@ export const appRouter = router({
     updateSmsSettings: adminProcedure
       .input(
         z.object({
-          smsPhoneNumber: z.string().regex(/^\+47[49]\d{7}$/, "Ugyldig norsk telefonnummer (+47xxxxxxxx)").optional().or(z.literal("")),
-          smsProvider: z.enum(["mock", "pswincom", "linkmobility", "twilio"]).optional(),
+          smsPhoneNumber: z
+            .string()
+            .regex(
+              /^\+47[49]\d{7}$/,
+              "Ugyldig norsk telefonnummer (+47xxxxxxxx)"
+            )
+            .optional()
+            .or(z.literal("")),
+          smsProvider: z
+            .enum(["mock", "pswincom", "linkmobility", "twilio"])
+            .optional(),
           smsApiKey: z.string().optional(),
           smsApiSecret: z.string().optional(),
         })
@@ -1729,7 +1972,10 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { tenants } = await import("../drizzle/schema");
@@ -1763,7 +2009,9 @@ export const appRouter = router({
     testSmsConnection: adminProcedure
       .input(
         z.object({
-          phoneNumber: z.string().regex(/^\+47[49]\d{7}$/, "Ugyldig norsk telefonnummer"),
+          phoneNumber: z
+            .string()
+            .regex(/^\+47[49]\d{7}$/, "Ugyldig norsk telefonnummer"),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -1771,7 +2019,8 @@ export const appRouter = router({
 
         const result = await sendSMS({
           to: input.phoneNumber,
-          message: "Dette er en test-SMS fra Stylora. Hvis du mottar denne meldingen, er SMS-innstillingene dine konfigurert riktig!",
+          message:
+            "Dette er en test-SMS fra Stylora. Hvis du mottar denne meldingen, er SMS-innstillingene dine konfigurert riktig!",
           tenantId: ctx.tenantId,
         });
 
@@ -1800,16 +2049,20 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
-        const { services, serviceCategories, products, productCategories } = await import("../drizzle/schema");
+        const { services, serviceCategories, products, productCategories } =
+          await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
-        const { 
-          defaultServiceCategories, 
-          defaultServices, 
-          defaultProductCategories, 
-          defaultProducts 
+        const {
+          defaultServiceCategories,
+          defaultServices,
+          defaultProductCategories,
+          defaultProducts,
         } = await import("./services/defaultData");
 
         let servicesAdded = 0;
@@ -1820,15 +2073,15 @@ export const appRouter = router({
         // Load Services
         if (input.loadServices) {
           const categoryMap = new Map<string, number>();
-          
+
           for (const cat of defaultServiceCategories) {
             const existingCat = await dbInstance
               .select()
               .from(serviceCategories)
               .where(eq(serviceCategories.tenantId, ctx.tenantId));
-            
+
             const found = existingCat.find(c => c.name === cat.name);
-            
+
             if (found) {
               categoryMap.set(cat.name, found.id);
             } else {
@@ -1847,14 +2100,14 @@ export const appRouter = router({
 
           for (const service of defaultServices) {
             const categoryId = categoryMap.get(service.categoryName);
-            
+
             const existingServices = await dbInstance
               .select()
               .from(services)
               .where(eq(services.tenantId, ctx.tenantId));
-            
+
             const exists = existingServices.find(s => s.name === service.name);
-            
+
             if (!exists) {
               await dbInstance.insert(services).values({
                 tenantId: ctx.tenantId,
@@ -1873,15 +2126,15 @@ export const appRouter = router({
         // Load Products
         if (input.loadProducts) {
           const productCategoryMap = new Map<string, number>();
-          
+
           for (const cat of defaultProductCategories) {
             const existingCat = await dbInstance
               .select()
               .from(productCategories)
               .where(eq(productCategories.tenantId, ctx.tenantId));
-            
+
             const found = existingCat.find(c => c.name === cat.name);
-            
+
             if (found) {
               productCategoryMap.set(cat.name, found.id);
             } else {
@@ -1900,14 +2153,16 @@ export const appRouter = router({
 
           for (const product of defaultProducts) {
             const categoryId = productCategoryMap.get(product.categoryName);
-            
+
             const existingProducts = await dbInstance
               .select()
               .from(products)
               .where(eq(products.tenantId, ctx.tenantId));
-            
-            const exists = existingProducts.find(p => p.sku === product.sku || p.name === product.name);
-            
+
+            const exists = existingProducts.find(
+              p => p.sku === product.sku || p.name === product.name
+            );
+
             if (!exists) {
               await dbInstance.insert(products).values({
                 tenantId: ctx.tenantId,
@@ -1940,10 +2195,10 @@ export const appRouter = router({
 
     // Get default data preview
     getDefaultDataPreview: tenantProcedure.query(async () => {
-      const { 
-        defaultServiceCategories, 
-        defaultServices, 
-        defaultProductCategories, 
+      const {
+        defaultServiceCategories,
+        defaultServices,
+        defaultProductCategories,
         defaultProducts,
         defaultDataSummary,
       } = await import("./services/defaultData");
@@ -1973,23 +2228,25 @@ export const appRouter = router({
       }),
 
     create: tenantProcedure
-      .input(z.object({
-        firstName: z.string().min(1),
-        lastName: z.string().optional(),
-        phone: z.string().min(1),
-        email: z.string().email().optional().or(z.literal('')),
-        dateOfBirth: z.string().optional(),
-        address: z.string().optional(),
-        notes: z.string().optional(),
-        marketingSmsConsent: z.boolean().default(false),
-        marketingEmailConsent: z.boolean().default(false),
-      }))
+      .input(
+        z.object({
+          firstName: z.string().min(1),
+          lastName: z.string().optional(),
+          phone: z.string().min(1),
+          email: z.string().email().optional().or(z.literal("")),
+          dateOfBirth: z.string().optional(),
+          address: z.string().optional(),
+          notes: z.string().optional(),
+          marketingSmsConsent: z.boolean().default(false),
+          marketingEmailConsent: z.boolean().default(false),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
         const { customers } = await import("../drizzle/schema");
-        
+
         await dbInstance.insert(customers).values({
           tenantId: ctx.tenantId,
           firstName: input.firstName,
@@ -2001,7 +2258,10 @@ export const appRouter = router({
           notes: input.notes || null,
           marketingSmsConsent: input.marketingSmsConsent,
           marketingEmailConsent: input.marketingEmailConsent,
-          consentTimestamp: input.marketingSmsConsent || input.marketingEmailConsent ? new Date() : null,
+          consentTimestamp:
+            input.marketingSmsConsent || input.marketingEmailConsent
+              ? new Date()
+              : null,
           consentIp: ctx.req.ip || null,
         });
 
@@ -2009,37 +2269,43 @@ export const appRouter = router({
       }),
 
     update: tenantProcedure
-      .input(z.object({
-        id: z.number(),
-        firstName: z.string().min(1).optional(),
-        lastName: z.string().optional(),
-        phone: z.string().min(1).optional(),
-        email: z.string().email().optional().or(z.literal('')),
-        dateOfBirth: z.string().optional(),
-        address: z.string().optional(),
-        notes: z.string().optional(),
-        marketingSmsConsent: z.boolean().optional(),
-        marketingEmailConsent: z.boolean().optional(),
-      }))
+      .input(
+        z.object({
+          id: z.number(),
+          firstName: z.string().min(1).optional(),
+          lastName: z.string().optional(),
+          phone: z.string().min(1).optional(),
+          email: z.string().email().optional().or(z.literal("")),
+          dateOfBirth: z.string().optional(),
+          address: z.string().optional(),
+          notes: z.string().optional(),
+          marketingSmsConsent: z.boolean().optional(),
+          marketingEmailConsent: z.boolean().optional(),
+        })
+      )
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
         const { customers } = await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
-        
+
         const updateData: any = {};
         if (input.firstName) updateData.firstName = input.firstName;
         if (input.lastName !== undefined) updateData.lastName = input.lastName;
         if (input.phone) updateData.phone = input.phone;
         if (input.email !== undefined) updateData.email = input.email;
-        if (input.dateOfBirth !== undefined) updateData.dateOfBirth = input.dateOfBirth;
+        if (input.dateOfBirth !== undefined)
+          updateData.dateOfBirth = input.dateOfBirth;
         if (input.address !== undefined) updateData.address = input.address;
         if (input.notes !== undefined) updateData.notes = input.notes;
-        if (input.marketingSmsConsent !== undefined) updateData.marketingSmsConsent = input.marketingSmsConsent;
-        if (input.marketingEmailConsent !== undefined) updateData.marketingEmailConsent = input.marketingEmailConsent;
+        if (input.marketingSmsConsent !== undefined)
+          updateData.marketingSmsConsent = input.marketingSmsConsent;
+        if (input.marketingEmailConsent !== undefined)
+          updateData.marketingEmailConsent = input.marketingEmailConsent;
 
-        await dbInstance.update(customers)
+        await dbInstance
+          .update(customers)
           .set(updateData)
           .where(eq(customers.id, input.id));
 
@@ -2054,9 +2320,10 @@ export const appRouter = router({
 
         const { customers } = await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
-        
+
         // Soft delete
-        await dbInstance.update(customers)
+        await dbInstance
+          .update(customers)
           .set({ deletedAt: new Date() })
           .where(eq(customers.id, input.id));
 
@@ -2065,36 +2332,56 @@ export const appRouter = router({
 
     // GDPR: Complete data deletion (Right to Erasure)
     gdprDelete: tenantProcedure
-      .input(z.object({ 
-        customerId: z.number(),
-        confirmationCode: z.string().min(1), // Customer must confirm with their phone number
-        reason: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          customerId: z.number(),
+          confirmationCode: z.string().min(1), // Customer must confirm with their phone number
+          reason: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
-        const { customers, appointments, appointmentServices, payments, loyaltyPoints, loyaltyTransactions, loyaltyRedemptions, auditLogs } = await import("../drizzle/schema");
+        const {
+          customers,
+          appointments,
+          appointmentServices,
+          payments,
+          loyaltyPoints,
+          loyaltyTransactions,
+          loyaltyRedemptions,
+          auditLogs,
+        } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
 
         // Get customer to verify
         const [customer] = await dbInstance
           .select()
           .from(customers)
-          .where(and(
-            eq(customers.id, input.customerId),
-            eq(customers.tenantId, ctx.tenantId)
-          ))
+          .where(
+            and(
+              eq(customers.id, input.customerId),
+              eq(customers.tenantId, ctx.tenantId)
+            )
+          )
           .limit(1);
 
         if (!customer) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Kunde ikke funnet" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Kunde ikke funnet",
+          });
         }
 
         // Verify confirmation code matches phone number (last 4 digits)
-        const lastFourDigits = customer.phone.replace(/\D/g, '').slice(-4);
+        const lastFourDigits = customer.phone.replace(/\D/g, "").slice(-4);
         if (input.confirmationCode !== lastFourDigits) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Feil bekreftelseskode. Bruk de siste 4 sifrene i kundens telefonnummer." });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Feil bekreftelseskode. Bruk de siste 4 sifrene i kundens telefonnummer.",
+          });
         }
 
         // Log the GDPR deletion request before deleting
@@ -2116,29 +2403,34 @@ export const appRouter = router({
         });
 
         // Delete loyalty data
-        await dbInstance.delete(loyaltyRedemptions)
+        await dbInstance
+          .delete(loyaltyRedemptions)
           .where(eq(loyaltyRedemptions.customerId, input.customerId));
-        
-        await dbInstance.delete(loyaltyTransactions)
+
+        await dbInstance
+          .delete(loyaltyTransactions)
           .where(eq(loyaltyTransactions.customerId, input.customerId));
-        
-        await dbInstance.delete(loyaltyPoints)
+
+        await dbInstance
+          .delete(loyaltyPoints)
           .where(eq(loyaltyPoints.customerId, input.customerId));
 
         // Anonymize appointments (keep for business records but remove personal data)
-        await dbInstance.update(appointments)
-          .set({ 
+        await dbInstance
+          .update(appointments)
+          .set({
             notes: "[GDPR - Data slettet]",
           })
           .where(eq(appointments.customerId, input.customerId));
 
         // Permanently delete customer record
-        await dbInstance.delete(customers)
+        await dbInstance
+          .delete(customers)
           .where(eq(customers.id, input.customerId));
 
-        return { 
-          success: true, 
-          message: "Alle kundedata er permanent slettet i henhold til GDPR." 
+        return {
+          success: true,
+          message: "Alle kundedata er permanent slettet i henhold til GDPR.",
         };
       }),
 
@@ -2149,21 +2441,34 @@ export const appRouter = router({
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
-        const { customers, appointments, appointmentServices, services, payments, loyaltyPoints, loyaltyTransactions } = await import("../drizzle/schema");
+        const {
+          customers,
+          appointments,
+          appointmentServices,
+          services,
+          payments,
+          loyaltyPoints,
+          loyaltyTransactions,
+        } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
 
         // Get customer
         const [customer] = await dbInstance
           .select()
           .from(customers)
-          .where(and(
-            eq(customers.id, input.customerId),
-            eq(customers.tenantId, ctx.tenantId)
-          ))
+          .where(
+            and(
+              eq(customers.id, input.customerId),
+              eq(customers.tenantId, ctx.tenantId)
+            )
+          )
           .limit(1);
 
         if (!customer) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Kunde ikke funnet" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Kunde ikke funnet",
+          });
         }
 
         // Get appointments
@@ -2204,16 +2509,18 @@ export const appRouter = router({
             status: a.status,
             notes: a.notes,
           })),
-          loyalty: loyalty ? {
-            currentPoints: loyalty.currentPoints,
-            lifetimePoints: loyalty.lifetimePoints,
-            transactions: transactions.map(t => ({
-              type: t.type,
-              points: t.points,
-              reason: t.reason,
-              createdAt: t.createdAt,
-            })),
-          } : null,
+          loyalty: loyalty
+            ? {
+                currentPoints: loyalty.currentPoints,
+                lifetimePoints: loyalty.lifetimePoints,
+                transactions: transactions.map(t => ({
+                  type: t.type,
+                  points: t.points,
+                  reason: t.reason,
+                  createdAt: t.createdAt,
+                })),
+              }
+            : null,
         };
       }),
 
@@ -2222,11 +2529,17 @@ export const appRouter = router({
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { tenantId } = ctx;
-        const noShowCount = await db.getNoShowCountForCustomer(tenantId, input.customerId);
+        const noShowCount = await db.getNoShowCountForCustomer(
+          tenantId,
+          input.customerId
+        );
 
         const { tenants } = await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
@@ -2262,19 +2575,21 @@ export const appRouter = router({
       }),
 
     create: tenantProcedure
-      .input(z.object({
-        name: z.string().min(1),
-        description: z.string().optional(),
-        durationMinutes: z.number(),
-        price: z.string(), // decimal as string
-        categoryId: z.number().optional(),
-      }))
+      .input(
+        z.object({
+          name: z.string().min(1),
+          description: z.string().optional(),
+          durationMinutes: z.number(),
+          price: z.string(), // decimal as string
+          categoryId: z.number().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
         const { services } = await import("../drizzle/schema");
-        
+
         await dbInstance.insert(services).values({
           tenantId: ctx.tenantId,
           name: input.name,
@@ -2288,29 +2603,34 @@ export const appRouter = router({
       }),
 
     update: adminProcedure
-      .input(z.object({
-        id: z.number(),
-        name: z.string().min(1).optional(),
-        description: z.string().optional(),
-        durationMinutes: z.number().min(5).optional(),
-        price: z.string().optional(),
-        isActive: z.boolean().optional(),
-      }))
+      .input(
+        z.object({
+          id: z.number(),
+          name: z.string().min(1).optional(),
+          description: z.string().optional(),
+          durationMinutes: z.number().min(5).optional(),
+          price: z.string().optional(),
+          isActive: z.boolean().optional(),
+        })
+      )
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
         const { services } = await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
-        
+
         const updateData: any = {};
         if (input.name) updateData.name = input.name;
-        if (input.description !== undefined) updateData.description = input.description;
-        if (input.durationMinutes) updateData.durationMinutes = input.durationMinutes;
+        if (input.description !== undefined)
+          updateData.description = input.description;
+        if (input.durationMinutes)
+          updateData.durationMinutes = input.durationMinutes;
         if (input.price) updateData.price = input.price;
         if (input.isActive !== undefined) updateData.isActive = input.isActive;
 
-        await dbInstance.update(services)
+        await dbInstance
+          .update(services)
           .set(updateData)
           .where(eq(services.id, input.id));
 
@@ -2318,25 +2638,24 @@ export const appRouter = router({
       }),
 
     delete: adminProcedure
-      .input(z.object({
-        id: z.number(),
-      }))
+      .input(
+        z.object({
+          id: z.number(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
         const { services } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
-        
+
         // Soft delete by setting isActive to false
         await dbInstance
           .update(services)
           .set({ isActive: false })
           .where(
-            and(
-              eq(services.id, input.id),
-              eq(services.tenantId, ctx.tenantId)
-            )
+            and(eq(services.id, input.id), eq(services.tenantId, ctx.tenantId))
           );
 
         return { success: true };
@@ -2348,12 +2667,18 @@ export const appRouter = router({
   // ============================================================================
   appointments: router({
     list: tenantProcedure
-      .input(z.object({
-        startDate: z.string().transform((val) => new Date(val)),
-        endDate: z.string().transform((val) => new Date(val)),
-      }))
+      .input(
+        z.object({
+          startDate: z.string().transform(val => new Date(val)),
+          endDate: z.string().transform(val => new Date(val)),
+        })
+      )
       .query(async ({ ctx, input }) => {
-        return db.getAppointmentsByTenant(ctx.tenantId, input.startDate, input.endDate);
+        return db.getAppointmentsByTenant(
+          ctx.tenantId,
+          input.startDate,
+          input.endDate
+        );
       }),
 
     getById: tenantProcedure
@@ -2362,88 +2687,103 @@ export const appRouter = router({
         return db.getAppointmentById(input.id, ctx.tenantId);
       }),
 
-    getToday: tenantProcedure
-      .query(async ({ ctx }) => {
-        const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+    getToday: tenantProcedure.query(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
 
-        const { appointments, customers, users, services, appointmentServices } = await import("../drizzle/schema");
-        const { eq, and, gte, lt } = await import("drizzle-orm");
+      const { appointments, customers, users, services, appointmentServices } =
+        await import("../drizzle/schema");
+      const { eq, and, gte, lt } = await import("drizzle-orm");
 
-        // Get today's date range (00:00:00 to 23:59:59)
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+      // Get today's date range (00:00:00 to 23:59:59)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
 
-        // Fetch today's appointments with related data
-        const todayAppointments = await dbInstance
-          .select({
-            id: appointments.id,
-            appointmentDate: appointments.appointmentDate,
-            startTime: appointments.startTime,
-            endTime: appointments.endTime,
-            status: appointments.status,
-            notes: appointments.notes,
-            customerId: appointments.customerId,
-            customerName: customers.firstName,
-            employeeId: appointments.employeeId,
-            employeeName: users.name,
-          })
-          .from(appointments)
-          .leftJoin(customers, eq(appointments.customerId, customers.id))
-          .leftJoin(users, eq(appointments.employeeId, users.id))
-          .where(
-            and(
-              eq(appointments.tenantId, ctx.tenantId),
-              gte(appointments.appointmentDate, today),
-              lt(appointments.appointmentDate, tomorrow)
-            )
+      // Fetch today's appointments with related data
+      const todayAppointments = await dbInstance
+        .select({
+          id: appointments.id,
+          appointmentDate: appointments.appointmentDate,
+          startTime: appointments.startTime,
+          endTime: appointments.endTime,
+          status: appointments.status,
+          notes: appointments.notes,
+          customerId: appointments.customerId,
+          customerName: customers.firstName,
+          employeeId: appointments.employeeId,
+          employeeName: users.name,
+        })
+        .from(appointments)
+        .leftJoin(customers, eq(appointments.customerId, customers.id))
+        .leftJoin(users, eq(appointments.employeeId, users.id))
+        .where(
+          and(
+            eq(appointments.tenantId, ctx.tenantId),
+            gte(appointments.appointmentDate, today),
+            lt(appointments.appointmentDate, tomorrow)
           )
-          .orderBy(appointments.startTime);
+        )
+        .orderBy(appointments.startTime);
 
-        // Fetch services for each appointment
-        const appointmentsWithServices = await Promise.all(
-          todayAppointments.map(async (apt) => {
-            const aptServices = await dbInstance
-              .select({
-                serviceName: services.name,
-              })
-              .from(appointmentServices)
-              .leftJoin(services, eq(appointmentServices.serviceId, services.id))
-              .where(eq(appointmentServices.appointmentId, apt.id));
+      // Fetch services for each appointment
+      const appointmentsWithServices = await Promise.all(
+        todayAppointments.map(async apt => {
+          const aptServices = await dbInstance
+            .select({
+              serviceName: services.name,
+            })
+            .from(appointmentServices)
+            .leftJoin(services, eq(appointmentServices.serviceId, services.id))
+            .where(eq(appointmentServices.appointmentId, apt.id));
 
-            return {
-              ...apt,
-              services: aptServices
-                .map(s => s.serviceName)
-                .filter((name): name is string => typeof name === 'string' && name.length > 0),
-            };
-          })
-        );
+          return {
+            ...apt,
+            services: aptServices
+              .map(s => s.serviceName)
+              .filter(
+                (name): name is string =>
+                  typeof name === "string" && name.length > 0
+              ),
+          };
+        })
+      );
 
-        return appointmentsWithServices;
-      }),
+      return appointmentsWithServices;
+    }),
 
     create: tenantProcedure
-      .input(z.object({
-        customerId: z.number(),
-        employeeId: z.number(),
-        appointmentDate: z.string(), // YYYY-MM-DD
-        startTime: z.string(), // HH:MM:SS
-        endTime: z.string(),
-        serviceIds: z.array(z.number()),
-        notes: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          customerId: z.number(),
+          employeeId: z.number(),
+          appointmentDate: z.string(), // YYYY-MM-DD
+          startTime: z.string(), // HH:MM:SS
+          endTime: z.string(),
+          serviceIds: z.array(z.number()),
+          notes: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
-        const { appointments, appointmentServices, employeeLeaves, salonHolidays, customers } = await import("../drizzle/schema");
+        const {
+          appointments,
+          appointmentServices,
+          employeeLeaves,
+          salonHolidays,
+          customers,
+        } = await import("../drizzle/schema");
         const { eq, and, lte, gte, or } = await import("drizzle-orm");
-        
+
         const appointmentDate = new Date(input.appointmentDate);
-        
+
         // Check if date is a salon holiday
         const holidays = await dbInstance
           .select()
@@ -2461,14 +2801,14 @@ export const appRouter = router({
               )
             )
           );
-        
+
         if (holidays.length > 0) {
-          throw new TRPCError({ 
-            code: "BAD_REQUEST", 
-            message: `Kan ikke booke på helligdag: ${holidays[0].name}` 
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Kan ikke booke på helligdag: ${holidays[0].name}`,
           });
         }
-        
+
         // Check if employee is on leave
         const leaves = await dbInstance
           .select()
@@ -2481,18 +2821,20 @@ export const appRouter = router({
               gte(employeeLeaves.endDate, appointmentDate)
             )
           );
-        
+
         if (leaves.length > 0) {
-          throw new TRPCError({ 
-            code: "BAD_REQUEST", 
-            message: `Ansatt er på ferie (${leaves[0].leaveType}). Vennligst velg en annen dato eller ansatt.` 
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Ansatt er på ferie (${leaves[0].leaveType}). Vennligst velg en annen dato eller ansatt.`,
           });
         }
-        
+
         // Check for conflicting appointments (overlapping time slots for same employee)
-        const [year, month, day] = input.appointmentDate.split('-').map(Number);
-        const appointmentDateObj = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
-        
+        const [year, month, day] = input.appointmentDate.split("-").map(Number);
+        const appointmentDateObj = new Date(
+          Date.UTC(year, month - 1, day, 12, 0, 0)
+        );
+
         const conflictingAppointments = await dbInstance
           .select()
           .from(appointments)
@@ -2524,23 +2866,26 @@ export const appRouter = router({
               )
             )
           );
-        
+
         if (conflictingAppointments.length > 0) {
           const conflict = conflictingAppointments[0];
-          
+
           // Get customer name separately
           const customer = await dbInstance
-            .select({ firstName: customers.firstName, lastName: customers.lastName })
+            .select({
+              firstName: customers.firstName,
+              lastName: customers.lastName,
+            })
             .from(customers)
             .where(eq(customers.id, conflict.customerId))
             .limit(1);
-          
-          const customerName = customer[0] 
-            ? `${customer[0].firstName} ${customer[0].lastName || ''}`.trim()
+
+          const customerName = customer[0]
+            ? `${customer[0].firstName} ${customer[0].lastName || ""}`.trim()
             : "Ukjent kunde";
-          
-          throw new TRPCError({ 
-            code: "BAD_REQUEST", 
+
+          throw new TRPCError({
+            code: "BAD_REQUEST",
             message: `APPOINTMENT_CONFLICT`,
             cause: {
               existingAppointment: {
@@ -2548,14 +2893,14 @@ export const appRouter = router({
                 customerName,
                 startTime: conflict.startTime,
                 endTime: conflict.endTime,
-              }
-            }
+              },
+            },
           });
         }
-        
+
         // Insert appointment
         // Date already converted above for conflict check
-        
+
         const [appointment] = await dbInstance.insert(appointments).values({
           tenantId: ctx.tenantId,
           customerId: input.customerId,
@@ -2586,37 +2931,47 @@ export const appRouter = router({
       }),
 
     reschedule: tenantProcedure
-      .input(z.object({
-        id: z.number(),
-        newDate: z.string(), // YYYY-MM-DD
-        newTime: z.string(), // HH:MM
-      }))
+      .input(
+        z.object({
+          id: z.number(),
+          newDate: z.string(), // YYYY-MM-DD
+          newTime: z.string(), // HH:MM
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
         const { appointments } = await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
-        
+
         // Get existing appointment to calculate duration
         const existing = await db.getAppointmentById(input.id, ctx.tenantId);
         if (!existing) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Appointment not found",
+          });
         }
 
         // Parse time strings (HH:MM format)
         const [startHour, startMin] = existing.startTime.split(":").map(Number);
         const [endHour, endMin] = existing.endTime.split(":").map(Number);
-        const durationMinutes = (endHour * 60 + endMin) - (startHour * 60 + startMin);
-        
+        const durationMinutes =
+          endHour * 60 + endMin - (startHour * 60 + startMin);
+
         // Calculate new end time
-        const [newStartHour, newStartMin] = input.newTime.split(":").map(Number);
-        const newEndTotalMinutes = newStartHour * 60 + newStartMin + durationMinutes;
+        const [newStartHour, newStartMin] = input.newTime
+          .split(":")
+          .map(Number);
+        const newEndTotalMinutes =
+          newStartHour * 60 + newStartMin + durationMinutes;
         const newEndHour = Math.floor(newEndTotalMinutes / 60);
         const newEndMin = newEndTotalMinutes % 60;
         const newEndTimeStr = `${newEndHour.toString().padStart(2, "0")}:${newEndMin.toString().padStart(2, "0")}`;
 
-        const result = await dbInstance.update(appointments)
+        const result = await dbInstance
+          .update(appointments)
           .set({
             appointmentDate: new Date(input.newDate),
             startTime: input.newTime,
@@ -2628,19 +2983,30 @@ export const appRouter = router({
       }),
 
     updateStatus: tenantProcedure
-      .input(z.object({
-        id: z.number(),
-        status: z.enum(["pending", "confirmed", "completed", "canceled", "no_show"]),
-        cancellationReason: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          id: z.number(),
+          status: z.enum([
+            "pending",
+            "confirmed",
+            "completed",
+            "canceled",
+            "no_show",
+          ]),
+          cancellationReason: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
         const { appointments } = await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
-        const { sendAppointmentConfirmationIfPossible, sendAppointmentCancellationIfPossible } = await import("./notifications-appointments");
-        
+        const {
+          sendAppointmentConfirmationIfPossible,
+          sendAppointmentCancellationIfPossible,
+        } = await import("./notifications-appointments");
+
         // Get appointment details before updating
         const appointment = await dbInstance
           .select()
@@ -2649,13 +3015,16 @@ export const appRouter = router({
           .limit(1);
 
         if (!appointment[0]) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Appointment not found",
+          });
         }
 
         const previousStatus = appointment[0].status;
 
         const updateData: any = { status: input.status };
-        
+
         // Handle cancellation with late cancellation detection
         if (input.status === "canceled") {
           updateData.canceledAt = new Date();
@@ -2670,35 +3039,55 @@ export const appRouter = router({
             .where(eq(tenants.id, String(ctx.tenantId)));
 
           const cancellationWindowHours = tenant?.cancellationWindowHours ?? 24;
-          
+
           // Combine appointmentDate and startTime to get appointment start DateTime
           const appointmentDate = new Date(appointment[0].appointmentDate);
-          const [hours, minutes] = String(appointment[0].startTime).split(":").map(Number);
+          const [hours, minutes] = String(appointment[0].startTime)
+            .split(":")
+            .map(Number);
           appointmentDate.setHours(hours, minutes, 0, 0);
 
           // Calculate the cancellation deadline (appointment start - window hours)
           const cancellationDeadline = new Date(appointmentDate);
-          cancellationDeadline.setHours(cancellationDeadline.getHours() - cancellationWindowHours);
+          cancellationDeadline.setHours(
+            cancellationDeadline.getHours() - cancellationWindowHours
+          );
 
           // Check if current time is after the deadline
           const now = new Date();
           updateData.isLateCancellation = now > cancellationDeadline;
         }
 
-        await dbInstance.update(appointments)
+        await dbInstance
+          .update(appointments)
           .set(updateData)
           .where(eq(appointments.id, input.id));
 
         // Send email notifications based on status transitions
         if (previousStatus !== "confirmed" && input.status === "confirmed") {
           // Transitioning TO confirmed → send confirmation email
-          sendAppointmentConfirmationIfPossible(input.id, String(ctx.tenantId)).catch((err) => {
-            console.error("[Appointments] Failed to send confirmation email:", err);
+          sendAppointmentConfirmationIfPossible(
+            input.id,
+            String(ctx.tenantId)
+          ).catch(err => {
+            console.error(
+              "[Appointments] Failed to send confirmation email:",
+              err
+            );
           });
-        } else if (previousStatus !== "canceled" && input.status === "canceled") {
+        } else if (
+          previousStatus !== "canceled" &&
+          input.status === "canceled"
+        ) {
           // Transitioning TO canceled → send cancellation email
-          sendAppointmentCancellationIfPossible(input.id, String(ctx.tenantId)).catch((err) => {
-            console.error("[Appointments] Failed to send cancellation email:", err);
+          sendAppointmentCancellationIfPossible(
+            input.id,
+            String(ctx.tenantId)
+          ).catch(err => {
+            console.error(
+              "[Appointments] Failed to send cancellation email:",
+              err
+            );
           });
         }
 
@@ -2709,13 +3098,18 @@ export const appRouter = router({
 
           if (settings.enabled) {
             // Calculate total amount from appointment services
-            const { appointmentServices, services } = await import("../drizzle/schema");
+            const { appointmentServices, services } = await import(
+              "../drizzle/schema"
+            );
             const appointmentServicesList = await dbInstance
               .select({
                 price: services.price,
               })
               .from(appointmentServices)
-              .leftJoin(services, eq(appointmentServices.serviceId, services.id))
+              .leftJoin(
+                services,
+                eq(appointmentServices.serviceId, services.id)
+              )
               .where(eq(appointmentServices.appointmentId, input.id));
 
             const totalAmount = appointmentServicesList.reduce(
@@ -2724,7 +3118,9 @@ export const appRouter = router({
             );
 
             const pointsForVisit = settings.pointsPerVisit;
-            const pointsForAmount = Math.floor(totalAmount * settings.pointsPerNOK);
+            const pointsForAmount = Math.floor(
+              totalAmount * settings.pointsPerNOK
+            );
             const totalPoints = pointsForVisit + pointsForAmount;
 
             if (totalPoints > 0) {
@@ -2746,11 +3142,13 @@ export const appRouter = router({
 
     // Cancel appointment with refund
     cancelWithRefund: tenantProcedure
-      .input(z.object({
-        appointmentId: z.number(),
-        reason: z.string(),
-        cancellationType: z.enum(["customer", "staff", "no_show"]),
-      }))
+      .input(
+        z.object({
+          appointmentId: z.number(),
+          reason: z.string(),
+          cancellationType: z.enum(["customer", "staff", "no_show"]),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const { cancelAppointmentWithRefund } = await import("./cancellation");
         return cancelAppointmentWithRefund(
@@ -2764,10 +3162,12 @@ export const appRouter = router({
 
     // Calculate refund preview
     calculateRefund: tenantProcedure
-      .input(z.object({
-        appointmentId: z.number(),
-        cancellationType: z.enum(["customer", "staff", "no_show"]),
-      }))
+      .input(
+        z.object({
+          appointmentId: z.number(),
+          cancellationType: z.enum(["customer", "staff", "no_show"]),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const { calculateRefundAmount } = await import("./cancellation");
         return calculateRefundAmount(
@@ -2779,22 +3179,26 @@ export const appRouter = router({
 
     // Get available slots count per day for calendar
     getAvailableSlotsCount: tenantProcedure
-      .input(z.object({
-        startDate: z.string(), // YYYY-MM-DD
-        endDate: z.string(),   // YYYY-MM-DD
-        employeeId: z.number().optional(),
-      }))
+      .input(
+        z.object({
+          startDate: z.string(), // YYYY-MM-DD
+          endDate: z.string(), // YYYY-MM-DD
+          employeeId: z.number().optional(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
-        const { appointments, users, salonSettings } = await import("../drizzle/schema");
+        const { appointments, users, salonSettings } = await import(
+          "../drizzle/schema"
+        );
         const { eq, and, gte, lte, sql } = await import("drizzle-orm");
 
         // Use default slot duration (30 minutes)
         const slotDuration = 30; // default 30 minutes
         const startHour = 9; // 9 AM
-        const endHour = 18;  // 6 PM
+        const endHour = 18; // 6 PM
         const totalSlotsPerDay = ((endHour - startHour) * 60) / slotDuration;
 
         // Get all appointments in date range
@@ -2823,7 +3227,7 @@ export const appRouter = router({
         const end = new Date(input.endDate);
 
         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-          const dateStr = d.toISOString().split('T')[0];
+          const dateStr = d.toISOString().split("T")[0];
           const booked = bookedAppointments.find(a => a.date === dateStr);
           const bookedCount = booked ? Number(booked.count) : 0;
           result[dateStr] = Math.max(0, totalSlotsPerDay - bookedCount);
@@ -2834,21 +3238,25 @@ export const appRouter = router({
 
     // Create recurring appointment series
     createRecurring: tenantProcedure
-      .input(z.object({
-        customerId: z.number(),
-        employeeId: z.number(),
-        serviceId: z.number(),
-        duration: z.number(), // in minutes
-        frequency: z.enum(["weekly", "biweekly", "monthly"]),
-        startDate: z.string(), // YYYY-MM-DD
-        endDate: z.string().optional(), // YYYY-MM-DD
-        maxOccurrences: z.number().optional(),
-        preferredTime: z.string(), // HH:MM
-        notes: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          customerId: z.number(),
+          employeeId: z.number(),
+          serviceId: z.number(),
+          duration: z.number(), // in minutes
+          frequency: z.enum(["weekly", "biweekly", "monthly"]),
+          startDate: z.string(), // YYYY-MM-DD
+          endDate: z.string().optional(), // YYYY-MM-DD
+          maxOccurrences: z.number().optional(),
+          preferredTime: z.string(), // HH:MM
+          notes: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
-        const { createRecurringAppointments } = await import("./recurringAppointments");
-        
+        const { createRecurringAppointments } = await import(
+          "./recurringAppointments"
+        );
+
         const result = await createRecurringAppointments({
           tenantId: ctx.tenantId,
           customerId: input.customerId,
@@ -2872,19 +3280,25 @@ export const appRouter = router({
     getRecurringSeries: tenantProcedure
       .input(z.object({ ruleId: z.number() }))
       .query(async ({ input }) => {
-        const { getRecurringSeriesAppointments } = await import("./recurringAppointments");
+        const { getRecurringSeriesAppointments } = await import(
+          "./recurringAppointments"
+        );
         return getRecurringSeriesAppointments(input.ruleId);
       }),
 
     // Update entire recurring series
     updateRecurringSeries: tenantProcedure
-      .input(z.object({
-        ruleId: z.number(),
-        employeeId: z.number().optional(),
-        notes: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          ruleId: z.number(),
+          employeeId: z.number().optional(),
+          notes: z.string().optional(),
+        })
+      )
       .mutation(async ({ input }) => {
-        const { updateRecurringSeries } = await import("./recurringAppointments");
+        const { updateRecurringSeries } = await import(
+          "./recurringAppointments"
+        );
         await updateRecurringSeries(input.ruleId, {
           employeeId: input.employeeId,
           notes: input.notes,
@@ -2894,24 +3308,32 @@ export const appRouter = router({
 
     // Cancel entire recurring series
     cancelRecurringSeries: tenantProcedure
-      .input(z.object({
-        ruleId: z.number(),
-        reason: z.string(),
-      }))
+      .input(
+        z.object({
+          ruleId: z.number(),
+          reason: z.string(),
+        })
+      )
       .mutation(async ({ input }) => {
-        const { cancelRecurringSeries } = await import("./recurringAppointments");
+        const { cancelRecurringSeries } = await import(
+          "./recurringAppointments"
+        );
         await cancelRecurringSeries(input.ruleId, input.reason);
         return { success: true };
       }),
 
     // Delete single occurrence from series
     deleteSingleOccurrence: tenantProcedure
-      .input(z.object({
-        appointmentId: z.number(),
-        reason: z.string(),
-      }))
+      .input(
+        z.object({
+          appointmentId: z.number(),
+          reason: z.string(),
+        })
+      )
       .mutation(async ({ input }) => {
-        const { deleteSingleOccurrence } = await import("./recurringAppointments");
+        const { deleteSingleOccurrence } = await import(
+          "./recurringAppointments"
+        );
         await deleteSingleOccurrence(input.appointmentId, input.reason);
         return { success: true };
       }),
@@ -2920,7 +3342,9 @@ export const appRouter = router({
     isRecurring: tenantProcedure
       .input(z.object({ appointmentId: z.number() }))
       .query(async ({ input }) => {
-        const { isRecurringAppointment } = await import("./recurringAppointments");
+        const { isRecurringAppointment } = await import(
+          "./recurringAppointments"
+        );
         const isRecurring = await isRecurringAppointment(input.appointmentId);
         return { isRecurring };
       }),
@@ -2931,9 +3355,11 @@ export const appRouter = router({
   // ============================================================================
   refunds: router({
     list: tenantProcedure
-      .input(z.object({
-        appointmentId: z.number().optional(),
-      }))
+      .input(
+        z.object({
+          appointmentId: z.number().optional(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const { getRefundHistory } = await import("./cancellation");
         return getRefundHistory(ctx.tenantId, input.appointmentId);
@@ -2941,18 +3367,20 @@ export const appRouter = router({
 
     // Manual refund for cash/card terminal payments
     createManual: adminProcedure
-      .input(z.object({
-        paymentId: z.number(),
-        appointmentId: z.number().optional(),
-        amount: z.number().positive(),
-        reason: z.string(),
-      }))
+      .input(
+        z.object({
+          paymentId: z.number(),
+          appointmentId: z.number().optional(),
+          amount: z.number().positive(),
+          reason: z.string(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
         const { refunds } = await import("../drizzle/schema");
-        
+
         await dbInstance.insert(refunds).values({
           tenantId: ctx.tenantId,
           paymentId: input.paymentId,
@@ -2970,17 +3398,22 @@ export const appRouter = router({
 
     // Create POS refund (full or partial)
     createPOSRefund: tenantProcedure
-      .input(z.object({
-        paymentId: z.number(),
-        orderId: z.number(),
-        amount: z.number().positive(),
-        reason: z.string().min(1),
-        refundMethod: z.enum(["stripe", "vipps", "manual"]),
-      }))
+      .input(
+        z.object({
+          paymentId: z.number(),
+          orderId: z.number(),
+          amount: z.number().positive(),
+          reason: z.string().min(1),
+          refundMethod: z.enum(["stripe", "vipps", "manual"]),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { payments, refunds, orders } = await import("../drizzle/schema");
@@ -2994,7 +3427,10 @@ export const appRouter = router({
           .limit(1);
 
         if (!payment) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Payment not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Payment not found",
+          });
         }
 
         if (payment.tenantId !== ctx.tenantId) {
@@ -3010,7 +3446,7 @@ export const appRouter = router({
           .where(eq(refunds.paymentId, input.paymentId));
 
         const totalRefunded = existingRefunds
-          .filter((r) => r.status === "completed")
+          .filter(r => r.status === "completed")
           .reduce((sum, r) => sum + parseFloat(r.amount), 0);
 
         // Validate refund amount
@@ -3066,9 +3502,11 @@ export const appRouter = router({
 
     // Get refunds by order
     getByOrder: tenantProcedure
-      .input(z.object({
-        orderId: z.number(),
-      }))
+      .input(
+        z.object({
+          orderId: z.number(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const { getRefundsByOrder } = await import("./db");
         const refunds = await getRefundsByOrder(input.orderId, ctx.tenantId);
@@ -3077,22 +3515,29 @@ export const appRouter = router({
 
     // Get refunds by payment
     getByPayment: tenantProcedure
-      .input(z.object({
-        paymentId: z.number(),
-      }))
+      .input(
+        z.object({
+          paymentId: z.number(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const { getRefundsByPayment } = await import("./db");
-        const refunds = await getRefundsByPayment(input.paymentId, ctx.tenantId);
+        const refunds = await getRefundsByPayment(
+          input.paymentId,
+          ctx.tenantId
+        );
         return refunds;
       }),
 
     // Get all refunds for tenant
     getAll: tenantProcedure
-      .input(z.object({
-        startDate: z.string().optional(),
-        endDate: z.string().optional(),
-        status: z.enum(["pending", "completed", "failed"]).optional(),
-      }))
+      .input(
+        z.object({
+          startDate: z.string().optional(),
+          endDate: z.string().optional(),
+          status: z.enum(["pending", "completed", "failed"]).optional(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
@@ -3128,9 +3573,11 @@ export const appRouter = router({
   leaves: router({
     // Get my leaves (employee)
     myLeaves: tenantProcedure
-      .input(z.object({
-        status: z.enum(["pending", "approved", "rejected"]).optional(),
-      }))
+      .input(
+        z.object({
+          status: z.enum(["pending", "approved", "rejected"]).optional(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const { getEmployeeLeaves } = await import("./leave");
         return getEmployeeLeaves(ctx.user.id, ctx.tenantId, input.status);
@@ -3144,12 +3591,14 @@ export const appRouter = router({
 
     // Create leave request (employee)
     create: tenantProcedure
-      .input(z.object({
-        leaveType: z.enum(["annual", "sick", "emergency", "unpaid"]),
-        startDate: z.date(),
-        endDate: z.date(),
-        reason: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          leaveType: z.enum(["annual", "sick", "emergency", "unpaid"]),
+          startDate: z.date(),
+          endDate: z.date(),
+          reason: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const { createLeaveRequest } = await import("./leave");
         return createLeaveRequest(
@@ -3170,11 +3619,13 @@ export const appRouter = router({
 
     // Approve/reject leave (admin)
     approve: adminProcedure
-      .input(z.object({
-        leaveId: z.number(),
-        approved: z.boolean(),
-        rejectionReason: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          leaveId: z.number(),
+          approved: z.boolean(),
+          rejectionReason: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const { approveLeaveRequest } = await import("./leave");
         return approveLeaveRequest(
@@ -3188,18 +3639,20 @@ export const appRouter = router({
 
     // Get leaves for date range (for calendar display)
     getForDateRange: tenantProcedure
-      .input(z.object({
-        startDate: z.string().transform((val) => new Date(val)),
-        endDate: z.string().transform((val) => new Date(val)),
-        employeeId: z.number().optional(), // If provided, filter by employee
-      }))
+      .input(
+        z.object({
+          startDate: z.string().transform(val => new Date(val)),
+          endDate: z.string().transform(val => new Date(val)),
+          employeeId: z.number().optional(), // If provided, filter by employee
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
-        
+
         const { employeeLeaves, users } = await import("../drizzle/schema");
         const { eq, and, lte, gte, or } = await import("drizzle-orm");
-        
+
         const conditions = [
           eq(employeeLeaves.tenantId, ctx.tenantId),
           eq(employeeLeaves.status, "approved"),
@@ -3208,13 +3661,13 @@ export const appRouter = router({
               lte(employeeLeaves.startDate, input.endDate),
               gte(employeeLeaves.endDate, input.startDate)
             )
-          )
+          ),
         ];
-        
+
         if (input.employeeId) {
           conditions.push(eq(employeeLeaves.employeeId, input.employeeId));
         }
-        
+
         const leaves = await dbInstance
           .select({
             id: employeeLeaves.id,
@@ -3228,17 +3681,19 @@ export const appRouter = router({
           .from(employeeLeaves)
           .leftJoin(users, eq(employeeLeaves.employeeId, users.id))
           .where(and(...conditions));
-        
+
         return leaves;
       }),
 
     // Check if employee is on leave
     checkAvailability: tenantProcedure
-      .input(z.object({
-        employeeId: z.number(),
-        startDate: z.date(),
-        endDate: z.date(),
-      }))
+      .input(
+        z.object({
+          employeeId: z.number(),
+          startDate: z.date(),
+          endDate: z.date(),
+        })
+      )
       .query(async ({ input }) => {
         const { isEmployeeOnLeave } = await import("./leave");
         const onLeave = await isEmployeeOnLeave(
@@ -3262,12 +3717,14 @@ export const appRouter = router({
 
     // Create holiday (admin)
     create: adminProcedure
-      .input(z.object({
-        name: z.string(),
-        date: z.date(),
-        isRecurring: z.boolean().default(false),
-        description: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          name: z.string(),
+          date: z.date(),
+          isRecurring: z.boolean().default(false),
+          description: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const { createSalonHoliday } = await import("./leave");
         return createSalonHoliday(
@@ -3289,21 +3746,23 @@ export const appRouter = router({
 
     // Get holidays for month (for calendar display)
     getForMonth: tenantProcedure
-      .input(z.object({
-        year: z.number(),
-        month: z.number().min(1).max(12),
-      }))
+      .input(
+        z.object({
+          year: z.number(),
+          month: z.number().min(1).max(12),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
-        
+
         const { salonHolidays } = await import("../drizzle/schema");
         const { eq, and, gte, lte } = await import("drizzle-orm");
-        
+
         // Get start and end of month
         const startOfMonth = new Date(input.year, input.month - 1, 1);
         const endOfMonth = new Date(input.year, input.month, 0);
-        
+
         const holidays = await dbInstance
           .select()
           .from(salonHolidays)
@@ -3314,7 +3773,7 @@ export const appRouter = router({
               lte(salonHolidays.date, endOfMonth)
             )
           );
-        
+
         return holidays;
       }),
 
@@ -3338,33 +3797,33 @@ export const appRouter = router({
 
       const { users } = await import("../drizzle/schema");
       const { eq, and } = await import("drizzle-orm");
-      
-      return dbInstance.select().from(users).where(
-        and(
-          eq(users.tenantId, ctx.tenantId),
-          eq(users.isActive, true)
-        )
-      );
+
+      return dbInstance
+        .select()
+        .from(users)
+        .where(and(eq(users.tenantId, ctx.tenantId), eq(users.isActive, true)));
     }),
 
     create: tenantProcedure
-      .input(z.object({
-        name: z.string().min(1),
-        email: z.union([z.string().email(), z.literal("")]).optional(),
-        phone: z.string().optional(),
-        role: z.enum(["admin", "employee"]),
-        commissionType: z.enum(["percentage", "fixed", "tiered"]).optional(),
-        commissionRate: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          name: z.string().min(1),
+          email: z.union([z.string().email(), z.literal("")]).optional(),
+          phone: z.string().optional(),
+          role: z.enum(["admin", "employee"]),
+          commissionType: z.enum(["percentage", "fixed", "tiered"]).optional(),
+          commissionRate: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
         const { users } = await import("../drizzle/schema");
-        
+
         // Generate a temporary openId for employees not yet registered
         const tempOpenId = `temp_${nanoid()}`;
-        
+
         await dbInstance.insert(users).values({
           tenantId: ctx.tenantId,
           openId: tempOpenId,
@@ -3381,15 +3840,22 @@ export const appRouter = router({
       }),
 
     update: adminProcedure
-      .input(z.object({
-        id: z.number(),
-        name: z.string().min(1).optional(),
-        email: z.union([z.string().email(), z.literal("")]).optional(),
-        phone: z.string().optional(),
-        pin: z.string().length(4).or(z.string().length(5)).or(z.string().length(6)).optional(),
-        commissionType: z.enum(["percentage", "fixed", "tiered"]).optional(),
-        commissionRate: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          id: z.number(),
+          name: z.string().min(1).optional(),
+          email: z.union([z.string().email(), z.literal("")]).optional(),
+          phone: z.string().optional(),
+          pin: z
+            .string()
+            .length(4)
+            .or(z.string().length(5))
+            .or(z.string().length(6))
+            .optional(),
+          commissionType: z.enum(["percentage", "fixed", "tiered"]).optional(),
+          commissionRate: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -3403,17 +3869,14 @@ export const appRouter = router({
             .select()
             .from(users)
             .where(
-              and(
-                eq(users.tenantId, ctx.tenantId),
-                eq(users.pin, input.pin)
-              )
+              and(eq(users.tenantId, ctx.tenantId), eq(users.pin, input.pin))
             )
             .limit(1);
 
           if (existing.length > 0 && existing[0].id !== input.id) {
-            throw new TRPCError({ 
-              code: "BAD_REQUEST", 
-              message: "PIN-koden er allerede i bruk av en annen ansatt" 
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "PIN-koden er allerede i bruk av en annen ansatt",
             });
           }
         }
@@ -3423,18 +3886,15 @@ export const appRouter = router({
         if (input.email !== undefined) updateData.email = input.email || null;
         if (input.phone !== undefined) updateData.phone = input.phone;
         if (input.pin !== undefined) updateData.pin = input.pin;
-        if (input.commissionType !== undefined) updateData.commissionType = input.commissionType;
-        if (input.commissionRate !== undefined) updateData.commissionRate = input.commissionRate;
+        if (input.commissionType !== undefined)
+          updateData.commissionType = input.commissionType;
+        if (input.commissionRate !== undefined)
+          updateData.commissionRate = input.commissionRate;
 
         await dbInstance
           .update(users)
           .set(updateData)
-          .where(
-            and(
-              eq(users.id, input.id),
-              eq(users.tenantId, ctx.tenantId)
-            )
-          );
+          .where(and(eq(users.id, input.id), eq(users.tenantId, ctx.tenantId)));
 
         return { success: true };
       }),
@@ -3447,18 +3907,14 @@ export const appRouter = router({
 
         const { users } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
-        
-        await dbInstance.update(users)
-          .set({ 
+
+        await dbInstance
+          .update(users)
+          .set({
             isActive: false,
             deactivatedAt: new Date(),
           })
-          .where(
-            and(
-              eq(users.id, input.id),
-              eq(users.tenantId, ctx.tenantId)
-            )
-          );
+          .where(and(eq(users.id, input.id), eq(users.tenantId, ctx.tenantId)));
 
         return { success: true };
       }),
@@ -3471,18 +3927,14 @@ export const appRouter = router({
 
         const { users } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
-        
-        await dbInstance.update(users)
-          .set({ 
+
+        await dbInstance
+          .update(users)
+          .set({
             isActive: true,
             deactivatedAt: null,
           })
-          .where(
-            and(
-              eq(users.id, input.id),
-              eq(users.tenantId, ctx.tenantId)
-            )
-          );
+          .where(and(eq(users.id, input.id), eq(users.tenantId, ctx.tenantId)));
 
         return { success: true };
       }),
@@ -3498,32 +3950,34 @@ export const appRouter = router({
 
       const { products } = await import("../drizzle/schema");
       const { eq, and } = await import("drizzle-orm");
-      
-      return dbInstance.select().from(products).where(
-        and(
-          eq(products.tenantId, ctx.tenantId),
-          eq(products.isActive, true)
-        )
-      );
+
+      return dbInstance
+        .select()
+        .from(products)
+        .where(
+          and(eq(products.tenantId, ctx.tenantId), eq(products.isActive, true))
+        );
     }),
 
     create: tenantProcedure
-      .input(z.object({
-        name: z.string().min(1),
-        description: z.string().optional(),
-        price: z.string(),
-        cost: z.string().optional(),
-        barcode: z.string().optional(),
-        stockQuantity: z.number().default(0),
-        minStockLevel: z.number().optional(),
-      }))
+      .input(
+        z.object({
+          name: z.string().min(1),
+          description: z.string().optional(),
+          price: z.string(),
+          cost: z.string().optional(),
+          barcode: z.string().optional(),
+          stockQuantity: z.number().default(0),
+          minStockLevel: z.number().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
         const { products } = await import("../drizzle/schema");
         const { nanoid } = await import("nanoid");
-        
+
         await dbInstance.insert(products).values({
           tenantId: ctx.tenantId,
           sku: `SKU-${nanoid(8)}`,
@@ -3540,19 +3994,22 @@ export const appRouter = router({
       }),
 
     adjustStock: tenantProcedure
-      .input(z.object({
-        productId: z.number(),
-        adjustment: z.number(),
-      }))
+      .input(
+        z.object({
+          productId: z.number(),
+          adjustment: z.number(),
+        })
+      )
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
         const { products } = await import("../drizzle/schema");
         const { eq, sql } = await import("drizzle-orm");
-        
-        await dbInstance.update(products)
-          .set({ 
+
+        await dbInstance
+          .update(products)
+          .set({
             stockQuantity: sql`${products.stockQuantity} + ${input.adjustment}`,
           })
           .where(eq(products.id, input.productId));
@@ -3561,23 +4018,25 @@ export const appRouter = router({
       }),
 
     update: tenantProcedure
-      .input(z.object({
-        productId: z.number(),
-        name: z.string().min(1).optional(),
-        description: z.string().optional(),
-        price: z.string().optional(),
-        cost: z.string().optional(),
-        barcode: z.string().optional(),
-        stockQuantity: z.number().optional(),
-        minStockLevel: z.number().optional(),
-      }))
+      .input(
+        z.object({
+          productId: z.number(),
+          name: z.string().min(1).optional(),
+          description: z.string().optional(),
+          price: z.string().optional(),
+          cost: z.string().optional(),
+          barcode: z.string().optional(),
+          stockQuantity: z.number().optional(),
+          minStockLevel: z.number().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
         const { products } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
-        
+
         // Verify product belongs to tenant
         const [product] = await dbInstance
           .select()
@@ -3591,9 +4050,9 @@ export const appRouter = router({
           .limit(1);
 
         if (!product) {
-          throw new TRPCError({ 
-            code: "NOT_FOUND", 
-            message: "Product not found" 
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Product not found",
           });
         }
 
@@ -3611,9 +4070,9 @@ export const appRouter = router({
             .limit(1);
 
           if (existing && existing.id !== input.productId) {
-            throw new TRPCError({ 
-              code: "BAD_REQUEST", 
-              message: "Barcode already exists for another product" 
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Barcode already exists for another product",
             });
           }
         }
@@ -3621,12 +4080,16 @@ export const appRouter = router({
         // Build update object with only provided fields
         const updateData: any = {};
         if (input.name !== undefined) updateData.name = input.name;
-        if (input.description !== undefined) updateData.description = input.description || null;
+        if (input.description !== undefined)
+          updateData.description = input.description || null;
         if (input.price !== undefined) updateData.retailPrice = input.price;
         if (input.cost !== undefined) updateData.costPrice = input.cost;
-        if (input.barcode !== undefined) updateData.barcode = input.barcode || null;
-        if (input.stockQuantity !== undefined) updateData.stockQuantity = input.stockQuantity;
-        if (input.minStockLevel !== undefined) updateData.reorderPoint = input.minStockLevel;
+        if (input.barcode !== undefined)
+          updateData.barcode = input.barcode || null;
+        if (input.stockQuantity !== undefined)
+          updateData.stockQuantity = input.stockQuantity;
+        if (input.minStockLevel !== undefined)
+          updateData.reorderPoint = input.minStockLevel;
 
         await dbInstance
           .update(products)
@@ -3637,16 +4100,18 @@ export const appRouter = router({
       }),
 
     delete: tenantProcedure
-      .input(z.object({
-        productId: z.number(),
-      }))
+      .input(
+        z.object({
+          productId: z.number(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
         const { products } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
-        
+
         // Soft delete by setting isActive to false
         await dbInstance
           .update(products)
@@ -3671,18 +4136,27 @@ export const appRouter = router({
       .input(z.object({ customerId: z.number() }))
       .query(async ({ ctx, input }) => {
         const { getOrCreateLoyaltyPoints } = await import("./loyalty");
-        return await getOrCreateLoyaltyPoints(String(ctx.tenantId), input.customerId);
+        return await getOrCreateLoyaltyPoints(
+          String(ctx.tenantId),
+          input.customerId
+        );
       }),
 
     // Get customer loyalty history
     getHistory: tenantProcedure
-      .input(z.object({ 
-        customerId: z.number(),
-        limit: z.number().min(1).max(100).default(50)
-      }))
+      .input(
+        z.object({
+          customerId: z.number(),
+          limit: z.number().min(1).max(100).default(50),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const { getCustomerLoyaltyHistory } = await import("./loyalty");
-        return await getCustomerLoyaltyHistory(String(ctx.tenantId), input.customerId, input.limit);
+        return await getCustomerLoyaltyHistory(
+          String(ctx.tenantId),
+          input.customerId,
+          input.limit
+        );
       }),
 
     // Get customer active redemptions
@@ -3690,16 +4164,21 @@ export const appRouter = router({
       .input(z.object({ customerId: z.number() }))
       .query(async ({ ctx, input }) => {
         const { getCustomerRedemptions } = await import("./loyalty");
-        return await getCustomerRedemptions(String(ctx.tenantId), input.customerId);
+        return await getCustomerRedemptions(
+          String(ctx.tenantId),
+          input.customerId
+        );
       }),
 
     // Award points manually
     awardPoints: adminProcedure
-      .input(z.object({
-        customerId: z.number(),
-        points: z.number().min(1),
-        reason: z.string().min(1).max(500),
-      }))
+      .input(
+        z.object({
+          customerId: z.number(),
+          points: z.number().min(1),
+          reason: z.string().min(1).max(500),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const { awardPoints } = await import("./loyalty");
         return await awardPoints(
@@ -3715,11 +4194,13 @@ export const appRouter = router({
 
     // Deduct points manually
     deductPoints: adminProcedure
-      .input(z.object({
-        customerId: z.number(),
-        points: z.number().min(1),
-        reason: z.string().min(1).max(500),
-      }))
+      .input(
+        z.object({
+          customerId: z.number(),
+          points: z.number().min(1),
+          reason: z.string().min(1).max(500),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const { deductPoints } = await import("./loyalty");
         return await deductPoints(
@@ -3735,33 +4216,36 @@ export const appRouter = router({
       }),
 
     // List available rewards
-    listRewards: tenantProcedure
-      .query(async ({ ctx }) => {
-        const dbInstance = await db.getDb();
-        if (!dbInstance) return [];
+    listRewards: tenantProcedure.query(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) return [];
 
-        const { loyaltyRewards } = await import("../drizzle/schema");
-        const { eq, and } = await import("drizzle-orm");
+      const { loyaltyRewards } = await import("../drizzle/schema");
+      const { eq, and } = await import("drizzle-orm");
 
-        return await dbInstance
-          .select()
-          .from(loyaltyRewards)
-          .where(and(
+      return await dbInstance
+        .select()
+        .from(loyaltyRewards)
+        .where(
+          and(
             eq(loyaltyRewards.tenantId, String(ctx.tenantId)),
             eq(loyaltyRewards.isActive, true)
-          ));
-      }),
+          )
+        );
+    }),
 
     // Create reward
     createReward: adminProcedure
-      .input(z.object({
-        name: z.string().min(1).max(255),
-        description: z.string().optional(),
-        pointsCost: z.number().min(1),
-        discountType: z.enum(["percentage", "fixed_amount"]),
-        discountValue: z.string(), // Decimal as string
-        validityDays: z.number().min(1).default(30),
-      }))
+      .input(
+        z.object({
+          name: z.string().min(1).max(255),
+          description: z.string().optional(),
+          pointsCost: z.number().min(1),
+          discountType: z.enum(["percentage", "fixed_amount"]),
+          discountValue: z.string(), // Decimal as string
+          validityDays: z.number().min(1).default(30),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -3784,10 +4268,12 @@ export const appRouter = router({
 
     // Redeem reward
     redeemReward: tenantProcedure
-      .input(z.object({
-        customerId: z.number(),
-        rewardId: z.number(),
-      }))
+      .input(
+        z.object({
+          customerId: z.number(),
+          rewardId: z.number(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const { redeemReward } = await import("./loyalty");
         return await redeemReward(
@@ -3799,19 +4285,20 @@ export const appRouter = router({
       }),
 
     // Get loyalty settings
-    getSettings: tenantProcedure
-      .query(async ({ ctx }) => {
-        const { getLoyaltySettings } = await import("./loyalty");
-        return await getLoyaltySettings(String(ctx.tenantId));
-      }),
+    getSettings: tenantProcedure.query(async ({ ctx }) => {
+      const { getLoyaltySettings } = await import("./loyalty");
+      return await getLoyaltySettings(String(ctx.tenantId));
+    }),
 
     // Update loyalty settings
     updateSettings: adminProcedure
-      .input(z.object({
-        enabled: z.boolean(),
-        pointsPerVisit: z.number().min(0),
-        pointsPerNOK: z.number().min(0),
-      }))
+      .input(
+        z.object({
+          enabled: z.boolean(),
+          pointsPerVisit: z.number().min(0),
+          pointsPerNOK: z.number().min(0),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -3830,10 +4317,12 @@ export const appRouter = router({
           const existing = await dbInstance
             .select()
             .from(settings)
-            .where(and(
-              eq(settings.tenantId, String(ctx.tenantId)),
-              eq(settings.settingKey, setting.key)
-            ))
+            .where(
+              and(
+                eq(settings.tenantId, String(ctx.tenantId)),
+                eq(settings.settingKey, setting.key)
+              )
+            )
             .limit(1);
 
           if (existing.length > 0) {
@@ -3857,18 +4346,22 @@ export const appRouter = router({
   // ============================================================================
   // EMPLOYEE DASHBOARD
   // ============================================================================
-  employee: router({    myAppointments: employeeProcedure
-      .input(z.object({
-        date: z.string().optional(), // YYYY-MM-DD format, defaults to today
-      }))
+  employee: router({
+    myAppointments: employeeProcedure
+      .input(
+        z.object({
+          date: z.string().optional(), // YYYY-MM-DD format, defaults to today
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
 
-        const { appointments, customers, services, appointmentServices } = await import("../drizzle/schema");
+        const { appointments, customers, services, appointmentServices } =
+          await import("../drizzle/schema");
         const { eq, and, sql } = await import("drizzle-orm");
-        
-        const targetDate = input.date || new Date().toISOString().split('T')[0];
+
+        const targetDate = input.date || new Date().toISOString().split("T")[0];
 
         // Get appointments for this employee on the specified date
         const appts = await dbInstance
@@ -3889,16 +4382,22 @@ export const appRouter = router({
 
         // Get services for each appointment
         const appointmentIds = appts.map(a => a.appointment.id);
-        const servicesData = appointmentIds.length > 0
-          ? await dbInstance
-              .select({
-                appointmentId: appointmentServices.appointmentId,
-                service: services,
-              })
-              .from(appointmentServices)
-              .leftJoin(services, eq(appointmentServices.serviceId, services.id))
-              .where(sql`${appointmentServices.appointmentId} IN (${sql.join(appointmentIds, sql`, `)})`)
-          : [];
+        const servicesData =
+          appointmentIds.length > 0
+            ? await dbInstance
+                .select({
+                  appointmentId: appointmentServices.appointmentId,
+                  service: services,
+                })
+                .from(appointmentServices)
+                .leftJoin(
+                  services,
+                  eq(appointmentServices.serviceId, services.id)
+                )
+                .where(
+                  sql`${appointmentServices.appointmentId} IN (${sql.join(appointmentIds, sql`, `)})`
+                )
+            : [];
 
         // Combine data
         return appts.map(({ appointment, customer }) => ({
@@ -3912,10 +4411,18 @@ export const appRouter = router({
       }),
 
     updateAppointmentStatus: employeeProcedure
-      .input(z.object({
-        appointmentId: z.number(),
-        status: z.enum(["pending", "confirmed", "completed", "canceled", "no_show"]),
-      }))
+      .input(
+        z.object({
+          appointmentId: z.number(),
+          status: z.enum([
+            "pending",
+            "confirmed",
+            "completed",
+            "canceled",
+            "no_show",
+          ]),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -3937,7 +4444,10 @@ export const appRouter = router({
           .limit(1);
 
         if (existing.length === 0) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Appointment not found",
+          });
         }
 
         await dbInstance
@@ -3949,10 +4459,12 @@ export const appRouter = router({
       }),
 
     addAppointmentNote: employeeProcedure
-      .input(z.object({
-        appointmentId: z.number(),
-        note: z.string().min(1).max(1000),
-      }))
+      .input(
+        z.object({
+          appointmentId: z.number(),
+          note: z.string().min(1).max(1000),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -3974,7 +4486,10 @@ export const appRouter = router({
           .limit(1);
 
         if (existing.length === 0) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Appointment not found",
+          });
         }
 
         // Append note to existing notes
@@ -3994,15 +4509,27 @@ export const appRouter = router({
 
     // Time Clock endpoints
     clockIn: publicProcedure
-      .input(z.object({
-        pin: z.string().length(4).or(z.string().length(5)).or(z.string().length(6)),
-        tenantId: z.string(),
-      }))
+      .input(
+        z.object({
+          pin: z
+            .string()
+            .length(4)
+            .or(z.string().length(5))
+            .or(z.string().length(6)),
+          tenantId: z.string(),
+        })
+      )
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database ikke tilgjengelig" });
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database ikke tilgjengelig",
+          });
 
-        const { users, timesheets, tenants } = await import("../drizzle/schema");
+        const { users, timesheets, tenants } = await import(
+          "../drizzle/schema"
+        );
         const { eq, and, isNull, sql } = await import("drizzle-orm");
 
         // Get tenant timezone for accurate workDate calculation
@@ -4011,13 +4538,16 @@ export const appRouter = router({
           .from(tenants)
           .where(eq(tenants.id, input.tenantId))
           .limit(1);
-        
+
         const timezone = tenant?.timezone || "Europe/Oslo";
 
         // Find employee by PIN and tenantId
         // First check if PIN is provided and not empty
-        if (!input.pin || input.pin.trim() === '') {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Vennligst skriv inn PIN-kode" });
+        if (!input.pin || input.pin.trim() === "") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Vennligst skriv inn PIN-kode",
+          });
         }
 
         const employee = await dbInstance
@@ -4033,7 +4563,11 @@ export const appRouter = router({
           .limit(1);
 
         if (employee.length === 0) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Ugyldig PIN-kode. Kontakt administrator for å sette opp PIN." });
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message:
+              "Ugyldig PIN-kode. Kontakt administrator for å sette opp PIN.",
+          });
         }
 
         const emp = employee[0];
@@ -4046,15 +4580,20 @@ export const appRouter = router({
               AND clockOut IS NULL 
               LIMIT 1`
         );
-        const existingShift = (existingShiftResult[0] as unknown) as any[];
+        const existingShift = existingShiftResult[0] as unknown as any[];
 
         if (existingShift.length > 0) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Du er allerede innstemplet. Vennligst stemple ut først." });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Du er allerede innstemplet. Vennligst stemple ut først.",
+          });
         }
 
         // Calculate workDate in tenant's timezone
         const now = new Date();
-        const workDate = now.toLocaleDateString('sv-SE', { timeZone: timezone }); // YYYY-MM-DD format
+        const workDate = now.toLocaleDateString("sv-SE", {
+          timeZone: timezone,
+        }); // YYYY-MM-DD format
 
         // Create new timesheet entry with timezone-aware workDate
         const insertResult = await dbInstance.execute(
@@ -4062,29 +4601,44 @@ export const appRouter = router({
               VALUES (${input.tenantId}, ${emp.id}, NOW(), ${workDate})`
         );
 
-        return { 
-          success: true, 
+        return {
+          success: true,
           employeeName: emp.name || "Ansatt",
           clockIn: now.toISOString(),
-          workDate: workDate
+          workDate: workDate,
         };
       }),
 
     clockOut: publicProcedure
-      .input(z.object({
-        pin: z.string().length(4).or(z.string().length(5)).or(z.string().length(6)),
-        tenantId: z.string(),
-      }))
+      .input(
+        z.object({
+          pin: z
+            .string()
+            .length(4)
+            .or(z.string().length(5))
+            .or(z.string().length(6)),
+          tenantId: z.string(),
+        })
+      )
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database ikke tilgjengelig" });
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database ikke tilgjengelig",
+          });
 
-        const { users, timesheets, tenants } = await import("../drizzle/schema");
+        const { users, timesheets, tenants } = await import(
+          "../drizzle/schema"
+        );
         const { eq, and, isNull, sql } = await import("drizzle-orm");
 
         // First check if PIN is provided and not empty
-        if (!input.pin || input.pin.trim() === '') {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Vennligst skriv inn PIN-kode" });
+        if (!input.pin || input.pin.trim() === "") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Vennligst skriv inn PIN-kode",
+          });
         }
 
         // Find employee by PIN and tenantId
@@ -4101,7 +4655,11 @@ export const appRouter = router({
           .limit(1);
 
         if (employee.length === 0) {
-          throw new TRPCError({ code: "UNAUTHORIZED", message: "Ugyldig PIN-kode. Kontakt administrator for å sette opp PIN." });
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message:
+              "Ugyldig PIN-kode. Kontakt administrator for å sette opp PIN.",
+          });
         }
 
         const emp = employee[0];
@@ -4115,10 +4673,14 @@ export const appRouter = router({
               ORDER BY clockIn DESC
               LIMIT 1`
         );
-        const activeShift = (activeShiftResult[0] as unknown) as any[];
+        const activeShift = activeShiftResult[0] as unknown as any[];
 
         if (activeShift.length === 0) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Ingen aktiv innstemplingstid funnet. Vennligst stemple inn først." });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Ingen aktiv innstemplingstid funnet. Vennligst stemple inn først.",
+          });
         }
 
         const shift = activeShift[0] as any;
@@ -4126,7 +4688,8 @@ export const appRouter = router({
         // Calculate shift length for validation
         const clockInTime = new Date(shift.clockIn);
         const now = new Date();
-        const shiftHours = (now.getTime() - clockInTime.getTime()) / (1000 * 60 * 60);
+        const shiftHours =
+          (now.getTime() - clockInTime.getTime()) / (1000 * 60 * 60);
 
         // Warn if shift is longer than 16 hours (likely forgot to clock out)
         let warning = null;
@@ -4148,19 +4711,21 @@ export const appRouter = router({
         );
         const updated = (updatedResult[0] as unknown as any[])[0] as any;
 
-        return { 
+        return {
           success: true,
           employeeName: emp.name || "Ansatt",
           clockOut: new Date(updated.clockOut).toISOString(),
           totalHours: parseFloat(updated.totalHours || "0"),
-          warning: warning
+          warning: warning,
         };
       }),
 
     getMyTimesheet: employeeProcedure
-      .input(z.object({
-        date: z.string().optional(), // YYYY-MM-DD
-      }))
+      .input(
+        z.object({
+          date: z.string().optional(), // YYYY-MM-DD
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return null;
@@ -4168,7 +4733,7 @@ export const appRouter = router({
         const { timesheets } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
 
-        const targetDate = input.date || new Date().toISOString().split('T')[0];
+        const targetDate = input.date || new Date().toISOString().split("T")[0];
 
         const shifts = await dbInstance
           .select()
@@ -4186,9 +4751,11 @@ export const appRouter = router({
       }),
 
     getMyPerformance: employeeProcedure
-      .input(z.object({
-        date: z.string().optional(), // YYYY-MM-DD
-      }))
+      .input(
+        z.object({
+          date: z.string().optional(), // YYYY-MM-DD
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return { servicesCount: 0, salesAmount: 0 };
@@ -4196,7 +4763,7 @@ export const appRouter = router({
         const { appointments, orders } = await import("../drizzle/schema");
         const { eq, and, sql, sum } = await import("drizzle-orm");
 
-        const targetDate = input.date || new Date().toISOString().split('T')[0];
+        const targetDate = input.date || new Date().toISOString().split("T")[0];
 
         // Count completed appointments
         const appts = await dbInstance
@@ -4225,15 +4792,17 @@ export const appRouter = router({
 
         return {
           servicesCount: Number(appts[0]?.count || 0),
-          salesAmount: parseFloat(sales[0]?.total || "0")
+          salesAmount: parseFloat(sales[0]?.total || "0"),
         };
       }),
 
     // Get currently clocked-in employees (for Time Clock display)
     getActiveEmployees: publicProcedure
-      .input(z.object({
-        tenantId: z.string(),
-      }))
+      .input(
+        z.object({
+          tenantId: z.string(),
+        })
+      )
       .query(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
@@ -4270,53 +4839,58 @@ export const appRouter = router({
       }),
 
     // Admin: Get all active shifts with employee details
-    adminGetAllActiveShifts: adminProcedure
-      .query(async ({ ctx }) => {
-        const dbInstance = await db.getDb();
-        if (!dbInstance) return [];
+    adminGetAllActiveShifts: adminProcedure.query(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) return [];
 
-        const { users, timesheets } = await import("../drizzle/schema");
-        const { eq, and, isNull, desc, sql } = await import("drizzle-orm");
+      const { users, timesheets } = await import("../drizzle/schema");
+      const { eq, and, isNull, desc, sql } = await import("drizzle-orm");
 
-        // Find all active shifts for this tenant with employee details
-        const activeShifts = await dbInstance
-          .select({
-            id: timesheets.id,
-            employeeId: timesheets.employeeId,
-            employeeName: users.name,
-            employeePhone: users.phone,
-            clockIn: timesheets.clockIn,
-            workDate: timesheets.workDate,
-          })
-          .from(timesheets)
-          .innerJoin(users, eq(timesheets.employeeId, users.id))
-          .where(
-            and(
-              eq(timesheets.tenantId, ctx.tenantId),
-              isNull(timesheets.clockOut)
-            )
+      // Find all active shifts for this tenant with employee details
+      const activeShifts = await dbInstance
+        .select({
+          id: timesheets.id,
+          employeeId: timesheets.employeeId,
+          employeeName: users.name,
+          employeePhone: users.phone,
+          clockIn: timesheets.clockIn,
+          workDate: timesheets.workDate,
+        })
+        .from(timesheets)
+        .innerJoin(users, eq(timesheets.employeeId, users.id))
+        .where(
+          and(
+            eq(timesheets.tenantId, ctx.tenantId),
+            isNull(timesheets.clockOut)
           )
-          .orderBy(desc(timesheets.clockIn));
+        )
+        .orderBy(desc(timesheets.clockIn));
 
-        return activeShifts.map((shift: any) => ({
-          id: shift.id,
-          employeeId: shift.employeeId,
-          employeeName: shift.employeeName || "Ansatt",
-          employeePhone: shift.employeePhone,
-          clockIn: shift.clockIn,
-          workDate: shift.workDate,
-        }));
-      }),
+      return activeShifts.map((shift: any) => ({
+        id: shift.id,
+        employeeId: shift.employeeId,
+        employeeName: shift.employeeName || "Ansatt",
+        employeePhone: shift.employeePhone,
+        clockIn: shift.clockIn,
+        workDate: shift.workDate,
+      }));
+    }),
 
     // Admin: Manually clock out a specific employee
     adminClockOut: adminProcedure
-      .input(z.object({
-        timesheetId: z.number(),
-        reason: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          timesheetId: z.number(),
+          reason: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database ikke tilgjengelig" });
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database ikke tilgjengelig",
+          });
 
         const { timesheets, users } = await import("../drizzle/schema");
         const { eq, and, isNull, sql } = await import("drizzle-orm");
@@ -4340,7 +4914,10 @@ export const appRouter = router({
           .limit(1);
 
         if (!timesheet) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Ingen aktiv vakt funnet" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Ingen aktiv vakt funnet",
+          });
         }
 
         // Get employee name
@@ -4353,7 +4930,8 @@ export const appRouter = router({
         // Calculate shift length for validation
         const clockInTime = new Date(timesheet.clockIn);
         const now = new Date();
-        const shiftHours = (now.getTime() - clockInTime.getTime()) / (1000 * 60 * 60);
+        const shiftHours =
+          (now.getTime() - clockInTime.getTime()) / (1000 * 60 * 60);
 
         // Warn if shift is longer than 16 hours
         let warning = null;
@@ -4362,7 +4940,7 @@ export const appRouter = router({
         }
 
         // Clock out with admin note
-        const adminNote = input.reason 
+        const adminNote = input.reason
           ? `Manuelt utstemplet av admin: ${input.reason}`
           : "Manuelt utstemplet av admin";
 
@@ -4391,12 +4969,18 @@ export const appRouter = router({
 
     // Admin: Clock out all active employees (for end of day)
     adminClockOutAll: adminProcedure
-      .input(z.object({
-        reason: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          reason: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database ikke tilgjengelig" });
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database ikke tilgjengelig",
+          });
 
         const { sql } = await import("drizzle-orm");
 
@@ -4425,9 +5009,11 @@ export const appRouter = router({
 
     // Clock out all active employees (for end of day or manual intervention)
     clockOutAll: publicProcedure
-      .input(z.object({
-        tenantId: z.string(),
-      }))
+      .input(
+        z.object({
+          tenantId: z.string(),
+        })
+      )
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -4445,10 +5031,10 @@ export const appRouter = router({
 
         const affectedRows = (result as any).rowsAffected || 0;
 
-        return { 
-          success: true, 
+        return {
+          success: true,
           clockedOut: affectedRows,
-          message: `${affectedRows} ansatte stemplet ut`
+          message: `${affectedRows} ansatte stemplet ut`,
         };
       }),
   }),
@@ -4458,17 +5044,19 @@ export const appRouter = router({
   // ============================================================================
   notifications: router({
     list: tenantProcedure
-      .input(z.object({
-        limit: z.number().min(1).max(100).default(50),
-        status: z.enum(["pending", "sent", "delivered", "failed"]).optional(),
-      }))
+      .input(
+        z.object({
+          limit: z.number().min(1).max(100).default(50),
+          status: z.enum(["pending", "sent", "delivered", "failed"]).optional(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
 
         const { notifications } = await import("../drizzle/schema");
         const { eq, and, desc } = await import("drizzle-orm");
-        
+
         const conditions = [eq(notifications.tenantId, ctx.tenantId)];
         if (input.status) {
           conditions.push(eq(notifications.status, input.status));
@@ -4482,55 +5070,55 @@ export const appRouter = router({
           .limit(input.limit);
       }),
 
-    triggerReminders: adminProcedure
-      .mutation(async () => {
-        const { triggerReminderCheck } = await import("./notificationScheduler");
-        const result = await triggerReminderCheck();
-        return result;
-      }),
+    triggerReminders: adminProcedure.mutation(async () => {
+      const { triggerReminderCheck } = await import("./notificationScheduler");
+      const result = await triggerReminderCheck();
+      return result;
+    }),
 
     // Get notification statistics
-    getStats: adminProcedure
-      .query(async ({ ctx }) => {
-        const dbInstance = await db.getDb();
-        if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-        }
+    getStats: adminProcedure.query(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
+      }
 
-        const { notifications } = await import("../drizzle/schema");
-        const { eq, count } = await import("drizzle-orm");
+      const { notifications } = await import("../drizzle/schema");
+      const { eq, count } = await import("drizzle-orm");
 
-        // Total notifications by status
-        const stats = await dbInstance
-          .select({
-            status: notifications.status,
-            count: count(),
-          })
-          .from(notifications)
-          .where(eq(notifications.tenantId, ctx.tenantId))
-          .groupBy(notifications.status);
+      // Total notifications by status
+      const stats = await dbInstance
+        .select({
+          status: notifications.status,
+          count: count(),
+        })
+        .from(notifications)
+        .where(eq(notifications.tenantId, ctx.tenantId))
+        .groupBy(notifications.status);
 
-        // Recent notifications (last 50)
-        const recent = await dbInstance
-          .select()
-          .from(notifications)
-          .where(eq(notifications.tenantId, ctx.tenantId))
-          .orderBy(desc(notifications.createdAt))
-          .limit(50);
+      // Recent notifications (last 50)
+      const recent = await dbInstance
+        .select()
+        .from(notifications)
+        .where(eq(notifications.tenantId, ctx.tenantId))
+        .orderBy(desc(notifications.createdAt))
+        .limit(50);
 
-        return {
-          stats,
-          recent,
-        };
-      }),
+      return {
+        stats,
+        recent,
+      };
+    }),
 
     // Manually trigger email scheduler (for testing)
-    triggerEmailScheduler: adminProcedure
-      .mutation(async ({ ctx }) => {
-        const { runEmailScheduler } = await import("./emailScheduler");
-        await runEmailScheduler();
-        return { success: true };
-      }),
+    triggerEmailScheduler: adminProcedure.mutation(async ({ ctx }) => {
+      const { runEmailScheduler } = await import("./emailScheduler");
+      await runEmailScheduler();
+      return { success: true };
+    }),
   }),
 
   // ============================================================================
@@ -4539,13 +5127,25 @@ export const appRouter = router({
   financial: router({
     // Create expense
     createExpense: adminProcedure
-      .input(z.object({
-        category: z.enum(["rent", "utilities", "supplies", "salaries", "marketing", "maintenance", "insurance", "taxes", "other"]),
-        amount: z.string(),
-        description: z.string().optional(),
-        expenseDate: z.string(),
-        receiptUrl: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          category: z.enum([
+            "rent",
+            "utilities",
+            "supplies",
+            "salaries",
+            "marketing",
+            "maintenance",
+            "insurance",
+            "taxes",
+            "other",
+          ]),
+          amount: z.string(),
+          description: z.string().optional(),
+          expenseDate: z.string(),
+          receiptUrl: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -4564,21 +5164,43 @@ export const appRouter = router({
 
     // List expenses
     listExpenses: tenantProcedure
-      .input(z.object({
-        startDate: z.string().optional(),
-        endDate: z.string().optional(),
-        category: z.enum(["rent", "utilities", "supplies", "salaries", "marketing", "maintenance", "insurance", "taxes", "other"]).optional(),
-        limit: z.number().min(1).max(100).default(50),
-      }))
+      .input(
+        z.object({
+          startDate: z.string().optional(),
+          endDate: z.string().optional(),
+          category: z
+            .enum([
+              "rent",
+              "utilities",
+              "supplies",
+              "salaries",
+              "marketing",
+              "maintenance",
+              "insurance",
+              "taxes",
+              "other",
+            ])
+            .optional(),
+          limit: z.number().min(1).max(100).default(50),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { expenses } = await import("../drizzle/schema");
         const conditions = [eq(expenses.tenantId, String(ctx.tenantId))];
-        if (input.startDate) conditions.push(gte(expenses.expenseDate, new Date(input.startDate)));
-        if (input.endDate) conditions.push(lte(expenses.expenseDate, new Date(input.endDate)));
-        if (input.category) conditions.push(eq(expenses.category, input.category));
-        return await dbInstance.select().from(expenses).where(and(...conditions)).orderBy(desc(expenses.expenseDate)).limit(input.limit);
+        if (input.startDate)
+          conditions.push(gte(expenses.expenseDate, new Date(input.startDate)));
+        if (input.endDate)
+          conditions.push(lte(expenses.expenseDate, new Date(input.endDate)));
+        if (input.category)
+          conditions.push(eq(expenses.category, input.category));
+        return await dbInstance
+          .select()
+          .from(expenses)
+          .where(and(...conditions))
+          .orderBy(desc(expenses.expenseDate))
+          .limit(input.limit);
       }),
 
     // Delete expense
@@ -4588,7 +5210,14 @@ export const appRouter = router({
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { expenses } = await import("../drizzle/schema");
-        await dbInstance.delete(expenses).where(and(eq(expenses.id, input.id), eq(expenses.tenantId, String(ctx.tenantId))));
+        await dbInstance
+          .delete(expenses)
+          .where(
+            and(
+              eq(expenses.id, input.id),
+              eq(expenses.tenantId, String(ctx.tenantId))
+            )
+          );
         return { success: true };
       }),
 
@@ -4598,18 +5227,47 @@ export const appRouter = router({
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        const { appointments, appointmentServices, services, expenses } = await import("../drizzle/schema");
-        const revenueResult = await dbInstance.select({ total: sql<string>`COALESCE(SUM(CAST(${services.price} AS DECIMAL(10,2))), 0)` })
-          .from(appointments).innerJoin(appointmentServices, eq(appointments.id, appointmentServices.appointmentId))
+        const { appointments, appointmentServices, services, expenses } =
+          await import("../drizzle/schema");
+        const revenueResult = await dbInstance
+          .select({
+            total: sql<string>`COALESCE(SUM(CAST(${services.price} AS DECIMAL(10,2))), 0)`,
+          })
+          .from(appointments)
+          .innerJoin(
+            appointmentServices,
+            eq(appointments.id, appointmentServices.appointmentId)
+          )
           .innerJoin(services, eq(appointmentServices.serviceId, services.id))
-          .where(and(eq(appointments.tenantId, String(ctx.tenantId)), eq(appointments.status, "completed"),
-            gte(appointments.appointmentDate, new Date(input.startDate)), lte(appointments.appointmentDate, new Date(input.endDate))));
+          .where(
+            and(
+              eq(appointments.tenantId, String(ctx.tenantId)),
+              eq(appointments.status, "completed"),
+              gte(appointments.appointmentDate, new Date(input.startDate)),
+              lte(appointments.appointmentDate, new Date(input.endDate))
+            )
+          );
         const revenue = parseFloat(revenueResult[0]?.total || "0");
-        const expensesResult = await dbInstance.select({ total: sql<string>`COALESCE(SUM(CAST(${expenses.amount} AS DECIMAL(10,2))), 0)` })
-          .from(expenses).where(and(eq(expenses.tenantId, String(ctx.tenantId)),
-            gte(expenses.expenseDate, new Date(input.startDate)), lte(expenses.expenseDate, new Date(input.endDate))));
+        const expensesResult = await dbInstance
+          .select({
+            total: sql<string>`COALESCE(SUM(CAST(${expenses.amount} AS DECIMAL(10,2))), 0)`,
+          })
+          .from(expenses)
+          .where(
+            and(
+              eq(expenses.tenantId, String(ctx.tenantId)),
+              gte(expenses.expenseDate, new Date(input.startDate)),
+              lte(expenses.expenseDate, new Date(input.endDate))
+            )
+          );
         const totalExpenses = parseFloat(expensesResult[0]?.total || "0");
-        return { revenue, expenses: totalExpenses, profit: revenue - totalExpenses, profitMargin: revenue > 0 ? ((revenue - totalExpenses) / revenue) * 100 : 0 };
+        return {
+          revenue,
+          expenses: totalExpenses,
+          profit: revenue - totalExpenses,
+          profitMargin:
+            revenue > 0 ? ((revenue - totalExpenses) / revenue) * 100 : 0,
+        };
       }),
 
     // Get expense breakdown by category
@@ -4619,27 +5277,40 @@ export const appRouter = router({
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { expenses } = await import("../drizzle/schema");
-        return await dbInstance.select({
-          category: expenses.category,
-          count: sql<number>`COUNT(*)`,
-          total: sql<string>`SUM(CAST(${expenses.amount} AS DECIMAL(10,2)))`,
-        }).from(expenses).where(and(eq(expenses.tenantId, String(ctx.tenantId)),
-          gte(expenses.expenseDate, new Date(input.startDate)), lte(expenses.expenseDate, new Date(input.endDate))))
-          .groupBy(expenses.category).orderBy(desc(sql`SUM(CAST(${expenses.amount} AS DECIMAL(10,2)))`));
+        return await dbInstance
+          .select({
+            category: expenses.category,
+            count: sql<number>`COUNT(*)`,
+            total: sql<string>`SUM(CAST(${expenses.amount} AS DECIMAL(10,2)))`,
+          })
+          .from(expenses)
+          .where(
+            and(
+              eq(expenses.tenantId, String(ctx.tenantId)),
+              gte(expenses.expenseDate, new Date(input.startDate)),
+              lte(expenses.expenseDate, new Date(input.endDate))
+            )
+          )
+          .groupBy(expenses.category)
+          .orderBy(desc(sql`SUM(CAST(${expenses.amount} AS DECIMAL(10,2)))`));
       }),
   }),
 
   // ============================================================================
   // ADVANCED FINANCIAL REPORTS
   // ============================================================================
-  financialReports: router({    
+  financialReports: router({
     // Sales by employee with detailed breakdown
     salesByEmployee: tenantProcedure
-      .input(z.object({ 
-        startDate: z.string(), 
-        endDate: z.string(),
-        paymentMethod: z.enum(["all", "cash", "card", "stripe", "vipps"]).optional(),
-      }))
+      .input(
+        z.object({
+          startDate: z.string(),
+          endDate: z.string(),
+          paymentMethod: z
+            .enum(["all", "cash", "card", "stripe", "vipps"])
+            .optional(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
@@ -4650,8 +5321,8 @@ export const appRouter = router({
         const conditions = [
           eq(orders.tenantId, ctx.tenantId),
           eq(orders.status, "completed"),
-              sql`${orders.orderDate} >= ${input.startDate}`,
-              sql`${orders.orderDate} <= ${input.endDate}`,
+          sql`${orders.orderDate} >= ${input.startDate}`,
+          sql`${orders.orderDate} <= ${input.endDate}`,
         ];
 
         // Note: paymentMethod filter removed as orders table doesn't have this column
@@ -4676,15 +5347,19 @@ export const appRouter = router({
 
     // Sales by service from orders
     salesByService: tenantProcedure
-      .input(z.object({ 
-        startDate: z.string(), 
-        endDate: z.string() 
-      }))
+      .input(
+        z.object({
+          startDate: z.string(),
+          endDate: z.string(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
 
-        const { orders, orderItems, services } = await import("../drizzle/schema");
+        const { orders, orderItems, services } = await import(
+          "../drizzle/schema"
+        );
         const { eq, and, gte, lte, sql } = await import("drizzle-orm");
 
         const result = await dbInstance
@@ -4714,11 +5389,13 @@ export const appRouter = router({
 
     // Revenue trends by period (daily/weekly/monthly)
     revenueTrends: tenantProcedure
-      .input(z.object({ 
-        startDate: z.string(), 
-        endDate: z.string(),
-        period: z.enum(["daily", "weekly", "monthly"]).default("daily"),
-      }))
+      .input(
+        z.object({
+          startDate: z.string(),
+          endDate: z.string(),
+          period: z.enum(["daily", "weekly", "monthly"]).default("daily"),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
@@ -4762,11 +5439,13 @@ export const appRouter = router({
 
     // Top performing employees
     topPerformers: tenantProcedure
-      .input(z.object({ 
-        startDate: z.string(), 
-        endDate: z.string(),
-        limit: z.number().min(1).max(20).default(10),
-      }))
+      .input(
+        z.object({
+          startDate: z.string(),
+          endDate: z.string(),
+          limit: z.number().min(1).max(20).default(10),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
@@ -4801,16 +5480,20 @@ export const appRouter = router({
 
     // Top selling services
     topServices: tenantProcedure
-      .input(z.object({ 
-        startDate: z.string(), 
-        endDate: z.string(),
-        limit: z.number().min(1).max(20).default(10),
-      }))
+      .input(
+        z.object({
+          startDate: z.string(),
+          endDate: z.string(),
+          limit: z.number().min(1).max(20).default(10),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
 
-        const { orders, orderItems, services } = await import("../drizzle/schema");
+        const { orders, orderItems, services } = await import(
+          "../drizzle/schema"
+        );
         const { eq, and, gte, lte, sql } = await import("drizzle-orm");
 
         const result = await dbInstance
@@ -4842,24 +5525,28 @@ export const appRouter = router({
 
     // Detailed orders list for export
     detailedOrdersList: tenantProcedure
-      .input(z.object({ 
-        startDate: z.string(), 
-        endDate: z.string(),
-        employeeId: z.number().optional(),
-        serviceId: z.number().optional(),
-      }))
+      .input(
+        z.object({
+          startDate: z.string(),
+          endDate: z.string(),
+          employeeId: z.number().optional(),
+          serviceId: z.number().optional(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
 
-        const { orders, orderItems, users, services, customers } = await import("../drizzle/schema");
+        const { orders, orderItems, users, services, customers } = await import(
+          "../drizzle/schema"
+        );
         const { eq, and, gte, lte, sql } = await import("drizzle-orm");
 
         const conditions = [
           eq(orders.tenantId, ctx.tenantId),
           eq(orders.status, "completed"),
-              sql`${orders.orderDate} >= ${input.startDate}`,
-              sql`${orders.orderDate} <= ${input.endDate}`,
+          sql`${orders.orderDate} >= ${input.startDate}`,
+          sql`${orders.orderDate} <= ${input.endDate}`,
         ];
 
         if (input.employeeId) {
@@ -4901,15 +5588,20 @@ export const appRouter = router({
             total: orderItems.total,
           })
           .from(orderItems)
-          .leftJoin(services, and(
-            eq(orderItems.itemId, services.id),
-            eq(orderItems.itemType, "service")
-          ))
+          .leftJoin(
+            services,
+            and(
+              eq(orderItems.itemId, services.id),
+              eq(orderItems.itemType, "service")
+            )
+          )
           .where(inArray(orderItems.orderId, orderIds));
 
         // Combine orders with their items
         const result = ordersData.map(order => {
-          const items = itemsData.filter(item => item.orderId === order.orderId);
+          const items = itemsData.filter(
+            item => item.orderId === order.orderId
+          );
           const serviceNames = items
             .filter(item => item.itemType === "service" && item.serviceName)
             .map(item => item.serviceName)
@@ -4924,9 +5616,10 @@ export const appRouter = router({
 
         // Apply service filter if specified
         if (input.serviceId) {
-          return result.filter(order => 
-            order.items.some(item => 
-              item.itemType === "service" && item.itemId === input.serviceId
+          return result.filter(order =>
+            order.items.some(
+              item =>
+                item.itemType === "service" && item.itemId === input.serviceId
             )
           );
         }
@@ -4936,10 +5629,12 @@ export const appRouter = router({
 
     // Overall summary statistics
     getSummary: tenantProcedure
-      .input(z.object({ 
-        startDate: z.string(), 
-        endDate: z.string() 
-      }))
+      .input(
+        z.object({
+          startDate: z.string(),
+          endDate: z.string(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return null;
@@ -4963,7 +5658,13 @@ export const appRouter = router({
             )
           );
 
-        return summary || { totalRevenue: "0", totalOrders: 0, averageOrderValue: "0" };
+        return (
+          summary || {
+            totalRevenue: "0",
+            totalOrders: 0,
+            averageOrderValue: "0",
+          }
+        );
       }),
   }),
 
@@ -5131,7 +5832,9 @@ export const appRouter = router({
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
 
-        const { appointments, services, users, employeeLeaves } = await import("../drizzle/schema");
+        const { appointments, services, users, employeeLeaves } = await import(
+          "../drizzle/schema"
+        );
         const { eq, and, lte, gte, inArray } = await import("drizzle-orm");
 
         // Get service duration
@@ -5157,31 +5860,36 @@ export const appRouter = router({
                 eq(users.isActive, true)
               )
             );
-          employeeIds = employees.map((e) => e.id);
+          employeeIds = employees.map(e => e.id);
         }
 
         // Get approved employee leaves that overlap with the requested date
         const requestedDate = new Date(input.date);
-        const approvedLeaves = employeeIds.length > 0 ? await dbInstance
-          .select({
-            employeeId: employeeLeaves.employeeId,
-            startDate: employeeLeaves.startDate,
-            endDate: employeeLeaves.endDate,
-          })
-          .from(employeeLeaves)
-          .where(
-            and(
-              eq(employeeLeaves.tenantId, input.tenantId),
-              eq(employeeLeaves.status, "approved"),
-              lte(employeeLeaves.startDate, requestedDate),
-              gte(employeeLeaves.endDate, requestedDate),
-              inArray(employeeLeaves.employeeId, employeeIds)
-            )
-          ) : [];
+        const approvedLeaves =
+          employeeIds.length > 0
+            ? await dbInstance
+                .select({
+                  employeeId: employeeLeaves.employeeId,
+                  startDate: employeeLeaves.startDate,
+                  endDate: employeeLeaves.endDate,
+                })
+                .from(employeeLeaves)
+                .where(
+                  and(
+                    eq(employeeLeaves.tenantId, input.tenantId),
+                    eq(employeeLeaves.status, "approved"),
+                    lte(employeeLeaves.startDate, requestedDate),
+                    gte(employeeLeaves.endDate, requestedDate),
+                    inArray(employeeLeaves.employeeId, employeeIds)
+                  )
+                )
+            : [];
 
         // Filter out employees who are on leave
         const employeesOnLeave = new Set(approvedLeaves.map(l => l.employeeId));
-        const availableEmployeeIds = employeeIds.filter(id => !employeesOnLeave.has(id));
+        const availableEmployeeIds = employeeIds.filter(
+          id => !employeesOnLeave.has(id)
+        );
 
         // If no employees available (all on leave), return empty slots
         if (availableEmployeeIds.length === 0) {
@@ -5204,14 +5912,18 @@ export const appRouter = router({
           );
 
         // Generate time slots (8:00 - 20:00, 30-minute intervals)
-        const slots: { time: string; available: boolean; employeeId?: number }[] = [];
+        const slots: {
+          time: string;
+          available: boolean;
+          employeeId?: number;
+        }[] = [];
         const startHour = 8;
         const endHour = 20;
 
         for (let hour = startHour; hour < endHour; hour++) {
           for (let minute = 0; minute < 60; minute += 30) {
             const timeStr = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}:00`;
-            
+
             // Calculate end time based on service duration
             const startMinutes = hour * 60 + minute;
             const endMinutes = startMinutes + service.durationMinutes;
@@ -5222,7 +5934,7 @@ export const appRouter = router({
             // Check if any employee is available (excluding those on leave)
             let availableEmployeeId: number | undefined;
             for (const empId of availableEmployeeIds) {
-              const hasConflict = existingAppointments.some((appt) => {
+              const hasConflict = existingAppointments.some(appt => {
                 if (appt.employeeId !== empId) return false;
                 // Check for time overlap
                 return (
@@ -5271,7 +5983,8 @@ export const appRouter = router({
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new Error("Database not available");
 
-        const { customers, appointments, services, appointmentServices } = await import("../drizzle/schema");
+        const { customers, appointments, services, appointmentServices } =
+          await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
 
         // Get service details
@@ -5309,15 +6022,13 @@ export const appRouter = router({
         if (existingCustomer) {
           customerId = existingCustomer.id;
         } else {
-          const [newCustomer] = await dbInstance
-            .insert(customers)
-            .values({
-              tenantId: input.tenantId,
-              firstName: input.customerInfo.firstName,
-              lastName: input.customerInfo.lastName || "",
-              phone: input.customerInfo.phone,
-              email: input.customerInfo.email || null,
-            });
+          const [newCustomer] = await dbInstance.insert(customers).values({
+            tenantId: input.tenantId,
+            firstName: input.customerInfo.firstName,
+            lastName: input.customerInfo.lastName || "",
+            phone: input.customerInfo.phone,
+            email: input.customerInfo.email || null,
+          });
           customerId = newCustomer.insertId;
         }
 
@@ -5355,7 +6066,7 @@ export const appRouter = router({
 
     /**
      * Combined endpoint: Create booking + Start Stripe Checkout
-     * 
+     *
      * This endpoint combines the booking creation and payment checkout flow:
      * 1. Creates the appointment (status: "pending")
      * 2. Creates a Stripe Checkout Session
@@ -5382,9 +6093,14 @@ export const appRouter = router({
       )
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
 
-        const { customers, appointments, services, appointmentServices } = await import("../drizzle/schema");
+        const { customers, appointments, services, appointmentServices } =
+          await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
 
         // ========================================
@@ -5402,7 +6118,10 @@ export const appRouter = router({
           .where(eq(services.id, input.serviceId));
 
         if (!service) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Service not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Service not found",
+          });
         }
 
         // Calculate end time
@@ -5428,15 +6147,13 @@ export const appRouter = router({
         if (existingCustomer) {
           customerId = existingCustomer.id;
         } else {
-          const [newCustomer] = await dbInstance
-            .insert(customers)
-            .values({
-              tenantId: input.tenantId,
-              firstName: input.customerInfo.firstName,
-              lastName: input.customerInfo.lastName || "",
-              phone: input.customerInfo.phone,
-              email: input.customerInfo.email || null,
-            });
+          const [newCustomer] = await dbInstance.insert(customers).values({
+            tenantId: input.tenantId,
+            firstName: input.customerInfo.firstName,
+            lastName: input.customerInfo.lastName || "",
+            phone: input.customerInfo.phone,
+            email: input.customerInfo.email || null,
+          });
           customerId = newCustomer.insertId;
         }
 
@@ -5484,7 +6201,8 @@ export const appRouter = router({
         if (!stripe) {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
-            message: "Stripe is not configured. Please add STRIPE_SECRET_KEY to enable payments.",
+            message:
+              "Stripe is not configured. Please add STRIPE_SECRET_KEY to enable payments.",
           });
         }
         const session = await stripe.checkout.sessions.create({
@@ -5502,7 +6220,10 @@ export const appRouter = router({
               },
             },
           ],
-          success_url: input.successUrl.replace("{APPOINTMENT_ID}", String(appointmentId)),
+          success_url: input.successUrl.replace(
+            "{APPOINTMENT_ID}",
+            String(appointmentId)
+          ),
           cancel_url: input.cancelUrl,
           metadata: {
             tenantId: input.tenantId,
@@ -5570,20 +6291,28 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input }) => {
-        const { initiateVippsPayment, isVippsConfigured } = await import("./vipps");
+        const { initiateVippsPayment, isVippsConfigured } = await import(
+          "./vipps"
+        );
 
         // Check if Vipps is configured
         if (!isVippsConfigured()) {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
-            message: "Vipps payment gateway is not configured. Please contact support.",
+            message:
+              "Vipps payment gateway is not configured. Please contact support.",
           });
         }
 
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
 
-        const { appointments, appointmentServices, customers, services } = await import("../drizzle/schema");
+        const { appointments, appointmentServices, customers, services } =
+          await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
 
         // ========================================
@@ -5594,10 +6323,18 @@ export const appRouter = router({
         const [service] = await dbInstance
           .select()
           .from(services)
-          .where(and(eq(services.id, input.serviceId), eq(services.tenantId, input.tenantId)));
+          .where(
+            and(
+              eq(services.id, input.serviceId),
+              eq(services.tenantId, input.tenantId)
+            )
+          );
 
         if (!service) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Service not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Service not found",
+          });
         }
 
         // Calculate end time
@@ -5613,7 +6350,12 @@ export const appRouter = router({
         const [existingCustomer] = await dbInstance
           .select()
           .from(customers)
-          .where(and(eq(customers.phone, input.customerInfo.phone), eq(customers.tenantId, input.tenantId)));
+          .where(
+            and(
+              eq(customers.phone, input.customerInfo.phone),
+              eq(customers.tenantId, input.tenantId)
+            )
+          );
 
         if (existingCustomer) {
           customerId = existingCustomer.id;
@@ -5722,9 +6464,20 @@ export const appRouter = router({
       .input(z.object({ bookingId: z.number().int().positive() }))
       .query(async ({ input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
 
-        const { appointments, customers, users, services, appointmentServices, payments } = await import("../drizzle/schema");
+        const {
+          appointments,
+          customers,
+          users,
+          services,
+          appointmentServices,
+          payments,
+        } = await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
 
         // Get appointment with all related data
@@ -5747,7 +6500,10 @@ export const appRouter = router({
           .where(eq(appointments.id, input.bookingId));
 
         if (!appointment) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Booking not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Booking not found",
+          });
         }
 
         // Get service details
@@ -5776,7 +6532,9 @@ export const appRouter = router({
         appointmentDateTime.setHours(hours, minutes, 0, 0);
 
         const endDateTime = new Date(appointment.appointmentDate);
-        const [endHours, endMinutes] = appointment.endTime.split(":").map(Number);
+        const [endHours, endMinutes] = appointment.endTime
+          .split(":")
+          .map(Number);
         endDateTime.setHours(endHours, endMinutes, 0, 0);
 
         return {
@@ -5804,9 +6562,20 @@ export const appRouter = router({
       .input(z.object({ token: z.string() }))
       .query(async ({ input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
 
-        const { appointments, customers, users, services, appointmentServices, tenants } = await import("../drizzle/schema");
+        const {
+          appointments,
+          customers,
+          users,
+          services,
+          appointmentServices,
+          tenants,
+        } = await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
 
         // Get appointment with all related data
@@ -5838,7 +6607,10 @@ export const appRouter = router({
           .limit(1);
 
         if (!appointment) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Booking not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Booking not found",
+          });
         }
 
         // Get services
@@ -5851,7 +6623,10 @@ export const appRouter = router({
           .innerJoin(services, eq(appointmentServices.serviceId, services.id))
           .where(eq(appointmentServices.appointmentId, appointment.id));
 
-        const totalPrice = servicesList.reduce((sum, s) => sum + Number(s.price), 0);
+        const totalPrice = servicesList.reduce(
+          (sum, s) => sum + Number(s.price),
+          0
+        );
 
         // Calculate if cancellation is allowed
         const appointmentDateTime = new Date(appointment.appointmentDate);
@@ -5859,9 +6634,12 @@ export const appRouter = router({
         appointmentDateTime.setHours(hours, minutes, 0, 0);
 
         const now = new Date();
-        const hoursUntilAppointment = (appointmentDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
-        const canCancel = hoursUntilAppointment > (appointment.cancellationWindowHours || 24) && 
-                         (appointment.status === "pending" || appointment.status === "confirmed");
+        const hoursUntilAppointment =
+          (appointmentDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+        const canCancel =
+          hoursUntilAppointment > (appointment.cancellationWindowHours || 24) &&
+          (appointment.status === "pending" ||
+            appointment.status === "confirmed");
         const canReschedule = canCancel; // Same rules for now
 
         return {
@@ -5871,7 +6649,8 @@ export const appRouter = router({
           endTime: appointment.endTime,
           status: appointment.status,
           notes: appointment.notes,
-          customerName: `${appointment.customerFirstName} ${appointment.customerLastName || ""}`.trim(),
+          customerName:
+            `${appointment.customerFirstName} ${appointment.customerLastName || ""}`.trim(),
           customerPhone: appointment.customerPhone,
           customerEmail: appointment.customerEmail,
           employeeName: appointment.employeeName,
@@ -5894,13 +6673,19 @@ export const appRouter = router({
      * Cancel booking by management token
      */
     cancelBooking: publicProcedure
-      .input(z.object({ 
-        token: z.string(),
-        reason: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          token: z.string(),
+          reason: z.string().optional(),
+        })
+      )
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
 
         const { appointments, tenants } = await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
@@ -5919,15 +6704,24 @@ export const appRouter = router({
           .limit(1);
 
         if (!appointment) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Booking not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Booking not found",
+          });
         }
 
         if (appointment.status === "canceled") {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Booking is already canceled" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Booking is already canceled",
+          });
         }
 
         if (appointment.status === "completed") {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot cancel completed booking" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Cannot cancel completed booking",
+          });
         }
 
         // Get tenant cancellation policy
@@ -5943,12 +6737,16 @@ export const appRouter = router({
         appointmentDateTime.setHours(hours, minutes, 0, 0);
 
         const now = new Date();
-        const hoursUntilAppointment = (appointmentDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+        const hoursUntilAppointment =
+          (appointmentDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
         const cancellationWindow = tenant?.cancellationWindowHours || 24;
         const isLateCancellation = hoursUntilAppointment < cancellationWindow;
 
         if (hoursUntilAppointment < 0) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot cancel past appointment" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Cannot cancel past appointment",
+          });
         }
 
         // Update appointment
@@ -5966,7 +6764,7 @@ export const appRouter = router({
         return {
           success: true,
           isLateCancellation,
-          message: isLateCancellation 
+          message: isLateCancellation
             ? `Booking canceled. Note: This is a late cancellation (less than ${cancellationWindow} hours notice).`
             : "Booking canceled successfully.",
         };
@@ -5976,16 +6774,23 @@ export const appRouter = router({
      * Reschedule booking by management token
      */
     rescheduleBooking: publicProcedure
-      .input(z.object({ 
-        token: z.string(),
-        newDate: z.string(),
-        newTime: z.string(),
-      }))
+      .input(
+        z.object({
+          token: z.string(),
+          newDate: z.string(),
+          newTime: z.string(),
+        })
+      )
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
 
-        const { appointments, tenants, services, appointmentServices } = await import("../drizzle/schema");
+        const { appointments, tenants, services, appointmentServices } =
+          await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
 
         // Get appointment
@@ -6002,15 +6807,24 @@ export const appRouter = router({
           .limit(1);
 
         if (!appointment) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Booking not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Booking not found",
+          });
         }
 
         if (appointment.status === "canceled") {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot reschedule canceled booking" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Cannot reschedule canceled booking",
+          });
         }
 
         if (appointment.status === "completed") {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot reschedule completed booking" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Cannot reschedule completed booking",
+          });
         }
 
         // Get tenant cancellation policy
@@ -6026,13 +6840,14 @@ export const appRouter = router({
         appointmentDateTime.setHours(hours, minutes, 0, 0);
 
         const now = new Date();
-        const hoursUntilAppointment = (appointmentDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+        const hoursUntilAppointment =
+          (appointmentDateTime.getTime() - now.getTime()) / (1000 * 60 * 60);
         const cancellationWindow = tenant?.cancellationWindowHours || 24;
 
         if (hoursUntilAppointment < cancellationWindow) {
-          throw new TRPCError({ 
-            code: "BAD_REQUEST", 
-            message: `Cannot reschedule within ${cancellationWindow} hours of appointment` 
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Cannot reschedule within ${cancellationWindow} hours of appointment`,
           });
         }
 
@@ -6089,7 +6904,7 @@ export const appRouter = router({
 
         const result = await dbInstance
           .select({
-            date: sql<string>`DATE(${sql.identifier('customers')}.${sql.identifier('createdAt')})`,
+            date: sql<string>`DATE(${sql.identifier("customers")}.${sql.identifier("createdAt")})`,
             count: sql<number>`COUNT(*)`,
           })
           .from(customers)
@@ -6100,8 +6915,12 @@ export const appRouter = router({
               lte(customers.createdAt, input.endDate)
             )
           )
-          .groupBy(sql`DATE(${sql.identifier('customers')}.${sql.identifier('createdAt')})`)
-          .orderBy(sql`DATE(${sql.identifier('customers')}.${sql.identifier('createdAt')})`);
+          .groupBy(
+            sql`DATE(${sql.identifier("customers")}.${sql.identifier("createdAt")})`
+          )
+          .orderBy(
+            sql`DATE(${sql.identifier("customers")}.${sql.identifier("createdAt")})`
+          );
 
         return result;
       }),
@@ -6112,7 +6931,12 @@ export const appRouter = router({
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
 
-        const { appointments, users, services: servicesTable, appointmentServices } = await import("../drizzle/schema");
+        const {
+          appointments,
+          users,
+          services: servicesTable,
+          appointmentServices,
+        } = await import("../drizzle/schema");
         const { eq, and, gte, lte, sql } = await import("drizzle-orm");
 
         const result = await dbInstance
@@ -6124,8 +6948,14 @@ export const appRouter = router({
           })
           .from(appointments)
           .leftJoin(users, eq(appointments.employeeId, users.id))
-          .leftJoin(appointmentServices, eq(appointments.id, appointmentServices.appointmentId))
-          .leftJoin(servicesTable, eq(appointmentServices.serviceId, servicesTable.id))
+          .leftJoin(
+            appointmentServices,
+            eq(appointments.id, appointmentServices.appointmentId)
+          )
+          .leftJoin(
+            servicesTable,
+            eq(appointmentServices.serviceId, servicesTable.id)
+          )
           .where(
             and(
               eq(appointments.tenantId, ctx.tenantId),
@@ -6146,7 +6976,11 @@ export const appRouter = router({
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
 
-        const { appointments, services: servicesTable, appointmentServices } = await import("../drizzle/schema");
+        const {
+          appointments,
+          services: servicesTable,
+          appointmentServices,
+        } = await import("../drizzle/schema");
         const { eq, and, gte, lte, sql } = await import("drizzle-orm");
 
         const result = await dbInstance
@@ -6157,8 +6991,14 @@ export const appRouter = router({
             totalRevenue: sql<string>`SUM(${servicesTable.price})`,
           })
           .from(appointmentServices)
-          .leftJoin(servicesTable, eq(appointmentServices.serviceId, servicesTable.id))
-          .leftJoin(appointments, eq(appointmentServices.appointmentId, appointments.id))
+          .leftJoin(
+            servicesTable,
+            eq(appointmentServices.serviceId, servicesTable.id)
+          )
+          .leftJoin(
+            appointments,
+            eq(appointmentServices.appointmentId, appointments.id)
+          )
           .where(
             and(
               eq(appointments.tenantId, ctx.tenantId),
@@ -6180,17 +7020,27 @@ export const appRouter = router({
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
 
-        const { appointments, services: servicesTable, appointmentServices } = await import("../drizzle/schema");
+        const {
+          appointments,
+          services: servicesTable,
+          appointmentServices,
+        } = await import("../drizzle/schema");
         const { eq, and, gte, lte, sql } = await import("drizzle-orm");
 
         const result = await dbInstance
           .select({
-            date: sql<string>`DATE(${sql.identifier('appointments')}.${sql.identifier('appointmentDate')})`,
+            date: sql<string>`DATE(${sql.identifier("appointments")}.${sql.identifier("appointmentDate")})`,
             revenue: sql<string>`COALESCE(SUM(${servicesTable.price}), 0)`,
           })
           .from(appointments)
-          .leftJoin(appointmentServices, eq(appointments.id, appointmentServices.appointmentId))
-          .leftJoin(servicesTable, eq(appointmentServices.serviceId, servicesTable.id))
+          .leftJoin(
+            appointmentServices,
+            eq(appointments.id, appointmentServices.appointmentId)
+          )
+          .leftJoin(
+            servicesTable,
+            eq(appointmentServices.serviceId, servicesTable.id)
+          )
           .where(
             and(
               eq(appointments.tenantId, ctx.tenantId),
@@ -6199,8 +7049,12 @@ export const appRouter = router({
               lte(appointments.appointmentDate, input.endDate)
             )
           )
-          .groupBy(sql`DATE(${sql.identifier('appointments')}.${sql.identifier('appointmentDate')})`)
-          .orderBy(sql`DATE(${sql.identifier('appointments')}.${sql.identifier('appointmentDate')})`);
+          .groupBy(
+            sql`DATE(${sql.identifier("appointments")}.${sql.identifier("appointmentDate")})`
+          )
+          .orderBy(
+            sql`DATE(${sql.identifier("appointments")}.${sql.identifier("appointmentDate")})`
+          );
 
         return result;
       }),
@@ -6238,11 +7092,13 @@ export const appRouter = router({
   // ============================================================================
   attendance: router({
     getAllTimesheets: adminProcedure
-      .input(z.object({
-        startDate: z.string().optional(),
-        endDate: z.string().optional(),
-        employeeId: z.number().optional(),
-      }))
+      .input(
+        z.object({
+          startDate: z.string().optional(),
+          endDate: z.string().optional(),
+          employeeId: z.number().optional(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
@@ -6251,7 +7107,7 @@ export const appRouter = router({
         const { eq, and, gte, lte, sql } = await import("drizzle-orm");
 
         const conditions = [eq(timesheets.tenantId, ctx.tenantId)];
-        
+
         if (input.startDate) {
           conditions.push(sql`${timesheets.workDate} >= ${input.startDate}`);
         }
@@ -6281,10 +7137,12 @@ export const appRouter = router({
       }),
 
     getEmployeeTotals: adminProcedure
-      .input(z.object({
-        startDate: z.string().optional(),
-        endDate: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          startDate: z.string().optional(),
+          endDate: z.string().optional(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
@@ -6293,7 +7151,7 @@ export const appRouter = router({
         const { eq, and, gte, lte, sql } = await import("drizzle-orm");
 
         const conditions = [eq(timesheets.tenantId, ctx.tenantId)];
-        
+
         if (input.startDate) {
           conditions.push(sql`${timesheets.workDate} >= ${input.startDate}`);
         }
@@ -6317,12 +7175,14 @@ export const appRouter = router({
       }),
 
     updateTimesheet: adminProcedure
-      .input(z.object({
-        id: z.number(),
-        clockIn: z.string(),
-        clockOut: z.string().optional(),
-        editReason: z.string().min(1, "Reason is required"),
-      }))
+      .input(
+        z.object({
+          id: z.number(),
+          clockIn: z.string(),
+          clockOut: z.string().optional(),
+          editReason: z.string().min(1, "Reason is required"),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new Error("Database not available");
@@ -6334,7 +7194,7 @@ export const appRouter = router({
         const clockInDate = new Date(input.clockIn);
         const clockOutDate = input.clockOut ? new Date(input.clockOut) : null;
         let totalHours = "0.00";
-        
+
         if (clockOutDate) {
           const diffMs = clockOutDate.getTime() - clockInDate.getTime();
           const hours = Math.abs(diffMs / (1000 * 60 * 60));
@@ -6362,10 +7222,12 @@ export const appRouter = router({
       }),
 
     deleteTimesheet: adminProcedure
-      .input(z.object({
-        id: z.number(),
-        reason: z.string().min(1, "Reason is required"),
-      }))
+      .input(
+        z.object({
+          id: z.number(),
+          reason: z.string().min(1, "Reason is required"),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new Error("Database not available");
@@ -6403,10 +7265,12 @@ export const appRouter = router({
 
     // Get weekly summary for all employees
     getWeeklySummary: adminProcedure
-      .input(z.object({
-        year: z.number(),
-        month: z.number(), // 1-12
-      }))
+      .input(
+        z.object({
+          year: z.number(),
+          month: z.number(), // 1-12
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
@@ -6430,8 +7294,8 @@ export const appRouter = router({
           FROM timesheets t
           LEFT JOIN users u ON t.employeeId = u.id
           WHERE t.tenantId = ${ctx.tenantId}
-            AND t.workDate >= ${firstDay.toISOString().split('T')[0]}
-            AND t.workDate <= ${lastDay.toISOString().split('T')[0]}
+            AND t.workDate >= ${firstDay.toISOString().split("T")[0]}
+            AND t.workDate <= ${lastDay.toISOString().split("T")[0]}
           GROUP BY t.employeeId, u.name, WEEK(t.workDate, 1)
           ORDER BY t.employeeId, weekNumber`
         );
@@ -6449,9 +7313,11 @@ export const appRouter = router({
 
     // Get monthly summary for all employees
     getMonthlySummary: adminProcedure
-      .input(z.object({
-        year: z.number(),
-      }))
+      .input(
+        z.object({
+          year: z.number(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
@@ -6487,21 +7353,31 @@ export const appRouter = router({
 
     // Get detailed employee work hours report
     getEmployeeWorkReport: adminProcedure
-      .input(z.object({
-        employeeId: z.number().optional(),
-        startDate: z.string(),
-        endDate: z.string(),
-      }))
+      .input(
+        z.object({
+          employeeId: z.number().optional(),
+          startDate: z.string(),
+          endDate: z.string(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) return { employees: [], summary: { totalHours: "0", totalShifts: 0, averageHoursPerDay: "0" } };
+        if (!dbInstance)
+          return {
+            employees: [],
+            summary: {
+              totalHours: "0",
+              totalShifts: 0,
+              averageHoursPerDay: "0",
+            },
+          };
 
         const { timesheets, users } = await import("../drizzle/schema");
         const { eq, and, sql } = await import("drizzle-orm");
 
         // Build employee filter
-        const employeeFilter = input.employeeId 
-          ? sql`AND t.employeeId = ${input.employeeId}` 
+        const employeeFilter = input.employeeId
+          ? sql`AND t.employeeId = ${input.employeeId}`
           : sql``;
 
         const result = await dbInstance.execute(
@@ -6536,7 +7412,10 @@ export const appRouter = router({
         }>;
 
         // Calculate overall summary
-        const totalHours = employees.reduce((sum, e) => sum + parseFloat(e.totalHours || "0"), 0);
+        const totalHours = employees.reduce(
+          (sum, e) => sum + parseFloat(e.totalHours || "0"),
+          0
+        );
         const totalShifts = employees.reduce((sum, e) => sum + e.shiftCount, 0);
         const totalDays = employees.reduce((sum, e) => sum + e.daysWorked, 0);
 
@@ -6545,7 +7424,8 @@ export const appRouter = router({
           summary: {
             totalHours: totalHours.toFixed(2),
             totalShifts,
-            averageHoursPerDay: totalDays > 0 ? (totalHours / totalDays).toFixed(2) : "0",
+            averageHoursPerDay:
+              totalDays > 0 ? (totalHours / totalDays).toFixed(2) : "0",
           },
         };
       }),
@@ -6568,27 +7448,33 @@ export const appRouter = router({
 
       const { appointments, customers } = await import("../drizzle/schema");
       const { eq, and, sql } = await import("drizzle-orm");
-      
-      const today = new Date().toISOString().split('T')[0];
-      
+
+      const today = new Date().toISOString().split("T")[0];
+
       // Today's appointments
-      const todayAppts = await dbInstance.select().from(appointments).where(
-        and(
-          eq(appointments.tenantId, ctx.tenantId),
-          sql`${appointments.appointmentDate} = ${today}`
-        )
-      );
+      const todayAppts = await dbInstance
+        .select()
+        .from(appointments)
+        .where(
+          and(
+            eq(appointments.tenantId, ctx.tenantId),
+            sql`${appointments.appointmentDate} = ${today}`
+          )
+        );
 
       // Total customers
-      const totalCust = await dbInstance.select({ count: sql<number>`count(*)` })
+      const totalCust = await dbInstance
+        .select({ count: sql<number>`count(*)` })
         .from(customers)
         .where(eq(customers.tenantId, ctx.tenantId));
 
       return {
         todayAppointments: todayAppts.length,
         todayRevenue: "0.00", // TODO: Calculate from completed appointments
-        pendingAppointments: todayAppts.filter(a => a.status === "pending").length,
-        completedAppointments: todayAppts.filter(a => a.status === "completed").length,
+        pendingAppointments: todayAppts.filter(a => a.status === "pending")
+          .length,
+        completedAppointments: todayAppts.filter(a => a.status === "completed")
+          .length,
         totalCustomers: totalCust[0]?.count || 0,
       };
     }),
@@ -6603,32 +7489,33 @@ export const appRouter = router({
 
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-      const startDate = sevenDaysAgo.toISOString().split('T')[0];
+      const startDate = sevenDaysAgo.toISOString().split("T")[0];
 
-      const appts = await dbInstance.select({
-        date: sql<string>`DATE(appointmentDate)`,
-        count: sql<number>`count(*)`
-      })
-      .from(appointments)
-      .where(
-        and(
-          eq(appointments.tenantId, ctx.tenantId),
-          gte(appointments.appointmentDate, new Date(startDate))
+      const appts = await dbInstance
+        .select({
+          date: sql<string>`DATE(appointmentDate)`,
+          count: sql<number>`count(*)`,
+        })
+        .from(appointments)
+        .where(
+          and(
+            eq(appointments.tenantId, ctx.tenantId),
+            gte(appointments.appointmentDate, new Date(startDate))
+          )
         )
-      )
-      .groupBy(sql`DATE(appointmentDate)`)
-      .orderBy(sql`DATE(appointmentDate)`);
+        .groupBy(sql`DATE(appointmentDate)`)
+        .orderBy(sql`DATE(appointmentDate)`);
 
       // Fill in missing dates with 0 count
       const result = [];
       for (let i = 0; i < 7; i++) {
         const date = new Date();
         date.setDate(date.getDate() - (6 - i));
-        const dateStr = date.toISOString().split('T')[0];
+        const dateStr = date.toISOString().split("T")[0];
         const found = appts.find(a => String(a.date) === dateStr);
         result.push({
           date: dateStr,
-          count: found ? Number(found.count) : 0
+          count: found ? Number(found.count) : 0,
         });
       }
 
@@ -6643,12 +7530,13 @@ export const appRouter = router({
       const { appointments } = await import("../drizzle/schema");
       const { eq, and, sql } = await import("drizzle-orm");
 
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toISOString().split("T")[0];
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const startDate = thirtyDaysAgo.toISOString().split('T')[0];
+      const startDate = thirtyDaysAgo.toISOString().split("T")[0];
 
-      const appts = await dbInstance.select()
+      const appts = await dbInstance
+        .select()
         .from(appointments)
         .where(
           and(
@@ -6658,9 +7546,9 @@ export const appRouter = router({
         );
 
       return {
-        confirmed: appts.filter(a => a.status === 'confirmed').length,
-        pending: appts.filter(a => a.status === 'pending').length,
-        cancelled: appts.filter(a => a.status === 'canceled').length,
+        confirmed: appts.filter(a => a.status === "confirmed").length,
+        pending: appts.filter(a => a.status === "pending").length,
+        cancelled: appts.filter(a => a.status === "canceled").length,
       };
     }),
 
@@ -6675,13 +7563,16 @@ export const appRouter = router({
         };
       }
 
-      const { appointments, notifications, employeeLeaves } = await import("../drizzle/schema");
+      const { appointments, notifications, employeeLeaves } = await import(
+        "../drizzle/schema"
+      );
       const { eq, and, sql } = await import("drizzle-orm");
-      
-      const today = new Date().toISOString().split('T')[0];
-      
+
+      const today = new Date().toISOString().split("T")[0];
+
       // Today's pending appointments
-      const pendingAppts = await dbInstance.select({ count: sql<number>`count(*)` })
+      const pendingAppts = await dbInstance
+        .select({ count: sql<number>`count(*)` })
         .from(appointments)
         .where(
           and(
@@ -6692,7 +7583,8 @@ export const appRouter = router({
         );
 
       // Pending notifications (not yet sent)
-      const pendingNotifs = await dbInstance.select({ count: sql<number>`count(*)` })
+      const pendingNotifs = await dbInstance
+        .select({ count: sql<number>`count(*)` })
         .from(notifications)
         .where(
           and(
@@ -6704,7 +7596,8 @@ export const appRouter = router({
       // Pending leave approvals (admin only)
       let pendingLeaves = 0;
       if (ctx.user.role === "owner" || ctx.user.role === "admin") {
-        const pendingLeavesResult = await dbInstance.select({ count: sql<number>`count(*)` })
+        const pendingLeavesResult = await dbInstance
+          .select({ count: sql<number>`count(*)` })
           .from(employeeLeaves)
           .where(
             and(
@@ -6738,22 +7631,35 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { tenantId } = ctx;
 
         // 1) Load appointment and its services for this tenant
-        const { appointments, appointmentServices, services } = await import("../drizzle/schema");
+        const { appointments, appointmentServices, services } = await import(
+          "../drizzle/schema"
+        );
         const { eq, and } = await import("drizzle-orm");
 
         const [appointment] = await dbInstance
           .select()
           .from(appointments)
-          .where(and(eq(appointments.id, input.appointmentId), eq(appointments.tenantId, tenantId)));
+          .where(
+            and(
+              eq(appointments.id, input.appointmentId),
+              eq(appointments.tenantId, tenantId)
+            )
+          );
 
         if (!appointment) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Appointment not found",
+          });
         }
 
         // Load services linked to this appointment
@@ -6774,7 +7680,7 @@ export const appRouter = router({
 
         // Calculate total amount (in NOK, decimal) and in øre for Stripe
         const totalAmountNok = rows
-          .map((r) => Number(r.price))
+          .map(r => Number(r.price))
           .reduce((acc, v) => acc + v, 0);
 
         if (totalAmountNok <= 0) {
@@ -6791,7 +7697,8 @@ export const appRouter = router({
         if (!stripe) {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
-            message: "Stripe is not configured. Please add STRIPE_SECRET_KEY to enable payments.",
+            message:
+              "Stripe is not configured. Please add STRIPE_SECRET_KEY to enable payments.",
           });
         }
         const session = await stripe.checkout.sessions.create({
@@ -6809,7 +7716,10 @@ export const appRouter = router({
               },
             },
           ],
-          success_url: input.successUrl.replace("{APPOINTMENT_ID}", String(appointment.id)),
+          success_url: input.successUrl.replace(
+            "{APPOINTMENT_ID}",
+            String(appointment.id)
+          ),
           cancel_url: input.cancelUrl,
           metadata: {
             tenantId,
@@ -6858,34 +7768,50 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ ctx, input }) => {
-        const { initiateVippsPayment, isVippsConfigured } = await import("./vipps");
+        const { initiateVippsPayment, isVippsConfigured } = await import(
+          "./vipps"
+        );
 
         // Check if Vipps is configured
         if (!isVippsConfigured()) {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
-            message: "Vipps payment gateway is not configured. Please contact support.",
+            message:
+              "Vipps payment gateway is not configured. Please contact support.",
           });
         }
 
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { tenantId } = ctx;
 
         // 1) Load appointment and its services for this tenant
-        const { appointments, appointmentServices } = await import("../drizzle/schema");
+        const { appointments, appointmentServices } = await import(
+          "../drizzle/schema"
+        );
         const { eq, and } = await import("drizzle-orm");
 
         const [appointment] = await dbInstance
           .select()
           .from(appointments)
-          .where(and(eq(appointments.id, input.appointmentId), eq(appointments.tenantId, tenantId)));
+          .where(
+            and(
+              eq(appointments.id, input.appointmentId),
+              eq(appointments.tenantId, tenantId)
+            )
+          );
 
         if (!appointment) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Appointment not found",
+          });
         }
 
         // Load services linked to this appointment
@@ -6905,7 +7831,7 @@ export const appRouter = router({
 
         // Calculate total amount in NOK
         const totalAmountNok = rows
-          .map((r) => Number(r.price))
+          .map(r => Number(r.price))
           .reduce((acc, v) => acc + v, 0);
 
         if (totalAmountNok <= 0) {
@@ -6962,7 +7888,9 @@ export const appRouter = router({
     getVippsPaymentStatus: tenantProcedure
       .input(z.object({ vippsOrderId: z.string() }))
       .query(async ({ input }) => {
-        const { getVippsPaymentDetails, isVippsConfigured } = await import("./vipps");
+        const { getVippsPaymentDetails, isVippsConfigured } = await import(
+          "./vipps"
+        );
 
         if (!isVippsConfigured()) {
           throw new TRPCError({
@@ -6988,12 +7916,12 @@ export const appRouter = router({
   pos: router({
     /**
      * Create an order with items for in-salon sales
-     * 
+     *
      * Use cases:
      * - Walk-in customer (no appointment)
      * - Existing appointment (link via appointmentId)
      * - Product sales at checkout
-     * 
+     *
      * Status flow: pending → completed (after payment)
      */
     createOrder: tenantProcedure
@@ -7002,16 +7930,18 @@ export const appRouter = router({
           appointmentId: z.number().int().optional(),
           customerId: z.number().int().optional(),
           employeeId: z.number().int(),
-          items: z.array(
-            z.object({
-              itemType: z.enum(["service", "product"]),
-              itemId: z.number().int(),
-              itemName: z.string().optional(), // Optional: will be fetched from DB if not provided
-              quantity: z.number().int().positive().default(1),
-              unitPrice: z.number().positive(),
-              vatRate: z.number().positive(), // e.g. 25 for 25%
-            })
-          ).min(1, "At least one item is required"),
+          items: z
+            .array(
+              z.object({
+                itemType: z.enum(["service", "product"]),
+                itemId: z.number().int(),
+                itemName: z.string().optional(), // Optional: will be fetched from DB if not provided
+                quantity: z.number().int().positive().default(1),
+                unitPrice: z.number().positive(),
+                vatRate: z.number().positive(), // e.g. 25 for 25%
+              })
+            )
+            .min(1, "At least one item is required"),
           orderDate: z.string(), // YYYY-MM-DD
           orderTime: z.string(), // HH:MM
         })
@@ -7019,7 +7949,10 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { tenantId } = ctx;
@@ -7033,21 +7966,27 @@ export const appRouter = router({
           const { services, products } = await import("../drizzle/schema");
           const { inArray } = await import("drizzle-orm");
 
-          const serviceIds = itemsNeedingNames.filter(i => i.itemType === "service").map(i => i.itemId);
-          const productIds = itemsNeedingNames.filter(i => i.itemType === "product").map(i => i.itemId);
+          const serviceIds = itemsNeedingNames
+            .filter(i => i.itemType === "service")
+            .map(i => i.itemId);
+          const productIds = itemsNeedingNames
+            .filter(i => i.itemType === "product")
+            .map(i => i.itemId);
 
           try {
             if (serviceIds.length > 0) {
-              const serviceRecords = await dbInstance.select().from(services).where(
-                inArray(services.id, serviceIds)
-              );
+              const serviceRecords = await dbInstance
+                .select()
+                .from(services)
+                .where(inArray(services.id, serviceIds));
               serviceRecords.forEach(s => serviceMap.set(s.id, s.name));
             }
 
             if (productIds.length > 0) {
-              const productRecords = await dbInstance.select().from(products).where(
-                inArray(products.id, productIds)
-              );
+              const productRecords = await dbInstance
+                .select()
+                .from(products)
+                .where(inArray(products.id, productIds));
               productRecords.forEach(p => productMap.set(p.id, p.name));
             }
           } catch (error) {
@@ -7071,27 +8010,28 @@ export const appRouter = router({
         // Create order with items in transaction
         // Format date as YYYY-MM-DD for MySQL DATE column
         const orderDate = new Date(input.orderDate);
-        const formattedDate = orderDate.toISOString().split('T')[0];
-        
-        const itemsToCreate = input.items.map((item) => {
-            // Use provided name or fetch from database
-            const itemName = item.itemName || 
-              (item.itemType === "service" 
-                ? serviceMap.get(item.itemId) || "Unknown Service"
-                : productMap.get(item.itemId) || "Unknown Product");
-            
-            const result = {
-              itemType: item.itemType,
-              itemId: item.itemId,
-              itemName,
-              quantity: item.quantity,
-              unitPrice: item.unitPrice.toFixed(2),
-              vatRate: item.vatRate.toFixed(2),
-              total: (item.unitPrice * item.quantity).toFixed(2),
-            };
-            
-            return result;
-          });
+        const formattedDate = orderDate.toISOString().split("T")[0];
+
+        const itemsToCreate = input.items.map(item => {
+          // Use provided name or fetch from database
+          const itemName =
+            item.itemName ||
+            (item.itemType === "service"
+              ? serviceMap.get(item.itemId) || "Unknown Service"
+              : productMap.get(item.itemId) || "Unknown Product");
+
+          const result = {
+            itemType: item.itemType,
+            itemId: item.itemId,
+            itemName,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice.toFixed(2),
+            vatRate: item.vatRate.toFixed(2),
+            total: (item.unitPrice * item.quantity).toFixed(2),
+          };
+
+          return result;
+        });
 
         const { order, items } = await db.createOrderWithItems(
           {
@@ -7114,7 +8054,7 @@ export const appRouter = router({
 
     /**
      * Record a cash payment for an order
-     * 
+     *
      * Marks order as "completed" and creates payment record
      * with status "completed"
      */
@@ -7127,11 +8067,24 @@ export const appRouter = router({
       )
       .mutation(async ({ ctx, input }) => {
         const { tenantId, user } = ctx;
-        console.log("[recordCashPayment] tenantId:", tenantId, "type:", typeof tenantId);
-        console.log("[recordCashPayment] orderId:", input.orderId, "amount:", input.amount);
+        console.log(
+          "[recordCashPayment] tenantId:",
+          tenantId,
+          "type:",
+          typeof tenantId
+        );
+        console.log(
+          "[recordCashPayment] orderId:",
+          input.orderId,
+          "amount:",
+          input.amount
+        );
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { orders } = await import("../drizzle/schema");
@@ -7141,10 +8094,15 @@ export const appRouter = router({
         const [order] = await dbInstance
           .select()
           .from(orders)
-          .where(and(eq(orders.id, input.orderId), eq(orders.tenantId, tenantId)));
+          .where(
+            and(eq(orders.id, input.orderId), eq(orders.tenantId, tenantId))
+          );
 
         if (!order) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Order not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Order not found",
+          });
         }
 
         // Validate amount matches order total
@@ -7184,7 +8142,7 @@ export const appRouter = router({
 
     /**
      * Record a card payment for an order (manual terminal)
-     * 
+     *
      * For external POS terminals (not Stripe)
      * Marks order as "completed" and creates payment record
      */
@@ -7201,7 +8159,10 @@ export const appRouter = router({
         const { tenantId, user } = ctx;
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { orders } = await import("../drizzle/schema");
@@ -7211,10 +8172,15 @@ export const appRouter = router({
         const [order] = await dbInstance
           .select()
           .from(orders)
-          .where(and(eq(orders.id, input.orderId), eq(orders.tenantId, tenantId)));
+          .where(
+            and(eq(orders.id, input.orderId), eq(orders.tenantId, tenantId))
+          );
 
         if (!order) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Order not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Order not found",
+          });
         }
 
         // Validate amount matches order total
@@ -7254,7 +8220,7 @@ export const appRouter = router({
 
     /**
      * Create a Zettle payment for an order
-     * 
+     *
      * Initiates payment on connected Zettle reader
      * Returns payment UUID for status tracking
      */
@@ -7268,24 +8234,34 @@ export const appRouter = router({
       )
       .mutation(async ({ ctx, input }) => {
         const { tenantId, user } = ctx;
-        const dbInstance = await db.getDb();  
+        const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { orders, paymentProviders } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
         const { decryptToken } = await import("./services/izettle");
-        const { getReaderConnectManager } = await import("./services/reader-connect");
+        const { getReaderConnectManager } = await import(
+          "./services/reader-connect"
+        );
 
         // Validate order exists and belongs to tenant
         const [order] = await dbInstance
           .select()
           .from(orders)
-          .where(and(eq(orders.id, input.orderId), eq(orders.tenantId, tenantId)));
+          .where(
+            and(eq(orders.id, input.orderId), eq(orders.tenantId, tenantId))
+          );
 
         if (!order) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Order not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Order not found",
+          });
         }
 
         // Validate amount matches order total
@@ -7313,14 +8289,16 @@ export const appRouter = router({
         if (!provider) {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
-            message: "iZettle er ikke koblet til. Vennligst koble til iZettle i innstillinger.",
+            message:
+              "iZettle er ikke koblet til. Vennligst koble til iZettle i innstillinger.",
           });
         }
 
         if (!provider.accessToken) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "iZettle access token mangler. Vennligst koble til på nytt.",
+            message:
+              "iZettle access token mangler. Vennligst koble til på nytt.",
           });
         }
 
@@ -7329,13 +8307,16 @@ export const appRouter = router({
 
         // Get or create Reader Connect manager
         // Check if provider has linkId (Reader Connect setup)
-        const config = provider.config ? JSON.parse(provider.config as string) : {};
+        const config = provider.config
+          ? JSON.parse(provider.config as string)
+          : {};
         const readerLinks = config.readerLinks || [];
 
         if (readerLinks.length === 0) {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
-            message: "Ingen PayPal Reader Links funnet. Vennligst opprett en Reader Link i innstillinger.",
+            message:
+              "Ingen PayPal Reader Links funnet. Vennligst opprett en Reader Link i innstillinger.",
           });
         }
 
@@ -7343,11 +8324,14 @@ export const appRouter = router({
         let linkId: string = input.linkId || readerLinks[0].linkId;
 
         // Verify linkId exists in config
-        const linkExists = readerLinks.some((link: any) => link.linkId === linkId);
+        const linkExists = readerLinks.some(
+          (link: any) => link.linkId === linkId
+        );
         if (!linkExists) {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
-            message: "Ugyldig Reader Link ID. Vennligst velg en gyldig Reader Link.",
+            message:
+              "Ugyldig Reader Link ID. Vennligst velg en gyldig Reader Link.",
           });
         }
 
@@ -7394,20 +8378,27 @@ export const appRouter = router({
               currency: "NOK",
               reference: `Order #${order.id}`,
             },
-            (progress) => {
+            progress => {
               // Payment progress callback
-              console.log(`[Zettle Payment ${payment.id}] Progress:`, progress.status);
+              console.log(
+                `[Zettle Payment ${payment.id}] Progress:`,
+                progress.status
+              );
             },
-            async (result) => {
+            async result => {
               // Payment result callback
-              console.log(`[Zettle Payment ${payment.id}] Result:`, result.resultStatus);
+              console.log(
+                `[Zettle Payment ${payment.id}] Result:`,
+                result.resultStatus
+              );
 
               // Update payment record based on result
               if (result.resultStatus === "COMPLETED") {
                 await db.updatePayment(payment.id, {
                   status: "completed",
                   processedAt: new Date(),
-                  gatewayPaymentId: result.resultPayload?.purchaseUUID || internalTraceId,
+                  gatewayPaymentId:
+                    result.resultPayload?.purchaseUUID || internalTraceId,
                   gatewayMetadata: JSON.stringify(result.resultPayload),
                 });
               } else if (result.resultStatus === "FAILED") {
@@ -7428,7 +8419,8 @@ export const appRouter = router({
             payment,
             internalTraceId,
             status: "pending",
-            message: "Betaling sendt til PayPal Reader. Venter på bekreftelse...",
+            message:
+              "Betaling sendt til PayPal Reader. Venter på bekreftelse...",
           };
         } catch (error: any) {
           console.error("[createZettlePayment] Error:", error);
@@ -7441,7 +8433,7 @@ export const appRouter = router({
 
     /**
      * Check status of a Zettle payment
-     * 
+     *
      * Polls Zettle API for payment status
      * Updates local payment record when completed
      */
@@ -7456,12 +8448,19 @@ export const appRouter = router({
         const { tenantId } = ctx;
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
-        const { paymentProviders, payments, orders } = await import("../drizzle/schema");
+        const { paymentProviders, payments, orders } = await import(
+          "../drizzle/schema"
+        );
         const { eq, and } = await import("drizzle-orm");
-        const { getPaymentStatus, decryptToken } = await import("./services/izettle");
+        const { getPaymentStatus, decryptToken } = await import(
+          "./services/izettle"
+        );
 
         // Get Zettle provider
         const [provider] = await dbInstance
@@ -7488,7 +8487,10 @@ export const appRouter = router({
 
         // Check payment status on Zettle
         try {
-          const zettleStatus = await getPaymentStatus(accessToken, input.purchaseUUID);
+          const zettleStatus = await getPaymentStatus(
+            accessToken,
+            input.purchaseUUID
+          );
 
           // Update local payment record if status changed
           const [payment] = await dbInstance
@@ -7497,11 +8499,17 @@ export const appRouter = router({
             .where(eq(payments.id, input.paymentId));
 
           if (!payment) {
-            throw new TRPCError({ code: "NOT_FOUND", message: "Payment not found" });
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Payment not found",
+            });
           }
 
           // If payment completed on Zettle, update our records
-          if (zettleStatus.status === "PAID" && payment.status !== "completed") {
+          if (
+            zettleStatus.status === "PAID" &&
+            payment.status !== "completed"
+          ) {
             // Update payment status
             await dbInstance
               .update(payments)
@@ -7516,7 +8524,10 @@ export const appRouter = router({
             if (payment.orderId) {
               await db.updateOrderStatus(payment.orderId, "completed");
             }
-          } else if (zettleStatus.status === "FAILED" && payment.status !== "failed") {
+          } else if (
+            zettleStatus.status === "FAILED" &&
+            payment.status !== "failed"
+          ) {
             // Update payment as failed
             await dbInstance
               .update(payments)
@@ -7538,14 +8549,15 @@ export const appRouter = router({
           console.error("[checkZettlePaymentStatus] Error:", error);
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: error.message || "Kunne ikke hente betalingsstatus fra iZettle",
+            message:
+              error.message || "Kunne ikke hente betalingsstatus fra iZettle",
           });
         }
       }),
 
     /**
      * Generate a PDF receipt for an order
-     * 
+     *
      * Returns a base64-encoded PDF that can be downloaded or printed
      */
     generateReceipt: tenantProcedure
@@ -7558,10 +8570,22 @@ export const appRouter = router({
         const { tenantId } = ctx;
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
-        const { orders, orderItems, tenants, users, customers, services, products, salonSettings } = await import("../drizzle/schema");
+        const {
+          orders,
+          orderItems,
+          tenants,
+          users,
+          customers,
+          services,
+          products,
+          salonSettings,
+        } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
         const { generateReceipt } = await import("./receipt");
         type PrintSettings = import("./receipt").PrintSettings;
@@ -7574,10 +8598,15 @@ export const appRouter = router({
           })
           .from(orders)
           .leftJoin(tenants, eq(orders.tenantId, tenants.id))
-          .where(and(eq(orders.id, input.orderId), eq(orders.tenantId, tenantId)));
+          .where(
+            and(eq(orders.id, input.orderId), eq(orders.tenantId, tenantId))
+          );
 
         if (!order || !order.tenant) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Order not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Order not found",
+          });
         }
 
         // Get order items with service/product names
@@ -7588,14 +8617,20 @@ export const appRouter = router({
             product: products,
           })
           .from(orderItems)
-          .leftJoin(services, and(
-            eq(orderItems.itemType, "service"),
-            eq(orderItems.itemId, services.id)
-          ))
-          .leftJoin(products, and(
-            eq(orderItems.itemType, "product"),
-            eq(orderItems.itemId, products.id)
-          ))
+          .leftJoin(
+            services,
+            and(
+              eq(orderItems.itemType, "service"),
+              eq(orderItems.itemId, services.id)
+            )
+          )
+          .leftJoin(
+            products,
+            and(
+              eq(orderItems.itemType, "product"),
+              eq(orderItems.itemId, products.id)
+            )
+          )
           .where(eq(orderItems.orderId, input.orderId));
 
         // Get employee name if available
@@ -7612,11 +8647,14 @@ export const appRouter = router({
         let customerName: string | undefined;
         if (order.order.customerId) {
           const [customer] = await dbInstance
-            .select({ firstName: customers.firstName, lastName: customers.lastName })
+            .select({
+              firstName: customers.firstName,
+              lastName: customers.lastName,
+            })
             .from(customers)
             .where(eq(customers.id, order.order.customerId));
           if (customer) {
-            customerName = `${customer.firstName}${customer.lastName ? ' ' + customer.lastName : ''}`;
+            customerName = `${customer.firstName}${customer.lastName ? " " + customer.lastName : ""}`;
           }
         }
 
@@ -7628,7 +8666,8 @@ export const appRouter = router({
           .where(eq(payments.orderId, input.orderId))
           .limit(1);
 
-        const paymentMethod: "cash" | "card" = payment?.paymentMethod === "cash" ? "cash" : "card";
+        const paymentMethod: "cash" | "card" =
+          payment?.paymentMethod === "cash" ? "cash" : "card";
 
         // Get print settings
         const [settings] = await dbInstance
@@ -7638,10 +8677,13 @@ export const appRouter = router({
           .limit(1);
 
         const printSettings: PrintSettings = {
-          printerType: (settings?.printSettings as any)?.printerType || "thermal_80mm",
+          printerType:
+            (settings?.printSettings as any)?.printerType || "thermal_80mm",
           fontSize: settings?.printSettings?.fontSize || "medium",
           showLogo: settings?.printSettings?.showLogo ?? true,
-          customFooterText: settings?.printSettings?.customFooterText || "Takk for besøket! Velkommen tilbake!",
+          customFooterText:
+            settings?.printSettings?.customFooterText ||
+            "Takk for besøket! Velkommen tilbake!",
         };
 
         // Prepare receipt data
@@ -7649,7 +8691,7 @@ export const appRouter = router({
         const orderDateStr = order.order.orderDate;
         const orderTimeStr = order.order.orderTime || "00:00:00";
         const fullDateTimeStr = `${orderDateStr}T${orderTimeStr}`;
-        
+
         const receiptData = {
           orderId: order.order.id,
           orderDate: new Date(fullDateTimeStr),
@@ -7659,7 +8701,7 @@ export const appRouter = router({
           salonEmail: order.tenant.email ?? undefined,
           salonLogoUrl: order.tenant.logoUrl ?? undefined,
           receiptLogoUrl: settings?.receiptLogoUrl ?? undefined,
-          items: items.map((item) => ({
+          items: items.map(item => ({
             name: item.service?.name || item.product?.name || "Unknown",
             quantity: item.orderItem.quantity ?? 1,
             unitPrice: Number(item.orderItem.unitPrice),
@@ -7687,7 +8729,7 @@ export const appRouter = router({
 
     /**
      * Send receipt via email to customer
-     * 
+     *
      * Generates PDF receipt and sends it as email attachment
      */
     sendReceiptEmail: tenantProcedure
@@ -7701,10 +8743,22 @@ export const appRouter = router({
         const { tenantId } = ctx;
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
-        const { orders, orderItems, tenants, users, customers, services, products, salonSettings } = await import("../drizzle/schema");
+        const {
+          orders,
+          orderItems,
+          tenants,
+          users,
+          customers,
+          services,
+          products,
+          salonSettings,
+        } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
         const { generateReceipt } = await import("./receipt");
         type PrintSettings = import("./receipt").PrintSettings;
@@ -7718,10 +8772,15 @@ export const appRouter = router({
           })
           .from(orders)
           .leftJoin(tenants, eq(orders.tenantId, tenants.id))
-          .where(and(eq(orders.id, input.orderId), eq(orders.tenantId, tenantId)));
+          .where(
+            and(eq(orders.id, input.orderId), eq(orders.tenantId, tenantId))
+          );
 
         if (!order || !order.tenant) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Order not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Order not found",
+          });
         }
 
         // Get order items with service/product details
@@ -7732,8 +8791,20 @@ export const appRouter = router({
             product: products,
           })
           .from(orderItems)
-          .leftJoin(services, and(eq(orderItems.itemType, "service"), eq(orderItems.itemId, services.id)))
-          .leftJoin(products, and(eq(orderItems.itemType, "product"), eq(orderItems.itemId, products.id)))
+          .leftJoin(
+            services,
+            and(
+              eq(orderItems.itemType, "service"),
+              eq(orderItems.itemId, services.id)
+            )
+          )
+          .leftJoin(
+            products,
+            and(
+              eq(orderItems.itemType, "product"),
+              eq(orderItems.itemId, products.id)
+            )
+          )
           .where(eq(orderItems.orderId, input.orderId));
 
         // Get customer info
@@ -7770,17 +8841,20 @@ export const appRouter = router({
           .limit(1);
 
         const printSettings: PrintSettings = {
-          printerType: (settings?.printSettings as any)?.printerType || "thermal_80mm",
+          printerType:
+            (settings?.printSettings as any)?.printerType || "thermal_80mm",
           fontSize: settings?.printSettings?.fontSize || "medium",
           showLogo: settings?.printSettings?.showLogo ?? true,
-          customFooterText: settings?.printSettings?.customFooterText || "Takk for besøket! Velkommen tilbake!",
+          customFooterText:
+            settings?.printSettings?.customFooterText ||
+            "Takk for besøket! Velkommen tilbake!",
         };
 
         // orderDate is already a string in YYYY-MM-DD format
         const orderDateStr = order.order.orderDate;
         const orderTimeStr = order.order.orderTime || "00:00:00";
         const fullDateTimeStr = `${orderDateStr}T${orderTimeStr}`;
-        
+
         // Prepare receipt data
         const receiptData = {
           orderId: order.order.id,
@@ -7791,7 +8865,7 @@ export const appRouter = router({
           salonEmail: order.tenant.email ?? undefined,
           salonLogoUrl: order.tenant.logoUrl ?? undefined,
           receiptLogoUrl: settings?.receiptLogoUrl ?? undefined,
-          items: items.map((item) => ({
+          items: items.map(item => ({
             name: item.service?.name || item.product?.name || "Unknown",
             quantity: item.orderItem.quantity ?? 1,
             unitPrice: Number(item.orderItem.unitPrice),
@@ -7838,7 +8912,9 @@ export const appRouter = router({
           endDate: z.string().optional(),
           paymentMethod: z.enum(["cash", "card"]).optional(),
           customerId: z.number().int().optional(),
-          status: z.enum(["pending", "completed", "refunded", "partially_refunded"]).optional(),
+          status: z
+            .enum(["pending", "completed", "refunded", "partially_refunded"])
+            .optional(),
         })
       )
       .query(async ({ ctx, input }) => {
@@ -7854,11 +8930,14 @@ export const appRouter = router({
       .query(async ({ ctx, input }) => {
         const order = await db.getOrderById(input.orderId, ctx.tenantId);
         if (!order) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Order not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Order not found",
+          });
         }
 
         const items = await db.getOrderItems(input.orderId, ctx.tenantId);
-        
+
         return {
           order,
           items,
@@ -7867,19 +8946,35 @@ export const appRouter = router({
 
     // Get comprehensive financial reports
     getFinancialReport: tenantProcedure
-      .input(z.object({
-        startDate: z.string(),
-        endDate: z.string(),
-        employeeId: z.number().optional(),
-        paymentMethod: z.enum(["cash", "card", "vipps", "stripe", "split"]).optional(),
-      }))
+      .input(
+        z.object({
+          startDate: z.string(),
+          endDate: z.string(),
+          employeeId: z.number().optional(),
+          paymentMethod: z
+            .enum(["cash", "card", "vipps", "stripe", "split"])
+            .optional(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
-        const { orders, payments, orderItems, services, products, users, refunds, paymentSplits } = await import("../drizzle/schema");
+        const {
+          orders,
+          payments,
+          orderItems,
+          services,
+          products,
+          users,
+          refunds,
+          paymentSplits,
+        } = await import("../drizzle/schema");
         const { eq, and, gte, lte, sql, desc } = await import("drizzle-orm");
 
         const conditions = [
@@ -7909,7 +9004,7 @@ export const appRouter = router({
         let filteredOrders = ordersWithPayments;
         if (input.paymentMethod) {
           filteredOrders = ordersWithPayments.filter(
-            (row) => row.payment?.paymentMethod === input.paymentMethod
+            row => row.payment?.paymentMethod === input.paymentMethod
           );
         }
 
@@ -8072,19 +9167,24 @@ export const appRouter = router({
      * Add customer to walk-in queue
      */
     addToQueue: tenantProcedure
-      .input(z.object({
-        customerName: z.string().min(1),
-        customerPhone: z.string().optional(),
-        serviceId: z.number().int(),
-        employeeId: z.number().int().optional(),
-        priority: z.enum(["normal", "urgent", "vip"]).default("normal"),
-        priorityReason: z.string().optional(),
-        notes: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          customerName: z.string().min(1),
+          customerPhone: z.string().optional(),
+          serviceId: z.number().int(),
+          employeeId: z.number().int().optional(),
+          priority: z.enum(["normal", "urgent", "vip"]).default("normal"),
+          priorityReason: z.string().optional(),
+          notes: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { walkInQueue } = await import("../drizzle/schema");
@@ -8093,10 +9193,12 @@ export const appRouter = router({
         const currentQueue = await dbInstance
           .select()
           .from(walkInQueue)
-          .where(and(
-            eq(walkInQueue.tenantId, ctx.user.tenantId),
-            eq(walkInQueue.status, "waiting")
-          ));
+          .where(
+            and(
+              eq(walkInQueue.tenantId, ctx.user.tenantId),
+              eq(walkInQueue.status, "waiting")
+            )
+          );
 
         const position = currentQueue.length + 1;
 
@@ -8133,7 +9235,10 @@ export const appRouter = router({
     getQueue: tenantProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { walkInQueue, services } = await import("../drizzle/schema");
@@ -8156,13 +9261,15 @@ export const appRouter = router({
         })
         .from(walkInQueue)
         .leftJoin(services, eq(walkInQueue.serviceId, services.id))
-        .where(and(
-          eq(walkInQueue.tenantId, ctx.user.tenantId),
-          or(
-            eq(walkInQueue.status, "waiting"),
-            eq(walkInQueue.status, "in_service")
+        .where(
+          and(
+            eq(walkInQueue.tenantId, ctx.user.tenantId),
+            or(
+              eq(walkInQueue.status, "waiting"),
+              eq(walkInQueue.status, "in_service")
+            )
           )
-        ))
+        )
         .orderBy(walkInQueue.position);
 
       return queue;
@@ -8176,7 +9283,10 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { walkInQueue, services } = await import("../drizzle/schema");
@@ -8192,14 +9302,19 @@ export const appRouter = router({
           })
           .from(walkInQueue)
           .leftJoin(services, eq(walkInQueue.serviceId, services.id))
-          .where(and(
-            eq(walkInQueue.id, input.queueId),
-            eq(walkInQueue.tenantId, ctx.user.tenantId)
-          ))
+          .where(
+            and(
+              eq(walkInQueue.id, input.queueId),
+              eq(walkInQueue.tenantId, ctx.user.tenantId)
+            )
+          )
           .limit(1);
 
         if (!queueEntry || queueEntry.length === 0) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Queue entry not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Queue entry not found",
+          });
         }
 
         // Update status to in_service
@@ -8209,10 +9324,12 @@ export const appRouter = router({
             status: "in_service",
             startedAt: new Date(),
           })
-          .where(and(
-            eq(walkInQueue.id, input.queueId),
-            eq(walkInQueue.tenantId, ctx.user.tenantId)
-          ));
+          .where(
+            and(
+              eq(walkInQueue.id, input.queueId),
+              eq(walkInQueue.tenantId, ctx.user.tenantId)
+            )
+          );
 
         // Return service details for POS redirect
         return {
@@ -8232,7 +9349,10 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { walkInQueue, services } = await import("../drizzle/schema");
@@ -8249,14 +9369,19 @@ export const appRouter = router({
           })
           .from(walkInQueue)
           .leftJoin(services, eq(walkInQueue.serviceId, services.id))
-          .where(and(
-            eq(walkInQueue.id, input.queueId),
-            eq(walkInQueue.tenantId, ctx.user.tenantId)
-          ))
+          .where(
+            and(
+              eq(walkInQueue.id, input.queueId),
+              eq(walkInQueue.tenantId, ctx.user.tenantId)
+            )
+          )
           .limit(1);
 
         if (!queueEntry || queueEntry.length === 0) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Queue entry not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Queue entry not found",
+          });
         }
 
         // Update status to completed
@@ -8266,10 +9391,12 @@ export const appRouter = router({
             status: "completed",
             completedAt: new Date(),
           })
-          .where(and(
-            eq(walkInQueue.id, input.queueId),
-            eq(walkInQueue.tenantId, ctx.user.tenantId)
-          ));
+          .where(
+            and(
+              eq(walkInQueue.id, input.queueId),
+              eq(walkInQueue.tenantId, ctx.user.tenantId)
+            )
+          );
 
         // Return customer and service data for POS
         return {
@@ -8290,7 +9417,10 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { walkInQueue } = await import("../drizzle/schema");
@@ -8298,10 +9428,12 @@ export const appRouter = router({
         await dbInstance
           .update(walkInQueue)
           .set({ status: "canceled" })
-          .where(and(
-            eq(walkInQueue.id, input.queueId),
-            eq(walkInQueue.tenantId, ctx.user.tenantId)
-          ));
+          .where(
+            and(
+              eq(walkInQueue.id, input.queueId),
+              eq(walkInQueue.tenantId, ctx.user.tenantId)
+            )
+          );
 
         return { success: true };
       }),
@@ -8312,7 +9444,10 @@ export const appRouter = router({
     getAvailableBarbers: tenantProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { users, walkInQueue } = await import("../drizzle/schema");
@@ -8321,24 +9456,28 @@ export const appRouter = router({
       const allEmployees = await dbInstance
         .select({ id: users.id, name: users.name })
         .from(users)
-        .where(and(
-          eq(users.tenantId, ctx.user.tenantId),
-          eq(users.isActive, true),
-          or(
-            eq(users.role, "employee"),
-            eq(users.role, "admin"),
-            eq(users.role, "owner")
+        .where(
+          and(
+            eq(users.tenantId, ctx.user.tenantId),
+            eq(users.isActive, true),
+            or(
+              eq(users.role, "employee"),
+              eq(users.role, "admin"),
+              eq(users.role, "owner")
+            )
           )
-        ));
+        );
 
       // Get employees currently serving
       const busyEmployees = await dbInstance
         .select({ employeeId: walkInQueue.employeeId })
         .from(walkInQueue)
-        .where(and(
-          eq(walkInQueue.tenantId, ctx.user.tenantId),
-          eq(walkInQueue.status, "in_service")
-        ));
+        .where(
+          and(
+            eq(walkInQueue.tenantId, ctx.user.tenantId),
+            eq(walkInQueue.status, "in_service")
+          )
+        );
 
       const busyIds = busyEmployees.map(e => e.employeeId).filter(Boolean);
       const availableCount = allEmployees.length - busyIds.length;
@@ -8362,24 +9501,31 @@ export const appRouter = router({
     calculateWaitTimes: tenantProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
-      const { walkInQueue, services, users } = await import("../drizzle/schema");
+      const { walkInQueue, services, users } = await import(
+        "../drizzle/schema"
+      );
 
       // Get all active employees
       const allEmployees = await dbInstance
         .select({ id: users.id })
         .from(users)
-        .where(and(
-          eq(users.tenantId, ctx.user.tenantId),
-          eq(users.isActive, true),
-          or(
-            eq(users.role, "employee"),
-            eq(users.role, "admin"),
-            eq(users.role, "owner")
+        .where(
+          and(
+            eq(users.tenantId, ctx.user.tenantId),
+            eq(users.isActive, true),
+            or(
+              eq(users.role, "employee"),
+              eq(users.role, "admin"),
+              eq(users.role, "owner")
+            )
           )
-        ));
+        );
 
       const totalStaff = Math.max(allEmployees.length, 1); // At least 1 to avoid division by zero
 
@@ -8392,22 +9538,32 @@ export const appRouter = router({
         })
         .from(walkInQueue)
         .leftJoin(services, eq(walkInQueue.serviceId, services.id))
-        .where(and(
-          eq(walkInQueue.tenantId, ctx.user.tenantId),
-          eq(walkInQueue.status, "in_service")
-        ));
+        .where(
+          and(
+            eq(walkInQueue.tenantId, ctx.user.tenantId),
+            eq(walkInQueue.status, "in_service")
+          )
+        );
 
       // Calculate average remaining time for in-service customers
       const now = new Date();
       let totalRemainingTime = 0;
       for (const customer of inServiceCustomers) {
         if (customer.startedAt && customer.durationMinutes) {
-          const elapsedMinutes = Math.floor((now.getTime() - customer.startedAt.getTime()) / (1000 * 60));
-          const remainingMinutes = Math.max(customer.durationMinutes - elapsedMinutes, 0);
+          const elapsedMinutes = Math.floor(
+            (now.getTime() - customer.startedAt.getTime()) / (1000 * 60)
+          );
+          const remainingMinutes = Math.max(
+            customer.durationMinutes - elapsedMinutes,
+            0
+          );
           totalRemainingTime += remainingMinutes;
         }
       }
-      const avgRemainingTime = inServiceCustomers.length > 0 ? totalRemainingTime / inServiceCustomers.length : 0;
+      const avgRemainingTime =
+        inServiceCustomers.length > 0
+          ? totalRemainingTime / inServiceCustomers.length
+          : 0;
 
       // Get waiting customers with their service details
       const waitingCustomers = await dbInstance
@@ -8420,14 +9576,20 @@ export const appRouter = router({
         })
         .from(walkInQueue)
         .leftJoin(services, eq(walkInQueue.serviceId, services.id))
-        .where(and(
-          eq(walkInQueue.tenantId, ctx.user.tenantId),
-          eq(walkInQueue.status, "waiting")
-        ))
+        .where(
+          and(
+            eq(walkInQueue.tenantId, ctx.user.tenantId),
+            eq(walkInQueue.status, "waiting")
+          )
+        )
         .orderBy(walkInQueue.position);
 
       // Calculate wait time for each customer
-      const waitTimes: { queueId: number; estimatedWaitMinutes: number; color: string }[] = [];
+      const waitTimes: {
+        queueId: number;
+        estimatedWaitMinutes: number;
+        color: string;
+      }[] = [];
       let cumulativeTime = avgRemainingTime; // Start with remaining time of in-service customers
 
       for (let i = 0; i < waitingCustomers.length; i++) {
@@ -8476,15 +9638,20 @@ export const appRouter = router({
      * Update customer priority in queue
      */
     updatePriority: adminProcedure
-      .input(z.object({
-        queueId: z.number().int(),
-        priority: z.enum(["normal", "urgent", "vip"]),
-        priorityReason: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          queueId: z.number().int(),
+          priority: z.enum(["normal", "urgent", "vip"]),
+          priorityReason: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { walkInQueue } = await import("../drizzle/schema");
@@ -8495,10 +9662,12 @@ export const appRouter = router({
             priority: input.priority,
             priorityReason: input.priorityReason,
           })
-          .where(and(
-            eq(walkInQueue.id, input.queueId),
-            eq(walkInQueue.tenantId, ctx.user.tenantId)
-          ));
+          .where(
+            and(
+              eq(walkInQueue.id, input.queueId),
+              eq(walkInQueue.tenantId, ctx.user.tenantId)
+            )
+          );
 
         return { success: true };
       }),
@@ -8514,42 +9683,58 @@ export const appRouter = router({
     getOverview: platformAdminProcedure.query(async () => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
-      const { tenants, appointments, orders } = await import("../drizzle/schema");
+      const { tenants, appointments, orders } = await import(
+        "../drizzle/schema"
+      );
       const { eq, and, gte, sql } = await import("drizzle-orm");
 
       // Calculate date 30 days ago
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
+      const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split("T")[0];
 
       // Count tenants by status
       const tenantStats = await dbInstance
         .select({
           status: tenants.status,
-          countVal: sql<number>`COUNT(*)`
+          countVal: sql<number>`COUNT(*)`,
         })
         .from(tenants)
         .groupBy(tenants.status);
 
-      const totalTenants = tenantStats.reduce((sum, row) => sum + Number(row.countVal), 0);
-      const activeTenants = Number(tenantStats.find(row => row.status === 'active')?.countVal ?? 0);
-      const trialTenants = Number(tenantStats.find(row => row.status === 'trial')?.countVal ?? 0);
-      const suspendedTenants = Number(tenantStats.find(row => row.status === 'suspended')?.countVal ?? 0);
-      const canceledTenants = Number(tenantStats.find(row => row.status === 'canceled')?.countVal ?? 0);
+      const totalTenants = tenantStats.reduce(
+        (sum, row) => sum + Number(row.countVal),
+        0
+      );
+      const activeTenants = Number(
+        tenantStats.find(row => row.status === "active")?.countVal ?? 0
+      );
+      const trialTenants = Number(
+        tenantStats.find(row => row.status === "trial")?.countVal ?? 0
+      );
+      const suspendedTenants = Number(
+        tenantStats.find(row => row.status === "suspended")?.countVal ?? 0
+      );
+      const canceledTenants = Number(
+        tenantStats.find(row => row.status === "canceled")?.countVal ?? 0
+      );
 
       // Count completed appointments last 30 days
       const [appointmentStats] = await dbInstance
         .select({
-          countVal: sql<number>`COUNT(*)`
+          countVal: sql<number>`COUNT(*)`,
         })
         .from(appointments)
         .where(
           and(
             sql`${appointments.appointmentDate} >= ${thirtyDaysAgoStr}`,
-            eq(appointments.status, 'completed')
+            eq(appointments.status, "completed")
           )
         );
 
@@ -8557,7 +9742,7 @@ export const appRouter = router({
       const [orderStats] = await dbInstance
         .select({
           countVal: sql<number>`COUNT(*)`,
-          totalRevenue: sql<number>`COALESCE(SUM(${orders.total}), 0)`
+          totalRevenue: sql<number>`COALESCE(SUM(${orders.total}), 0)`,
         })
         .from(orders)
         .where(sql`${orders.orderDate} >= ${thirtyDaysAgoStr}`);
@@ -8578,20 +9763,37 @@ export const appRouter = router({
      * List all tenants with filtering, search, and pagination
      */
     listTenants: platformAdminProcedure
-      .input(z.object({
-        search: z.string().optional(),
-        status: z.enum(["all", "trial", "active", "suspended", "canceled"]).default("all"),
-        page: z.number().int().min(1).default(1),
-        pageSize: z.number().int().min(1).max(100).default(20),
-      }))
+      .input(
+        z.object({
+          search: z.string().optional(),
+          status: z
+            .enum(["all", "trial", "active", "suspended", "canceled"])
+            .default("all"),
+          page: z.number().int().min(1).default(1),
+          pageSize: z.number().int().min(1).max(100).default(20),
+        })
+      )
       .query(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
-        const { tenants, tenantSubscriptions, subscriptionPlans, users, customers, appointments, orders } = await import("../drizzle/schema");
-        const { eq, and, or, like, gte, sql, desc } = await import("drizzle-orm");
+        const {
+          tenants,
+          tenantSubscriptions,
+          subscriptionPlans,
+          users,
+          customers,
+          appointments,
+          orders,
+        } = await import("../drizzle/schema");
+        const { eq, and, or, like, gte, sql, desc } = await import(
+          "drizzle-orm"
+        );
 
         const { search, status, page, pageSize } = input;
         const offset = (page - 1) * pageSize;
@@ -8599,7 +9801,7 @@ export const appRouter = router({
         // Calculate date 30 days ago
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
+        const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split("T")[0];
 
         // Build WHERE conditions
         const conditions = [];
@@ -8640,8 +9842,14 @@ export const appRouter = router({
             currentPeriodEnd: tenantSubscriptions.currentPeriodEnd,
           })
           .from(tenants)
-          .leftJoin(tenantSubscriptions, eq(tenants.id, tenantSubscriptions.tenantId))
-          .leftJoin(subscriptionPlans, eq(tenantSubscriptions.planId, subscriptionPlans.id))
+          .leftJoin(
+            tenantSubscriptions,
+            eq(tenants.id, tenantSubscriptions.tenantId)
+          )
+          .leftJoin(
+            subscriptionPlans,
+            eq(tenantSubscriptions.planId, subscriptionPlans.id)
+          )
           .where(conditions.length > 0 ? and(...conditions) : undefined)
           .orderBy(desc(tenants.createdAt))
           .limit(pageSize)
@@ -8649,65 +9857,94 @@ export const appRouter = router({
 
         // Get counts for each tenant (employees, customers, appointments, orders)
         const tenantIds = tenantsData.map(t => t.id);
-        
+
         // Count employees
         const employeeCounts = await dbInstance
           .select({
             tenantId: users.tenantId,
-            countVal: sql<number>`COUNT(*)`
+            countVal: sql<number>`COUNT(*)`,
           })
           .from(users)
-          .where(sql`${users.tenantId} IN (${sql.join(tenantIds.map(id => sql`${id}`), sql`, `)})`)
+          .where(
+            sql`${users.tenantId} IN (${sql.join(
+              tenantIds.map(id => sql`${id}`),
+              sql`, `
+            )})`
+          )
           .groupBy(users.tenantId);
 
         // Count customers
         const customerCounts = await dbInstance
           .select({
             tenantId: customers.tenantId,
-            countVal: sql<number>`COUNT(*)`
+            countVal: sql<number>`COUNT(*)`,
           })
           .from(customers)
-          .where(sql`${customers.tenantId} IN (${sql.join(tenantIds.map(id => sql`${id}`), sql`, `)})`)
+          .where(
+            sql`${customers.tenantId} IN (${sql.join(
+              tenantIds.map(id => sql`${id}`),
+              sql`, `
+            )})`
+          )
           .groupBy(customers.tenantId);
 
         // Count appointments last 30 days
         const appointmentCounts = await dbInstance
           .select({
             tenantId: appointments.tenantId,
-            countVal: sql<number>`COUNT(*)`
+            countVal: sql<number>`COUNT(*)`,
           })
           .from(appointments)
           .where(
             and(
-              sql`${appointments.tenantId} IN (${sql.join(tenantIds.map(id => sql`${id}`), sql`, `)})`,
+              sql`${appointments.tenantId} IN (${sql.join(
+                tenantIds.map(id => sql`${id}`),
+                sql`, `
+              )})`,
               sql`${appointments.appointmentDate} >= ${thirtyDaysAgoStr}`
             )
           )
           .groupBy(appointments.tenantId);
 
         // Count orders and sum amounts last 30 days
-        const orderStats = tenantIds.length > 0 ? await dbInstance
-          .select({
-            tenantId: orders.tenantId,
-            countVal: sql<number>`COUNT(*)`,
-            totalAmount: sql<number>`COALESCE(SUM(${orders.total}), 0)`
-          })
-          .from(orders)
-          .where(
-            and(
-              sql`${orders.tenantId} IN (${sql.join(tenantIds.map(id => sql`${id}`), sql`, `)})`,
-              sql`${orders.orderDate} >= ${thirtyDaysAgoStr}`
-            )
-          )
-          .groupBy(orders.tenantId) : [];
+        const orderStats =
+          tenantIds.length > 0
+            ? await dbInstance
+                .select({
+                  tenantId: orders.tenantId,
+                  countVal: sql<number>`COUNT(*)`,
+                  totalAmount: sql<number>`COALESCE(SUM(${orders.total}), 0)`,
+                })
+                .from(orders)
+                .where(
+                  and(
+                    sql`${orders.tenantId} IN (${sql.join(
+                      tenantIds.map(id => sql`${id}`),
+                      sql`, `
+                    )})`,
+                    sql`${orders.orderDate} >= ${thirtyDaysAgoStr}`
+                  )
+                )
+                .groupBy(orders.tenantId)
+            : [];
 
         // Combine all data
         const items = tenantsData.map(tenant => {
-          const employeeCount = Number(employeeCounts.find(e => e.tenantId === tenant.id)?.countVal ?? 0);
-          const customerCount = Number(customerCounts.find(c => c.tenantId === tenant.id)?.countVal ?? 0);
-          const appointmentCountLast30Days = Number(appointmentCounts.find(a => a.tenantId === tenant.id)?.countVal ?? 0);
-          const orderCount = Number(orderStats.find(o => o.tenantId === tenant.id)?.countVal ?? 0);
-          const orderAmount = Number(orderStats.find(o => o.tenantId === tenant.id)?.totalAmount ?? 0);
+          const employeeCount = Number(
+            employeeCounts.find(e => e.tenantId === tenant.id)?.countVal ?? 0
+          );
+          const customerCount = Number(
+            customerCounts.find(c => c.tenantId === tenant.id)?.countVal ?? 0
+          );
+          const appointmentCountLast30Days = Number(
+            appointmentCounts.find(a => a.tenantId === tenant.id)?.countVal ?? 0
+          );
+          const orderCount = Number(
+            orderStats.find(o => o.tenantId === tenant.id)?.countVal ?? 0
+          );
+          const orderAmount = Number(
+            orderStats.find(o => o.tenantId === tenant.id)?.totalAmount ?? 0
+          );
 
           return {
             id: tenant.id,
@@ -8745,10 +9982,21 @@ export const appRouter = router({
       .query(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
-        const { tenants, tenantSubscriptions, subscriptionPlans, users, customers, appointments, orders } = await import("../drizzle/schema");
+        const {
+          tenants,
+          tenantSubscriptions,
+          subscriptionPlans,
+          users,
+          customers,
+          appointments,
+          orders,
+        } = await import("../drizzle/schema");
         const { eq, and, gte, sql } = await import("drizzle-orm");
 
         // Get tenant info
@@ -8758,7 +10006,10 @@ export const appRouter = router({
           .where(eq(tenants.id, input.tenantId));
 
         if (!tenant) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Tenant not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Tenant not found",
+          });
         }
 
         // Get subscription info
@@ -8773,7 +10024,10 @@ export const appRouter = router({
             stripeSubscriptionId: tenantSubscriptions.stripeSubscriptionId,
           })
           .from(tenantSubscriptions)
-          .leftJoin(subscriptionPlans, eq(tenantSubscriptions.planId, subscriptionPlans.id))
+          .leftJoin(
+            subscriptionPlans,
+            eq(tenantSubscriptions.planId, subscriptionPlans.id)
+          )
           .where(eq(tenantSubscriptions.tenantId, input.tenantId))
           .orderBy(desc(tenantSubscriptions.currentPeriodEnd))
           .limit(1);
@@ -8781,7 +10035,7 @@ export const appRouter = router({
         // Calculate date 30 days ago
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
+        const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split("T")[0];
 
         // Get usage stats
         const [customerCount] = await dbInstance
@@ -8797,7 +10051,7 @@ export const appRouter = router({
         const [appointmentStats] = await dbInstance
           .select({
             total: sql<number>`COUNT(*)`,
-            completed: sql<number>`SUM(CASE WHEN ${appointments.status} = 'completed' THEN 1 ELSE 0 END)`
+            completed: sql<number>`SUM(CASE WHEN ${appointments.status} = 'completed' THEN 1 ELSE 0 END)`,
           })
           .from(appointments)
           .where(eq(appointments.tenantId, input.tenantId));
@@ -8815,7 +10069,7 @@ export const appRouter = router({
         const [orderStats] = await dbInstance
           .select({
             total: sql<number>`COUNT(*)`,
-            totalAmount: sql<number>`COALESCE(SUM(${orders.total}), 0)`
+            totalAmount: sql<number>`COALESCE(SUM(${orders.total}), 0)`,
           })
           .from(orders)
           .where(eq(orders.tenantId, input.tenantId));
@@ -8823,7 +10077,7 @@ export const appRouter = router({
         const [ordersLast30] = await dbInstance
           .select({
             countVal: sql<number>`COUNT(*)`,
-            totalAmount: sql<number>`COALESCE(SUM(${orders.total}), 0)`
+            totalAmount: sql<number>`COALESCE(SUM(${orders.total}), 0)`,
           })
           .from(orders)
           .where(
@@ -8843,20 +10097,26 @@ export const appRouter = router({
             createdAt: tenant.createdAt.toISOString(),
             trialEndsAt: tenant.trialEndsAt?.toISOString() ?? null,
           },
-          subscription: subscription ? {
-            planId: subscription.planId,
-            planName: subscription.planName ?? "Unknown",
-            status: subscription.status,
-            priceMonthly: subscription.priceMonthly ?? 0,
-            currentPeriodStart: subscription.currentPeriodStart?.toISOString() ?? "",
-            currentPeriodEnd: subscription.currentPeriodEnd?.toISOString() ?? "",
-            stripeSubscriptionId: subscription.stripeSubscriptionId,
-          } : null,
+          subscription: subscription
+            ? {
+                planId: subscription.planId,
+                planName: subscription.planName ?? "Unknown",
+                status: subscription.status,
+                priceMonthly: subscription.priceMonthly ?? 0,
+                currentPeriodStart:
+                  subscription.currentPeriodStart?.toISOString() ?? "",
+                currentPeriodEnd:
+                  subscription.currentPeriodEnd?.toISOString() ?? "",
+                stripeSubscriptionId: subscription.stripeSubscriptionId,
+              }
+            : null,
           usage: {
             totalCustomers: Number(customerCount?.countVal ?? 0),
             totalEmployees: Number(employeeCount?.countVal ?? 0),
             totalAppointments: Number(appointmentStats?.total ?? 0),
-            totalCompletedAppointments: Number(appointmentStats?.completed ?? 0),
+            totalCompletedAppointments: Number(
+              appointmentStats?.completed ?? 0
+            ),
             totalOrders: Number(orderStats?.total ?? 0),
             totalOrderAmount: Number(orderStats?.totalAmount ?? 0),
             last30DaysAppointments: Number(appointmentsLast30?.countVal ?? 0),
@@ -8870,18 +10130,27 @@ export const appRouter = router({
      * Update tenant plan and/or status
      */
     updateTenantPlanAndStatus: platformAdminProcedure
-      .input(z.object({
-        tenantId: z.string(),
-        status: z.enum(["trial", "active", "suspended", "canceled"]).optional(),
-        planId: z.number().int().nullable().optional(),
-      }))
+      .input(
+        z.object({
+          tenantId: z.string(),
+          status: z
+            .enum(["trial", "active", "suspended", "canceled"])
+            .optional(),
+          planId: z.number().int().nullable().optional(),
+        })
+      )
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
-        const { tenants, tenantSubscriptions } = await import("../drizzle/schema");
+        const { tenants, tenantSubscriptions } = await import(
+          "../drizzle/schema"
+        );
         const { eq } = await import("drizzle-orm");
 
         // Update tenant status if provided
@@ -8917,16 +10186,14 @@ export const appRouter = router({
             const oneMonthLater = new Date(now);
             oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
 
-            await dbInstance
-              .insert(tenantSubscriptions)
-              .values({
-                tenantId: input.tenantId,
-                planId: input.planId,
-                status: "active",
-                currentPeriodStart: now,
-                currentPeriodEnd: oneMonthLater,
-                stripeSubscriptionId: null,
-              });
+            await dbInstance.insert(tenantSubscriptions).values({
+              tenantId: input.tenantId,
+              planId: input.planId,
+              status: "active",
+              currentPeriodStart: now,
+              currentPeriodEnd: oneMonthLater,
+              stripeSubscriptionId: null,
+            });
           }
         }
 
@@ -8948,14 +10215,15 @@ export const appRouter = router({
     getSubscriptionPlans: platformAdminProcedure.query(async () => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { subscriptionPlans } = await import("../drizzle/schema");
 
-      const plans = await dbInstance
-        .select()
-        .from(subscriptionPlans);
+      const plans = await dbInstance.select().from(subscriptionPlans);
 
       return plans;
     }),
@@ -8964,22 +10232,27 @@ export const appRouter = router({
      * Create a new subscription plan
      */
     createSubscriptionPlan: platformAdminProcedure
-      .input(z.object({
-        name: z.string().min(1),
-        displayNameNo: z.string().min(1),
-        displayNameEn: z.string().optional(),
-        priceMonthly: z.number().min(0),
-        priceYearly: z.number().min(0).optional(),
-        maxEmployees: z.number().min(0).optional(),
-        maxCustomers: z.number().min(0).optional(),
-        maxAppointmentsPerMonth: z.number().min(0).optional(),
-        features: z.string().optional(),
-        isActive: z.boolean().default(true),
-      }))
+      .input(
+        z.object({
+          name: z.string().min(1),
+          displayNameNo: z.string().min(1),
+          displayNameEn: z.string().optional(),
+          priceMonthly: z.number().min(0),
+          priceYearly: z.number().min(0).optional(),
+          maxEmployees: z.number().min(0).optional(),
+          maxCustomers: z.number().min(0).optional(),
+          maxAppointmentsPerMonth: z.number().min(0).optional(),
+          features: z.string().optional(),
+          isActive: z.boolean().default(true),
+        })
+      )
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { subscriptionPlans } = await import("../drizzle/schema");
@@ -8992,7 +10265,10 @@ export const appRouter = router({
           .where(eq(subscriptionPlans.name, input.name));
 
         if (existing) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Plan name already exists" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Plan name already exists",
+          });
         }
 
         // Create new plan
@@ -9003,7 +10279,14 @@ export const appRouter = router({
             displayNameNo: input.displayNameNo,
             priceMonthly: String(input.priceMonthly),
             maxEmployees: input.maxEmployees || null,
-            features: input.features ? JSON.parse(`["${input.features.split(',').map((f: string) => f.trim()).join('","')}"]`) : null,
+            features: input.features
+              ? JSON.parse(
+                  `["${input.features
+                    .split(",")
+                    .map((f: string) => f.trim())
+                    .join('","')}"]`
+                )
+              : null,
             isActive: input.isActive,
           })
           .$returningId();
@@ -9019,23 +10302,28 @@ export const appRouter = router({
      * Update an existing subscription plan
      */
     updateSubscriptionPlan: platformAdminProcedure
-      .input(z.object({
-        planId: z.number(),
-        name: z.string().min(1).optional(),
-        displayNameNo: z.string().min(1).optional(),
-        displayNameEn: z.string().optional(),
-        priceMonthly: z.number().min(0).optional(),
-        priceYearly: z.number().min(0).optional(),
-        maxEmployees: z.number().min(0).nullable().optional(),
-        maxCustomers: z.number().min(0).nullable().optional(),
-        maxAppointmentsPerMonth: z.number().min(0).nullable().optional(),
-        features: z.string().nullable().optional(),
-        isActive: z.boolean().optional(),
-      }))
+      .input(
+        z.object({
+          planId: z.number(),
+          name: z.string().min(1).optional(),
+          displayNameNo: z.string().min(1).optional(),
+          displayNameEn: z.string().optional(),
+          priceMonthly: z.number().min(0).optional(),
+          priceYearly: z.number().min(0).optional(),
+          maxEmployees: z.number().min(0).nullable().optional(),
+          maxCustomers: z.number().min(0).nullable().optional(),
+          maxAppointmentsPerMonth: z.number().min(0).nullable().optional(),
+          features: z.string().nullable().optional(),
+          isActive: z.boolean().optional(),
+        })
+      )
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { subscriptionPlans } = await import("../drizzle/schema");
@@ -9059,20 +10347,30 @@ export const appRouter = router({
             .where(eq(subscriptionPlans.name, input.name));
 
           if (conflict) {
-            throw new TRPCError({ code: "BAD_REQUEST", message: "Plan name already exists" });
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Plan name already exists",
+            });
           }
         }
 
         // Build update object
         const updateData: Record<string, any> = {};
         if (input.name !== undefined) updateData.name = input.name;
-        if (input.displayNameNo !== undefined) updateData.displayNameNo = input.displayNameNo;
-        if (input.displayNameEn !== undefined) updateData.displayNameEn = input.displayNameEn;
-        if (input.priceMonthly !== undefined) updateData.priceMonthly = input.priceMonthly;
-        if (input.priceYearly !== undefined) updateData.priceYearly = input.priceYearly;
-        if (input.maxEmployees !== undefined) updateData.maxEmployees = input.maxEmployees;
-        if (input.maxCustomers !== undefined) updateData.maxCustomers = input.maxCustomers;
-        if (input.maxAppointmentsPerMonth !== undefined) updateData.maxAppointmentsPerMonth = input.maxAppointmentsPerMonth;
+        if (input.displayNameNo !== undefined)
+          updateData.displayNameNo = input.displayNameNo;
+        if (input.displayNameEn !== undefined)
+          updateData.displayNameEn = input.displayNameEn;
+        if (input.priceMonthly !== undefined)
+          updateData.priceMonthly = input.priceMonthly;
+        if (input.priceYearly !== undefined)
+          updateData.priceYearly = input.priceYearly;
+        if (input.maxEmployees !== undefined)
+          updateData.maxEmployees = input.maxEmployees;
+        if (input.maxCustomers !== undefined)
+          updateData.maxCustomers = input.maxCustomers;
+        if (input.maxAppointmentsPerMonth !== undefined)
+          updateData.maxAppointmentsPerMonth = input.maxAppointmentsPerMonth;
         if (input.features !== undefined) updateData.features = input.features;
         if (input.isActive !== undefined) updateData.isActive = input.isActive;
 
@@ -9096,10 +10394,15 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
-        const { subscriptionPlans, tenantSubscriptions } = await import("../drizzle/schema");
+        const { subscriptionPlans, tenantSubscriptions } = await import(
+          "../drizzle/schema"
+        );
         const { eq, sql } = await import("drizzle-orm");
 
         // Check if plan exists
@@ -9119,9 +10422,9 @@ export const appRouter = router({
           .where(eq(tenantSubscriptions.planId, input.planId));
 
         if (Number(activeSubscriptions?.count || 0) > 0) {
-          throw new TRPCError({ 
-            code: "BAD_REQUEST", 
-            message: `Cannot delete plan. ${activeSubscriptions?.count} tenant(s) are using this plan.` 
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Cannot delete plan. ${activeSubscriptions?.count} tenant(s) are using this plan.`,
           });
         }
 
@@ -9145,7 +10448,10 @@ export const appRouter = router({
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { tenants } = await import("../drizzle/schema");
@@ -9158,7 +10464,10 @@ export const appRouter = router({
           .where(eq(tenants.id, input.tenantId));
 
         if (!tenant) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Tenant not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Tenant not found",
+          });
         }
 
         // Create new session with impersonation
@@ -9189,28 +10498,29 @@ export const appRouter = router({
     /**
      * Clear impersonation and return to platform admin
      */
-    clearImpersonation: platformAdminProcedure
-      .mutation(async ({ ctx }) => {
-        // Clear the current session cookie completely
-        const { COOKIE_NAME } = await import("@shared/const");
-        const { getSessionCookieOptions } = await import("./_core/cookies");
+    clearImpersonation: platformAdminProcedure.mutation(async ({ ctx }) => {
+      // Clear the current session cookie completely
+      const { COOKIE_NAME } = await import("@shared/const");
+      const { getSessionCookieOptions } = await import("./_core/cookies");
 
-        const cookieOptions = getSessionCookieOptions(ctx.req);
-        ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      const cookieOptions = getSessionCookieOptions(ctx.req);
+      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
 
-        return {
-          success: true,
-          redirectUrl: "/",
-        };
-      }),
+      return {
+        success: true,
+        redirectUrl: "/",
+      };
+    }),
 
     /**
      * Get service templates for onboarding
      */
     getServiceTemplates: platformAdminProcedure
-      .input(z.object({
-        salonType: z.enum(["frisør", "barber", "skjønnhet"]),
-      }))
+      .input(
+        z.object({
+          salonType: z.enum(["frisør", "barber", "skjønnhet"]),
+        })
+      )
       .query(async ({ input }) => {
         // Service templates by salon type
         const templates = {
@@ -9257,7 +10567,10 @@ export const appRouter = router({
       .query(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { tenants } = await import("../drizzle/schema");
@@ -9279,7 +10592,10 @@ export const appRouter = router({
       .query(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { tenants } = await import("../drizzle/schema");
@@ -9297,35 +10613,43 @@ export const appRouter = router({
      * Create tenant with complete onboarding
      */
     createTenantWithOnboarding: platformAdminProcedure
-      .input(z.object({
-        // Basic info
-        name: z.string().min(1),
-        subdomain: z.string().min(1),
-        orgNumber: z.string().min(1),
-        contactEmail: z.string().email(),
-        contactPhone: z.string().min(1),
-        // Plan
-        planId: z.number().int(),
-        // Admin user
-        adminFirstName: z.string().min(1),
-        adminLastName: z.string().min(1),
-        adminEmail: z.string().email(),
-        adminPhone: z.string().min(1),
-        // Services
-        salonType: z.enum(["frisør", "barber", "skjønnhet"]),
-        services: z.array(z.object({
-          name: z.string(),
-          duration: z.number(),
-          price: z.number(),
-        })),
-      }))
+      .input(
+        z.object({
+          // Basic info
+          name: z.string().min(1),
+          subdomain: z.string().min(1),
+          orgNumber: z.string().min(1),
+          contactEmail: z.string().email(),
+          contactPhone: z.string().min(1),
+          // Plan
+          planId: z.number().int(),
+          // Admin user
+          adminFirstName: z.string().min(1),
+          adminLastName: z.string().min(1),
+          adminEmail: z.string().email(),
+          adminPhone: z.string().min(1),
+          // Services
+          salonType: z.enum(["frisør", "barber", "skjønnhet"]),
+          services: z.array(
+            z.object({
+              name: z.string(),
+              duration: z.number(),
+              price: z.number(),
+            })
+          ),
+        })
+      )
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
-        const { tenants, users, services, tenantSubscriptions, settings } = await import("../drizzle/schema");
+        const { tenants, users, services, tenantSubscriptions, settings } =
+          await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
         const bcrypt = await import("bcrypt");
 
@@ -9336,7 +10660,10 @@ export const appRouter = router({
           .where(eq(tenants.subdomain, input.subdomain.toLowerCase()));
 
         if (existingSubdomain) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Subdomain already exists" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Subdomain already exists",
+          });
         }
 
         // Check org number uniqueness
@@ -9346,12 +10673,16 @@ export const appRouter = router({
           .where(eq(tenants.orgNumber, input.orgNumber));
 
         if (existingOrgNumber) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Organization number already exists" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Organization number already exists",
+          });
         }
 
         // Generate secure password (8 characters: letters + numbers)
         const generatePassword = () => {
-          const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+          const chars =
+            "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
           let password = "";
           for (let i = 0; i < 8; i++) {
             password += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -9443,9 +10774,9 @@ export const appRouter = router({
         } catch (error) {
           // If any step fails, the database will rollback automatically
           console.error("Error creating tenant:", error);
-          throw new TRPCError({ 
-            code: "INTERNAL_SERVER_ERROR", 
-            message: "Failed to create tenant. Please try again." 
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to create tenant. Please try again.",
           });
         }
       }),
@@ -9454,14 +10785,19 @@ export const appRouter = router({
      * Suspend a tenant (set status to suspended)
      */
     suspendTenant: platformAdminProcedure
-      .input(z.object({
-        tenantId: z.string(),
-        reason: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          tenantId: z.string(),
+          reason: z.string().optional(),
+        })
+      )
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { tenants } = await import("../drizzle/schema");
@@ -9474,7 +10810,10 @@ export const appRouter = router({
           .where(eq(tenants.id, input.tenantId));
 
         if (!tenant) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Tenant not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Tenant not found",
+          });
         }
 
         // Update tenant status to suspended
@@ -9493,13 +10832,18 @@ export const appRouter = router({
      * Reactivate a suspended tenant
      */
     reactivateTenant: platformAdminProcedure
-      .input(z.object({
-        tenantId: z.string(),
-      }))
+      .input(
+        z.object({
+          tenantId: z.string(),
+        })
+      )
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { tenants } = await import("../drizzle/schema");
@@ -9512,7 +10856,10 @@ export const appRouter = router({
           .where(eq(tenants.id, input.tenantId));
 
         if (!tenant) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Tenant not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Tenant not found",
+          });
         }
 
         // Update tenant status to active
@@ -9531,17 +10878,23 @@ export const appRouter = router({
      * Delete a tenant (soft delete by setting status to canceled)
      */
     deleteTenant: platformAdminProcedure
-      .input(z.object({
-        tenantId: z.string(),
-        confirmName: z.string(), // User must type tenant name to confirm
-      }))
+      .input(
+        z.object({
+          tenantId: z.string(),
+          confirmName: z.string(), // User must type tenant name to confirm
+        })
+      )
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
-        const { tenants, users, customers, appointments, services } = await import("../drizzle/schema");
+        const { tenants, users, customers, appointments, services } =
+          await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
 
         // Check if tenant exists
@@ -9551,14 +10904,18 @@ export const appRouter = router({
           .where(eq(tenants.id, input.tenantId));
 
         if (!tenant) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Tenant not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Tenant not found",
+          });
         }
 
         // Verify confirmation name matches
         if (input.confirmName !== tenant.name) {
-          throw new TRPCError({ 
-            code: "BAD_REQUEST", 
-            message: "Confirmation name does not match. Please type the exact salon name to confirm deletion." 
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message:
+              "Confirmation name does not match. Please type the exact salon name to confirm deletion.",
           });
         }
 
@@ -9584,18 +10941,40 @@ export const appRouter = router({
      * Permanently delete a tenant and all its data (hard delete)
      */
     permanentlyDeleteTenant: platformAdminProcedure
-      .input(z.object({
-        tenantId: z.string(),
-        confirmName: z.string(),
-        confirmPermanent: z.literal("DELETE PERMANENTLY"),
-      }))
+      .input(
+        z.object({
+          tenantId: z.string(),
+          confirmName: z.string(),
+          confirmPermanent: z.literal("DELETE PERMANENTLY"),
+        })
+      )
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
-        const { tenants, users, customers, appointments, services, products, orders, payments, notifications, auditLogs, employeeSchedules, timesheets, expenses, loyaltyPoints, loyaltyTransactions, tenantSubscriptions } = await import("../drizzle/schema");
+        const {
+          tenants,
+          users,
+          customers,
+          appointments,
+          services,
+          products,
+          orders,
+          payments,
+          notifications,
+          auditLogs,
+          employeeSchedules,
+          timesheets,
+          expenses,
+          loyaltyPoints,
+          loyaltyTransactions,
+          tenantSubscriptions,
+        } = await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
 
         // Check if tenant exists
@@ -9605,56 +10984,89 @@ export const appRouter = router({
           .where(eq(tenants.id, input.tenantId));
 
         if (!tenant) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Tenant not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Tenant not found",
+          });
         }
 
         // Verify confirmation name matches
         if (input.confirmName !== tenant.name) {
-          throw new TRPCError({ 
-            code: "BAD_REQUEST", 
-            message: "Confirmation name does not match" 
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Confirmation name does not match",
           });
         }
 
         // Delete all related data in order (respecting foreign keys)
         try {
           // Delete timesheets
-          await dbInstance.delete(timesheets).where(eq(timesheets.tenantId, input.tenantId));
-          
+          await dbInstance
+            .delete(timesheets)
+            .where(eq(timesheets.tenantId, input.tenantId));
+
           // Delete loyalty data
-          await dbInstance.delete(loyaltyTransactions).where(eq(loyaltyTransactions.tenantId, input.tenantId));
-          await dbInstance.delete(loyaltyPoints).where(eq(loyaltyPoints.tenantId, input.tenantId));
-          
+          await dbInstance
+            .delete(loyaltyTransactions)
+            .where(eq(loyaltyTransactions.tenantId, input.tenantId));
+          await dbInstance
+            .delete(loyaltyPoints)
+            .where(eq(loyaltyPoints.tenantId, input.tenantId));
+
           // Delete financial data
-          await dbInstance.delete(expenses).where(eq(expenses.tenantId, input.tenantId));
-          await dbInstance.delete(payments).where(eq(payments.tenantId, input.tenantId));
-          await dbInstance.delete(orders).where(eq(orders.tenantId, input.tenantId));
-          
+          await dbInstance
+            .delete(expenses)
+            .where(eq(expenses.tenantId, input.tenantId));
+          await dbInstance
+            .delete(payments)
+            .where(eq(payments.tenantId, input.tenantId));
+          await dbInstance
+            .delete(orders)
+            .where(eq(orders.tenantId, input.tenantId));
+
           // Delete appointments
-          await dbInstance.delete(appointments).where(eq(appointments.tenantId, input.tenantId));
-          
+          await dbInstance
+            .delete(appointments)
+            .where(eq(appointments.tenantId, input.tenantId));
+
           // Delete schedules - employeeSchedules doesn't have tenantId, need to delete via employee IDs
           // This is handled by cascade when users are deleted
-          
+
           // Delete products and services
-          await dbInstance.delete(products).where(eq(products.tenantId, input.tenantId));
-          await dbInstance.delete(services).where(eq(services.tenantId, input.tenantId));
-          
+          await dbInstance
+            .delete(products)
+            .where(eq(products.tenantId, input.tenantId));
+          await dbInstance
+            .delete(services)
+            .where(eq(services.tenantId, input.tenantId));
+
           // Delete customers
-          await dbInstance.delete(customers).where(eq(customers.tenantId, input.tenantId));
-          
+          await dbInstance
+            .delete(customers)
+            .where(eq(customers.tenantId, input.tenantId));
+
           // Delete notifications and audit logs
-          await dbInstance.delete(notifications).where(eq(notifications.tenantId, input.tenantId));
-          await dbInstance.delete(auditLogs).where(eq(auditLogs.tenantId, input.tenantId));
-          
+          await dbInstance
+            .delete(notifications)
+            .where(eq(notifications.tenantId, input.tenantId));
+          await dbInstance
+            .delete(auditLogs)
+            .where(eq(auditLogs.tenantId, input.tenantId));
+
           // Delete users
-          await dbInstance.delete(users).where(eq(users.tenantId, input.tenantId));
-          
+          await dbInstance
+            .delete(users)
+            .where(eq(users.tenantId, input.tenantId));
+
           // Delete subscription
-          await dbInstance.delete(tenantSubscriptions).where(eq(tenantSubscriptions.tenantId, input.tenantId));
-          
+          await dbInstance
+            .delete(tenantSubscriptions)
+            .where(eq(tenantSubscriptions.tenantId, input.tenantId));
+
           // Finally delete tenant
-          await dbInstance.delete(tenants).where(eq(tenants.id, input.tenantId));
+          await dbInstance
+            .delete(tenants)
+            .where(eq(tenants.id, input.tenantId));
 
           return {
             success: true,
@@ -9662,9 +11074,9 @@ export const appRouter = router({
           };
         } catch (error) {
           console.error("Error permanently deleting tenant:", error);
-          throw new TRPCError({ 
-            code: "INTERNAL_SERVER_ERROR", 
-            message: "Failed to delete tenant. Some data may remain." 
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to delete tenant. Some data may remain.",
           });
         }
       }),
@@ -9674,8 +11086,12 @@ export const appRouter = router({
       .input(z.object({ tenantId: z.string() }))
       .query(async ({ input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-        
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
+
         const { users } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
 
@@ -9687,14 +11103,16 @@ export const appRouter = router({
             phone: users.phone,
           })
           .from(users)
-          .where(and(
-            eq(users.tenantId, input.tenantId),
-            eq(users.role, "owner")
-          ))
+          .where(
+            and(eq(users.tenantId, input.tenantId), eq(users.role, "owner"))
+          )
           .limit(1);
 
         if (!owner) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Tenant owner not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Tenant owner not found",
+          });
         }
 
         return owner;
@@ -9702,17 +11120,23 @@ export const appRouter = router({
 
     // Update tenant owner credentials
     updateTenantOwnerCredentials: platformAdminProcedure
-      .input(z.object({
-        tenantId: z.string(),
-        email: z.string().email().optional(),
-        name: z.string().min(1).optional(),
-        phone: z.string().optional(),
-        newPassword: z.string().min(6).optional(),
-      }))
+      .input(
+        z.object({
+          tenantId: z.string(),
+          email: z.string().email().optional(),
+          name: z.string().min(1).optional(),
+          phone: z.string().optional(),
+          newPassword: z.string().min(6).optional(),
+        })
+      )
       .mutation(async ({ input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-        
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
+
         const { users } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
 
@@ -9720,14 +11144,16 @@ export const appRouter = router({
         const [owner] = await dbInstance
           .select()
           .from(users)
-          .where(and(
-            eq(users.tenantId, input.tenantId),
-            eq(users.role, "owner")
-          ))
+          .where(
+            and(eq(users.tenantId, input.tenantId), eq(users.role, "owner"))
+          )
           .limit(1);
 
         if (!owner) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Tenant owner not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Tenant owner not found",
+          });
         }
 
         // Check if email is being changed and if it's already in use
@@ -9739,7 +11165,10 @@ export const appRouter = router({
             .limit(1);
 
           if (existingUser) {
-            throw new TRPCError({ code: "CONFLICT", message: "E-postadressen er allerede i bruk" });
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "E-postadressen er allerede i bruk",
+            });
           }
         }
 
@@ -9756,7 +11185,10 @@ export const appRouter = router({
         }
 
         if (Object.keys(updateData).length === 0) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "No changes provided" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "No changes provided",
+          });
         }
 
         // Update the owner
@@ -9779,17 +11211,21 @@ export const appRouter = router({
     // Get Unimicro settings for current tenant
     getSettings: adminProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
-      if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-      
+      if (!dbInstance)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
+
       const { unimicroSettings } = await import("../drizzle/schema");
       const { eq } = await import("drizzle-orm");
-      
+
       const [settings] = await dbInstance
         .select()
         .from(unimicroSettings)
         .where(eq(unimicroSettings.tenantId, ctx.tenantId))
         .limit(1);
-      
+
       if (!settings) {
         // Return default settings if not configured yet
         return {
@@ -9801,7 +11237,7 @@ export const appRouter = router({
           lastSyncStatus: null,
         };
       }
-      
+
       // Don't expose sensitive data to frontend
       return {
         enabled: settings.enabled,
@@ -9817,34 +11253,42 @@ export const appRouter = router({
         lastSyncErrors: settings.lastSyncErrors,
       };
     }),
-    
+
     // Update Unimicro settings
     updateSettings: adminProcedure
-      .input(z.object({
-        enabled: z.boolean().optional(),
-        clientId: z.string().optional(),
-        clientSecret: z.string().optional(),
-        companyId: z.number().optional(),
-        syncFrequency: z.enum(["daily", "weekly", "monthly", "manual", "custom"]).optional(),
-        syncDayOfWeek: z.number().min(0).max(6).optional(),
-        syncDayOfMonth: z.number().min(-1).max(31).optional(),
-        syncHour: z.number().min(0).max(23).optional(),
-        syncMinute: z.number().min(0).max(59).optional(),
-      }))
+      .input(
+        z.object({
+          enabled: z.boolean().optional(),
+          clientId: z.string().optional(),
+          clientSecret: z.string().optional(),
+          companyId: z.number().optional(),
+          syncFrequency: z
+            .enum(["daily", "weekly", "monthly", "manual", "custom"])
+            .optional(),
+          syncDayOfWeek: z.number().min(0).max(6).optional(),
+          syncDayOfMonth: z.number().min(-1).max(31).optional(),
+          syncHour: z.number().min(0).max(23).optional(),
+          syncMinute: z.number().min(0).max(59).optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-        
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
+
         const { unimicroSettings } = await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
-        
+
         // Check if settings exist
         const [existing] = await dbInstance
           .select()
           .from(unimicroSettings)
           .where(eq(unimicroSettings.tenantId, ctx.tenantId))
           .limit(1);
-        
+
         if (existing) {
           // Update existing settings
           await dbInstance
@@ -9858,20 +11302,22 @@ export const appRouter = router({
             ...input,
           });
         }
-        
+
         return { success: true };
       }),
-    
+
     // Test connection to Unimicro API
     testConnection: adminProcedure.mutation(async ({ ctx }) => {
       try {
         const { getUnimicroClient } = await import("./unimicro/client");
         const client = await getUnimicroClient(ctx.tenantId);
         const isConnected = await client.testConnection();
-        
+
         return {
           success: isConnected,
-          message: isConnected ? "Tilkobling vellykket!" : "Tilkobling mislyktes",
+          message: isConnected
+            ? "Tilkobling vellykket!"
+            : "Tilkobling mislyktes",
         };
       } catch (error: any) {
         return {
@@ -9880,35 +11326,51 @@ export const appRouter = router({
         };
       }
     }),
-    
+
     // Get sync logs
     getSyncLogs: adminProcedure
-      .input(z.object({
-        limit: z.number().min(1).max(100).default(50),
-        operation: z.enum(["invoice_sync", "customer_sync", "payment_sync", "full_sync", "test_connection"]).optional(),
-        status: z.enum(["success", "failed", "partial"]).optional(),
-      }))
+      .input(
+        z.object({
+          limit: z.number().min(1).max(100).default(50),
+          operation: z
+            .enum([
+              "invoice_sync",
+              "customer_sync",
+              "payment_sync",
+              "full_sync",
+              "test_connection",
+            ])
+            .optional(),
+          status: z.enum(["success", "failed", "partial"]).optional(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-        
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
+
         const { unimicroSyncLog } = await import("../drizzle/schema");
         const { eq, and, desc } = await import("drizzle-orm");
-        
+
         const conditions = [eq(unimicroSyncLog.tenantId, ctx.tenantId)];
-        if (input.operation) conditions.push(eq(unimicroSyncLog.operation, input.operation));
-        if (input.status) conditions.push(eq(unimicroSyncLog.status, input.status));
-        
+        if (input.operation)
+          conditions.push(eq(unimicroSyncLog.operation, input.operation));
+        if (input.status)
+          conditions.push(eq(unimicroSyncLog.status, input.status));
+
         const logs = await dbInstance
           .select()
           .from(unimicroSyncLog)
           .where(and(...conditions))
           .orderBy(desc(unimicroSyncLog.createdAt))
           .limit(input.limit);
-        
+
         return logs;
       }),
-    
+
     // Sync single customer to Unimicro
     syncCustomer: adminProcedure
       .input(z.object({ customerId: z.number() }))
@@ -9916,15 +11378,17 @@ export const appRouter = router({
         const { syncCustomerToUnimicro } = await import("./unimicro/customers");
         return syncCustomerToUnimicro(ctx.tenantId, input.customerId);
       }),
-    
+
     // Sync multiple customers to Unimicro
     syncCustomers: adminProcedure
       .input(z.object({ customerIds: z.array(z.number()) }))
       .mutation(async ({ ctx, input }) => {
-        const { syncCustomersToUnimicro } = await import("./unimicro/customers");
+        const { syncCustomersToUnimicro } = await import(
+          "./unimicro/customers"
+        );
         return syncCustomersToUnimicro(ctx.tenantId, input.customerIds);
       }),
-    
+
     // Get customer sync status
     getCustomerSyncStatus: adminProcedure
       .input(z.object({ customerId: z.number() }))
@@ -9932,13 +11396,13 @@ export const appRouter = router({
         const { getCustomerSyncStatus } = await import("./unimicro/customers");
         return getCustomerSyncStatus(ctx.tenantId, input.customerId);
       }),
-    
+
     // Get unsynced customers
     getUnsyncedCustomers: adminProcedure.query(async ({ ctx }) => {
       const { getUnsyncedCustomers } = await import("./unimicro/customers");
       return getUnsyncedCustomers(ctx.tenantId);
     }),
-    
+
     // Sync single order/invoice to Unimicro
     syncOrder: adminProcedure
       .input(z.object({ orderId: z.number() }))
@@ -9946,7 +11410,7 @@ export const appRouter = router({
         const { syncOrderToUnimicro } = await import("./unimicro/invoices");
         return syncOrderToUnimicro(ctx.tenantId, input.orderId);
       }),
-    
+
     // Sync multiple orders/invoices to Unimicro
     syncOrders: adminProcedure
       .input(z.object({ orderIds: z.array(z.number()) }))
@@ -9954,13 +11418,13 @@ export const appRouter = router({
         const { syncOrdersToUnimicro } = await import("./unimicro/invoices");
         return syncOrdersToUnimicro(ctx.tenantId, input.orderIds);
       }),
-    
+
     // Get unsynced orders
     getUnsyncedOrders: adminProcedure.query(async ({ ctx }) => {
       const { getUnsyncedOrders } = await import("./unimicro/invoices");
       return getUnsyncedOrders(ctx.tenantId);
     }),
-    
+
     // Sync payment to Unimicro
     syncPayment: adminProcedure
       .input(z.object({ paymentId: z.number() }))
@@ -9968,7 +11432,7 @@ export const appRouter = router({
         const { syncPaymentToUnimicro } = await import("./unimicro/payments");
         return syncPaymentToUnimicro(ctx.tenantId, input.paymentId);
       }),
-    
+
     // Sync refund to Unimicro as credit note
     syncRefund: adminProcedure
       .input(z.object({ refundId: z.number() }))
@@ -9976,18 +11440,20 @@ export const appRouter = router({
         const { syncRefundToUnimicro } = await import("./unimicro/payments");
         return syncRefundToUnimicro(ctx.tenantId, input.refundId);
       }),
-    
+
     // Update invoice status
     updateInvoiceStatus: adminProcedure
-      .input(z.object({ 
-        orderId: z.number(),
-        status: z.enum(['Draft', 'Invoiced', 'Paid', 'Cancelled']),
-      }))
+      .input(
+        z.object({
+          orderId: z.number(),
+          status: z.enum(["Draft", "Invoiced", "Paid", "Cancelled"]),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const { updateInvoiceStatus } = await import("./unimicro/payments");
         return updateInvoiceStatus(ctx.tenantId, input.orderId, input.status);
       }),
-    
+
     // Manual sync trigger (full sync - customers + orders)
     manualSync: adminProcedure.mutation(async ({ ctx }) => {
       const results = {
@@ -9995,11 +11461,13 @@ export const appRouter = router({
         orders: { processed: 0, failed: 0 },
         errors: [] as Array<{ type: string; id: number; error: string }>,
       };
-      
+
       // 1. Sync customers first
-      const { getUnsyncedCustomers, syncCustomersToUnimicro } = await import("./unimicro/customers");
+      const { getUnsyncedCustomers, syncCustomersToUnimicro } = await import(
+        "./unimicro/customers"
+      );
       const unsyncedCustomers = await getUnsyncedCustomers(ctx.tenantId);
-      
+
       if (unsyncedCustomers.length > 0) {
         const customerResult = await syncCustomersToUnimicro(
           ctx.tenantId,
@@ -10007,13 +11475,21 @@ export const appRouter = router({
         );
         results.customers.processed = customerResult.processed;
         results.customers.failed = customerResult.failed;
-        results.errors.push(...customerResult.errors.map(e => ({ type: 'customer', id: e.customerId, error: e.error })));
+        results.errors.push(
+          ...customerResult.errors.map(e => ({
+            type: "customer",
+            id: e.customerId,
+            error: e.error,
+          }))
+        );
       }
-      
+
       // 2. Sync orders/invoices
-      const { getUnsyncedOrders, syncOrdersToUnimicro } = await import("./unimicro/invoices");
+      const { getUnsyncedOrders, syncOrdersToUnimicro } = await import(
+        "./unimicro/invoices"
+      );
       const unsyncedOrders = await getUnsyncedOrders(ctx.tenantId);
-      
+
       if (unsyncedOrders.length > 0) {
         const orderResult = await syncOrdersToUnimicro(
           ctx.tenantId,
@@ -10021,12 +11497,19 @@ export const appRouter = router({
         );
         results.orders.processed = orderResult.processed;
         results.orders.failed = orderResult.failed;
-        results.errors.push(...orderResult.errors.map(e => ({ type: 'order', id: e.orderId, error: e.error })));
+        results.errors.push(
+          ...orderResult.errors.map(e => ({
+            type: "order",
+            id: e.orderId,
+            error: e.error,
+          }))
+        );
       }
-      
-      const totalProcessed = results.customers.processed + results.orders.processed;
+
+      const totalProcessed =
+        results.customers.processed + results.orders.processed;
       const totalFailed = results.customers.failed + results.orders.failed;
-      
+
       return {
         success: totalFailed === 0,
         message: `Synkronisert ${results.customers.processed} kunder og ${results.orders.processed} fakturaer. ${totalFailed} feilet.`,
@@ -10077,50 +11560,78 @@ export const appRouter = router({
   imports: router({
     // Import customers from CSV/Excel
     importCustomers: adminProcedure
-      .input(z.object({
-        fileContent: z.string(), // base64 encoded file
-        fileName: z.string(),
-      }))
+      .input(
+        z.object({
+          fileContent: z.string(), // base64 encoded file
+          fileName: z.string(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const { importCustomersFromFile } = await import("./import");
         const fileBuffer = Buffer.from(input.fileContent, "base64");
-        return importCustomersFromFile(ctx.tenantId, fileBuffer, input.fileName, ctx.user.id);
+        return importCustomersFromFile(
+          ctx.tenantId,
+          fileBuffer,
+          input.fileName,
+          ctx.user.id
+        );
       }),
 
     // Import services from CSV/Excel
     importServices: adminProcedure
-      .input(z.object({
-        fileContent: z.string(),
-        fileName: z.string(),
-      }))
+      .input(
+        z.object({
+          fileContent: z.string(),
+          fileName: z.string(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const { importServicesFromFile } = await import("./import");
         const fileBuffer = Buffer.from(input.fileContent, "base64");
-        return importServicesFromFile(ctx.tenantId, fileBuffer, input.fileName, ctx.user.id);
+        return importServicesFromFile(
+          ctx.tenantId,
+          fileBuffer,
+          input.fileName,
+          ctx.user.id
+        );
       }),
 
     // Import products from CSV/Excel
     importProducts: adminProcedure
-      .input(z.object({
-        fileContent: z.string(),
-        fileName: z.string(),
-      }))
+      .input(
+        z.object({
+          fileContent: z.string(),
+          fileName: z.string(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const { importProductsFromFile } = await import("./import");
         const fileBuffer = Buffer.from(input.fileContent, "base64");
-        return importProductsFromFile(ctx.tenantId, fileBuffer, input.fileName, ctx.user.id);
+        return importProductsFromFile(
+          ctx.tenantId,
+          fileBuffer,
+          input.fileName,
+          ctx.user.id
+        );
       }),
 
     // Restore from SQL backup
     restoreSQL: adminProcedure
-      .input(z.object({
-        fileContent: z.string(),
-        fileName: z.string(),
-      }))
+      .input(
+        z.object({
+          fileContent: z.string(),
+          fileName: z.string(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const { restoreFromSQL } = await import("./import");
         const fileBuffer = Buffer.from(input.fileContent, "base64");
-        return restoreFromSQL(ctx.tenantId, fileBuffer, input.fileName, ctx.user.id);
+        return restoreFromSQL(
+          ctx.tenantId,
+          fileBuffer,
+          input.fileName,
+          ctx.user.id
+        );
       }),
 
     // List all imports
@@ -10146,7 +11657,10 @@ export const appRouter = router({
     getStatus: wizardProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { tenants } = await import("../drizzle/schema");
@@ -10169,13 +11683,18 @@ export const appRouter = router({
 
     // Update wizard step
     updateStep: wizardProcedure
-      .input(z.object({
-        step: z.enum(["welcome", "service", "employee", "hours", "complete"]),
-      }))
+      .input(
+        z.object({
+          step: z.enum(["welcome", "service", "employee", "hours", "complete"]),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { tenants } = await import("../drizzle/schema");
@@ -10191,7 +11710,10 @@ export const appRouter = router({
     complete: wizardProcedure.mutation(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { tenants } = await import("../drizzle/schema");
@@ -10211,7 +11733,10 @@ export const appRouter = router({
     skip: wizardProcedure.mutation(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { tenants } = await import("../drizzle/schema");
@@ -10229,80 +11754,91 @@ export const appRouter = router({
 
     // Add first service
     addFirstService: wizardProcedure
-      .input(z.object({
-        name: z.string().min(1, "Service name is required"),
-        duration: z.number().min(5, "Duration must be at least 5 minutes"),
-        price: z.number().min(0, "Price must be positive"),
-        description: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          name: z.string().min(1, "Service name is required"),
+          duration: z.number().min(5, "Duration must be at least 5 minutes"),
+          price: z.number().min(0, "Price must be positive"),
+          description: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { services } = await import("../drizzle/schema");
-        const [service] = await dbInstance
-          .insert(services)
-          .values({
-            tenantId: ctx.tenantId,
-            name: input.name,
-            durationMinutes: input.duration,
-            price: input.price.toString(),
-            description: input.description || null,
-            isActive: true,
-          });
+        const [service] = await dbInstance.insert(services).values({
+          tenantId: ctx.tenantId,
+          name: input.name,
+          durationMinutes: input.duration,
+          price: input.price.toString(),
+          description: input.description || null,
+          isActive: true,
+        });
 
         return { success: true, serviceId: service.insertId };
       }),
 
     // Add first employee
     addFirstEmployee: wizardProcedure
-      .input(z.object({
-        name: z.string().min(1, "Employee name is required"),
-        email: z.string().email("Invalid email").optional(),
-        phone: z.string().optional(),
-        commissionRate: z.number().min(0).max(100).optional(),
-      }))
+      .input(
+        z.object({
+          name: z.string().min(1, "Employee name is required"),
+          email: z.string().email("Invalid email").optional(),
+          phone: z.string().optional(),
+          commissionRate: z.number().min(0).max(100).optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { users } = await import("../drizzle/schema");
-        const [employee] = await dbInstance
-          .insert(users)
-          .values({
-            tenantId: ctx.tenantId,
-            openId: `employee-${nanoid(12)}`,
-            name: input.name,
-            email: input.email || null,
-            phone: input.phone || null,
-            role: "employee",
-            commissionType: "percentage",
-            commissionRate: input.commissionRate?.toString() || "40.00",
-            isActive: true,
-          });
+        const [employee] = await dbInstance.insert(users).values({
+          tenantId: ctx.tenantId,
+          openId: `employee-${nanoid(12)}`,
+          name: input.name,
+          email: input.email || null,
+          phone: input.phone || null,
+          role: "employee",
+          commissionType: "percentage",
+          commissionRate: input.commissionRate?.toString() || "40.00",
+          isActive: true,
+        });
 
         return { success: true, employeeId: employee.insertId };
       }),
 
     // Set business hours (simplified - just store in settings)
     setBusinessHours: wizardProcedure
-      .input(z.object({
-        openTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format"),
-        closeTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format"),
-        workDays: z.array(z.number().min(0).max(6)), // 0 = Sunday, 6 = Saturday
-      }))
+      .input(
+        z.object({
+          openTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format"),
+          closeTime: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format"),
+          workDays: z.array(z.number().min(0).max(6)), // 0 = Sunday, 6 = Saturday
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { salonSettings } = await import("../drizzle/schema");
-        
+
         // Store business hours as JSON in printSettings
         const businessHours = {
           openTime: input.openTime,
@@ -10322,26 +11858,24 @@ export const appRouter = router({
           const currentSettings = existing.printSettings || {};
           await dbInstance
             .update(salonSettings)
-            .set({ 
+            .set({
               printSettings: {
                 ...currentSettings,
                 businessHours: JSON.stringify(businessHours),
-              } as any
+              } as any,
             })
             .where(eq(salonSettings.id, existing.id));
         } else {
           // Create new settings row
-          await dbInstance
-            .insert(salonSettings)
-            .values({
-              tenantId: ctx.tenantId,
-              printSettings: {
-                fontSize: "medium",
-                showLogo: true,
-                customFooterText: "Takk for besøket! Velkommen tilbake!",
-                businessHours: JSON.stringify(businessHours),
-              } as any,
-            });
+          await dbInstance.insert(salonSettings).values({
+            tenantId: ctx.tenantId,
+            printSettings: {
+              fontSize: "medium",
+              showLogo: true,
+              customFooterText: "Takk for besøket! Velkommen tilbake!",
+              businessHours: JSON.stringify(businessHours),
+            } as any,
+          });
         }
 
         return { success: true };
@@ -10349,24 +11883,29 @@ export const appRouter = router({
 
     // Save wizard draft data (auto-save)
     saveDraftData: wizardProcedure
-      .input(z.object({
-        serviceName: z.string().optional(),
-        serviceDuration: z.string().optional(),
-        servicePrice: z.string().optional(),
-        serviceDescription: z.string().optional(),
-        employeeName: z.string().optional(),
-        employeeEmail: z.string().optional(),
-        employeePhone: z.string().optional(),
-        employeeCommission: z.string().optional(),
-        skipEmployee: z.boolean().optional(),
-        openTime: z.string().optional(),
-        closeTime: z.string().optional(),
-        workDays: z.array(z.number()).optional(),
-      }))
+      .input(
+        z.object({
+          serviceName: z.string().optional(),
+          serviceDuration: z.string().optional(),
+          servicePrice: z.string().optional(),
+          serviceDescription: z.string().optional(),
+          employeeName: z.string().optional(),
+          employeeEmail: z.string().optional(),
+          employeePhone: z.string().optional(),
+          employeeCommission: z.string().optional(),
+          skipEmployee: z.boolean().optional(),
+          openTime: z.string().optional(),
+          closeTime: z.string().optional(),
+          workDays: z.array(z.number()).optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { tenants } = await import("../drizzle/schema");
@@ -10382,7 +11921,10 @@ export const appRouter = router({
     getDraftData: wizardProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { tenants } = await import("../drizzle/schema");
@@ -10404,7 +11946,10 @@ export const appRouter = router({
     listProviders: tenantProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { paymentProviders } = await import("../drizzle/schema");
@@ -10418,181 +11963,209 @@ export const appRouter = router({
 
     // Add new payment provider
     addProvider: adminProcedure
-      .input(z.object({
-        providerType: z.enum(["stripe_terminal", "vipps", "nets", "manual_card", "cash", "generic"]),
-        providerName: z.string().min(1, "Provider name is required"),
-        config: z.any().optional(),
-        isDefault: z.boolean().default(false),
-      }))
+      .input(
+        z.object({
+          providerType: z.enum([
+            "stripe_terminal",
+            "vipps",
+            "nets",
+            "manual_card",
+            "cash",
+            "generic",
+          ]),
+          providerName: z.string().min(1, "Provider name is required"),
+          config: z.any().optional(),
+          isDefault: z.boolean().default(false),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { paymentProviders } = await import("../drizzle/schema");
-        
+
         // If setting as default, unset other defaults of same type
         if (input.isDefault) {
           await dbInstance
             .update(paymentProviders)
             .set({ isDefault: false })
-            .where(and(
-              eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, input.providerType)
-            ));
+            .where(
+              and(
+                eq(paymentProviders.tenantId, ctx.tenantId),
+                eq(paymentProviders.providerType, input.providerType)
+              )
+            );
         }
 
-        const [provider] = await dbInstance
-          .insert(paymentProviders)
-          .values({
-            tenantId: ctx.tenantId,
-            providerType: input.providerType,
-            providerName: input.providerName,
-            config: input.config || null,
-            isActive: true,
-            isDefault: input.isDefault,
-            // OAuth fields - empty for non-OAuth providers (cash, manual_card, generic)
-            accessToken: "",
-            refreshToken: "",
-            tokenExpiresAt: new Date(0), // Epoch for non-OAuth providers
-          });
+        const [provider] = await dbInstance.insert(paymentProviders).values({
+          tenantId: ctx.tenantId,
+          providerType: input.providerType,
+          providerName: input.providerName,
+          config: input.config || null,
+          isActive: true,
+          isDefault: input.isDefault,
+          // OAuth fields - empty for non-OAuth providers (cash, manual_card, generic)
+          accessToken: "",
+          refreshToken: "",
+          tokenExpiresAt: new Date(0), // Epoch for non-OAuth providers
+        });
 
         return { success: true, providerId: provider.insertId };
       }),
 
     // Process payment (universal endpoint)
     processPayment: tenantProcedure
-      .input(z.object({
-        appointmentId: z.number().optional(),
-        customerId: z.number().optional(),
-        amount: z.number().min(0.01, "Amount must be positive"),
-        paymentMethod: z.enum(["cash", "card", "vipps", "stripe"]),
-        paymentProviderId: z.number().optional(),
-        metadata: z.any().optional(),
-        notes: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          appointmentId: z.number().optional(),
+          customerId: z.number().optional(),
+          amount: z.number().min(0.01, "Amount must be positive"),
+          paymentMethod: z.enum(["cash", "card", "vipps", "stripe"]),
+          paymentProviderId: z.number().optional(),
+          metadata: z.any().optional(),
+          notes: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { payments } = await import("../drizzle/schema");
-        
-        const [payment] = await dbInstance
-          .insert(payments)
-          .values({
-            tenantId: ctx.tenantId,
-            appointmentId: input.appointmentId || null,
-            amount: input.amount.toString(),
-            currency: "NOK",
-            paymentMethod: input.paymentMethod,
-            status: "completed",
-            processedBy: ctx.user.id,
-            processedAt: new Date(),
-            gatewayMetadata: input.metadata || null,
-          });
 
-        return { 
-          success: true, 
+        const [payment] = await dbInstance.insert(payments).values({
+          tenantId: ctx.tenantId,
+          appointmentId: input.appointmentId || null,
+          amount: input.amount.toString(),
+          currency: "NOK",
+          paymentMethod: input.paymentMethod,
+          status: "completed",
+          processedBy: ctx.user.id,
+          processedAt: new Date(),
+          gatewayMetadata: input.metadata || null,
+        });
+
+        return {
+          success: true,
           paymentId: payment.insertId,
-          receiptNumber: `RCP-${payment.insertId}` 
+          receiptNumber: `RCP-${payment.insertId}`,
         };
       }),
 
     // Process split payment (cash + card)
     processSplitPayment: tenantProcedure
-      .input(z.object({
-        orderId: z.number().optional(),
-        appointmentId: z.number().optional(),
-        customerId: z.number().optional(),
-        totalAmount: z.number().min(0.01),
-        splits: z.array(z.object({
-          amount: z.number().min(0.01),
-          paymentMethod: z.enum(["card", "cash", "vipps", "stripe"]),
-          paymentProviderId: z.number().optional(),
-          transactionId: z.string().optional(),
-          cardLast4: z.string().max(4).optional(),
-          cardBrand: z.string().max(50).optional(),
-        })),
-        notes: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          orderId: z.number().optional(),
+          appointmentId: z.number().optional(),
+          customerId: z.number().optional(),
+          totalAmount: z.number().min(0.01),
+          splits: z.array(
+            z.object({
+              amount: z.number().min(0.01),
+              paymentMethod: z.enum(["card", "cash", "vipps", "stripe"]),
+              paymentProviderId: z.number().optional(),
+              transactionId: z.string().optional(),
+              cardLast4: z.string().max(4).optional(),
+              cardBrand: z.string().max(50).optional(),
+            })
+          ),
+          notes: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { payments, paymentSplits } = await import("../drizzle/schema");
-        
+
         // Validate split amounts sum to total
-        const splitTotal = input.splits.reduce((sum, split) => sum + split.amount, 0);
+        const splitTotal = input.splits.reduce(
+          (sum, split) => sum + split.amount,
+          0
+        );
         if (Math.abs(splitTotal - input.totalAmount) > 0.01) {
-          throw new TRPCError({ 
-            code: "BAD_REQUEST", 
-            message: "Split amounts must sum to total amount" 
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Split amounts must sum to total amount",
           });
         }
 
         // Create parent payment
-        const [payment] = await dbInstance
-          .insert(payments)
-          .values({
-            tenantId: ctx.tenantId,
-            orderId: input.orderId || null,
-            appointmentId: input.appointmentId || null,
-            amount: input.totalAmount.toString(),
-            currency: "NOK",
-            paymentMethod: "split", // Mark as split
-            status: "completed",
-            processedBy: ctx.user.id,
-            processedAt: new Date(),
-          });
+        const [payment] = await dbInstance.insert(payments).values({
+          tenantId: ctx.tenantId,
+          orderId: input.orderId || null,
+          appointmentId: input.appointmentId || null,
+          amount: input.totalAmount.toString(),
+          currency: "NOK",
+          paymentMethod: "split", // Mark as split
+          status: "completed",
+          processedBy: ctx.user.id,
+          processedAt: new Date(),
+        });
 
         const paymentId = payment.insertId;
 
         // Create split records
         for (const split of input.splits) {
-          await dbInstance
-            .insert(paymentSplits)
-            .values({
-              tenantId: ctx.tenantId,
-              orderId: input.orderId || null,
-              paymentId,
-              amount: split.amount.toString(),
-              paymentMethod: split.paymentMethod,
-              paymentProviderId: split.paymentProviderId || null,
-              cardLast4: split.cardLast4 || null,
-              cardBrand: split.cardBrand || null,
-              transactionId: split.transactionId || null,
-              status: "completed",
-              processedBy: ctx.user.id,
-            });
+          await dbInstance.insert(paymentSplits).values({
+            tenantId: ctx.tenantId,
+            orderId: input.orderId || null,
+            paymentId,
+            amount: split.amount.toString(),
+            paymentMethod: split.paymentMethod,
+            paymentProviderId: split.paymentProviderId || null,
+            cardLast4: split.cardLast4 || null,
+            cardBrand: split.cardBrand || null,
+            transactionId: split.transactionId || null,
+            status: "completed",
+            processedBy: ctx.user.id,
+          });
         }
 
-        return { 
-          success: true, 
+        return {
+          success: true,
           paymentId,
-          receiptNumber: `RCP-${paymentId}` 
+          receiptNumber: `RCP-${paymentId}`,
         };
       }),
 
     // Get payment history
     getPaymentHistory: tenantProcedure
-      .input(z.object({
-        limit: z.number().min(1).max(100).default(50),
-        offset: z.number().min(0).default(0),
-        customerId: z.number().optional(),
-      }))
+      .input(
+        z.object({
+          limit: z.number().min(1).max(100).default(50),
+          offset: z.number().min(0).default(0),
+          customerId: z.number().optional(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
-        const { payments, customers, orders, appointments } = await import("../drizzle/schema");
-        
+        const { payments, customers, orders, appointments } = await import(
+          "../drizzle/schema"
+        );
+
         // Build where conditions
         const conditions = [eq(payments.tenantId, ctx.tenantId)];
         if (input.customerId) {
@@ -10600,29 +12173,43 @@ export const appRouter = router({
           const customerOrders = await dbInstance
             .select({ id: orders.id })
             .from(orders)
-            .where(and(
-              eq(orders.tenantId, ctx.tenantId),
-              eq(orders.customerId, input.customerId)
-            ));
-          
+            .where(
+              and(
+                eq(orders.tenantId, ctx.tenantId),
+                eq(orders.customerId, input.customerId)
+              )
+            );
+
           const customerAppointments = await dbInstance
             .select({ id: appointments.id })
             .from(appointments)
-            .where(and(
-              eq(appointments.tenantId, ctx.tenantId),
-              eq(appointments.customerId, input.customerId)
-            ));
-          
+            .where(
+              and(
+                eq(appointments.tenantId, ctx.tenantId),
+                eq(appointments.customerId, input.customerId)
+              )
+            );
+
           const orderIds = customerOrders.map(o => o.id);
           const appointmentIds = customerAppointments.map(a => a.id);
-          
+
           if (orderIds.length > 0 || appointmentIds.length > 0) {
             const orConditions: any[] = [];
             if (orderIds.length > 0) {
-              orConditions.push(sql`${payments.orderId} IN (${sql.join(orderIds.map(id => sql`${id}`), sql`, `)})`);
+              orConditions.push(
+                sql`${payments.orderId} IN (${sql.join(
+                  orderIds.map(id => sql`${id}`),
+                  sql`, `
+                )})`
+              );
             }
             if (appointmentIds.length > 0) {
-              orConditions.push(sql`${payments.appointmentId} IN (${sql.join(appointmentIds.map(id => sql`${id}`), sql`, `)})`);
+              orConditions.push(
+                sql`${payments.appointmentId} IN (${sql.join(
+                  appointmentIds.map(id => sql`${id}`),
+                  sql`, `
+                )})`
+              );
             }
             if (orConditions.length > 0) {
               const orCondition = or(...orConditions);
@@ -10651,32 +12238,42 @@ export const appRouter = router({
 
     // Update payment provider
     updateProvider: adminProcedure
-      .input(z.object({
-        providerId: z.number(),
-        providerName: z.string().min(1).optional(),
-        config: z.any().optional(),
-        isActive: z.boolean().optional(),
-        isDefault: z.boolean().optional(),
-      }))
+      .input(
+        z.object({
+          providerId: z.number(),
+          providerName: z.string().min(1).optional(),
+          config: z.any().optional(),
+          isActive: z.boolean().optional(),
+          isDefault: z.boolean().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { paymentProviders } = await import("../drizzle/schema");
-        
+
         // Verify provider belongs to tenant
         const [existing] = await dbInstance
           .select()
           .from(paymentProviders)
-          .where(and(
-            eq(paymentProviders.id, input.providerId),
-            eq(paymentProviders.tenantId, ctx.tenantId)
-          ));
+          .where(
+            and(
+              eq(paymentProviders.id, input.providerId),
+              eq(paymentProviders.tenantId, ctx.tenantId)
+            )
+          );
 
         if (!existing) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Provider not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Provider not found",
+          });
         }
 
         // If setting as default, unset other defaults of same type
@@ -10684,18 +12281,22 @@ export const appRouter = router({
           await dbInstance
             .update(paymentProviders)
             .set({ isDefault: false })
-            .where(and(
-              eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, existing.providerType)
-            ));
+            .where(
+              and(
+                eq(paymentProviders.tenantId, ctx.tenantId),
+                eq(paymentProviders.providerType, existing.providerType)
+              )
+            );
         }
 
         // Build update object
         const updateData: any = {};
-        if (input.providerName !== undefined) updateData.providerName = input.providerName;
+        if (input.providerName !== undefined)
+          updateData.providerName = input.providerName;
         if (input.config !== undefined) updateData.config = input.config;
         if (input.isActive !== undefined) updateData.isActive = input.isActive;
-        if (input.isDefault !== undefined) updateData.isDefault = input.isDefault;
+        if (input.isDefault !== undefined)
+          updateData.isDefault = input.isDefault;
 
         await dbInstance
           .update(paymentProviders)
@@ -10707,28 +12308,38 @@ export const appRouter = router({
 
     // Delete payment provider
     deleteProvider: adminProcedure
-      .input(z.object({
-        providerId: z.number(),
-      }))
+      .input(
+        z.object({
+          providerId: z.number(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { paymentProviders } = await import("../drizzle/schema");
-        
+
         // Verify provider belongs to tenant
         const [existing] = await dbInstance
           .select()
           .from(paymentProviders)
-          .where(and(
-            eq(paymentProviders.id, input.providerId),
-            eq(paymentProviders.tenantId, ctx.tenantId)
-          ));
+          .where(
+            and(
+              eq(paymentProviders.id, input.providerId),
+              eq(paymentProviders.tenantId, ctx.tenantId)
+            )
+          );
 
         if (!existing) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Provider not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Provider not found",
+          });
         }
 
         await dbInstance
@@ -10740,10 +12351,19 @@ export const appRouter = router({
 
     // Test connection to payment provider
     testConnection: adminProcedure
-      .input(z.object({
-        providerType: z.enum(["stripe_terminal", "vipps", "nets", "manual_card", "cash", "generic"]),
-        config: z.any(),
-      }))
+      .input(
+        z.object({
+          providerType: z.enum([
+            "stripe_terminal",
+            "vipps",
+            "nets",
+            "manual_card",
+            "cash",
+            "generic",
+          ]),
+          config: z.any(),
+        })
+      )
       .mutation(async ({ input }) => {
         // Mock connection test - in production, this would call actual provider APIs
         try {
@@ -10753,26 +12373,36 @@ export const appRouter = router({
               throw new Error("API Key is required for Stripe Terminal");
             }
           } else if (input.providerType === "vipps") {
-            if (!input.config?.merchantSerialNumber || !input.config?.clientId || !input.config?.clientSecret) {
-              throw new Error("Merchant Serial Number, Client ID, and Client Secret are required for Vipps");
+            if (
+              !input.config?.merchantSerialNumber ||
+              !input.config?.clientId ||
+              !input.config?.clientSecret
+            ) {
+              throw new Error(
+                "Merchant Serial Number, Client ID, and Client Secret are required for Vipps"
+              );
             }
           } else if (input.providerType === "nets") {
             if (!input.config?.terminalId || !input.config?.merchantId) {
-              throw new Error("Terminal ID and Merchant ID are required for Nets/BankAxept");
+              throw new Error(
+                "Terminal ID and Merchant ID are required for Nets/BankAxept"
+              );
             }
           }
 
           // Simulate API call delay
           await new Promise(resolve => setTimeout(resolve, 1000));
 
-          return { 
-            success: true, 
-            message: "Connection successful! Terminal is ready to use." 
+          return {
+            success: true,
+            message: "Connection successful! Terminal is ready to use.",
           };
         } catch (error: any) {
-          return { 
-            success: false, 
-            message: error.message || "Connection failed. Please check your configuration." 
+          return {
+            success: false,
+            message:
+              error.message ||
+              "Connection failed. Please check your configuration.",
           };
         }
       }),
@@ -10784,13 +12414,18 @@ export const appRouter = router({
   stripeTerminal: router({
     // Create connection token (required by Stripe Terminal SDK)
     createConnectionToken: tenantProcedure
-      .input(z.object({
-        providerId: z.number().optional(), // Optional: use specific provider's API key
-      }))
+      .input(
+        z.object({
+          providerId: z.number().optional(), // Optional: use specific provider's API key
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         let apiKey: string | undefined;
@@ -10804,7 +12439,10 @@ export const appRouter = router({
           .where(eq(paymentSettings.tenantId, ctx.tenantId))
           .limit(1);
 
-        if (settings?.stripeConnectedAccountId && settings?.stripeAccountStatus === "connected") {
+        if (
+          settings?.stripeConnectedAccountId &&
+          settings?.stripeAccountStatus === "connected"
+        ) {
           // Use Stripe Connect (platform key + connected account)
           connectedAccountId = settings.stripeConnectedAccountId;
           apiKey = ENV.stripeSecretKey; // Platform key
@@ -10814,14 +12452,19 @@ export const appRouter = router({
           const [provider] = await dbInstance
             .select()
             .from(paymentProviders)
-            .where(and(
-              eq(paymentProviders.id, input.providerId),
-              eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, "stripe_terminal")
-            ));
+            .where(
+              and(
+                eq(paymentProviders.id, input.providerId),
+                eq(paymentProviders.tenantId, ctx.tenantId),
+                eq(paymentProviders.providerType, "stripe_terminal")
+              )
+            );
 
           if (!provider) {
-            throw new TRPCError({ code: "NOT_FOUND", message: "Stripe Terminal provider not found" });
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Stripe Terminal provider not found",
+            });
           }
 
           apiKey = (provider.config as any)?.apiKey;
@@ -10834,13 +12477,18 @@ export const appRouter = router({
 
     // List all readers
     listReaders: tenantProcedure
-      .input(z.object({
-        providerId: z.number().optional(),
-      }))
+      .input(
+        z.object({
+          providerId: z.number().optional(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         let apiKey: string | undefined;
@@ -10854,7 +12502,10 @@ export const appRouter = router({
           .where(eq(paymentSettings.tenantId, ctx.tenantId))
           .limit(1);
 
-        if (settings?.stripeConnectedAccountId && settings?.stripeAccountStatus === "connected") {
+        if (
+          settings?.stripeConnectedAccountId &&
+          settings?.stripeAccountStatus === "connected"
+        ) {
           connectedAccountId = settings.stripeConnectedAccountId;
           apiKey = ENV.stripeSecretKey;
         } else if (input.providerId) {
@@ -10862,11 +12513,13 @@ export const appRouter = router({
           const [provider] = await dbInstance
             .select()
             .from(paymentProviders)
-            .where(and(
-              eq(paymentProviders.id, input.providerId),
-              eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, "stripe_terminal")
-            ));
+            .where(
+              and(
+                eq(paymentProviders.id, input.providerId),
+                eq(paymentProviders.tenantId, ctx.tenantId),
+                eq(paymentProviders.providerType, "stripe_terminal")
+              )
+            );
 
           if (provider) {
             apiKey = (provider.config as any)?.apiKey;
@@ -10880,16 +12533,21 @@ export const appRouter = router({
 
     // Create payment intent for terminal
     createPaymentIntent: tenantProcedure
-      .input(z.object({
-        amount: z.number().min(0.01),
-        currency: z.string().default("nok"),
-        providerId: z.number().optional(),
-        metadata: z.record(z.string(), z.string()).optional(),
-      }))
+      .input(
+        z.object({
+          amount: z.number().min(0.01),
+          currency: z.string().default("nok"),
+          providerId: z.number().optional(),
+          metadata: z.record(z.string(), z.string()).optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         let apiKey: string | undefined;
@@ -10903,7 +12561,10 @@ export const appRouter = router({
           .where(eq(paymentSettings.tenantId, ctx.tenantId))
           .limit(1);
 
-        if (settings?.stripeConnectedAccountId && settings?.stripeAccountStatus === "connected") {
+        if (
+          settings?.stripeConnectedAccountId &&
+          settings?.stripeAccountStatus === "connected"
+        ) {
           connectedAccountId = settings.stripeConnectedAccountId;
           apiKey = ENV.stripeSecretKey;
         } else if (input.providerId) {
@@ -10911,18 +12572,22 @@ export const appRouter = router({
           const [provider] = await dbInstance
             .select()
             .from(paymentProviders)
-            .where(and(
-              eq(paymentProviders.id, input.providerId),
-              eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, "stripe_terminal")
-            ));
+            .where(
+              and(
+                eq(paymentProviders.id, input.providerId),
+                eq(paymentProviders.tenantId, ctx.tenantId),
+                eq(paymentProviders.providerType, "stripe_terminal")
+              )
+            );
 
           if (provider) {
             apiKey = (provider.config as any)?.apiKey;
           }
         }
 
-        const { createTerminalPaymentIntent } = await import("./stripeTerminal");
+        const { createTerminalPaymentIntent } = await import(
+          "./stripeTerminal"
+        );
         const paymentIntent = await createTerminalPaymentIntent(
           input.amount,
           input.currency,
@@ -10946,14 +12611,19 @@ export const appRouter = router({
 
     // Cancel payment intent
     cancelPaymentIntent: tenantProcedure
-      .input(z.object({
-        paymentIntentId: z.string(),
-        providerId: z.number().optional(),
-      }))
+      .input(
+        z.object({
+          paymentIntentId: z.string(),
+          providerId: z.number().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         let apiKey: string | undefined;
@@ -10963,11 +12633,13 @@ export const appRouter = router({
           const [provider] = await dbInstance
             .select()
             .from(paymentProviders)
-            .where(and(
-              eq(paymentProviders.id, input.providerId),
-              eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, "stripe_terminal")
-            ));
+            .where(
+              and(
+                eq(paymentProviders.id, input.providerId),
+                eq(paymentProviders.tenantId, ctx.tenantId),
+                eq(paymentProviders.providerType, "stripe_terminal")
+              )
+            );
 
           if (provider) {
             apiKey = (provider.config as any)?.apiKey;
@@ -10975,21 +12647,29 @@ export const appRouter = router({
         }
 
         const { cancelPaymentIntent } = await import("./stripeTerminal");
-        const paymentIntent = await cancelPaymentIntent(input.paymentIntentId, apiKey);
+        const paymentIntent = await cancelPaymentIntent(
+          input.paymentIntentId,
+          apiKey
+        );
         return { success: true, status: paymentIntent.status };
       }),
 
     // Process refund
     refundPayment: tenantProcedure
-      .input(z.object({
-        paymentIntentId: z.string(),
-        amount: z.number().optional(),
-        providerId: z.number().optional(),
-      }))
+      .input(
+        z.object({
+          paymentIntentId: z.string(),
+          amount: z.number().optional(),
+          providerId: z.number().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         let apiKey: string | undefined;
@@ -10999,11 +12679,13 @@ export const appRouter = router({
           const [provider] = await dbInstance
             .select()
             .from(paymentProviders)
-            .where(and(
-              eq(paymentProviders.id, input.providerId),
-              eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, "stripe_terminal")
-            ));
+            .where(
+              and(
+                eq(paymentProviders.id, input.providerId),
+                eq(paymentProviders.tenantId, ctx.tenantId),
+                eq(paymentProviders.providerType, "stripe_terminal")
+              )
+            );
 
           if (provider) {
             apiKey = (provider.config as any)?.apiKey;
@@ -11158,7 +12840,9 @@ export const appRouter = router({
           isActive: true,
         });
 
-        const insertId = Array.isArray(result) ? result[0]?.insertId : (result as any).insertId;
+        const insertId = Array.isArray(result)
+          ? result[0]?.insertId
+          : (result as any).insertId;
         return { id: Number(insertId), success: true };
       }),
 
@@ -11222,7 +12906,9 @@ export const appRouter = router({
     getCustomersForBulk: tenantProcedure
       .input(
         z.object({
-          filter: z.enum(["all", "recent", "high_value", "inactive"]).optional(),
+          filter: z
+            .enum(["all", "recent", "high_value", "inactive"])
+            .optional(),
           lastVisitDays: z.number().optional(),
           minTotalSpent: z.number().optional(),
         })
@@ -11255,7 +12941,7 @@ export const appRouter = router({
             .select({
               id: customers.id,
               firstName: customers.firstName,
-            lastName: customers.lastName,
+              lastName: customers.lastName,
               email: customers.email,
               phone: customers.phone,
               totalRevenue: customers.totalRevenue,
@@ -11276,7 +12962,7 @@ export const appRouter = router({
             .select({
               id: customers.id,
               firstName: customers.firstName,
-            lastName: customers.lastName,
+              lastName: customers.lastName,
               email: customers.email,
               phone: customers.phone,
               totalRevenue: customers.totalRevenue,
@@ -11299,7 +12985,7 @@ export const appRouter = router({
             .select({
               id: customers.id,
               firstName: customers.firstName,
-            lastName: customers.lastName,
+              lastName: customers.lastName,
               email: customers.email,
               phone: customers.phone,
               totalRevenue: customers.totalRevenue,
@@ -11344,9 +13030,7 @@ export const appRouter = router({
         const customerList = await dbInstance
           .select()
           .from(customers)
-          .where(
-            inArray(customers.id, input.customerIds)
-          );
+          .where(inArray(customers.id, input.customerIds));
 
         // Create campaign
         const campaignResult = await dbInstance.insert(bulkCampaigns).values({
@@ -11367,7 +13051,7 @@ export const appRouter = router({
           : (campaignResult as any).insertId;
 
         // Create campaign recipients
-        const recipients = customerList.map((customer) => ({
+        const recipients = customerList.map(customer => ({
           campaignId: Number(campaignId),
           customerId: customer.id,
           recipientContact:
@@ -11449,52 +13133,60 @@ export const appRouter = router({
   contact: router({
     // Submit contact form (public)
     submit: publicProcedure
-      .input(z.object({
-        tenantId: z.string(),
-        name: z.string().min(2, "Name must be at least 2 characters"),
-        email: z.string().email("Invalid email address"),
-        phone: z.string().optional(),
-        subject: z.string().optional(),
-        message: z.string().min(10, "Message must be at least 10 characters"),
-      }))
+      .input(
+        z.object({
+          tenantId: z.string(),
+          name: z.string().min(2, "Name must be at least 2 characters"),
+          email: z.string().email("Invalid email address"),
+          phone: z.string().optional(),
+          subject: z.string().optional(),
+          message: z.string().min(10, "Message must be at least 10 characters"),
+        })
+      )
       .mutation(async ({ input, ctx }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         // Get IP and user agent from request if available
         const ipAddress = ctx.req?.ip || ctx.req?.socket?.remoteAddress || null;
-        const userAgent = ctx.req?.headers['user-agent'] || null;
+        const userAgent = ctx.req?.headers["user-agent"] || null;
 
-        const [message] = await dbInstance
-          .insert(contactMessages)
-          .values({
-            tenantId: input.tenantId,
-            name: input.name,
-            email: input.email,
-            phone: input.phone || null,
-            subject: input.subject || null,
-            message: input.message,
-            status: "new",
-            ipAddress,
-            userAgent,
-          });
+        const [message] = await dbInstance.insert(contactMessages).values({
+          tenantId: input.tenantId,
+          name: input.name,
+          email: input.email,
+          phone: input.phone || null,
+          subject: input.subject || null,
+          message: input.message,
+          status: "new",
+          ipAddress,
+          userAgent,
+        });
 
         return { success: true, messageId: message.insertId };
       }),
 
     // List contact messages (admin only)
     list: adminProcedure
-      .input(z.object({
-        status: z.enum(["new", "read", "replied", "archived"]).optional(),
-        limit: z.number().min(1).max(100).default(50),
-        offset: z.number().min(0).default(0),
-      }))
+      .input(
+        z.object({
+          status: z.enum(["new", "read", "replied", "archived"]).optional(),
+          limit: z.number().min(1).max(100).default(50),
+          offset: z.number().min(0).default(0),
+        })
+      )
       .query(async ({ input, ctx }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const conditions = [eq(contactMessages.tenantId, ctx.tenantId)];
@@ -11528,7 +13220,10 @@ export const appRouter = router({
       .mutation(async ({ input, ctx }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         await dbInstance
@@ -11546,14 +13241,19 @@ export const appRouter = router({
 
     // Update message status
     updateStatus: adminProcedure
-      .input(z.object({
-        messageId: z.number(),
-        status: z.enum(["new", "read", "replied", "archived"]),
-      }))
+      .input(
+        z.object({
+          messageId: z.number(),
+          status: z.enum(["new", "read", "replied", "archived"]),
+        })
+      )
       .mutation(async ({ input, ctx }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const updateData: any = { status: input.status };
@@ -11580,37 +13280,50 @@ export const appRouter = router({
   // ============================================================================
   emailTemplates: router({
     // List all email templates for tenant
-    list: adminProcedure
-      .query(async ({ ctx }) => {
-        const dbInstance = await db.getDb();
-        if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-        }
+    list: adminProcedure.query(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
+      }
 
-        const { emailTemplates } = await import("../drizzle/schema");
-        
-        const templates = await dbInstance
-          .select()
-          .from(emailTemplates)
-          .where(eq(emailTemplates.tenantId, ctx.tenantId))
-          .orderBy(emailTemplates.templateType);
+      const { emailTemplates } = await import("../drizzle/schema");
 
-        return templates;
-      }),
+      const templates = await dbInstance
+        .select()
+        .from(emailTemplates)
+        .where(eq(emailTemplates.tenantId, ctx.tenantId))
+        .orderBy(emailTemplates.templateType);
+
+      return templates;
+    }),
 
     // Get template by type
     getByType: adminProcedure
-      .input(z.object({
-        templateType: z.enum(["reminder_24h", "reminder_2h", "booking_confirmation", "booking_cancellation", "booking_update"]),
-      }))
+      .input(
+        z.object({
+          templateType: z.enum([
+            "reminder_24h",
+            "reminder_2h",
+            "booking_confirmation",
+            "booking_cancellation",
+            "booking_update",
+          ]),
+        })
+      )
       .query(async ({ input, ctx }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { emailTemplates } = await import("../drizzle/schema");
-        
+
         const [template] = await dbInstance
           .select()
           .from(emailTemplates)
@@ -11627,22 +13340,39 @@ export const appRouter = router({
 
     // Update template
     update: adminProcedure
-      .input(z.object({
-        templateType: z.enum(["reminder_24h", "reminder_2h", "booking_confirmation", "booking_cancellation", "booking_update"]),
-        subject: z.string().min(1).max(500),
-        bodyHtml: z.string().min(1),
-        logoUrl: z.string().optional(),
-        primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-        secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-      }))
+      .input(
+        z.object({
+          templateType: z.enum([
+            "reminder_24h",
+            "reminder_2h",
+            "booking_confirmation",
+            "booking_cancellation",
+            "booking_update",
+          ]),
+          subject: z.string().min(1).max(500),
+          bodyHtml: z.string().min(1),
+          logoUrl: z.string().optional(),
+          primaryColor: z
+            .string()
+            .regex(/^#[0-9A-Fa-f]{6}$/)
+            .optional(),
+          secondaryColor: z
+            .string()
+            .regex(/^#[0-9A-Fa-f]{6}$/)
+            .optional(),
+        })
+      )
       .mutation(async ({ input, ctx }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { emailTemplates } = await import("../drizzle/schema");
-        
+
         // Check if template exists
         const [existing] = await dbInstance
           .select()
@@ -11675,18 +13405,16 @@ export const appRouter = router({
             );
         } else {
           // Create new template
-          await dbInstance
-            .insert(emailTemplates)
-            .values({
-              tenantId: ctx.tenantId,
-              templateType: input.templateType,
-              subject: input.subject,
-              bodyHtml: input.bodyHtml,
-              logoUrl: input.logoUrl || null,
-              primaryColor: input.primaryColor || "#8b5cf6",
-              secondaryColor: input.secondaryColor || "#6366f1",
-              isActive: true,
-            });
+          await dbInstance.insert(emailTemplates).values({
+            tenantId: ctx.tenantId,
+            templateType: input.templateType,
+            subject: input.subject,
+            bodyHtml: input.bodyHtml,
+            logoUrl: input.logoUrl || null,
+            primaryColor: input.primaryColor || "#8b5cf6",
+            secondaryColor: input.secondaryColor || "#6366f1",
+            isActive: true,
+          });
         }
 
         // Return the updated/created template
@@ -11706,41 +13434,54 @@ export const appRouter = router({
 
     // Upload logo to S3
     uploadLogo: adminProcedure
-      .input(z.object({
-        fileName: z.string(),
-        fileType: z.string(),
-        base64Data: z.string(),
-      }))
+      .input(
+        z.object({
+          fileName: z.string(),
+          fileType: z.string(),
+          base64Data: z.string(),
+        })
+      )
       .mutation(async ({ input, ctx }) => {
         const { storagePut } = await import("./storage");
-        
+
         // Convert base64 to buffer
         const buffer = Buffer.from(input.base64Data, "base64");
-        
+
         // Generate unique file key
         const fileKey = `email-logos/${ctx.tenantId}/${nanoid()}-${input.fileName}`;
-        
+
         // Upload to S3
         const { url } = await storagePut(fileKey, buffer, input.fileType);
-        
+
         return { url };
       }),
 
     // Send test email
     sendTest: adminProcedure
-      .input(z.object({
-        templateType: z.enum(["reminder_24h", "reminder_2h", "booking_confirmation", "booking_cancellation", "booking_update"]),
-        testEmail: z.string().email(),
-      }))
+      .input(
+        z.object({
+          templateType: z.enum([
+            "reminder_24h",
+            "reminder_2h",
+            "booking_confirmation",
+            "booking_cancellation",
+            "booking_update",
+          ]),
+          testEmail: z.string().email(),
+        })
+      )
       .mutation(async ({ input, ctx }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { emailTemplates } = await import("../drizzle/schema");
         const { sendEmailViaSES } = await import("./_core/aws-ses");
-        
+
         // Get template
         const [template] = await dbInstance
           .select()
@@ -11754,7 +13495,10 @@ export const appRouter = router({
           .limit(1);
 
         if (!template) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Template not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Template not found",
+          });
         }
 
         // Replace placeholders with test data
@@ -11780,7 +13524,10 @@ export const appRouter = router({
         });
 
         if (!result) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to send test email" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to send test email",
+          });
         }
 
         return { success: true };
@@ -11788,19 +13535,33 @@ export const appRouter = router({
 
     // Reset template to default
     resetToDefault: adminProcedure
-      .input(z.object({
-        templateType: z.enum(["reminder_24h", "reminder_2h", "booking_confirmation", "booking_cancellation", "booking_update"]),
-      }))
+      .input(
+        z.object({
+          templateType: z.enum([
+            "reminder_24h",
+            "reminder_2h",
+            "booking_confirmation",
+            "booking_cancellation",
+            "booking_update",
+          ]),
+        })
+      )
       .mutation(async ({ input, ctx }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { emailTemplates } = await import("../drizzle/schema");
-        
+
         // Define default templates
-        const defaultTemplates: Record<string, { subject: string; bodyHtml: string }> = {
+        const defaultTemplates: Record<
+          string,
+          { subject: string; bodyHtml: string }
+        > = {
           reminder_24h: {
             subject: "Påminnelse: Din time i morgen",
             bodyHtml: `
@@ -11892,7 +13653,10 @@ export const appRouter = router({
 
         const defaultTemplate = defaultTemplates[input.templateType];
         if (!defaultTemplate) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid template type" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid template type",
+          });
         }
 
         // Check if template exists
@@ -11926,17 +13690,15 @@ export const appRouter = router({
             );
         } else {
           // Create with default
-          await dbInstance
-            .insert(emailTemplates)
-            .values({
-              tenantId: ctx.tenantId,
-              templateType: input.templateType,
-              subject: defaultTemplate.subject,
-              bodyHtml: defaultTemplate.bodyHtml,
-              primaryColor: "#8b5cf6",
-              secondaryColor: "#6366f1",
-              isActive: true,
-            });
+          await dbInstance.insert(emailTemplates).values({
+            tenantId: ctx.tenantId,
+            templateType: input.templateType,
+            subject: defaultTemplate.subject,
+            bodyHtml: defaultTemplate.bodyHtml,
+            primaryColor: "#8b5cf6",
+            secondaryColor: "#6366f1",
+            isActive: true,
+          });
         }
 
         // Return the reset template
@@ -11960,59 +13722,72 @@ export const appRouter = router({
   // ============================================================================
   businessHours: router({
     // Get all business hours for tenant
-    getAll: tenantProcedure
-      .query(async ({ ctx }) => {
-        const dbInstance = await db.getDb();
-        if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-        }
+    getAll: tenantProcedure.query(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
+      }
 
-        const { businessHours } = await import("../drizzle/schema");
-        
-        const hours = await dbInstance
-          .select()
-          .from(businessHours)
-          .where(eq(businessHours.tenantId, ctx.tenantId))
-          .orderBy(businessHours.dayOfWeek);
+      const { businessHours } = await import("../drizzle/schema");
 
-        return hours;
-      }),
+      const hours = await dbInstance
+        .select()
+        .from(businessHours)
+        .where(eq(businessHours.tenantId, ctx.tenantId))
+        .orderBy(businessHours.dayOfWeek);
+
+      return hours;
+    }),
 
     // Update business hours for a specific day
     update: adminProcedure
-      .input(z.object({
-        dayOfWeek: z.number().min(0).max(6), // 0 = Sunday, 6 = Saturday
-        isOpen: z.boolean(),
-        openTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
-        closeTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
-      }))
+      .input(
+        z.object({
+          dayOfWeek: z.number().min(0).max(6), // 0 = Sunday, 6 = Saturday
+          isOpen: z.boolean(),
+          openTime: z
+            .string()
+            .regex(/^\d{2}:\d{2}$/)
+            .optional(),
+          closeTime: z
+            .string()
+            .regex(/^\d{2}:\d{2}$/)
+            .optional(),
+        })
+      )
       .mutation(async ({ input, ctx }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { businessHours } = await import("../drizzle/schema");
 
         // Validate that if isOpen is true, both times must be provided
         if (input.isOpen && (!input.openTime || !input.closeTime)) {
-          throw new TRPCError({ 
-            code: "BAD_REQUEST", 
-            message: "Open and close times are required when salon is open" 
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Open and close times are required when salon is open",
           });
         }
 
         // Validate that openTime is before closeTime
         if (input.isOpen && input.openTime && input.closeTime) {
-          const [openHour, openMin] = input.openTime.split(':').map(Number);
-          const [closeHour, closeMin] = input.closeTime.split(':').map(Number);
+          const [openHour, openMin] = input.openTime.split(":").map(Number);
+          const [closeHour, closeMin] = input.closeTime.split(":").map(Number);
           const openMinutes = openHour * 60 + openMin;
           const closeMinutes = closeHour * 60 + closeMin;
-          
+
           if (openMinutes >= closeMinutes) {
-            throw new TRPCError({ 
-              code: "BAD_REQUEST", 
-              message: "Open time must be before close time" 
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Open time must be before close time",
             });
           }
         }
@@ -12047,15 +13822,13 @@ export const appRouter = router({
             );
         } else {
           // Insert new record
-          await dbInstance
-            .insert(businessHours)
-            .values({
-              tenantId: ctx.tenantId,
-              dayOfWeek: input.dayOfWeek,
-              isOpen: input.isOpen,
-              openTime: input.isOpen ? input.openTime : null,
-              closeTime: input.isOpen ? input.closeTime : null,
-            });
+          await dbInstance.insert(businessHours).values({
+            tenantId: ctx.tenantId,
+            dayOfWeek: input.dayOfWeek,
+            isOpen: input.isOpen,
+            openTime: input.isOpen ? input.openTime : null,
+            closeTime: input.isOpen ? input.closeTime : null,
+          });
         }
 
         return { success: true };
@@ -12063,16 +13836,29 @@ export const appRouter = router({
 
     // Bulk update all business hours at once
     updateAll: adminProcedure
-      .input(z.array(z.object({
-        dayOfWeek: z.number().min(0).max(6),
-        isOpen: z.boolean(),
-        openTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
-        closeTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
-      })))
+      .input(
+        z.array(
+          z.object({
+            dayOfWeek: z.number().min(0).max(6),
+            isOpen: z.boolean(),
+            openTime: z
+              .string()
+              .regex(/^\d{2}:\d{2}$/)
+              .optional(),
+            closeTime: z
+              .string()
+              .regex(/^\d{2}:\d{2}$/)
+              .optional(),
+          })
+        )
+      )
       .mutation(async ({ input, ctx }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { businessHours } = await import("../drizzle/schema");
@@ -12080,22 +13866,22 @@ export const appRouter = router({
         // Validate all entries
         for (const day of input) {
           if (day.isOpen && (!day.openTime || !day.closeTime)) {
-            throw new TRPCError({ 
-              code: "BAD_REQUEST", 
-              message: `Open and close times are required for day ${day.dayOfWeek}` 
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: `Open and close times are required for day ${day.dayOfWeek}`,
             });
           }
 
           if (day.isOpen && day.openTime && day.closeTime) {
-            const [openHour, openMin] = day.openTime.split(':').map(Number);
-            const [closeHour, closeMin] = day.closeTime.split(':').map(Number);
+            const [openHour, openMin] = day.openTime.split(":").map(Number);
+            const [closeHour, closeMin] = day.closeTime.split(":").map(Number);
             const openMinutes = openHour * 60 + openMin;
             const closeMinutes = closeHour * 60 + closeMin;
-            
+
             if (openMinutes >= closeMinutes) {
-              throw new TRPCError({ 
-                code: "BAD_REQUEST", 
-                message: `Open time must be before close time for day ${day.dayOfWeek}` 
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: `Open time must be before close time for day ${day.dayOfWeek}`,
               });
             }
           }
@@ -12130,15 +13916,13 @@ export const appRouter = router({
                 )
               );
           } else {
-            await dbInstance
-              .insert(businessHours)
-              .values({
-                tenantId: ctx.tenantId,
-                dayOfWeek: day.dayOfWeek,
-                isOpen: day.isOpen,
-                openTime: day.isOpen ? day.openTime : null,
-                closeTime: day.isOpen ? day.closeTime : null,
-              });
+            await dbInstance.insert(businessHours).values({
+              tenantId: ctx.tenantId,
+              dayOfWeek: day.dayOfWeek,
+              isOpen: day.isOpen,
+              openTime: day.isOpen ? day.openTime : null,
+              closeTime: day.isOpen ? day.closeTime : null,
+            });
           }
         }
 
@@ -12152,11 +13936,13 @@ export const appRouter = router({
   posRefunds: router({
     // List all refunds with filters
     listRefunds: tenantProcedure
-      .input(z.object({
-        status: z.enum(["pending", "completed", "failed"]).optional(),
-        startDate: z.string().optional(),
-        endDate: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          status: z.enum(["pending", "completed", "failed"]).optional(),
+          startDate: z.string().optional(),
+          endDate: z.string().optional(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
@@ -12166,8 +13952,10 @@ export const appRouter = router({
 
         const conditions = [eq(refunds.tenantId, ctx.tenantId)];
         if (input.status) conditions.push(eq(refunds.status, input.status));
-        if (input.startDate) conditions.push(gte(refunds.createdAt, new Date(input.startDate)));
-        if (input.endDate) conditions.push(lte(refunds.createdAt, new Date(input.endDate)));
+        if (input.startDate)
+          conditions.push(gte(refunds.createdAt, new Date(input.startDate)));
+        if (input.endDate)
+          conditions.push(lte(refunds.createdAt, new Date(input.endDate)));
 
         const results = await dbInstance
           .select({
@@ -12190,20 +13978,30 @@ export const appRouter = router({
 
     // Get refund statistics
     getRefundStats: tenantProcedure
-      .input(z.object({
-        startDate: z.string().optional(),
-        endDate: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          startDate: z.string().optional(),
+          endDate: z.string().optional(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) return { totalRefunded: 0, totalCount: 0, pendingCount: 0, completedCount: 0 };
+        if (!dbInstance)
+          return {
+            totalRefunded: 0,
+            totalCount: 0,
+            pendingCount: 0,
+            completedCount: 0,
+          };
 
         const { refunds } = await import("../drizzle/schema");
         const { eq, and, gte, lte, sum, count } = await import("drizzle-orm");
 
         const conditions = [eq(refunds.tenantId, ctx.tenantId)];
-        if (input.startDate) conditions.push(gte(refunds.createdAt, new Date(input.startDate)));
-        if (input.endDate) conditions.push(lte(refunds.createdAt, new Date(input.endDate)));
+        if (input.startDate)
+          conditions.push(gte(refunds.createdAt, new Date(input.startDate)));
+        if (input.endDate)
+          conditions.push(lte(refunds.createdAt, new Date(input.endDate)));
 
         const [stats] = await dbInstance
           .select({
@@ -12233,12 +14031,14 @@ export const appRouter = router({
 
     // Create new refund
     createRefund: tenantProcedure
-      .input(z.object({
-        orderId: z.number(),
-        amount: z.number().min(0.01),
-        reason: z.string(),
-        notes: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          orderId: z.number(),
+          amount: z.number().min(0.01),
+          reason: z.string(),
+          notes: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -12252,7 +14052,9 @@ export const appRouter = router({
           paymentId: 0, // TODO: Query actual payment ID from order
           orderId: input.orderId,
           amount: input.amount.toString(),
-          reason: input.notes ? `${input.reason} - ${input.notes}` : input.reason,
+          reason: input.notes
+            ? `${input.reason} - ${input.notes}`
+            : input.reason,
           refundMethod: "manual",
           status: "pending",
           processedBy: ctx.user.id,
@@ -12268,18 +14070,33 @@ export const appRouter = router({
   posReports: router({
     // Get detailed POS financial report
     getDetailedReport: tenantProcedure
-      .input(z.object({
-        startDate: z.string(),
-        endDate: z.string(),
-        employeeId: z.number().optional(),
-        paymentMethod: z.enum(["cash", "card", "vipps", "stripe", "split"]).optional(),
-      }))
+      .input(
+        z.object({
+          startDate: z.string(),
+          endDate: z.string(),
+          employeeId: z.number().optional(),
+          paymentMethod: z
+            .enum(["cash", "card", "vipps", "stripe", "split"])
+            .optional(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return null;
 
-        const { orders, payments, users, appointmentServices, services, orderItems, products, paymentSplits } = await import("../drizzle/schema");
-        const { eq, and, gte, lte, sum, count, desc, sql } = await import("drizzle-orm");
+        const {
+          orders,
+          payments,
+          users,
+          appointmentServices,
+          services,
+          orderItems,
+          products,
+          paymentSplits,
+        } = await import("../drizzle/schema");
+        const { eq, and, gte, lte, sum, count, desc, sql } = await import(
+          "drizzle-orm"
+        );
 
         const startDate = new Date(input.startDate);
         const endDate = new Date(input.endDate);
@@ -12329,7 +14146,9 @@ export const appRouter = router({
         ];
 
         if (input.paymentMethod) {
-          paymentConditions.push(eq(payments.paymentMethod, input.paymentMethod));
+          paymentConditions.push(
+            eq(payments.paymentMethod, input.paymentMethod)
+          );
         }
 
         const salesByPaymentMethod = await dbInstance
@@ -12374,10 +14193,12 @@ export const appRouter = router({
             totalRevenue: sum(orderItems.total),
           })
           .from(orderItems)
-          .where(and(
-            eq(orderItems.itemType, "product"),
-            sql`EXISTS (SELECT 1 FROM ${orders} WHERE ${orders.id} = ${orderItems.orderId} AND ${orders.tenantId} = ${ctx.tenantId} AND ${orders.createdAt} >= ${startDate} AND ${orders.createdAt} <= ${endDate})`
-          ))
+          .where(
+            and(
+              eq(orderItems.itemType, "product"),
+              sql`EXISTS (SELECT 1 FROM ${orders} WHERE ${orders.id} = ${orderItems.orderId} AND ${orders.tenantId} = ${ctx.tenantId} AND ${orders.createdAt} >= ${startDate} AND ${orders.createdAt} <= ${endDate})`
+            )
+          )
           .groupBy(orderItems.itemId, orderItems.itemName)
           .orderBy(desc(sum(orderItems.total)))
           .limit(10);
@@ -12391,11 +14212,13 @@ export const appRouter = router({
             createdAt: paymentSplits.createdAt,
           })
           .from(paymentSplits)
-          .where(and(
-            eq(paymentSplits.tenantId, ctx.tenantId),
-            gte(paymentSplits.createdAt, startDate),
-            lte(paymentSplits.createdAt, endDate)
-          ))
+          .where(
+            and(
+              eq(paymentSplits.tenantId, ctx.tenantId),
+              gte(paymentSplits.createdAt, startDate),
+              lte(paymentSplits.createdAt, endDate)
+            )
+          )
           .groupBy(paymentSplits.orderId, paymentSplits.createdAt);
 
         return {
@@ -12438,184 +14261,206 @@ export const appRouter = router({
   // ============================================================================
   izettle: router({
     // Get authorization URL to connect iZettle account
-    getAuthUrl: adminProcedure
-      .query(async ({ ctx }) => {
-        const { getAuthorizationUrl } = await import('./services/izettle');
-        return { url: getAuthorizationUrl(ctx.tenantId) };
-      }),
+    getAuthUrl: adminProcedure.query(async ({ ctx }) => {
+      const { getAuthorizationUrl } = await import("./services/izettle");
+      return { url: getAuthorizationUrl(ctx.tenantId) };
+    }),
 
     // Get iZettle connection status for admin
-    getStatus: adminProcedure
-      .query(async ({ ctx }) => {
-        const dbInstance = await db.getDb();
-        if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-        }
+    getStatus: adminProcedure.query(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
+      }
 
-        const { paymentProviders } = await import("../drizzle/schema");
-        const { eq } = await import("drizzle-orm");
-        const [provider] = await dbInstance
-          .select()
-          .from(paymentProviders)
-          .where(eq(paymentProviders.providerType, 'izettle'))
-          .limit(1);
+      const { paymentProviders } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const [provider] = await dbInstance
+        .select()
+        .from(paymentProviders)
+        .where(eq(paymentProviders.providerType, "izettle"))
+        .limit(1);
 
-        if (!provider) {
+      if (!provider) {
         return {
           connected: false,
           email: null,
           accountId: null,
           lastSync: null as string | null,
         };
-        }
+      }
 
-        return {
-          connected: !!provider.accessToken,
-          email: provider.providerEmail,
-          accountId: provider.providerAccountId,
-          lastSync: provider.lastSyncAt ? provider.lastSyncAt.toISOString() : null,
-          isActive: provider.isActive,
-        };
-      }),
+      return {
+        connected: !!provider.accessToken,
+        email: provider.providerEmail,
+        accountId: provider.providerAccountId,
+        lastSync: provider.lastSyncAt
+          ? provider.lastSyncAt.toISOString()
+          : null,
+        isActive: provider.isActive,
+      };
+    }),
 
     // Disconnect iZettle account
-    disconnect: adminProcedure
-      .mutation(async ({ ctx }) => {
-        const dbInstance = await db.getDb();
-        if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-        }
+    disconnect: adminProcedure.mutation(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
+      }
 
-        const { paymentProviders } = await import("../drizzle/schema");
-        await dbInstance
-          .update(paymentProviders)
-          .set({
-            isActive: false,
-            accessToken: undefined,
-            refreshToken: undefined,
-            tokenExpiresAt: undefined,
-            updatedAt: new Date(),
-          })
-          .where(
-            and(
-              eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, 'izettle')
-            )
-          );
+      const { paymentProviders } = await import("../drizzle/schema");
+      await dbInstance
+        .update(paymentProviders)
+        .set({
+          isActive: false,
+          accessToken: undefined,
+          refreshToken: undefined,
+          tokenExpiresAt: undefined,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(paymentProviders.tenantId, ctx.tenantId),
+            eq(paymentProviders.providerType, "izettle")
+          )
+        );
 
-        return { success: true };
-      }),
+      return { success: true };
+    }),
 
     // DEPRECATED: Use pos.createZettlePayment instead (Reader Connect API)
     // This endpoint is kept for backward compatibility but should not be used
     createPayment: protectedProcedure
-      .input(z.object({
-        amount: z.number().positive(),
-        currency: z.string().default('NOK'),
-        reference: z.string(),
-      }))
+      .input(
+        z.object({
+          amount: z.number().positive(),
+          currency: z.string().default("NOK"),
+          reference: z.string(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         throw new TRPCError({
           code: "NOT_IMPLEMENTED",
-          message: "This endpoint is deprecated. Please use pos.createZettlePayment with PayPal Reader instead.",
+          message:
+            "This endpoint is deprecated. Please use pos.createZettlePayment with PayPal Reader instead.",
         });
       }),
 
     // Get iZettle connection status (for any authenticated user)
-    getConnectionStatus: tenantProcedure
-      .query(async ({ ctx }) => {
-        const dbInstance = await db.getDb();
-        if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-        }
+    getConnectionStatus: tenantProcedure.query(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
+      }
 
-        const { paymentProviders } = await import("../drizzle/schema");
-        const { eq, and } = await import("drizzle-orm");
-        const [provider] = await dbInstance
-          .select()
-          .from(paymentProviders)
-          .where(
-            and(
-              eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, 'izettle')
-            )
+      const { paymentProviders } = await import("../drizzle/schema");
+      const { eq, and } = await import("drizzle-orm");
+      const [provider] = await dbInstance
+        .select()
+        .from(paymentProviders)
+        .where(
+          and(
+            eq(paymentProviders.tenantId, ctx.tenantId),
+            eq(paymentProviders.providerType, "izettle")
           )
-          .limit(1);
+        )
+        .limit(1);
 
-        if (!provider || !provider.accessToken) {
-          return {
-            isConnected: false,
-            accountEmail: null,
-          };
-        }
-
+      if (!provider || !provider.accessToken) {
         return {
-          isConnected: true,
-          accountEmail: provider.providerEmail || null,
+          isConnected: false,
+          accountEmail: null,
         };
-      }),
+      }
+
+      return {
+        isConnected: true,
+        accountEmail: provider.providerEmail || null,
+      };
+    }),
 
     // Get linked PayPal Readers
-    getLinkedReaders: tenantProcedure
-      .query(async ({ ctx }) => {
-        const dbInstance = await db.getDb();
-        if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-        }
+    getLinkedReaders: tenantProcedure.query(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
+      }
 
-        const { paymentProviders } = await import("../drizzle/schema");
-        const { eq, and } = await import("drizzle-orm");
-        
-        const [provider] = await dbInstance
-          .select()
-          .from(paymentProviders)
-          .where(
-            and(
-              eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, 'izettle')
-            )
+      const { paymentProviders } = await import("../drizzle/schema");
+      const { eq, and } = await import("drizzle-orm");
+
+      const [provider] = await dbInstance
+        .select()
+        .from(paymentProviders)
+        .where(
+          and(
+            eq(paymentProviders.tenantId, ctx.tenantId),
+            eq(paymentProviders.providerType, "izettle")
           )
-          .limit(1);
+        )
+        .limit(1);
 
-        if (!provider || !provider.accessToken) {
-          return { readers: [] };
-        }
+      if (!provider || !provider.accessToken) {
+        return { readers: [] };
+      }
 
-        try {
-          const { decryptToken, getReaderLinks } = await import('./services/izettle');
-          const accessToken = decryptToken(provider.accessToken);
-          const links = await getReaderLinks(accessToken);
-          
-          return {
-            readers: links.map((link: any) => ({
-              linkId: link.id || link.linkId,
-              deviceName: link.integratorTags?.deviceName || 'PayPal Reader',
-              serialNumber: link.readerTags?.serialNumber || 'Unknown',
-              model: link.readerTags?.model || 'PayPal Reader',
-              status: 'linked',
-            })),
-          };
-        } catch (error: any) {
-          console.error('[getLinkedReaders] Error:', error.message);
-          return { readers: [], error: error.message };
-        }
-      }),
+      try {
+        const { decryptToken, getReaderLinks } = await import(
+          "./services/izettle"
+        );
+        const accessToken = decryptToken(provider.accessToken);
+        const links = await getReaderLinks(accessToken);
+
+        return {
+          readers: links.map((link: any) => ({
+            linkId: link.id || link.linkId,
+            deviceName: link.integratorTags?.deviceName || "PayPal Reader",
+            serialNumber: link.readerTags?.serialNumber || "Unknown",
+            model: link.readerTags?.model || "PayPal Reader",
+            status: "linked",
+          })),
+        };
+      } catch (error: any) {
+        console.error("[getLinkedReaders] Error:", error.message);
+        return { readers: [], error: error.message };
+      }
+    }),
 
     // DEPRECATED: Old implementation removed - use Reader Connect API
     _oldCreatePayment: protectedProcedure
-      .input(z.object({
-        amount: z.number().positive(),
-        currency: z.string().default('NOK'),
-        reference: z.string(),
-      }))
+      .input(
+        z.object({
+          amount: z.number().positive(),
+          currency: z.string().default("NOK"),
+          reference: z.string(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         if (!ctx.user.tenantId) {
-          throw new TRPCError({ code: "FORBIDDEN", message: "No tenant access" });
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "No tenant access",
+          });
         }
 
         const { paymentProviders } = await import("../drizzle/schema");
@@ -12626,7 +14471,7 @@ export const appRouter = router({
           .where(
             and(
               eq(paymentProviders.tenantId, ctx.user.tenantId),
-              eq(paymentProviders.providerType, 'izettle'),
+              eq(paymentProviders.providerType, "izettle"),
               eq(paymentProviders.isActive, true)
             )
           )
@@ -12635,17 +14480,21 @@ export const appRouter = router({
         if (!provider || !provider.accessToken) {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
-            message: "iZettle not connected. Please connect your iZettle account first.",
+            message:
+              "iZettle not connected. Please connect your iZettle account first.",
           });
         }
 
-        const { decryptToken, refreshAccessToken } = await import('./services/izettle');
-        
+        const { decryptToken, refreshAccessToken } = await import(
+          "./services/izettle"
+        );
+
         // This old implementation has been removed
         // Use pos.createZettlePayment with Reader Connect API instead
         throw new TRPCError({
           code: "NOT_IMPLEMENTED",
-          message: "This endpoint is deprecated. Please upgrade to PayPal Reader and use Reader Connect API.",
+          message:
+            "This endpoint is deprecated. Please upgrade to PayPal Reader and use Reader Connect API.",
         });
       }),
 
@@ -12655,13 +14504,18 @@ export const appRouter = router({
 
     // Create a new Reader Link
     createReaderLink: tenantProcedure
-      .input(z.object({
-        linkName: z.string().default("Stylora POS"),
-      }))
+      .input(
+        z.object({
+          linkName: z.string().default("Stylora POS"),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { paymentProviders } = await import("../drizzle/schema");
@@ -12674,7 +14528,7 @@ export const appRouter = router({
           .where(
             and(
               eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, 'izettle')
+              eq(paymentProviders.providerType, "izettle")
             )
           )
           .limit(1);
@@ -12682,30 +14536,56 @@ export const appRouter = router({
         if (!provider || !provider.accessToken) {
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
-            message: "iZettle not connected. Please connect your iZettle account first.",
+            message:
+              "iZettle not connected. Please connect your iZettle account first.",
           });
         }
 
-        const { decryptToken, createReaderLink } = await import('./services/izettle');
-        
+        const { decryptToken, createReaderLink } = await import(
+          "./services/izettle"
+        );
+
         // Debug: Check encrypted token before decryption
-        console.log('[createReaderLink] Encrypted token from DB length:', provider.accessToken.length);
-        console.log('[createReaderLink] Encrypted token preview:', provider.accessToken.substring(0, 50));
-        
+        console.log(
+          "[createReaderLink] Encrypted token from DB length:",
+          provider.accessToken.length
+        );
+        console.log(
+          "[createReaderLink] Encrypted token preview:",
+          provider.accessToken.substring(0, 50)
+        );
+
         const accessToken = decryptToken(provider.accessToken);
-        
+
         // Debug: Check decrypted token
-        console.log('[createReaderLink] Decrypted access token length:', accessToken.length);
-        console.log('[createReaderLink] Decrypted access token first 30 chars:', accessToken.substring(0, 30));
-        console.log('[createReaderLink] Decrypted access token last 20 chars:', accessToken.substring(accessToken.length - 20));
-        console.log('[createReaderLink] Token starts with v1:', accessToken.startsWith('v1'));
-        console.log('[createReaderLink] Token contains only valid chars:', /^[A-Za-z0-9_\-\.]+$/.test(accessToken));
+        console.log(
+          "[createReaderLink] Decrypted access token length:",
+          accessToken.length
+        );
+        console.log(
+          "[createReaderLink] Decrypted access token first 30 chars:",
+          accessToken.substring(0, 30)
+        );
+        console.log(
+          "[createReaderLink] Decrypted access token last 20 chars:",
+          accessToken.substring(accessToken.length - 20)
+        );
+        console.log(
+          "[createReaderLink] Token starts with v1:",
+          accessToken.startsWith("v1")
+        );
+        console.log(
+          "[createReaderLink] Token contains only valid chars:",
+          /^[A-Za-z0-9_\-\.]+$/.test(accessToken)
+        );
 
         try {
           const link = await createReaderLink(accessToken, input.linkName);
 
           // Store linkId in provider config
-          const currentConfig = provider.config ? JSON.parse(provider.config as string) : {};
+          const currentConfig = provider.config
+            ? JSON.parse(provider.config as string)
+            : {};
           const readerLinks = currentConfig.readerLinks || [];
           readerLinks.push({
             linkId: link.linkId,
@@ -12736,22 +14616,30 @@ export const appRouter = router({
 
     // Pair a PayPal Reader using 8-digit code
     pairReader: tenantProcedure
-      .input(z.object({
-        code: z.string().length(8, "Koden må være 8 tegn"),
-        deviceName: z.string().default("Stylora POS"),
-      }))
+      .input(
+        z.object({
+          code: z.string().length(8, "Koden må være 8 tegn"),
+          deviceName: z.string().default("Stylora POS"),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { paymentProviders } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
 
         // Log tenant info for debugging
-        console.log('[pairReader] Current tenant:', ctx.tenantId);
-        console.log('[pairReader] User info:', { userId: ctx.user.id, email: ctx.user.email });
+        console.log("[pairReader] Current tenant:", ctx.tenantId);
+        console.log("[pairReader] User info:", {
+          userId: ctx.user.id,
+          email: ctx.user.email,
+        });
 
         // Get iZettle provider (don't filter by isActive - it might be null/false initially)
         const [provider] = await dbInstance
@@ -12760,43 +14648,66 @@ export const appRouter = router({
           .where(
             and(
               eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, 'izettle')
+              eq(paymentProviders.providerType, "izettle")
             )
           )
           .limit(1);
 
-        console.log('[pairReader] Provider found:', provider ? {
-          id: provider.id,
-          tenantId: provider.tenantId,
-          providerType: provider.providerType,
-          isActive: provider.isActive,
-          hasAccessToken: !!provider.accessToken,
-        } : null);
+        console.log(
+          "[pairReader] Provider found:",
+          provider
+            ? {
+                id: provider.id,
+                tenantId: provider.tenantId,
+                providerType: provider.providerType,
+                isActive: provider.isActive,
+                hasAccessToken: !!provider.accessToken,
+              }
+            : null
+        );
 
         if (!provider || !provider.accessToken) {
-          console.error('[pairReader] No connected iZettle provider found for tenant:', ctx.tenantId);
-          
+          console.error(
+            "[pairReader] No connected iZettle provider found for tenant:",
+            ctx.tenantId
+          );
+
           // Check if provider exists for ANY tenant (debugging)
           const allProviders = await dbInstance
-            .select({ tenantId: paymentProviders.tenantId, providerType: paymentProviders.providerType })
+            .select({
+              tenantId: paymentProviders.tenantId,
+              providerType: paymentProviders.providerType,
+            })
             .from(paymentProviders)
-            .where(eq(paymentProviders.providerType, 'izettle'));
-          console.log('[pairReader] All iZettle providers in DB:', allProviders);
-          
+            .where(eq(paymentProviders.providerType, "izettle"));
+          console.log(
+            "[pairReader] All iZettle providers in DB:",
+            allProviders
+          );
+
           throw new TRPCError({
             code: "PRECONDITION_FAILED",
-            message: "iZettle not connected. Please connect your iZettle account first.",
+            message:
+              "iZettle not connected. Please connect your iZettle account first.",
           });
         }
 
-        const { decryptToken, pairReaderWithCode } = await import('./services/izettle');
+        const { decryptToken, pairReaderWithCode } = await import(
+          "./services/izettle"
+        );
         const accessToken = decryptToken(provider.accessToken);
 
         try {
-          const link = await pairReaderWithCode(accessToken, input.code, input.deviceName);
+          const link = await pairReaderWithCode(
+            accessToken,
+            input.code,
+            input.deviceName
+          );
 
           // Store linkId in provider config
-          const currentConfig = provider.config ? JSON.parse(provider.config as string) : {};
+          const currentConfig = provider.config
+            ? JSON.parse(provider.config as string)
+            : {};
           const readerLinks = currentConfig.readerLinks || [];
           readerLinks.push({
             linkId: link.linkId,
@@ -12828,68 +14739,85 @@ export const appRouter = router({
       }),
 
     // Get all Reader Links
-    getReaderLinks: tenantProcedure
-      .query(async ({ ctx }) => {
-        const dbInstance = await db.getDb();
-        if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-        }
-
-        const { paymentProviders } = await import("../drizzle/schema");
-        const { eq, and } = await import("drizzle-orm");
-
-        const [provider] = await dbInstance
-          .select()
-          .from(paymentProviders)
-          .where(
-            and(
-              eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, 'izettle'),
-              eq(paymentProviders.isActive, true)
-            )
-          )
-          .limit(1);
-
-        if (!provider) {
-          return { links: [] };
-        }
-
-        const config = provider.config ? JSON.parse(provider.config as string) : {};
-        const readerLinks = config.readerLinks || [];
-
-        // Get status for each link
-        const { getReaderConnectManager } = await import('./services/reader-connect');
-        const { decryptToken } = await import('./services/izettle');
-        const accessToken = provider.accessToken ? decryptToken(provider.accessToken) : null;
-
-        const linksWithStatus = readerLinks.map((link: any) => {
-          let connected = false;
-          if (accessToken) {
-            try {
-              const manager = getReaderConnectManager(ctx.tenantId, link.linkId, accessToken);
-              connected = manager.isConnected();
-            } catch (error) {
-              connected = false;
-            }
-          }
-          return {
-            ...link,
-            connected,
-          };
+    getReaderLinks: tenantProcedure.query(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
         });
+      }
 
-        return { links: linksWithStatus };
-      }),
+      const { paymentProviders } = await import("../drizzle/schema");
+      const { eq, and } = await import("drizzle-orm");
+
+      const [provider] = await dbInstance
+        .select()
+        .from(paymentProviders)
+        .where(
+          and(
+            eq(paymentProviders.tenantId, ctx.tenantId),
+            eq(paymentProviders.providerType, "izettle"),
+            eq(paymentProviders.isActive, true)
+          )
+        )
+        .limit(1);
+
+      if (!provider) {
+        return { links: [] };
+      }
+
+      const config = provider.config
+        ? JSON.parse(provider.config as string)
+        : {};
+      const readerLinks = config.readerLinks || [];
+
+      // Get status for each link
+      const { getReaderConnectManager } = await import(
+        "./services/reader-connect"
+      );
+      const { decryptToken } = await import("./services/izettle");
+      const accessToken = provider.accessToken
+        ? decryptToken(provider.accessToken)
+        : null;
+
+      const linksWithStatus = readerLinks.map((link: any) => {
+        let connected = false;
+        if (accessToken) {
+          try {
+            const manager = getReaderConnectManager(
+              ctx.tenantId,
+              link.linkId,
+              accessToken
+            );
+            connected = manager.isConnected();
+          } catch (error) {
+            connected = false;
+          }
+        }
+        return {
+          ...link,
+          connected,
+        };
+      });
+
+      return { links: linksWithStatus };
+    }),
 
     // Delete a Reader Link
     deleteReaderLink: tenantProcedure
-      .input(z.object({
-        linkId: z.string(),
-      }))
+      .input(
+        z.object({
+          linkId: z.string(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { paymentProviders } = await import("../drizzle/schema");
@@ -12901,7 +14829,7 @@ export const appRouter = router({
           .where(
             and(
               eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, 'izettle'),
+              eq(paymentProviders.providerType, "izettle"),
               eq(paymentProviders.isActive, true)
             )
           )
@@ -12914,8 +14842,12 @@ export const appRouter = router({
           });
         }
 
-        const { decryptToken, deleteReaderLink } = await import('./services/izettle');
-        const { removeReaderConnectManager } = await import('./services/reader-connect');
+        const { decryptToken, deleteReaderLink } = await import(
+          "./services/izettle"
+        );
+        const { removeReaderConnectManager } = await import(
+          "./services/reader-connect"
+        );
         const accessToken = decryptToken(provider.accessToken);
 
         try {
@@ -12923,7 +14855,9 @@ export const appRouter = router({
           await deleteReaderLink(accessToken, input.linkId);
 
           // Remove from local config
-          const currentConfig = provider.config ? JSON.parse(provider.config as string) : {};
+          const currentConfig = provider.config
+            ? JSON.parse(provider.config as string)
+            : {};
           const readerLinks = (currentConfig.readerLinks || []).filter(
             (link: any) => link.linkId !== input.linkId
           );
@@ -12950,13 +14884,18 @@ export const appRouter = router({
 
     // Connect to a Reader Link (establish WebSocket)
     connectReaderLink: tenantProcedure
-      .input(z.object({
-        linkId: z.string(),
-      }))
+      .input(
+        z.object({
+          linkId: z.string(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { paymentProviders } = await import("../drizzle/schema");
@@ -12968,7 +14907,7 @@ export const appRouter = router({
           .where(
             and(
               eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, 'izettle'),
+              eq(paymentProviders.providerType, "izettle"),
               eq(paymentProviders.isActive, true)
             )
           )
@@ -12981,13 +14920,19 @@ export const appRouter = router({
           });
         }
 
-        const { decryptToken } = await import('./services/izettle');
-        const { getReaderConnectManager } = await import('./services/reader-connect');
+        const { decryptToken } = await import("./services/izettle");
+        const { getReaderConnectManager } = await import(
+          "./services/reader-connect"
+        );
         const accessToken = decryptToken(provider.accessToken);
 
         try {
-          const manager = getReaderConnectManager(ctx.tenantId, input.linkId, accessToken);
-          
+          const manager = getReaderConnectManager(
+            ctx.tenantId,
+            input.linkId,
+            accessToken
+          );
+
           if (!manager.isConnected()) {
             await manager.connect();
           }
@@ -13002,89 +14947,97 @@ export const appRouter = router({
       }),
 
     // Get payment history (last 10 payments)
-    getPaymentHistory: adminProcedure
-      .query(async ({ ctx }) => {
-        const dbInstance = await db.getDb();
-        if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
-        }
-
-        const { payments, paymentProviders } = await import("../drizzle/schema");
-        const { eq, and, desc } = await import("drizzle-orm");
-
-        // Get iZettle provider (don't filter by isActive - it might be null/false initially)
-        const [provider] = await dbInstance
-          .select()
-          .from(paymentProviders)
-          .where(
-            and(
-              eq(paymentProviders.tenantId, ctx.tenantId),
-              eq(paymentProviders.providerType, 'izettle')
-            )
-          )
-          .limit(1);
-
-        if (!provider) {
-          return { payments: [] };
-        }
-
-        // Get last 10 iZettle payments
-        const recentPayments = await dbInstance
-          .select({
-            id: payments.id,
-            amount: payments.amount,
-            currency: payments.currency,
-            status: payments.status,
-            createdAt: payments.createdAt,
-            processedAt: payments.processedAt,
-            gatewayPaymentId: payments.gatewayPaymentId,
-            gatewayMetadata: payments.gatewayMetadata,
-          })
-          .from(payments)
-          .where(
-            and(
-              eq(payments.tenantId, ctx.tenantId),
-              eq(payments.paymentGateway, 'izettle')
-            )
-          )
-          .orderBy(desc(payments.createdAt))
-          .limit(10);
-
-        // Parse metadata to get Reader Link info
-        const config = provider.config ? JSON.parse(provider.config as string) : {};
-        const readerLinks = config.readerLinks || [];
-
-        const paymentsWithDetails = recentPayments.map((payment) => {
-          let metadata: any = {};
-          try {
-            metadata = payment.gatewayMetadata ? JSON.parse(payment.gatewayMetadata as string) : {};
-          } catch (error) {
-            // Ignore parse errors
-          }
-
-          // Try to find Reader Link name from metadata
-          let readerName = "Unknown Reader";
-          if (metadata.linkId) {
-            const link = readerLinks.find((l: any) => l.linkId === metadata.linkId);
-            if (link) {
-              readerName = link.linkName;
-            }
-          }
-
-          return {
-            id: payment.id,
-            amount: payment.amount,
-            currency: payment.currency,
-            status: payment.status,
-            createdAt: payment.createdAt,
-            processedAt: payment.processedAt,
-            purchaseUUID: payment.gatewayPaymentId,
-            readerName,
-          };
+    getPaymentHistory: adminProcedure.query(async ({ ctx }) => {
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
         });
+      }
 
-        return { payments: paymentsWithDetails };
-      }),
+      const { payments, paymentProviders } = await import("../drizzle/schema");
+      const { eq, and, desc } = await import("drizzle-orm");
+
+      // Get iZettle provider (don't filter by isActive - it might be null/false initially)
+      const [provider] = await dbInstance
+        .select()
+        .from(paymentProviders)
+        .where(
+          and(
+            eq(paymentProviders.tenantId, ctx.tenantId),
+            eq(paymentProviders.providerType, "izettle")
+          )
+        )
+        .limit(1);
+
+      if (!provider) {
+        return { payments: [] };
+      }
+
+      // Get last 10 iZettle payments
+      const recentPayments = await dbInstance
+        .select({
+          id: payments.id,
+          amount: payments.amount,
+          currency: payments.currency,
+          status: payments.status,
+          createdAt: payments.createdAt,
+          processedAt: payments.processedAt,
+          gatewayPaymentId: payments.gatewayPaymentId,
+          gatewayMetadata: payments.gatewayMetadata,
+        })
+        .from(payments)
+        .where(
+          and(
+            eq(payments.tenantId, ctx.tenantId),
+            eq(payments.paymentGateway, "izettle")
+          )
+        )
+        .orderBy(desc(payments.createdAt))
+        .limit(10);
+
+      // Parse metadata to get Reader Link info
+      const config = provider.config
+        ? JSON.parse(provider.config as string)
+        : {};
+      const readerLinks = config.readerLinks || [];
+
+      const paymentsWithDetails = recentPayments.map(payment => {
+        let metadata: any = {};
+        try {
+          metadata = payment.gatewayMetadata
+            ? JSON.parse(payment.gatewayMetadata as string)
+            : {};
+        } catch (error) {
+          // Ignore parse errors
+        }
+
+        // Try to find Reader Link name from metadata
+        let readerName = "Unknown Reader";
+        if (metadata.linkId) {
+          const link = readerLinks.find(
+            (l: any) => l.linkId === metadata.linkId
+          );
+          if (link) {
+            readerName = link.linkName;
+          }
+        }
+
+        return {
+          id: payment.id,
+          amount: payment.amount,
+          currency: payment.currency,
+          status: payment.status,
+          createdAt: payment.createdAt,
+          processedAt: payment.processedAt,
+          purchaseUUID: payment.gatewayPaymentId,
+          readerName,
+        };
+      });
+
+      return { payments: paymentsWithDetails };
+    }),
 
     // ============================================================================
     // DEPRECATED ENDPOINTS
@@ -13092,17 +15045,25 @@ export const appRouter = router({
 
     // Get payment status
     getPaymentStatus: protectedProcedure
-      .input(z.object({
-        purchaseUUID: z.string(),
-      }))
+      .input(
+        z.object({
+          purchaseUUID: z.string(),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         if (!ctx.user.tenantId) {
-          throw new TRPCError({ code: "FORBIDDEN", message: "No tenant access" });
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "No tenant access",
+          });
         }
 
         const { paymentProviders } = await import("../drizzle/schema");
@@ -13112,7 +15073,7 @@ export const appRouter = router({
           .where(
             and(
               eq(paymentProviders.tenantId, ctx.user.tenantId),
-              eq(paymentProviders.providerType, 'izettle'),
+              eq(paymentProviders.providerType, "izettle"),
               eq(paymentProviders.isActive, true)
             )
           )
@@ -13125,11 +15086,16 @@ export const appRouter = router({
           });
         }
 
-        const { decryptToken, getPaymentStatus } = await import('./services/izettle');
+        const { decryptToken, getPaymentStatus } = await import(
+          "./services/izettle"
+        );
         const accessToken = decryptToken(provider.accessToken);
 
         try {
-          const status = await getPaymentStatus(accessToken, input.purchaseUUID);
+          const status = await getPaymentStatus(
+            accessToken,
+            input.purchaseUUID
+          );
           return status;
         } catch (error: any) {
           throw new TRPCError({
@@ -13148,7 +15114,10 @@ export const appRouter = router({
     get: tenantProcedure.query(async ({ ctx }) => {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const { paymentSettings } = await import("../drizzle/schema");
@@ -13191,13 +15160,18 @@ export const appRouter = router({
           stripePublishableKey: z.string().optional(),
           stripeSecretKey: z.string().optional(),
           stripeTestMode: z.boolean().optional(),
-          defaultPaymentMethod: z.enum(["vipps", "card", "cash", "pay_at_salon"]).optional(),
+          defaultPaymentMethod: z
+            .enum(["vipps", "card", "cash", "pay_at_salon"])
+            .optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { paymentSettings } = await import("../drizzle/schema");
@@ -13243,7 +15217,10 @@ export const appRouter = router({
       .query(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
         }
 
         const { paymentSettings } = await import("../drizzle/schema");
@@ -13281,21 +15258,39 @@ export const appRouter = router({
   myBookings: router({
     // Get all bookings for the authenticated user (by email)
     list: protectedProcedure
-      .input(z.object({
-        tenantId: z.string(),
-        status: z.enum(["upcoming", "past", "canceled", "all"]).optional().default("all"),
-      }))
+      .input(
+        z.object({
+          tenantId: z.string(),
+          status: z
+            .enum(["upcoming", "past", "canceled", "all"])
+            .optional()
+            .default("all"),
+        })
+      )
       .query(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
 
-        const { appointments, customers, services, appointmentServices, users } = await import("../drizzle/schema");
+        const {
+          appointments,
+          customers,
+          services,
+          appointmentServices,
+          users,
+        } = await import("../drizzle/schema");
         const { eq, and, gte, lt, desc, or } = await import("drizzle-orm");
 
         // Find customer by user email
         const userEmail = ctx.user.email;
         if (!userEmail) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "User email not found" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "User email not found",
+          });
         }
 
         const [customer] = await dbInstance
@@ -13366,13 +15361,16 @@ export const appRouter = router({
               ...(statusConditions.length > 0 ? statusConditions : [])
             )
           )
-          .orderBy(desc(appointments.appointmentDate), desc(appointments.startTime));
+          .orderBy(
+            desc(appointments.appointmentDate),
+            desc(appointments.startTime)
+          );
 
         const bookings = await query;
 
         // Fetch services for each booking
         const bookingsWithServices = await Promise.all(
-          bookings.map(async (booking) => {
+          bookings.map(async booking => {
             const aptServices = await dbInstance
               .select({
                 serviceName: services.name,
@@ -13380,7 +15378,10 @@ export const appRouter = router({
                 serviceDuration: services.durationMinutes,
               })
               .from(appointmentServices)
-              .leftJoin(services, eq(appointmentServices.serviceId, services.id))
+              .leftJoin(
+                services,
+                eq(appointmentServices.serviceId, services.id)
+              )
               .where(eq(appointmentServices.appointmentId, booking.id));
 
             return {
@@ -13395,22 +15396,33 @@ export const appRouter = router({
 
     // Cancel a booking by the authenticated user
     cancel: protectedProcedure
-      .input(z.object({
-        tenantId: z.string(),
-        appointmentId: z.number(),
-        reason: z.string().optional(),
-      }))
+      .input(
+        z.object({
+          tenantId: z.string(),
+          appointmentId: z.number(),
+          reason: z.string().optional(),
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
 
-        const { appointments, customers, tenants } = await import("../drizzle/schema");
+        const { appointments, customers, tenants } = await import(
+          "../drizzle/schema"
+        );
         const { eq, and } = await import("drizzle-orm");
 
         // Find customer by user email
         const userEmail = ctx.user.email;
         if (!userEmail) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "User email not found" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "User email not found",
+          });
         }
 
         const [customer] = await dbInstance
@@ -13425,7 +15437,10 @@ export const appRouter = router({
           .limit(1);
 
         if (!customer) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Customer not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Customer not found",
+          });
         }
 
         // Check if appointment exists and belongs to user's tenant
@@ -13458,12 +15473,18 @@ export const appRouter = router({
 
         // Check if already canceled
         if (appointment.status === "canceled") {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Appointment is already canceled" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Appointment is already canceled",
+          });
         }
 
         // Check if already completed
         if (appointment.status === "completed") {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot cancel a completed appointment" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Cannot cancel a completed appointment",
+          });
         }
 
         // Get tenant cancellation policy
@@ -13477,11 +15498,15 @@ export const appRouter = router({
 
         // Check if within cancellation window
         const appointmentDateTime = new Date(appointment.appointmentDate);
-        const [hours, minutes] = String(appointment.startTime).split(":").map(Number);
+        const [hours, minutes] = String(appointment.startTime)
+          .split(":")
+          .map(Number);
         appointmentDateTime.setHours(hours, minutes, 0, 0);
 
         const cancellationDeadline = new Date(appointmentDateTime);
-        cancellationDeadline.setHours(cancellationDeadline.getHours() - cancellationWindowHours);
+        cancellationDeadline.setHours(
+          cancellationDeadline.getHours() - cancellationWindowHours
+        );
 
         const now = new Date();
         const isLateCancellation = now > cancellationDeadline;
@@ -13499,8 +15524,13 @@ export const appRouter = router({
           .where(eq(appointments.id, input.appointmentId));
 
         // Send cancellation notification
-        const { sendAppointmentCancellationIfPossible } = await import("./notifications-appointments");
-        sendAppointmentCancellationIfPossible(input.appointmentId, input.tenantId).catch((err) => {
+        const { sendAppointmentCancellationIfPossible } = await import(
+          "./notifications-appointments"
+        );
+        sendAppointmentCancellationIfPossible(
+          input.appointmentId,
+          input.tenantId
+        ).catch(err => {
           console.error("[MyBookings] Failed to send cancellation email:", err);
         });
 
@@ -13518,7 +15548,11 @@ export const appRouter = router({
       .input(z.object({ tenantId: z.string() }))
       .query(async ({ input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
 
         const { tenants } = await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
@@ -13540,16 +15574,23 @@ export const appRouter = router({
 
     // Get available time slots for rescheduling
     getAvailableTimeSlots: protectedProcedure
-      .input(z.object({
-        tenantId: z.string(),
-        appointmentId: z.number(),
-        date: z.string(), // YYYY-MM-DD format
-      }))
+      .input(
+        z.object({
+          tenantId: z.string(),
+          appointmentId: z.number(),
+          date: z.string(), // YYYY-MM-DD format
+        })
+      )
       .query(async ({ input }) => {
         const dbInstance = await db.getDb();
         if (!dbInstance) return [];
 
-        const { appointments, services, appointmentServices, employeeSchedules } = await import("../drizzle/schema");
+        const {
+          appointments,
+          services,
+          appointmentServices,
+          employeeSchedules,
+        } = await import("../drizzle/schema");
         const { eq, and, or } = await import("drizzle-orm");
 
         // Get appointment details
@@ -13631,7 +15672,11 @@ export const appRouter = router({
         const slots: string[] = [];
         const slotInterval = 30; // minutes
 
-        for (let minutes = workStartMinutes; minutes + service.durationMinutes <= workEndMinutes; minutes += slotInterval) {
+        for (
+          let minutes = workStartMinutes;
+          minutes + service.durationMinutes <= workEndMinutes;
+          minutes += slotInterval
+        ) {
           const hour = Math.floor(minutes / 60);
           const minute = minutes % 60;
           const timeStr = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
@@ -13643,8 +15688,12 @@ export const appRouter = router({
           for (const apt of existingAppointments) {
             if (apt.id === input.appointmentId) continue; // Skip current appointment
 
-            const aptStartTime = apt.startTime ? apt.startTime.toString() : "00:00:00";
-            const aptEndTime = apt.endTime ? apt.endTime.toString() : "23:59:59";
+            const aptStartTime = apt.startTime
+              ? apt.startTime.toString()
+              : "00:00:00";
+            const aptEndTime = apt.endTime
+              ? apt.endTime.toString()
+              : "23:59:59";
             const [aptStartH, aptStartM] = aptStartTime.split(":").map(Number);
             const [aptEndH, aptEndM] = aptEndTime.split(":").map(Number);
             const aptStartMinutes = aptStartH * 60 + aptStartM;
@@ -13653,7 +15702,8 @@ export const appRouter = router({
             // Check for overlap
             if (
               (minutes >= aptStartMinutes && minutes < aptEndMinutes) ||
-              (slotEndMinutes > aptStartMinutes && slotEndMinutes <= aptEndMinutes) ||
+              (slotEndMinutes > aptStartMinutes &&
+                slotEndMinutes <= aptEndMinutes) ||
               (minutes <= aptStartMinutes && slotEndMinutes >= aptEndMinutes)
             ) {
               isAvailable = false;
@@ -13671,23 +15721,39 @@ export const appRouter = router({
 
     // Reschedule a booking by the authenticated user
     reschedule: protectedProcedure
-      .input(z.object({
-        tenantId: z.string(),
-        appointmentId: z.number(),
-        newDate: z.string(), // YYYY-MM-DD format
-        newTime: z.string(), // HH:MM format
-      }))
+      .input(
+        z.object({
+          tenantId: z.string(),
+          appointmentId: z.number(),
+          newDate: z.string(), // YYYY-MM-DD format
+          newTime: z.string(), // HH:MM format
+        })
+      )
       .mutation(async ({ ctx, input }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
 
-        const { appointments, customers, tenants, services, appointmentServices, employeeSchedules } = await import("../drizzle/schema");
+        const {
+          appointments,
+          customers,
+          tenants,
+          services,
+          appointmentServices,
+          employeeSchedules,
+        } = await import("../drizzle/schema");
         const { eq, and, gte, lte, or } = await import("drizzle-orm");
 
         // Find customer by user email
         const userEmail = ctx.user.email;
         if (!userEmail) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "User email not found" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "User email not found",
+          });
         }
 
         const [customer] = await dbInstance
@@ -13702,7 +15768,10 @@ export const appRouter = router({
           .limit(1);
 
         if (!customer) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Customer not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Customer not found",
+          });
         }
 
         // Get appointment
@@ -13719,15 +15788,24 @@ export const appRouter = router({
           .limit(1);
 
         if (!appointment) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Appointment not found",
+          });
         }
 
         // Check if already canceled or completed
         if (appointment.status === "canceled") {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot reschedule a canceled appointment" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Cannot reschedule a canceled appointment",
+          });
         }
         if (appointment.status === "completed") {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot reschedule a completed appointment" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Cannot reschedule a completed appointment",
+          });
         }
 
         // Get tenant reschedule policy (use same window as cancellation)
@@ -13741,11 +15819,15 @@ export const appRouter = router({
 
         // Check if within reschedule window
         const oldAppointmentDateTime = new Date(appointment.appointmentDate);
-        const [oldHours, oldMinutes] = String(appointment.startTime).split(":").map(Number);
+        const [oldHours, oldMinutes] = String(appointment.startTime)
+          .split(":")
+          .map(Number);
         oldAppointmentDateTime.setHours(oldHours, oldMinutes, 0, 0);
 
         const rescheduleDeadline = new Date(oldAppointmentDateTime);
-        rescheduleDeadline.setHours(rescheduleDeadline.getHours() - rescheduleWindowHours);
+        rescheduleDeadline.setHours(
+          rescheduleDeadline.getHours() - rescheduleWindowHours
+        );
 
         const now = new Date();
         if (now > rescheduleDeadline) {
@@ -13756,9 +15838,14 @@ export const appRouter = router({
         }
 
         // Validate new date/time is in the future
-        const newAppointmentDateTime = new Date(`${input.newDate}T${input.newTime}:00`);
+        const newAppointmentDateTime = new Date(
+          `${input.newDate}T${input.newTime}:00`
+        );
         if (newAppointmentDateTime <= now) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: "New appointment time must be in the future" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "New appointment time must be in the future",
+          });
         }
 
         // Get service duration to calculate end time
@@ -13771,7 +15858,10 @@ export const appRouter = router({
           .limit(1);
 
         if (!aptService) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Service not found for appointment" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Service not found for appointment",
+          });
         }
 
         const [service] = await dbInstance
@@ -13783,7 +15873,10 @@ export const appRouter = router({
           .limit(1);
 
         if (!service) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Service details not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Service details not found",
+          });
         }
 
         // Calculate new end time
@@ -13810,16 +15903,31 @@ export const appRouter = router({
             .limit(1);
 
           if (!schedule || !schedule.isActive) {
-            throw new TRPCError({ code: "BAD_REQUEST", message: "Employee is not available on this day" });
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Employee is not available on this day",
+            });
           }
 
           // Check if time is within employee's working hours
           const requestedStartMinutes = newHours * 60 + newMinutes;
-          const scheduleStartMinutes = schedule.startTime ? parseInt(schedule.startTime.split(":")[0]) * 60 + parseInt(schedule.startTime.split(":")[1]) : 0;
-          const scheduleEndMinutes = schedule.endTime ? parseInt(schedule.endTime.split(":")[0]) * 60 + parseInt(schedule.endTime.split(":")[1]) : 1440;
+          const scheduleStartMinutes = schedule.startTime
+            ? parseInt(schedule.startTime.split(":")[0]) * 60 +
+              parseInt(schedule.startTime.split(":")[1])
+            : 0;
+          const scheduleEndMinutes = schedule.endTime
+            ? parseInt(schedule.endTime.split(":")[0]) * 60 +
+              parseInt(schedule.endTime.split(":")[1])
+            : 1440;
 
-          if (requestedStartMinutes < scheduleStartMinutes || endMinutes > scheduleEndMinutes) {
-            throw new TRPCError({ code: "BAD_REQUEST", message: "Requested time is outside employee's working hours" });
+          if (
+            requestedStartMinutes < scheduleStartMinutes ||
+            endMinutes > scheduleEndMinutes
+          ) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Requested time is outside employee's working hours",
+            });
           }
 
           // Check for conflicting appointments
@@ -13842,8 +15950,12 @@ export const appRouter = router({
           for (const conflict of conflictingAppointments) {
             if (conflict.id === input.appointmentId) continue; // Skip current appointment
 
-            const conflictStart = conflict.startTime ? conflict.startTime.toString() : "00:00:00";
-            const conflictEnd = conflict.endTime ? conflict.endTime.toString() : "23:59:59";
+            const conflictStart = conflict.startTime
+              ? conflict.startTime.toString()
+              : "00:00:00";
+            const conflictEnd = conflict.endTime
+              ? conflict.endTime.toString()
+              : "23:59:59";
             const [cStartH, cStartM] = conflictStart.split(":").map(Number);
             const [cEndH, cEndM] = conflictEnd.split(":").map(Number);
             const conflictStartMinutes = cStartH * 60 + cStartM;
@@ -13851,11 +15963,17 @@ export const appRouter = router({
 
             // Check if times overlap
             if (
-              (requestedStartMinutes >= conflictStartMinutes && requestedStartMinutes < conflictEndMinutes) ||
-              (endMinutes > conflictStartMinutes && endMinutes <= conflictEndMinutes) ||
-              (requestedStartMinutes <= conflictStartMinutes && endMinutes >= conflictEndMinutes)
+              (requestedStartMinutes >= conflictStartMinutes &&
+                requestedStartMinutes < conflictEndMinutes) ||
+              (endMinutes > conflictStartMinutes &&
+                endMinutes <= conflictEndMinutes) ||
+              (requestedStartMinutes <= conflictStartMinutes &&
+                endMinutes >= conflictEndMinutes)
             ) {
-              throw new TRPCError({ code: "BAD_REQUEST", message: "This time slot is already booked" });
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "This time slot is already booked",
+              });
             }
           }
         }
@@ -13874,7 +15992,9 @@ export const appRouter = router({
           .where(eq(appointments.id, input.appointmentId));
 
         // Send reschedule notification
-        const { sendAppointmentRescheduleIfPossible } = await import("./notifications-appointments");
+        const { sendAppointmentRescheduleIfPossible } = await import(
+          "./notifications-appointments"
+        );
         sendAppointmentRescheduleIfPossible(
           input.appointmentId,
           input.tenantId,
@@ -13892,7 +16012,7 @@ export const appRouter = router({
           changeType: "rescheduled",
           fieldName: "appointmentDate,startTime",
           oldValue: JSON.stringify({
-            date: oldAppointmentDateTime.toISOString().split('T')[0],
+            date: oldAppointmentDateTime.toISOString().split("T")[0],
             time: String(appointment.startTime).slice(0, 5),
           }),
           newValue: JSON.stringify({
@@ -13922,9 +16042,15 @@ export const appRouter = router({
       )
       .query(async ({ input, ctx }) => {
         const dbInstance = await db.getDb();
-        if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        if (!dbInstance)
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Database not available",
+          });
 
-        const { appointments, customers: customersSchema } = await import("../drizzle/schema");
+        const { appointments, customers: customersSchema } = await import(
+          "../drizzle/schema"
+        );
         const customers = customersSchema;
 
         // Verify customer owns this appointment
@@ -13940,7 +16066,10 @@ export const appRouter = router({
           .limit(1);
 
         if (!customer) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Customer not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Customer not found",
+          });
         }
 
         // Verify appointment belongs to customer
@@ -13979,7 +16108,6 @@ export const appRouter = router({
         return history;
       }),
   }),
-
 });
 
 export type AppRouter = typeof appRouter;

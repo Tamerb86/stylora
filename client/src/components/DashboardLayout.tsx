@@ -29,10 +29,49 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, Calendar, Scissors, UserCog, Package, BarChart3, Settings as SettingsIcon, Bell, Gift, DollarSign, TrendingUp, Clock, ShoppingCart, Receipt, Search, RefreshCw, Plane, CalendarCheck, Database, Building2, CreditCard, History, ChevronDown, MessageCircle, Send, UserCheck, Mail, Shield, Wallet, FileText, Settings, X, Activity, Moon, Sun } from "lucide-react";
+import {
+  LayoutDashboard,
+  LogOut,
+  PanelLeft,
+  Users,
+  Calendar,
+  Scissors,
+  UserCog,
+  Package,
+  BarChart3,
+  Settings as SettingsIcon,
+  Bell,
+  Gift,
+  DollarSign,
+  TrendingUp,
+  Clock,
+  ShoppingCart,
+  Receipt,
+  Search,
+  RefreshCw,
+  Plane,
+  CalendarCheck,
+  Database,
+  Building2,
+  CreditCard,
+  History,
+  ChevronDown,
+  MessageCircle,
+  Send,
+  UserCheck,
+  Mail,
+  Shield,
+  Wallet,
+  FileText,
+  Settings,
+  X,
+  Activity,
+  Moon,
+  Sun,
+} from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
-import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
+import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
 import { Button } from "./ui/button";
 import GlobalSearch from "./GlobalSearch";
 import {
@@ -64,66 +103,322 @@ import {
 
 // Daily Operations - Most frequently used
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard", tooltip: "Oversikt over dagens avtaler og nøkkeltall" },
-  { icon: Calendar, label: "Timebok", path: "/appointments", tooltip: "Administrer og bestill timer for kunder" },
-  { icon: UserCheck, label: "Walk-in Kø", path: "/walk-in-queue", tooltip: "Håndter walk-in kunder uten avtale" },
-  { icon: ShoppingCart, label: "Salgssted (POS)", path: "/pos", tooltip: "Registrer salg og behandle betalinger" },
-  { icon: Users, label: "Kunder", path: "/customers", tooltip: "Administrer kunderegisteret" },
-  { icon: Scissors, label: "Tjenester", path: "/services", tooltip: "Administrer tjenester og priser" },
-  { icon: UserCog, label: "Ansatte", path: "/employees", tooltip: "Administrer ansatte og deres tilganger" },
-  { icon: Package, label: "Produkter", path: "/products", advancedOnly: true, tooltip: "Administrer produkter for salg" },
-  { icon: Clock, label: "Timeregistrering", path: "/timeclock", tooltip: "Registrer arbeidstimer for ansatte", submenu: [
-    { icon: Clock, label: "Innstemplingsterminal", path: "/timeclock", tooltip: "Stemple inn og ut" },
-    { icon: UserCog, label: "Administrer vakter", path: "/timeclock-admin", adminOnly: true, tooltip: "Administrer og godkjenn arbeidstimer" },
-    { icon: BarChart3, label: "Timer rapport", path: "/work-hours-report", adminOnly: true, tooltip: "Vis ukentlig/månedlig rapport over arbeidstimer" },
-  ] },
-  { icon: Gift, label: "Lojalitet", path: "/loyalty", advancedOnly: true, tooltip: "Administrer lojalitetsprogram og belønninger" },
-  { icon: MessageCircle, label: "Kommunikasjon", path: "/communications", advancedOnly: true, tooltip: "Send meldinger og varsler til kunder", submenu: [
-    { icon: MessageCircle, label: "Innstillinger", path: "/communications", tooltip: "Konfigurer kommunikasjonsinnstillinger" },
-    { icon: Send, label: "Masseutsendelse", path: "/bulk-messaging", tooltip: "Send meldinger til flere kunder samtidig" },
-    { icon: TrendingUp, label: "Kampanjeanalyse", path: "/campaign-analytics", tooltip: "Analyser kampanjeresultater" },
-    { icon: Mail, label: "E-postmaler", path: "/email-templates", tooltip: "Administrer e-postmaler" },
-  ] },
-  { icon: Bell, label: "Varsler", path: "/notifications", advancedOnly: true, tooltip: "Administrer automatiske varsler" },
+  {
+    icon: LayoutDashboard,
+    label: "Dashboard",
+    path: "/dashboard",
+    tooltip: "Oversikt over dagens avtaler og nøkkeltall",
+  },
+  {
+    icon: Calendar,
+    label: "Timebok",
+    path: "/appointments",
+    tooltip: "Administrer og bestill timer for kunder",
+  },
+  {
+    icon: UserCheck,
+    label: "Walk-in Kø",
+    path: "/walk-in-queue",
+    tooltip: "Håndter walk-in kunder uten avtale",
+  },
+  {
+    icon: ShoppingCart,
+    label: "Salgssted (POS)",
+    path: "/pos",
+    tooltip: "Registrer salg og behandle betalinger",
+  },
+  {
+    icon: Users,
+    label: "Kunder",
+    path: "/customers",
+    tooltip: "Administrer kunderegisteret",
+  },
+  {
+    icon: Scissors,
+    label: "Tjenester",
+    path: "/services",
+    tooltip: "Administrer tjenester og priser",
+  },
+  {
+    icon: UserCog,
+    label: "Ansatte",
+    path: "/employees",
+    tooltip: "Administrer ansatte og deres tilganger",
+  },
+  {
+    icon: Package,
+    label: "Produkter",
+    path: "/products",
+    advancedOnly: true,
+    tooltip: "Administrer produkter for salg",
+  },
+  {
+    icon: Clock,
+    label: "Timeregistrering",
+    path: "/timeclock",
+    tooltip: "Registrer arbeidstimer for ansatte",
+    submenu: [
+      {
+        icon: Clock,
+        label: "Innstemplingsterminal",
+        path: "/timeclock",
+        tooltip: "Stemple inn og ut",
+      },
+      {
+        icon: UserCog,
+        label: "Administrer vakter",
+        path: "/timeclock-admin",
+        adminOnly: true,
+        tooltip: "Administrer og godkjenn arbeidstimer",
+      },
+      {
+        icon: BarChart3,
+        label: "Timer rapport",
+        path: "/work-hours-report",
+        adminOnly: true,
+        tooltip: "Vis ukentlig/månedlig rapport over arbeidstimer",
+      },
+    ],
+  },
+  {
+    icon: Gift,
+    label: "Lojalitet",
+    path: "/loyalty",
+    advancedOnly: true,
+    tooltip: "Administrer lojalitetsprogram og belønninger",
+  },
+  {
+    icon: MessageCircle,
+    label: "Kommunikasjon",
+    path: "/communications",
+    advancedOnly: true,
+    tooltip: "Send meldinger og varsler til kunder",
+    submenu: [
+      {
+        icon: MessageCircle,
+        label: "Innstillinger",
+        path: "/communications",
+        tooltip: "Konfigurer kommunikasjonsinnstillinger",
+      },
+      {
+        icon: Send,
+        label: "Masseutsendelse",
+        path: "/bulk-messaging",
+        tooltip: "Send meldinger til flere kunder samtidig",
+      },
+      {
+        icon: TrendingUp,
+        label: "Kampanjeanalyse",
+        path: "/campaign-analytics",
+        tooltip: "Analyser kampanjeresultater",
+      },
+      {
+        icon: Mail,
+        label: "E-postmaler",
+        path: "/email-templates",
+        tooltip: "Administrer e-postmaler",
+      },
+    ],
+  },
+  {
+    icon: Bell,
+    label: "Varsler",
+    path: "/notifications",
+    advancedOnly: true,
+    tooltip: "Administrer automatiske varsler",
+  },
 ];
 
 // Settings & Configuration - Grouped together
 const settingsMenuItems = [
-  { icon: SettingsIcon, label: "Innstillinger", path: "/settings", tooltip: "Konfigurer systeminnstillinger" },
-  { icon: CreditCard, label: "Betalingsterminaler", path: "/payment-providers", adminOnly: true, advancedOnly: true, tooltip: "Administrer betalingsterminaler" },
-  { icon: CreditCard, label: "iZettle", path: "/izettle", adminOnly: true, advancedOnly: true, tooltip: "Koble til iZettle-konto" },
-  { icon: Building2, label: "Regnskap", path: "/accounting", adminOnly: true, tooltip: "Integrasjoner med regnskapssystemer", submenu: [
-    { icon: Building2, label: "Alle integrasjoner", path: "/accounting", tooltip: "Oversikt over regnskapsintegrasjoner" },
-    { icon: Building2, label: "Eksport til regnskapsfører", path: "/accountant-export", tooltip: "Eksporter data til regnskapsfører" },
-    { icon: Building2, label: "Unimicro", path: "/unimicro", tooltip: "Unimicro-integrasjon" },
-    { icon: Building2, label: "Fiken", path: "/fiken", tooltip: "Fiken-integrasjon" },
-  ] },
-  { icon: Database, label: "Sikkerhetskopier", path: "/backups", adminOnly: true, advancedOnly: true, tooltip: "Administrer sikkerhetskopier" },
-  { icon: FileText, label: "Importer Data", path: "/import", adminOnly: true, advancedOnly: true, tooltip: "Importer kunder, tjenester og produkter" },
-  { icon: Activity, label: "Systemovervåking", path: "/monitoring", adminOnly: true, advancedOnly: true, tooltip: "Overvåk systemytelse og integrasjoner" },
+  {
+    icon: SettingsIcon,
+    label: "Innstillinger",
+    path: "/settings",
+    tooltip: "Konfigurer systeminnstillinger",
+  },
+  {
+    icon: CreditCard,
+    label: "Betalingsterminaler",
+    path: "/payment-providers",
+    adminOnly: true,
+    advancedOnly: true,
+    tooltip: "Administrer betalingsterminaler",
+  },
+  {
+    icon: CreditCard,
+    label: "iZettle",
+    path: "/izettle",
+    adminOnly: true,
+    advancedOnly: true,
+    tooltip: "Koble til iZettle-konto",
+  },
+  {
+    icon: Building2,
+    label: "Regnskap",
+    path: "/accounting",
+    adminOnly: true,
+    tooltip: "Integrasjoner med regnskapssystemer",
+    submenu: [
+      {
+        icon: Building2,
+        label: "Alle integrasjoner",
+        path: "/accounting",
+        tooltip: "Oversikt over regnskapsintegrasjoner",
+      },
+      {
+        icon: Building2,
+        label: "Eksport til regnskapsfører",
+        path: "/accountant-export",
+        tooltip: "Eksporter data til regnskapsfører",
+      },
+      {
+        icon: Building2,
+        label: "Unimicro",
+        path: "/unimicro",
+        tooltip: "Unimicro-integrasjon",
+      },
+      {
+        icon: Building2,
+        label: "Fiken",
+        path: "/fiken",
+        tooltip: "Fiken-integrasjon",
+      },
+    ],
+  },
+  {
+    icon: Database,
+    label: "Sikkerhetskopier",
+    path: "/backups",
+    adminOnly: true,
+    advancedOnly: true,
+    tooltip: "Administrer sikkerhetskopier",
+  },
+  {
+    icon: FileText,
+    label: "Importer Data",
+    path: "/import",
+    adminOnly: true,
+    advancedOnly: true,
+    tooltip: "Importer kunder, tjenester og produkter",
+  },
+  {
+    icon: Activity,
+    label: "Systemovervåking",
+    path: "/monitoring",
+    adminOnly: true,
+    advancedOnly: true,
+    tooltip: "Overvåk systemytelse og integrasjoner",
+  },
 ];
 
 const paymentsMenuItems = [
-  { icon: CreditCard, label: "Kasse (Betaling)", path: "/pos-payment", advancedOnly: true, tooltip: "Behandle betalinger ved kassen" },
-  { icon: Receipt, label: "Ordrehistorikk", path: "/orders", advancedOnly: true, tooltip: "Se alle tidligere ordrer" },
-  { icon: History, label: "Betalingshistorikk", path: "/payment-history", advancedOnly: true, tooltip: "Se alle betalingstransaksjoner" },
-  { icon: RefreshCw, label: "Refusjoner", path: "/refunds", advancedOnly: true, tooltip: "Administrer refusjoner" },
-  { icon: RefreshCw, label: "Refusjonsstyring", path: "/refund-management", advancedOnly: true, tooltip: "Avansert refusjonsstyring" },
+  {
+    icon: CreditCard,
+    label: "Kasse (Betaling)",
+    path: "/pos-payment",
+    advancedOnly: true,
+    tooltip: "Behandle betalinger ved kassen",
+  },
+  {
+    icon: Receipt,
+    label: "Ordrehistorikk",
+    path: "/orders",
+    advancedOnly: true,
+    tooltip: "Se alle tidligere ordrer",
+  },
+  {
+    icon: History,
+    label: "Betalingshistorikk",
+    path: "/payment-history",
+    advancedOnly: true,
+    tooltip: "Se alle betalingstransaksjoner",
+  },
+  {
+    icon: RefreshCw,
+    label: "Refusjoner",
+    path: "/refunds",
+    advancedOnly: true,
+    tooltip: "Administrer refusjoner",
+  },
+  {
+    icon: RefreshCw,
+    label: "Refusjonsstyring",
+    path: "/refund-management",
+    advancedOnly: true,
+    tooltip: "Avansert refusjonsstyring",
+  },
 ];
 
 const reportsMenuItems = [
-  { icon: BarChart3, label: "Rapporter", path: "/reports", advancedOnly: true, tooltip: "Se alle rapporter og statistikk" },
-  { icon: BarChart3, label: "Fremmøterapport", path: "/attendance", advancedOnly: true, tooltip: "Rapport over kundefremmøte" },
-  { icon: DollarSign, label: "Økonomi", path: "/financial", advancedOnly: true, tooltip: "Finansielle rapporter og økonomi" },
-  { icon: TrendingUp, label: "Analyse", path: "/analytics", advancedOnly: true, tooltip: "Analyser og innsikt" },
-  { icon: TrendingUp, label: "Avanserte rapporter", path: "/advanced-reports", advancedOnly: true, tooltip: "Avanserte rapporter og statistikk" },
-  { icon: DollarSign, label: "POS Rapporter", path: "/pos-reports", advancedOnly: true, tooltip: "Salgsrapporter fra POS" },
+  {
+    icon: BarChart3,
+    label: "Rapporter",
+    path: "/reports",
+    advancedOnly: true,
+    tooltip: "Se alle rapporter og statistikk",
+  },
+  {
+    icon: BarChart3,
+    label: "Fremmøterapport",
+    path: "/attendance",
+    advancedOnly: true,
+    tooltip: "Rapport over kundefremmøte",
+  },
+  {
+    icon: DollarSign,
+    label: "Økonomi",
+    path: "/financial",
+    advancedOnly: true,
+    tooltip: "Finansielle rapporter og økonomi",
+  },
+  {
+    icon: TrendingUp,
+    label: "Analyse",
+    path: "/analytics",
+    advancedOnly: true,
+    tooltip: "Analyser og innsikt",
+  },
+  {
+    icon: TrendingUp,
+    label: "Avanserte rapporter",
+    path: "/advanced-reports",
+    advancedOnly: true,
+    tooltip: "Avanserte rapporter og statistikk",
+  },
+  {
+    icon: DollarSign,
+    label: "POS Rapporter",
+    path: "/pos-reports",
+    advancedOnly: true,
+    tooltip: "Salgsrapporter fra POS",
+  },
 ];
 
 const vacationMenuItems = [
-  { icon: Plane, label: "Mine Ferier", path: "/my-leaves", advancedOnly: true, tooltip: "Administrer dine feriedager" },
-  { icon: CalendarCheck, label: "Feriegodkjenninger", path: "/leave-approvals", adminOnly: true, advancedOnly: true, tooltip: "Godkjenn eller avslå feriesøknader" },
-  { icon: Calendar, label: "Helligdager", path: "/holidays", adminOnly: true, advancedOnly: true, tooltip: "Administrer helligdager og fridager" },
+  {
+    icon: Plane,
+    label: "Mine Ferier",
+    path: "/my-leaves",
+    advancedOnly: true,
+    tooltip: "Administrer dine feriedager",
+  },
+  {
+    icon: CalendarCheck,
+    label: "Feriegodkjenninger",
+    path: "/leave-approvals",
+    adminOnly: true,
+    advancedOnly: true,
+    tooltip: "Godkjenn eller avslå feriesøknader",
+  },
+  {
+    icon: Calendar,
+    label: "Helligdager",
+    path: "/holidays",
+    adminOnly: true,
+    advancedOnly: true,
+    tooltip: "Administrer helligdager og fridager",
+  },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -155,7 +450,7 @@ export default function DashboardLayout({
   }, [sidebarWidth]);
 
   if (loading) {
-    return <DashboardLayoutSkeleton />
+    return <DashboardLayoutSkeleton />;
   }
 
   if (!user) {
@@ -167,7 +462,8 @@ export default function DashboardLayout({
               Logg inn for å fortsette
             </h1>
             <p className="text-sm text-muted-foreground text-center max-w-sm">
-              Tilgang til dashboardet krever innlogging. Klikk nedenfor for å logge inn.
+              Tilgang til dashboardet krever innlogging. Klikk nedenfor for å
+              logge inn.
             </p>
           </div>
           <Button
@@ -193,7 +489,10 @@ export default function DashboardLayout({
         } as CSSProperties
       }
     >
-      <DashboardLayoutContent setSidebarWidth={setSidebarWidth} breadcrumbs={breadcrumbs}>
+      <DashboardLayoutContent
+        setSidebarWidth={setSidebarWidth}
+        breadcrumbs={breadcrumbs}
+      >
         {children}
       </DashboardLayoutContent>
     </SidebarProvider>
@@ -213,16 +512,20 @@ function DashboardLayoutContent({
 }: DashboardLayoutContentProps) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
-  
+
   // Check email verification status
   const { data: tenant } = trpc.tenants.getCurrent.useQuery(undefined, {
     enabled: !!user?.tenantId,
   });
-  
+
   // Redirect to verification page if email not verified
   useEffect(() => {
-    if (tenant && !tenant.emailVerified && location !== '/email-verification-required') {
-      setLocation('/email-verification-required');
+    if (
+      tenant &&
+      !tenant.emailVerified &&
+      location !== "/email-verification-required"
+    ) {
+      setLocation("/email-verification-required");
     }
   }, [tenant, location, setLocation]);
   const { state, toggleSidebar } = useSidebar();
@@ -236,37 +539,49 @@ function DashboardLayoutContent({
   const { isSimpleMode, toggleMode } = useUIMode();
   // Initialize expansion states from localStorage
   const [isVacationExpanded, setIsVacationExpanded] = useState(() => {
-    const saved = localStorage.getItem('sidebar-vacation-expanded');
+    const saved = localStorage.getItem("sidebar-vacation-expanded");
     return saved !== null ? JSON.parse(saved) : true;
   });
   const [isReportsExpanded, setIsReportsExpanded] = useState(() => {
-    const saved = localStorage.getItem('sidebar-reports-expanded');
+    const saved = localStorage.getItem("sidebar-reports-expanded");
     return saved !== null ? JSON.parse(saved) : true;
   });
   const [isPaymentsExpanded, setIsPaymentsExpanded] = useState(() => {
-    const saved = localStorage.getItem('sidebar-payments-expanded');
+    const saved = localStorage.getItem("sidebar-payments-expanded");
     return saved !== null ? JSON.parse(saved) : true;
   });
   const [isSettingsExpanded, setIsSettingsExpanded] = useState(() => {
-    const saved = localStorage.getItem('sidebar-settings-expanded');
+    const saved = localStorage.getItem("sidebar-settings-expanded");
     return saved !== null ? JSON.parse(saved) : true;
   });
 
   // Save expansion states to localStorage
   useEffect(() => {
-    localStorage.setItem('sidebar-vacation-expanded', JSON.stringify(isVacationExpanded));
+    localStorage.setItem(
+      "sidebar-vacation-expanded",
+      JSON.stringify(isVacationExpanded)
+    );
   }, [isVacationExpanded]);
 
   useEffect(() => {
-    localStorage.setItem('sidebar-reports-expanded', JSON.stringify(isReportsExpanded));
+    localStorage.setItem(
+      "sidebar-reports-expanded",
+      JSON.stringify(isReportsExpanded)
+    );
   }, [isReportsExpanded]);
 
   useEffect(() => {
-    localStorage.setItem('sidebar-payments-expanded', JSON.stringify(isPaymentsExpanded));
+    localStorage.setItem(
+      "sidebar-payments-expanded",
+      JSON.stringify(isPaymentsExpanded)
+    );
   }, [isPaymentsExpanded]);
 
   useEffect(() => {
-    localStorage.setItem('sidebar-settings-expanded', JSON.stringify(isSettingsExpanded));
+    localStorage.setItem(
+      "sidebar-settings-expanded",
+      JSON.stringify(isSettingsExpanded)
+    );
   }, [isSettingsExpanded]);
 
   // Fetch badge counts
@@ -293,14 +608,14 @@ function DashboardLayoutContent({
   // Keyboard shortcut for search (Ctrl+K or Cmd+K)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault();
         setSearchOpen(true);
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   useEffect(() => {
@@ -353,7 +668,11 @@ function DashboardLayoutContent({
               {!isCollapsed ? (
                 <>
                   <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <img src="/stylora-logo.png" alt="Stylora Logo" className="h-8 w-8 shrink-0" />
+                    <img
+                      src="/stylora-logo.png"
+                      alt="Stylora Logo"
+                      className="h-8 w-8 shrink-0"
+                    />
                     <span className="font-bold tracking-tight truncate bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
                       Stylora
                     </span>
@@ -389,7 +708,7 @@ function DashboardLayoutContent({
                   type="text"
                   placeholder="Søk i meny..."
                   value={sidebarSearchQuery}
-                  onChange={(e) => setSidebarSearchQuery(e.target.value)}
+                  onChange={e => setSidebarSearchQuery(e.target.value)}
                   className="h-8 pl-8 pr-8 text-sm"
                 />
                 {sidebarSearchQuery && (
@@ -409,22 +728,37 @@ function DashboardLayoutContent({
                   // Filter out advanced-only items in simple mode
                   if (isSimpleMode && item.advancedOnly) return false;
                   // Filter out admin-only items for non-admins
-                  if (item.adminOnly && user?.role !== "admin" && user?.role !== "owner") return false;
+                  if (
+                    item.adminOnly &&
+                    user?.role !== "admin" &&
+                    user?.role !== "owner"
+                  )
+                    return false;
                   // Filter by search query
                   if (sidebarSearchQuery) {
                     const query = sidebarSearchQuery.toLowerCase();
-                    return item.label.toLowerCase().includes(query) || 
-                           (item.tooltip?.toLowerCase().includes(query) ?? false);
+                    return (
+                      item.label.toLowerCase().includes(query) ||
+                      (item.tooltip?.toLowerCase().includes(query) ?? false)
+                    );
                   }
                   return true;
                 });
 
                 // Popular pages for empty state
                 const popularPages = [
-                  { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+                  {
+                    path: "/dashboard",
+                    label: "Dashboard",
+                    icon: LayoutDashboard,
+                  },
                   { path: "/appointments", label: "Timebok", icon: Calendar },
                   { path: "/customers", label: "Kunder", icon: Users },
-                  { path: "/pos", label: "Salgssted (POS)", icon: ShoppingCart },
+                  {
+                    path: "/pos",
+                    label: "Salgssted (POS)",
+                    icon: ShoppingCart,
+                  },
                   { path: "/reports", label: "Rapporter", icon: BarChart3 },
                 ];
 
@@ -437,7 +771,9 @@ function DashboardLayoutContent({
                         <p className="text-xs mt-1">Prøv et annet søkeord</p>
                       </div>
                       <div className="border-t pt-4">
-                        <p className="text-xs font-semibold text-muted-foreground mb-2 px-2">Populære sider</p>
+                        <p className="text-xs font-semibold text-muted-foreground mb-2 px-2">
+                          Populære sider
+                        </p>
                         {popularPages.map(page => {
                           const isActive = location === page.path;
                           return (
@@ -450,7 +786,9 @@ function DashboardLayoutContent({
                                 }}
                                 className="h-9 transition-all font-normal"
                               >
-                                <page.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
+                                <page.icon
+                                  className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
+                                />
                                 <span>{page.label}</span>
                               </SidebarMenuButton>
                             </SidebarMenuItem>
@@ -461,21 +799,33 @@ function DashboardLayoutContent({
                   );
                 }
 
-                return filteredItems
-                .map(item => {
+                return filteredItems.map(item => {
                   const isActive = location === item.path;
                   // Add data-tour attributes for onboarding
-                  const tourAttr = item.path === "/dashboard" ? "dashboard-link" :
-                                   item.path === "/appointments" ? "appointments-link" :
-                                   item.path === "/services" ? "services-link" :
-                                   item.path === "/employees" ? "employees-link" :
-                                   item.path === "/settings" ? "settings-link" : undefined;
-                  
+                  const tourAttr =
+                    item.path === "/dashboard"
+                      ? "dashboard-link"
+                      : item.path === "/appointments"
+                        ? "appointments-link"
+                        : item.path === "/services"
+                          ? "services-link"
+                          : item.path === "/employees"
+                            ? "employees-link"
+                            : item.path === "/settings"
+                              ? "settings-link"
+                              : undefined;
+
                   // Get badge count for this item
                   let badgeCount = 0;
-                  if (item.path === "/appointments" && badgeCounts?.pendingAppointments) {
+                  if (
+                    item.path === "/appointments" &&
+                    badgeCounts?.pendingAppointments
+                  ) {
                     badgeCount = badgeCounts.pendingAppointments;
-                  } else if (item.path === "/notifications" && badgeCounts?.unreadNotifications) {
+                  } else if (
+                    item.path === "/notifications" &&
+                    badgeCounts?.unreadNotifications
+                  ) {
                     badgeCount = badgeCounts.unreadNotifications;
                   }
 
@@ -497,7 +847,10 @@ function DashboardLayoutContent({
                               <span className="flex items-center gap-2 flex-1">
                                 {item.label}
                                 {badgeCount > 0 && (
-                                  <Badge variant="destructive" className="ml-auto h-5 px-1.5 text-xs font-semibold">
+                                  <Badge
+                                    variant="destructive"
+                                    className="ml-auto h-5 px-1.5 text-xs font-semibold"
+                                  >
                                     {badgeCount}
                                   </Badge>
                                 )}
@@ -515,7 +868,7 @@ function DashboardLayoutContent({
                   );
                 });
               })()}
-              
+
               {/* Payments Group Label (Advanced Mode Only) */}
               {!isSimpleMode && (
                 <>
@@ -527,51 +880,60 @@ function DashboardLayoutContent({
                       <Wallet className="h-3.5 w-3.5" />
                       Betalinger
                     </span>
-                    <ChevronDown 
-                      className={`h-3 w-3 transition-transform duration-200 ${isPaymentsExpanded ? 'rotate-0' : '-rotate-90'}`}
+                    <ChevronDown
+                      className={`h-3 w-3 transition-transform duration-200 ${isPaymentsExpanded ? "rotate-0" : "-rotate-90"}`}
                     />
                   </button>
-                  
+
                   {/* Payments Menu Items */}
-                  {isPaymentsExpanded && paymentsMenuItems
-                    .filter(item => {
-                      if (sidebarSearchQuery) {
-                        const query = sidebarSearchQuery.toLowerCase();
-                        return item.label.toLowerCase().includes(query) || 
-                               (item.tooltip?.toLowerCase().includes(query) ?? false);
-                      }
-                      return true;
-                    })
-                    .map(item => {
-                    const isActive = location === item.path;
-                    return (
-                      <SidebarMenuItem key={item.path}>
-                        <TooltipProvider delayDuration={300}>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <SidebarMenuButton
-                                isActive={isActive}
-                                onClick={() => setLocation(item.path)}
-                                tooltip={item.label}
-                                className="h-9 transition-all font-normal"
-                              >
-                                <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
-                                <span>{item.label}</span>
-                              </SidebarMenuButton>
-                            </TooltipTrigger>
-                            {item.tooltip && (
-                              <TooltipContent side="right" className="max-w-xs">
-                                <p className="text-sm">{item.tooltip}</p>
-                              </TooltipContent>
-                            )}
-                          </Tooltip>
-                        </TooltipProvider>
-                      </SidebarMenuItem>
-                    );
-                  })}
+                  {isPaymentsExpanded &&
+                    paymentsMenuItems
+                      .filter(item => {
+                        if (sidebarSearchQuery) {
+                          const query = sidebarSearchQuery.toLowerCase();
+                          return (
+                            item.label.toLowerCase().includes(query) ||
+                            (item.tooltip?.toLowerCase().includes(query) ??
+                              false)
+                          );
+                        }
+                        return true;
+                      })
+                      .map(item => {
+                        const isActive = location === item.path;
+                        return (
+                          <SidebarMenuItem key={item.path}>
+                            <TooltipProvider delayDuration={300}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <SidebarMenuButton
+                                    isActive={isActive}
+                                    onClick={() => setLocation(item.path)}
+                                    tooltip={item.label}
+                                    className="h-9 transition-all font-normal"
+                                  >
+                                    <item.icon
+                                      className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
+                                    />
+                                    <span>{item.label}</span>
+                                  </SidebarMenuButton>
+                                </TooltipTrigger>
+                                {item.tooltip && (
+                                  <TooltipContent
+                                    side="right"
+                                    className="max-w-xs"
+                                  >
+                                    <p className="text-sm">{item.tooltip}</p>
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
+                            </TooltipProvider>
+                          </SidebarMenuItem>
+                        );
+                      })}
                 </>
               )}
-              
+
               {/* Reports Group Label (Advanced Mode Only) */}
               {!isSimpleMode && (
                 <>
@@ -583,54 +945,63 @@ function DashboardLayoutContent({
                       <FileText className="h-3.5 w-3.5" />
                       Rapporter
                     </span>
-                    <ChevronDown 
-                      className={`h-3 w-3 transition-transform duration-200 ${isReportsExpanded ? 'rotate-0' : '-rotate-90'}`}
+                    <ChevronDown
+                      className={`h-3 w-3 transition-transform duration-200 ${isReportsExpanded ? "rotate-0" : "-rotate-90"}`}
                     />
                   </button>
-                  
+
                   {/* Reports Menu Items */}
-                  {isReportsExpanded && reportsMenuItems
-                    .filter(item => {
-                      // Filter out advanced-only items in simple mode
-                      if (item.advancedOnly && isSimpleMode) return false;
-                      // Filter by search query
-                      if (sidebarSearchQuery) {
-                        const query = sidebarSearchQuery.toLowerCase();
-                        return item.label.toLowerCase().includes(query) || 
-                               (item.tooltip?.toLowerCase().includes(query) ?? false);
-                      }
-                      return true;
-                    })
-                    .map(item => {
-                      const isActive = location === item.path;
-                      return (
-                        <SidebarMenuItem key={item.path}>
-                          <TooltipProvider delayDuration={300}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <SidebarMenuButton
-                                  isActive={isActive}
-                                  onClick={() => setLocation(item.path)}
-                                  tooltip={item.label}
-                                  className="h-9 transition-all font-normal"
-                                >
-                                  <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
-                                  <span>{item.label}</span>
-                                </SidebarMenuButton>
-                              </TooltipTrigger>
-                              {item.tooltip && (
-                                <TooltipContent side="right" className="max-w-xs">
-                                  <p className="text-sm">{item.tooltip}</p>
-                                </TooltipContent>
-                              )}
-                            </Tooltip>
-                          </TooltipProvider>
-                        </SidebarMenuItem>
-                      );
-                    })}
+                  {isReportsExpanded &&
+                    reportsMenuItems
+                      .filter(item => {
+                        // Filter out advanced-only items in simple mode
+                        if (item.advancedOnly && isSimpleMode) return false;
+                        // Filter by search query
+                        if (sidebarSearchQuery) {
+                          const query = sidebarSearchQuery.toLowerCase();
+                          return (
+                            item.label.toLowerCase().includes(query) ||
+                            (item.tooltip?.toLowerCase().includes(query) ??
+                              false)
+                          );
+                        }
+                        return true;
+                      })
+                      .map(item => {
+                        const isActive = location === item.path;
+                        return (
+                          <SidebarMenuItem key={item.path}>
+                            <TooltipProvider delayDuration={300}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <SidebarMenuButton
+                                    isActive={isActive}
+                                    onClick={() => setLocation(item.path)}
+                                    tooltip={item.label}
+                                    className="h-9 transition-all font-normal"
+                                  >
+                                    <item.icon
+                                      className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
+                                    />
+                                    <span>{item.label}</span>
+                                  </SidebarMenuButton>
+                                </TooltipTrigger>
+                                {item.tooltip && (
+                                  <TooltipContent
+                                    side="right"
+                                    className="max-w-xs"
+                                  >
+                                    <p className="text-sm">{item.tooltip}</p>
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
+                            </TooltipProvider>
+                          </SidebarMenuItem>
+                        );
+                      })}
                 </>
               )}
-              
+
               {/* Settings Group Label (Advanced Mode Only) */}
               {!isSimpleMode && (
                 <>
@@ -642,57 +1013,74 @@ function DashboardLayoutContent({
                       <Settings className="h-3.5 w-3.5" />
                       Innstillinger
                     </span>
-                    <ChevronDown 
-                      className={`h-3 w-3 transition-transform duration-200 ${isSettingsExpanded ? 'rotate-0' : '-rotate-90'}`}
+                    <ChevronDown
+                      className={`h-3 w-3 transition-transform duration-200 ${isSettingsExpanded ? "rotate-0" : "-rotate-90"}`}
                     />
                   </button>
-                  
-                  {/* Settings Menu Items */}
-                  {isSettingsExpanded && settingsMenuItems
-                    .filter(item => {
-                      // Filter out admin-only items for non-admins
-                      if (item.adminOnly && user?.role !== "admin" && user?.role !== "owner") return false;
-                      // Filter by search query
-                      if (sidebarSearchQuery) {
-                        const query = sidebarSearchQuery.toLowerCase();
-                        return item.label.toLowerCase().includes(query) || 
-                               (item.tooltip?.toLowerCase().includes(query) ?? false);
-                      }
-                      return true;
-                    })
-                    .map(item => {
-                      const isActive = location === item.path;
-                      const tourAttr = item.path === "/settings" ? "settings-link" : undefined;
 
-                      return (
-                        <SidebarMenuItem key={item.path}>
-                          <TooltipProvider delayDuration={300}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <SidebarMenuButton
-                                  isActive={isActive}
-                                  onClick={() => setLocation(item.path)}
-                                  tooltip={item.label}
-                                  className="h-9 transition-all font-normal"
-                                  data-tour={tourAttr}
-                                >
-                                  <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
-                                  <span>{item.label}</span>
-                                </SidebarMenuButton>
-                              </TooltipTrigger>
-                              {item.tooltip && (
-                                <TooltipContent side="right" className="max-w-xs">
-                                  <p className="text-sm">{item.tooltip}</p>
-                                </TooltipContent>
-                              )}
-                            </Tooltip>
-                          </TooltipProvider>
-                        </SidebarMenuItem>
-                      );
-                    })}
+                  {/* Settings Menu Items */}
+                  {isSettingsExpanded &&
+                    settingsMenuItems
+                      .filter(item => {
+                        // Filter out admin-only items for non-admins
+                        if (
+                          item.adminOnly &&
+                          user?.role !== "admin" &&
+                          user?.role !== "owner"
+                        )
+                          return false;
+                        // Filter by search query
+                        if (sidebarSearchQuery) {
+                          const query = sidebarSearchQuery.toLowerCase();
+                          return (
+                            item.label.toLowerCase().includes(query) ||
+                            (item.tooltip?.toLowerCase().includes(query) ??
+                              false)
+                          );
+                        }
+                        return true;
+                      })
+                      .map(item => {
+                        const isActive = location === item.path;
+                        const tourAttr =
+                          item.path === "/settings"
+                            ? "settings-link"
+                            : undefined;
+
+                        return (
+                          <SidebarMenuItem key={item.path}>
+                            <TooltipProvider delayDuration={300}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <SidebarMenuButton
+                                    isActive={isActive}
+                                    onClick={() => setLocation(item.path)}
+                                    tooltip={item.label}
+                                    className="h-9 transition-all font-normal"
+                                    data-tour={tourAttr}
+                                  >
+                                    <item.icon
+                                      className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
+                                    />
+                                    <span>{item.label}</span>
+                                  </SidebarMenuButton>
+                                </TooltipTrigger>
+                                {item.tooltip && (
+                                  <TooltipContent
+                                    side="right"
+                                    className="max-w-xs"
+                                  >
+                                    <p className="text-sm">{item.tooltip}</p>
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
+                            </TooltipProvider>
+                          </SidebarMenuItem>
+                        );
+                      })}
                 </>
               )}
-              
+
               {/* Vacation Group Label (Advanced Mode Only) */}
               {!isSimpleMode && (
                 <>
@@ -704,65 +1092,85 @@ function DashboardLayoutContent({
                       <Plane className="h-3.5 w-3.5" />
                       Ferie & Fridager
                     </span>
-                    <ChevronDown 
-                      className={`h-3 w-3 transition-transform duration-200 ${isVacationExpanded ? 'rotate-0' : '-rotate-90'}`}
+                    <ChevronDown
+                      className={`h-3 w-3 transition-transform duration-200 ${isVacationExpanded ? "rotate-0" : "-rotate-90"}`}
                     />
                   </button>
-                  
-                  {/* Vacation Menu Items */}
-                  {isVacationExpanded && vacationMenuItems
-                    .filter(item => {
-                      // Filter out admin-only items for non-admins
-                      if (item.adminOnly && user?.role !== "admin" && user?.role !== "owner") return false;
-                      // Filter by search query
-                      if (sidebarSearchQuery) {
-                        const query = sidebarSearchQuery.toLowerCase();
-                        return item.label.toLowerCase().includes(query) || 
-                               (item.tooltip?.toLowerCase().includes(query) ?? false);
-                      }
-                      return true;
-                    })
-                    .map(item => {
-                      const isActive = location === item.path;
-                      
-                      // Get badge count for leave approvals
-                      let badgeCount = 0;
-                      if (item.path === "/leave-approvals" && badgeCounts?.pendingLeaveApprovals) {
-                        badgeCount = badgeCounts.pendingLeaveApprovals;
-                      }
 
-                      return (
-                        <SidebarMenuItem key={item.path}>
-                          <TooltipProvider delayDuration={300}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <SidebarMenuButton
-                                  isActive={isActive}
-                                  onClick={() => setLocation(item.path)}
-                                  tooltip={item.label}
-                                  className="h-9 transition-all font-normal"
-                                >
-                                  <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
-                                  <span className="flex items-center gap-2 flex-1">
-                                    {item.label}
-                                    {badgeCount > 0 && (
-                                      <Badge variant="default" className="ml-auto h-5 px-1.5 text-xs font-semibold bg-orange-500 hover:bg-orange-600">
-                                        {badgeCount}
-                                      </Badge>
-                                    )}
-                                  </span>
-                                </SidebarMenuButton>
-                              </TooltipTrigger>
-                              {item.tooltip && (
-                                <TooltipContent side="right" className="max-w-xs">
-                                  <p className="text-sm">{item.tooltip}</p>
-                                </TooltipContent>
-                              )}
-                            </Tooltip>
-                          </TooltipProvider>
-                        </SidebarMenuItem>
-                      );
-                    })}
+                  {/* Vacation Menu Items */}
+                  {isVacationExpanded &&
+                    vacationMenuItems
+                      .filter(item => {
+                        // Filter out admin-only items for non-admins
+                        if (
+                          item.adminOnly &&
+                          user?.role !== "admin" &&
+                          user?.role !== "owner"
+                        )
+                          return false;
+                        // Filter by search query
+                        if (sidebarSearchQuery) {
+                          const query = sidebarSearchQuery.toLowerCase();
+                          return (
+                            item.label.toLowerCase().includes(query) ||
+                            (item.tooltip?.toLowerCase().includes(query) ??
+                              false)
+                          );
+                        }
+                        return true;
+                      })
+                      .map(item => {
+                        const isActive = location === item.path;
+
+                        // Get badge count for leave approvals
+                        let badgeCount = 0;
+                        if (
+                          item.path === "/leave-approvals" &&
+                          badgeCounts?.pendingLeaveApprovals
+                        ) {
+                          badgeCount = badgeCounts.pendingLeaveApprovals;
+                        }
+
+                        return (
+                          <SidebarMenuItem key={item.path}>
+                            <TooltipProvider delayDuration={300}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <SidebarMenuButton
+                                    isActive={isActive}
+                                    onClick={() => setLocation(item.path)}
+                                    tooltip={item.label}
+                                    className="h-9 transition-all font-normal"
+                                  >
+                                    <item.icon
+                                      className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
+                                    />
+                                    <span className="flex items-center gap-2 flex-1">
+                                      {item.label}
+                                      {badgeCount > 0 && (
+                                        <Badge
+                                          variant="default"
+                                          className="ml-auto h-5 px-1.5 text-xs font-semibold bg-orange-500 hover:bg-orange-600"
+                                        >
+                                          {badgeCount}
+                                        </Badge>
+                                      )}
+                                    </span>
+                                  </SidebarMenuButton>
+                                </TooltipTrigger>
+                                {item.tooltip && (
+                                  <TooltipContent
+                                    side="right"
+                                    className="max-w-xs"
+                                  >
+                                    <p className="text-sm">{item.tooltip}</p>
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
+                            </TooltipProvider>
+                          </SidebarMenuItem>
+                        );
+                      })}
                 </>
               )}
             </SidebarMenu>
@@ -773,10 +1181,16 @@ function DashboardLayoutContent({
             <div className="group-data-[collapsible=icon]:hidden">
               <LanguageSwitcher />
             </div>
-            
+
             {/* UI Mode Toggle */}
-            <div data-tour="ui-mode-toggle" className="flex items-center justify-between px-2 py-1.5 rounded-lg bg-accent/50 group-data-[collapsible=icon]:hidden">
-              <Label htmlFor="ui-mode" className="text-xs font-medium cursor-pointer">
+            <div
+              data-tour="ui-mode-toggle"
+              className="flex items-center justify-between px-2 py-1.5 rounded-lg bg-accent/50 group-data-[collapsible=icon]:hidden"
+            >
+              <Label
+                htmlFor="ui-mode"
+                className="text-xs font-medium cursor-pointer"
+              >
                 {isSimpleMode ? "Enkel modus" : "Avansert modus"}
               </Label>
               <Switch
@@ -871,7 +1285,9 @@ function DashboardLayoutContent({
                     {index > 0 && <BreadcrumbSeparator />}
                     <BreadcrumbItem>
                       {crumb.href && index < breadcrumbs.length - 1 ? (
-                        <BreadcrumbLink href={crumb.href}>{crumb.label}</BreadcrumbLink>
+                        <BreadcrumbLink href={crumb.href}>
+                          {crumb.label}
+                        </BreadcrumbLink>
                       ) : (
                         <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
                       )}
@@ -886,7 +1302,7 @@ function DashboardLayoutContent({
         </main>
         <Footer />
       </SidebarInset>
-      
+
       <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
       <OnboardingTour />
     </>

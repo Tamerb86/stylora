@@ -2,7 +2,14 @@ import { router, protectedProcedure, publicProcedure } from "./_core/trpc";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import * as db from "./db";
-import { loyaltyPoints, loyaltyTransactions, loyaltyRewards, loyaltyRedemptions, customers, appointments } from "../drizzle/schema";
+import {
+  loyaltyPoints,
+  loyaltyTransactions,
+  loyaltyRewards,
+  loyaltyRedemptions,
+  customers,
+  appointments,
+} from "../drizzle/schema";
 import { eq, and, desc } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
@@ -16,7 +23,11 @@ export const loyaltyRouter = router({
     )
     .query(async ({ input, ctx }) => {
       const dbInstance = await db.getDb();
-      if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      if (!dbInstance)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
 
       // Find customer by phone
       const [customer] = await dbInstance
@@ -31,7 +42,10 @@ export const loyaltyRouter = router({
         .limit(1);
 
       if (!customer) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Customer not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Customer not found",
+        });
       }
 
       // Get or create loyalty points record
@@ -75,7 +89,11 @@ export const loyaltyRouter = router({
     )
     .query(async ({ input, ctx }) => {
       const dbInstance = await db.getDb();
-      if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      if (!dbInstance)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
 
       // Find customer
       const [customer] = await dbInstance
@@ -90,7 +108,10 @@ export const loyaltyRouter = router({
         .limit(1);
 
       if (!customer) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Customer not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Customer not found",
+        });
       }
 
       // Get transactions
@@ -118,7 +139,11 @@ export const loyaltyRouter = router({
     )
     .query(async ({ input }) => {
       const dbInstance = await db.getDb();
-      if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      if (!dbInstance)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
 
       const rewards = await dbInstance
         .select()
@@ -144,7 +169,11 @@ export const loyaltyRouter = router({
     )
     .mutation(async ({ input, ctx }) => {
       const dbInstance = await db.getDb();
-      if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      if (!dbInstance)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
 
       // Find customer
       const [customer] = await dbInstance
@@ -159,7 +188,10 @@ export const loyaltyRouter = router({
         .limit(1);
 
       if (!customer) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Customer not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Customer not found",
+        });
       }
 
       // Get reward details
@@ -176,7 +208,10 @@ export const loyaltyRouter = router({
         .limit(1);
 
       if (!reward) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Reward not found or inactive" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Reward not found or inactive",
+        });
       }
 
       // Get customer's current points
@@ -207,15 +242,17 @@ export const loyaltyRouter = router({
         .where(eq(loyaltyPoints.id, loyaltyRecord.id));
 
       // Create transaction record
-      const [transaction] = await dbInstance.insert(loyaltyTransactions).values({
-        tenantId: input.tenantId,
-        customerId: customer.id,
-        type: "redeem",
-        points: -reward.pointsCost,
-        reason: `Redeemed reward: ${reward.name}`,
-        referenceType: "reward",
-        referenceId: reward.id,
-      });
+      const [transaction] = await dbInstance
+        .insert(loyaltyTransactions)
+        .values({
+          tenantId: input.tenantId,
+          customerId: customer.id,
+          type: "redeem",
+          points: -reward.pointsCost,
+          reason: `Redeemed reward: ${reward.name}`,
+          referenceType: "reward",
+          referenceId: reward.id,
+        });
 
       // Create redemption record with unique code
       const redemptionCode = nanoid(12).toUpperCase();
@@ -255,7 +292,11 @@ export const loyaltyRouter = router({
     )
     .query(async ({ input, ctx }) => {
       const dbInstance = await db.getDb();
-      if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      if (!dbInstance)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
 
       // Find customer
       const [customer] = await dbInstance
@@ -270,7 +311,10 @@ export const loyaltyRouter = router({
         .limit(1);
 
       if (!customer) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Customer not found" });
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Customer not found",
+        });
       }
 
       // Get active redemptions with reward details
@@ -287,7 +331,10 @@ export const loyaltyRouter = router({
           discountValue: loyaltyRewards.discountValue,
         })
         .from(loyaltyRedemptions)
-        .innerJoin(loyaltyRewards, eq(loyaltyRedemptions.rewardId, loyaltyRewards.id))
+        .innerJoin(
+          loyaltyRewards,
+          eq(loyaltyRedemptions.rewardId, loyaltyRewards.id)
+        )
         .where(
           and(
             eq(loyaltyRedemptions.tenantId, input.tenantId),
@@ -312,7 +359,11 @@ export const loyaltyRouter = router({
     )
     .mutation(async ({ input }) => {
       const dbInstance = await db.getDb();
-      if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      if (!dbInstance)
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
 
       // Calculate points (1 point per 100 kr spent)
       const pointsEarned = Math.floor(input.amount / 100);

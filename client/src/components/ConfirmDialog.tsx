@@ -75,8 +75,8 @@ export default function ConfirmDialog({
               variant === "danger"
                 ? "bg-red-600 hover:bg-red-700"
                 : variant === "warning"
-                ? "bg-yellow-600 hover:bg-yellow-700"
-                : "bg-blue-600 hover:bg-blue-700"
+                  ? "bg-yellow-600 hover:bg-yellow-700"
+                  : "bg-blue-600 hover:bg-blue-700"
             }
           >
             {actionLabel}

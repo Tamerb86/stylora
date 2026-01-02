@@ -5,7 +5,7 @@ import type { MySql2Database } from "drizzle-orm/mysql2";
 
 /**
  * Critical Security Test: Multi-Tenant Isolation
- * 
+ *
  * These tests verify that tenant data is properly isolated and that
  * one tenant cannot access another tenant's data through any database query.
  */
@@ -31,7 +31,15 @@ describe("Multi-Tenant Isolation Security Tests", () => {
     dbInstance = await getDb();
     if (!dbInstance) throw new Error("Database not available");
 
-    const { tenants, users, customers, services, appointments, orders, payments } = await import("../../drizzle/schema");
+    const {
+      tenants,
+      users,
+      customers,
+      services,
+      appointments,
+      orders,
+      payments,
+    } = await import("../../drizzle/schema");
 
     // Create two test tenants
     tenantA = `test-tenant-a-${Date.now()}`;
@@ -195,17 +203,50 @@ describe("Multi-Tenant Isolation Security Tests", () => {
   afterAll(async () => {
     if (!dbInstance) return;
 
-    const { tenants, users, customers, services, appointments, orders, payments } = await import("../../drizzle/schema");
+    const {
+      tenants,
+      users,
+      customers,
+      services,
+      appointments,
+      orders,
+      payments,
+    } = await import("../../drizzle/schema");
     const { eq, or } = await import("drizzle-orm");
 
     // Clean up test data
-    await dbInstance.delete(payments).where(or(eq(payments.tenantId, tenantA), eq(payments.tenantId, tenantB)));
-    await dbInstance.delete(orders).where(or(eq(orders.tenantId, tenantA), eq(orders.tenantId, tenantB)));
-    await dbInstance.delete(appointments).where(or(eq(appointments.tenantId, tenantA), eq(appointments.tenantId, tenantB)));
-    await dbInstance.delete(services).where(or(eq(services.tenantId, tenantA), eq(services.tenantId, tenantB)));
-    await dbInstance.delete(customers).where(or(eq(customers.tenantId, tenantA), eq(customers.tenantId, tenantB)));
-    await dbInstance.delete(users).where(or(eq(users.tenantId, tenantA), eq(users.tenantId, tenantB)));
-    await dbInstance.delete(tenants).where(or(eq(tenants.id, tenantA), eq(tenants.id, tenantB)));
+    await dbInstance
+      .delete(payments)
+      .where(
+        or(eq(payments.tenantId, tenantA), eq(payments.tenantId, tenantB))
+      );
+    await dbInstance
+      .delete(orders)
+      .where(or(eq(orders.tenantId, tenantA), eq(orders.tenantId, tenantB)));
+    await dbInstance
+      .delete(appointments)
+      .where(
+        or(
+          eq(appointments.tenantId, tenantA),
+          eq(appointments.tenantId, tenantB)
+        )
+      );
+    await dbInstance
+      .delete(services)
+      .where(
+        or(eq(services.tenantId, tenantA), eq(services.tenantId, tenantB))
+      );
+    await dbInstance
+      .delete(customers)
+      .where(
+        or(eq(customers.tenantId, tenantA), eq(customers.tenantId, tenantB))
+      );
+    await dbInstance
+      .delete(users)
+      .where(or(eq(users.tenantId, tenantA), eq(users.tenantId, tenantB)));
+    await dbInstance
+      .delete(tenants)
+      .where(or(eq(tenants.id, tenantA), eq(tenants.id, tenantB)));
   });
 
   describe("Customer Isolation", () => {
@@ -345,7 +386,7 @@ describe("Multi-Tenant Isolation Security Tests", () => {
       const result = await db.getPaymentsByAppointment(appointmentA, tenantA);
       expect(result).toBeDefined();
       expect(result.length).toBeGreaterThan(0);
-      result.forEach((payment) => {
+      result.forEach(payment => {
         expect(payment.tenantId).toBe(tenantA);
       });
     });

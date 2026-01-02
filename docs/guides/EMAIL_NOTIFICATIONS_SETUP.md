@@ -17,6 +17,7 @@ Stylora automatically sends email notifications to customers for:
    - Includes cancellation reason if provided
 
 **Email Templates:**
+
 - Norwegian language (Norsk bokmål)
 - Professional HTML design with gradient headers
 - Responsive layout for mobile devices
@@ -94,7 +95,7 @@ SMTP_FROM_EMAIL=your-email@yourdomain.com
 When a customer completes payment via Stripe Checkout:
 
 ```
-Customer pays → Stripe webhook → Payment status = "completed" 
+Customer pays → Stripe webhook → Payment status = "completed"
 → Appointment status = "confirmed" → Confirmation email sent
 ```
 
@@ -103,7 +104,7 @@ Customer pays → Stripe webhook → Payment status = "completed"
 When staff manually confirms or cancels an appointment:
 
 ```
-Staff updates status → appointments.updateStatus mutation 
+Staff updates status → appointments.updateStatus mutation
 → Email sent (if status transitions to "confirmed" or "canceled")
 ```
 
@@ -112,7 +113,7 @@ Staff updates status → appointments.updateStatus mutation
 - **Non-blocking:** Email sending runs asynchronously and never blocks main logic
 - **Graceful degradation:** If SMTP is not configured, emails are skipped with a warning log
 - **Customer email required:** If customer has no email, email is skipped (logged)
-- **Transition-based:** Emails only sent when status *changes* to confirmed/canceled
+- **Transition-based:** Emails only sent when status _changes_ to confirmed/canceled
   - Updating "confirmed" → "confirmed" does NOT send email
   - Updating "canceled" → "canceled" does NOT send email
 
@@ -125,6 +126,7 @@ Staff updates status → appointments.updateStatus mutation
 **Subject:** `Bekreftelse på timebestilling hos {Salon Name}`
 
 **Content:**
+
 - ✂️ Header: "Timebestilling bekreftet"
 - Customer name greeting
 - Appointment details (date, time, services)
@@ -152,6 +154,7 @@ Test Salon
 **Subject:** `Timebestilling hos {Salon Name} er kansellert`
 
 **Content:**
+
 - ❌ Header: "Timebestilling kansellert"
 - Customer name greeting
 - Appointment details (date, time)
@@ -199,6 +202,7 @@ pnpm test server/email-notifications.test.ts
 ```
 
 **Test Coverage:**
+
 - ✅ Email template rendering (Norwegian text)
 - ✅ Confirmation email on status transition to "confirmed"
 - ✅ Cancellation email on status transition to "canceled"
@@ -250,22 +254,26 @@ await trpc.appointments.updateStatus.mutate({
 Email sending produces detailed console logs:
 
 **Success:**
+
 ```
 [Email] Sent successfully to: customer@example.com
 [Email] Confirmation email sent for appointment: 123
 ```
 
 **Skipped (no SMTP config):**
+
 ```
 [Email] SMTP not configured, skipping email to: customer@example.com
 ```
 
 **Skipped (no customer email):**
+
 ```
 [Email] Customer has no email, skipping confirmation email
 ```
 
 **Error:**
+
 ```
 [Email] Failed to send to: customer@example.com Error: Connection timeout
 [Appointments] Failed to send confirmation email: Error: ...
@@ -312,8 +320,8 @@ openssl s_client -connect smtp.example.com:587 -starttls smtp
 **4. Verify customer has email:**
 
 ```sql
-SELECT id, firstName, lastName, email 
-FROM customers 
+SELECT id, firstName, lastName, email
+FROM customers
 WHERE id = 123;
 ```
 

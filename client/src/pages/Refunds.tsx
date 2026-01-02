@@ -1,6 +1,12 @@
 import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -63,7 +69,7 @@ export default function Refunds() {
           <div className="animate-pulse space-y-6">
             <div className="h-10 bg-muted rounded w-1/3"></div>
             <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
+              {[1, 2, 3].map(i => (
                 <div key={i} className="h-24 bg-muted rounded-xl"></div>
               ))}
             </div>
@@ -91,10 +97,7 @@ export default function Refunds() {
               Oversikt over alle refusjoner og avbestillinger
             </p>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => setLocation("/dashboard")}
-          >
+          <Button variant="outline" onClick={() => setLocation("/dashboard")}>
             <ArrowLeft className="w-4 h-4 mr-2" />
             Tilbake
           </Button>
@@ -111,7 +114,7 @@ export default function Refunds() {
             <CardContent>
               <div className="text-2xl font-bold">
                 {refunds
-                  .filter((r) => r.status === "completed")
+                  .filter(r => r.status === "completed")
                   .reduce((sum, r) => sum + parseFloat(r.amount), 0)
                   .toFixed(2)}{" "}
                 NOK
@@ -127,7 +130,7 @@ export default function Refunds() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {refunds.filter((r) => r.status === "completed").length}
+                {refunds.filter(r => r.status === "completed").length}
               </div>
             </CardContent>
           </Card>
@@ -140,7 +143,7 @@ export default function Refunds() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {refunds.filter((r) => r.status === "pending").length}
+                {refunds.filter(r => r.status === "pending").length}
               </div>
             </CardContent>
           </Card>
@@ -174,7 +177,7 @@ export default function Refunds() {
                           </h3>
                           {getStatusBadge(refund.status)}
                         </div>
-                        
+
                         <div className="text-sm text-muted-foreground space-y-1">
                           <div className="flex items-center gap-2">
                             <span className="font-medium">Beløp:</span>
@@ -182,16 +185,22 @@ export default function Refunds() {
                               {parseFloat(refund.amount).toFixed(2)} NOK
                             </span>
                           </div>
-                          
+
                           <div className="flex items-center gap-2">
                             <span className="font-medium">Metode:</span>
-                            <span>{getRefundMethodText(refund.refundMethod)}</span>
+                            <span>
+                              {getRefundMethodText(refund.refundMethod)}
+                            </span>
                           </div>
 
                           {refund.paymentMethod && (
                             <div className="flex items-center gap-2">
-                              <span className="font-medium">Opprinnelig betaling:</span>
-                              <span className="capitalize">{refund.paymentMethod}</span>
+                              <span className="font-medium">
+                                Opprinnelig betaling:
+                              </span>
+                              <span className="capitalize">
+                                {refund.paymentMethod}
+                              </span>
                             </div>
                           )}
 
@@ -204,8 +213,12 @@ export default function Refunds() {
 
                           {refund.gatewayRefundId && (
                             <div className="flex items-center gap-2">
-                              <span className="font-medium">Gateway Refund ID:</span>
-                              <span className="font-mono text-xs">{refund.gatewayRefundId}</span>
+                              <span className="font-medium">
+                                Gateway Refund ID:
+                              </span>
+                              <span className="font-mono text-xs">
+                                {refund.gatewayRefundId}
+                              </span>
                             </div>
                           )}
 
@@ -224,13 +237,16 @@ export default function Refunds() {
                           <div className="flex items-center gap-2 text-xs">
                             <span className="font-medium">Dato:</span>
                             <span>
-                              {new Date(refund.createdAt).toLocaleDateString("no-NO", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
+                              {new Date(refund.createdAt).toLocaleDateString(
+                                "no-NO",
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
                             </span>
                           </div>
                         </div>

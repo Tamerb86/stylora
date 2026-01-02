@@ -1,19 +1,19 @@
-import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Globe } from 'lucide-react';
-import { useEffect } from 'react';
+} from "@/components/ui/dropdown-menu";
+import { Globe } from "lucide-react";
+import { useEffect } from "react";
 
 const languages = [
-  { code: 'no', name: 'Norsk', flag: '🇳🇴' },
-  { code: 'ar', name: 'العربية', flag: '🇸🇦' },
-  { code: 'en', name: 'English', flag: '🇬🇧' },
-  { code: 'uk', name: 'Українська', flag: '🇺🇦' },
+  { code: "no", name: "Norsk", flag: "🇳🇴" },
+  { code: "ar", name: "العربية", flag: "🇸🇦" },
+  { code: "en", name: "English", flag: "🇬🇧" },
+  { code: "uk", name: "Українська", flag: "🇺🇦" },
 ];
 
 export default function LanguageSwitcher() {
@@ -21,7 +21,7 @@ export default function LanguageSwitcher() {
 
   // Update document direction based on language
   useEffect(() => {
-    const dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
+    const dir = i18n.language === "ar" ? "rtl" : "ltr";
     document.documentElement.dir = dir;
     document.documentElement.lang = i18n.language;
   }, [i18n.language]);
@@ -30,7 +30,8 @@ export default function LanguageSwitcher() {
     i18n.changeLanguage(lng);
   };
 
-  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
+  const currentLanguage =
+    languages.find(lang => lang.code === i18n.language) || languages[0];
 
   return (
     <DropdownMenu>
@@ -42,12 +43,12 @@ export default function LanguageSwitcher() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        {languages.map((language) => (
+        {languages.map(language => (
           <DropdownMenuItem
             key={language.code}
             onClick={() => changeLanguage(language.code)}
             className={`cursor-pointer ${
-              i18n.language === language.code ? 'bg-accent' : ''
+              i18n.language === language.code ? "bg-accent" : ""
             }`}
           >
             <span className="text-xl mr-3">{language.flag}</span>

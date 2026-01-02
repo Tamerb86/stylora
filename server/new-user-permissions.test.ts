@@ -15,7 +15,7 @@ describe("New User Permissions - Create Operations", () => {
 
     const { tenants, users } = await import("../drizzle/schema");
     const { randomUUID } = await import("crypto");
-    
+
     // Create test tenant
     const tenantId = randomUUID();
     await dbInstance.insert(tenants).values({
@@ -24,18 +24,21 @@ describe("New User Permissions - Create Operations", () => {
       subdomain: `test-${nanoid(6)}`,
       emailVerified: true,
     });
-    
+
     testTenantId = tenantId;
 
     // Create test user (regular employee, not admin)
     testUserOpenId = `test_user_${nanoid()}`;
-    const [user] = await dbInstance.insert(users).values({
-      tenantId: testTenantId,
-      openId: testUserOpenId,
-      name: "Test User",
-      role: "employee",
-    }).$returningId();
-    
+    const [user] = await dbInstance
+      .insert(users)
+      .values({
+        tenantId: testTenantId,
+        openId: testUserOpenId,
+        name: "Test User",
+        role: "employee",
+      })
+      .$returningId();
+
     testUserId = user.id;
   });
 
@@ -156,7 +159,7 @@ describe("New User Permissions - Create Operations", () => {
     // Get the created customer and service
     const customers = await caller.customers.list();
     const services = await caller.services.list();
-    
+
     const customerId = customers.find(c => c.firstName === "Appointment")?.id;
     const serviceId = services.find(s => s.name === "Appointment Service")?.id;
 
@@ -166,10 +169,10 @@ describe("New User Permissions - Create Operations", () => {
 
     // Create appointment
     const tomorrow = new Date(Date.now() + 86400000);
-    const appointmentDate = tomorrow.toISOString().split('T')[0]; // YYYY-MM-DD
+    const appointmentDate = tomorrow.toISOString().split("T")[0]; // YYYY-MM-DD
     const startTime = "10:00:00";
     const endTime = "11:00:00";
-    
+
     const result = await caller.appointments.create({
       customerId,
       employeeId: testUserId,
@@ -193,7 +196,8 @@ describe("New User Permissions - Create Operations", () => {
 
     // Set PIN for the test user
     const testPin = "1234";
-    await dbInstance.update(users)
+    await dbInstance
+      .update(users)
       .set({ pin: testPin })
       .where(eq(users.id, testUserId));
 

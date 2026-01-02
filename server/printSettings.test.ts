@@ -5,7 +5,10 @@ import * as db from "./db";
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
-function createTestContext(tenantId: string, role: "admin" | "user" = "admin"): TrpcContext {
+function createTestContext(
+  tenantId: string,
+  role: "admin" | "user" = "admin"
+): TrpcContext {
   const user: AuthenticatedUser = {
     id: 1,
     openId: `test-user-${tenantId}`,
@@ -78,7 +81,8 @@ describe("Print Settings Management", () => {
     };
 
     // Save settings
-    const saveResult = await caller.salonSettings.updatePrintSettings(customSettings);
+    const saveResult =
+      await caller.salonSettings.updatePrintSettings(customSettings);
 
     expect(saveResult.success).toBe(true);
     expect(saveResult.printSettings).toEqual(customSettings);
@@ -109,7 +113,8 @@ describe("Print Settings Management", () => {
       customFooterText: "Updated message",
     };
 
-    const updateResult = await caller.salonSettings.updatePrintSettings(updatedSettings);
+    const updateResult =
+      await caller.salonSettings.updatePrintSettings(updatedSettings);
 
     expect(updateResult.success).toBe(true);
     expect(updateResult.printSettings).toEqual(updatedSettings);

@@ -19,21 +19,24 @@ export default function ZettlePaymentStatus({
   onSuccess,
   onCancel,
 }: ZettlePaymentStatusProps) {
-  const [status, setStatus] = useState<"pending" | "completed" | "failed">("pending");
+  const [status, setStatus] = useState<"pending" | "completed" | "failed">(
+    "pending"
+  );
   const [pollCount, setPollCount] = useState(0);
   const maxPolls = 60; // 60 seconds max (poll every second)
 
   // Poll payment status
-  const { data: paymentStatus, refetch } = trpc.pos.checkZettlePaymentStatus.useQuery(
-    {
-      purchaseUUID: purchaseUUID || "",
-      paymentId: paymentId || 0,
-    },
-    {
-      enabled: !!purchaseUUID && !!paymentId && status === "pending",
-      refetchInterval: status === "pending" ? 2000 : false, // Poll every 2 seconds
-    }
-  );
+  const { data: paymentStatus, refetch } =
+    trpc.pos.checkZettlePaymentStatus.useQuery(
+      {
+        purchaseUUID: purchaseUUID || "",
+        paymentId: paymentId || 0,
+      },
+      {
+        enabled: !!purchaseUUID && !!paymentId && status === "pending",
+        refetchInterval: status === "pending" ? 2000 : false, // Poll every 2 seconds
+      }
+    );
 
   // Check status updates
   useEffect(() => {
@@ -54,7 +57,7 @@ export default function ZettlePaymentStatus({
     if (status !== "pending") return;
 
     const interval = setInterval(() => {
-      setPollCount((prev) => {
+      setPollCount(prev => {
         if (prev >= maxPolls) {
           setStatus("failed");
           return prev;
@@ -131,21 +134,13 @@ export default function ZettlePaymentStatus({
       {/* Action Buttons */}
       <div className="flex gap-2">
         {status === "pending" && (
-          <Button
-            variant="outline"
-            className="flex-1"
-            onClick={onCancel}
-          >
+          <Button variant="outline" className="flex-1" onClick={onCancel}>
             Avbryt
           </Button>
         )}
         {status === "failed" && (
           <>
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={onCancel}
-            >
+            <Button variant="outline" className="flex-1" onClick={onCancel}>
               Lukk
             </Button>
             <Button

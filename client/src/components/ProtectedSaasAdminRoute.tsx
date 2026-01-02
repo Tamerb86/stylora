@@ -7,7 +7,9 @@ interface ProtectedSaasAdminRouteProps {
   children: ReactNode;
 }
 
-export default function ProtectedSaasAdminRoute({ children }: ProtectedSaasAdminRouteProps) {
+export default function ProtectedSaasAdminRoute({
+  children,
+}: ProtectedSaasAdminRouteProps) {
   const [, setLocation] = useLocation();
   const { data: user, isLoading } = trpc.auth.me.useQuery();
 

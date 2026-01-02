@@ -21,10 +21,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { 
-  FileSpreadsheet, 
-  FileText, 
-  Download, 
+import {
+  FileSpreadsheet,
+  FileText,
+  Download,
   Calendar,
   DollarSign,
   Users,
@@ -33,7 +33,7 @@ import {
   Loader2,
   CheckCircle,
   Building2,
-  Clock
+  Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
@@ -126,7 +126,7 @@ export default function AccountantExport() {
 
   const handleExport = async () => {
     const includedSections = sections.filter(s => s.included).map(s => s.id);
-    
+
     if (includedSections.length === 0) {
       toast.error("Velg minst én seksjon å eksportere");
       return;
@@ -180,7 +180,9 @@ export default function AccountantExport() {
     }
   };
 
-  const setPresetPeriod = (preset: "last_month" | "last_quarter" | "last_year" | "ytd") => {
+  const setPresetPeriod = (
+    preset: "last_month" | "last_quarter" | "last_year" | "ytd"
+  ) => {
     const now = new Date();
     let from: Date;
     let to: Date;
@@ -278,7 +280,7 @@ export default function AccountantExport() {
                     id="dateFrom"
                     type="date"
                     value={dateFrom}
-                    onChange={(e) => setDateFrom(e.target.value)}
+                    onChange={e => setDateFrom(e.target.value)}
                     className="mt-1"
                   />
                 </div>
@@ -288,7 +290,7 @@ export default function AccountantExport() {
                     id="dateTo"
                     type="date"
                     value={dateTo}
-                    onChange={(e) => setDateTo(e.target.value)}
+                    onChange={e => setDateTo(e.target.value)}
                     className="mt-1"
                   />
                 </div>
@@ -298,9 +300,9 @@ export default function AccountantExport() {
             {/* Sections Selection */}
             <Card className="p-6 border-0 shadow-lg">
               <h3 className="font-semibold text-lg mb-4">Velg innhold</h3>
-              
+
               <div className="space-y-3">
-                {sections.map((section) => (
+                {sections.map(section => (
                   <div
                     key={section.id}
                     className={`flex items-center gap-4 p-4 rounded-lg border transition-colors cursor-pointer ${
@@ -332,7 +334,7 @@ export default function AccountantExport() {
             {/* Export Format */}
             <Card className="p-6 border-0 shadow-lg">
               <h3 className="font-semibold text-lg mb-4">Eksportformat</h3>
-              
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div
                   className={`flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer transition-colors ${
@@ -375,31 +377,45 @@ export default function AccountantExport() {
             {/* Summary Preview */}
             <Card className="p-6 border-0 shadow-lg">
               <h3 className="font-semibold text-lg mb-4">Forhåndsvisning</h3>
-              
+
               {financialSummary ? (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center py-2 border-b">
                     <span className="text-muted-foreground">Inntekter</span>
                     <span className="font-semibold text-green-600">
-                      {Number(financialSummary.revenue || 0).toLocaleString("nb-NO")} kr
+                      {Number(financialSummary.revenue || 0).toLocaleString(
+                        "nb-NO"
+                      )}{" "}
+                      kr
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b">
                     <span className="text-muted-foreground">Utgifter</span>
                     <span className="font-semibold text-red-600">
-                      {Number(financialSummary.expenses || 0).toLocaleString("nb-NO")} kr
+                      {Number(financialSummary.expenses || 0).toLocaleString(
+                        "nb-NO"
+                      )}{" "}
+                      kr
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b">
                     <span className="text-muted-foreground">Resultat</span>
-                    <span className={`font-semibold ${Number(financialSummary.profit || 0) >= 0 ? "text-green-600" : "text-red-600"}`}>
-                      {Number(financialSummary.profit || 0).toLocaleString("nb-NO")} kr
+                    <span
+                      className={`font-semibold ${Number(financialSummary.profit || 0) >= 0 ? "text-green-600" : "text-red-600"}`}
+                    >
+                      {Number(financialSummary.profit || 0).toLocaleString(
+                        "nb-NO"
+                      )}{" "}
+                      kr
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-2">
                     <span className="text-muted-foreground">MVA (25%)</span>
                     <span className="font-semibold">
-                      {(Number(financialSummary.revenue || 0) * 0.25).toLocaleString("nb-NO")} kr
+                      {(
+                        Number(financialSummary.revenue || 0) * 0.25
+                      ).toLocaleString("nb-NO")}{" "}
+                      kr
                     </span>
                   </div>
                 </div>

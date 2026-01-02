@@ -2,14 +2,44 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { TrendingUp, TrendingDown, DollarSign, PieChart, Plus, Trash2, Calendar, FileText, Download } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  PieChart,
+  Plus,
+  Trash2,
+  Calendar,
+  FileText,
+  Download,
+} from "lucide-react";
 import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
 import { safeToFixed } from "@/lib/utils";
 
@@ -50,9 +80,12 @@ function FinancialContent() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   // Queries
-  const { data: summary, refetch: refetchSummary } = trpc.financial.getSummary.useQuery(dateRange);
-  const { data: expenses, refetch: refetchExpenses } = trpc.financial.listExpenses.useQuery({ ...dateRange, limit: 50 });
-  const { data: expensesByCategory } = trpc.financial.getExpensesByCategory.useQuery(dateRange);
+  const { data: summary, refetch: refetchSummary } =
+    trpc.financial.getSummary.useQuery(dateRange);
+  const { data: expenses, refetch: refetchExpenses } =
+    trpc.financial.listExpenses.useQuery({ ...dateRange, limit: 50 });
+  const { data: expensesByCategory } =
+    trpc.financial.getExpensesByCategory.useQuery(dateRange);
 
   // Mutations
   const createExpense = trpc.financial.createExpense.useMutation({
@@ -61,9 +94,14 @@ function FinancialContent() {
       refetchSummary();
       refetchExpenses();
       setIsAddDialogOpen(false);
-      setNewExpense({ category: "supplies", amount: "", description: "", expenseDate: format(today, "yyyy-MM-dd") });
+      setNewExpense({
+        category: "supplies",
+        amount: "",
+        description: "",
+        expenseDate: format(today, "yyyy-MM-dd"),
+      });
     },
-    onError: (error) => toast.error(`Feil: ${error.message}`),
+    onError: error => toast.error(`Feil: ${error.message}`),
   });
 
   const deleteExpense = trpc.financial.deleteExpense.useMutation({
@@ -72,7 +110,7 @@ function FinancialContent() {
       refetchSummary();
       refetchExpenses();
     },
-    onError: (error) => toast.error(`Feil: ${error.message}`),
+    onError: error => toast.error(`Feil: ${error.message}`),
   });
 
   const handleAddExpense = () => {
@@ -106,12 +144,15 @@ function FinancialContent() {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK" }).format(amount);
+    return new Intl.NumberFormat("nb-NO", {
+      style: "currency",
+      currency: "NOK",
+    }).format(amount);
   };
 
   // Export mutations
   const exportPDF = trpc.export.financialPDF.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       const blob = new Blob([data.html], { type: "text/html" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -121,11 +162,11 @@ function FinancialContent() {
       URL.revokeObjectURL(url);
       toast.success("PDF-rapport generert");
     },
-    onError: (error) => toast.error(`Feil: ${error.message}`),
+    onError: error => toast.error(`Feil: ${error.message}`),
   });
 
   const exportExcel = trpc.export.financialExcel.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       const blob = new Blob([data.csv], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -135,92 +176,129 @@ function FinancialContent() {
       URL.revokeObjectURL(url);
       toast.success("Excel-fil generert");
     },
-    onError: (error) => toast.error(`Feil: ${error.message}`),
+    onError: error => toast.error(`Feil: ${error.message}`),
   });
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">Økonomi</h1>
-          <p className="text-muted-foreground">Inntekter, utgifter og lønnsomhet</p>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
+            Økonomi
+          </h1>
+          <p className="text-muted-foreground">
+            Inntekter, utgifter og lønnsomhet
+          </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => exportPDF.mutate(dateRange)} disabled={exportPDF.isPending}>
+          <Button
+            variant="outline"
+            onClick={() => exportPDF.mutate(dateRange)}
+            disabled={exportPDF.isPending}
+          >
             <FileText className="mr-2 h-4 w-4" />
             {exportPDF.isPending ? "Genererer..." : "Eksporter PDF"}
           </Button>
-          <Button variant="outline" onClick={() => exportExcel.mutate(dateRange)} disabled={exportExcel.isPending}>
+          <Button
+            variant="outline"
+            onClick={() => exportExcel.mutate(dateRange)}
+            disabled={exportExcel.isPending}
+          >
             <Download className="mr-2 h-4 w-4" />
             {exportExcel.isPending ? "Genererer..." : "Eksporter Excel"}
           </Button>
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-white shadow-lg">
                 <Plus className="mr-2 h-4 w-4" />
                 Ny utgift
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Legg til utgift</DialogTitle>
-              <DialogDescription>Registrer en ny utgift for salongen</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="category">Kategori</Label>
-                <Select value={newExpense.category} onValueChange={(value: any) => setNewExpense({ ...newExpense, category: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {EXPENSE_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {cat.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="amount">Beløp (NOK)</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  step="0.01"
-                  value={newExpense.amount}
-                  onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
-                  placeholder="0.00"
-                />
-              </div>
-              <div>
-                <Label htmlFor="expenseDate">Dato</Label>
-                <Input
-                  id="expenseDate"
-                  type="date"
-                  value={newExpense.expenseDate}
-                  onChange={(e) => setNewExpense({ ...newExpense, expenseDate: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="description">Beskrivelse (valgfritt)</Label>
-                <Textarea
-                  id="description"
-                  value={newExpense.description}
-                  onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
-                  placeholder="Detaljer om utgiften..."
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                Avbryt
               </Button>
-              <Button onClick={handleAddExpense} disabled={createExpense.isPending}>
-                {createExpense.isPending ? "Lagrer..." : "Legg til"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Legg til utgift</DialogTitle>
+                <DialogDescription>
+                  Registrer en ny utgift for salongen
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="category">Kategori</Label>
+                  <Select
+                    value={newExpense.category}
+                    onValueChange={(value: any) =>
+                      setNewExpense({ ...newExpense, category: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {EXPENSE_CATEGORIES.map(cat => (
+                        <SelectItem key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="amount">Beløp (NOK)</Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    step="0.01"
+                    value={newExpense.amount}
+                    onChange={e =>
+                      setNewExpense({ ...newExpense, amount: e.target.value })
+                    }
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="expenseDate">Dato</Label>
+                  <Input
+                    id="expenseDate"
+                    type="date"
+                    value={newExpense.expenseDate}
+                    onChange={e =>
+                      setNewExpense({
+                        ...newExpense,
+                        expenseDate: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="description">Beskrivelse (valgfritt)</Label>
+                  <Textarea
+                    id="description"
+                    value={newExpense.description}
+                    onChange={e =>
+                      setNewExpense({
+                        ...newExpense,
+                        description: e.target.value,
+                      })
+                    }
+                    placeholder="Detaljer om utgiften..."
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAddDialogOpen(false)}
+                >
+                  Avbryt
+                </Button>
+                <Button
+                  onClick={handleAddExpense}
+                  disabled={createExpense.isPending}
+                >
+                  {createExpense.isPending ? "Lagrer..." : "Legg til"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
           </Dialog>
         </div>
       </div>
@@ -236,16 +314,32 @@ function FinancialContent() {
         <CardContent>
           <div className="flex flex-wrap gap-4 items-end">
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => setPresetRange("today")}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPresetRange("today")}
+              >
                 I dag
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setPresetRange("week")}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPresetRange("week")}
+              >
                 Siste 7 dager
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setPresetRange("month")}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPresetRange("month")}
+              >
                 Denne måneden
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setPresetRange("year")}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPresetRange("year")}
+              >
                 Dette året
               </Button>
             </div>
@@ -258,7 +352,9 @@ function FinancialContent() {
                   id="startDate"
                   type="date"
                   value={dateRange.startDate}
-                  onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })}
+                  onChange={e =>
+                    setDateRange({ ...dateRange, startDate: e.target.value })
+                  }
                   className="w-40"
                 />
               </div>
@@ -270,7 +366,9 @@ function FinancialContent() {
                   id="endDate"
                   type="date"
                   value={dateRange.endDate}
-                  onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })}
+                  onChange={e =>
+                    setDateRange({ ...dateRange, endDate: e.target.value })
+                  }
                   className="w-40"
                 />
               </div>
@@ -287,8 +385,12 @@ function FinancialContent() {
             <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{formatCurrency(summary?.revenue || 0)}</div>
-            <p className="text-xs text-muted-foreground">Fra fullførte avtaler</p>
+            <div className="text-2xl font-bold text-green-600">
+              {formatCurrency(summary?.revenue || 0)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Fra fullførte avtaler
+            </p>
           </CardContent>
         </Card>
 
@@ -298,7 +400,9 @@ function FinancialContent() {
             <TrendingDown className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{formatCurrency(summary?.expenses || 0)}</div>
+            <div className="text-2xl font-bold text-red-600">
+              {formatCurrency(summary?.expenses || 0)}
+            </div>
             <p className="text-xs text-muted-foreground">Totale utgifter</p>
           </CardContent>
         </Card>
@@ -309,7 +413,9 @@ function FinancialContent() {
             <DollarSign className="h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${(summary?.profit || 0) >= 0 ? "text-green-600" : "text-red-600"}`}>
+            <div
+              className={`text-2xl font-bold ${(summary?.profit || 0) >= 0 ? "text-green-600" : "text-red-600"}`}
+            >
               {formatCurrency(summary?.profit || 0)}
             </div>
             <p className="text-xs text-muted-foreground">Netto resultat</p>
@@ -322,7 +428,9 @@ function FinancialContent() {
             <PieChart className="h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${(summary?.profitMargin || 0) >= 0 ? "text-green-600" : "text-red-600"}`}>
+            <div
+              className={`text-2xl font-bold ${(summary?.profitMargin || 0) >= 0 ? "text-green-600" : "text-red-600"}`}
+            >
               {safeToFixed(summary?.profitMargin || 0, 1)}%
             </div>
             <p className="text-xs text-muted-foreground">Fortjenestemargin</p>
@@ -334,32 +442,46 @@ function FinancialContent() {
       <Card>
         <CardHeader>
           <CardTitle>Utgifter per kategori</CardTitle>
-          <CardDescription>Fordeling av utgifter i valgt periode</CardDescription>
+          <CardDescription>
+            Fordeling av utgifter i valgt periode
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {expensesByCategory && expensesByCategory.length > 0 ? (
             <div className="space-y-4">
-              {expensesByCategory.map((item) => {
-                const category = EXPENSE_CATEGORIES.find((c) => c.value === item.category);
-                const percentage = summary?.expenses ? (parseFloat(item.total) / summary.expenses) * 100 : 0;
+              {expensesByCategory.map(item => {
+                const category = EXPENSE_CATEGORIES.find(
+                  c => c.value === item.category
+                );
+                const percentage = summary?.expenses
+                  ? (parseFloat(item.total) / summary.expenses) * 100
+                  : 0;
 
                 return (
                   <div key={item.category} className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="font-medium">{category?.label || item.category}</span>
+                      <span className="font-medium">
+                        {category?.label || item.category}
+                      </span>
                       <span className="text-muted-foreground">
-                        {formatCurrency(parseFloat(item.total) || 0)} ({safeToFixed(percentage, 1)}%)
+                        {formatCurrency(parseFloat(item.total) || 0)} (
+                        {safeToFixed(percentage, 1)}%)
                       </span>
                     </div>
                     <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                      <div className="h-full bg-primary" style={{ width: `${percentage}%` }} />
+                      <div
+                        className="h-full bg-primary"
+                        style={{ width: `${percentage}%` }}
+                      />
                     </div>
                   </div>
                 );
               })}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-8">Ingen utgifter i denne perioden</p>
+            <p className="text-sm text-muted-foreground text-center py-8">
+              Ingen utgifter i denne perioden
+            </p>
           )}
         </CardContent>
       </Card>
@@ -373,26 +495,48 @@ function FinancialContent() {
         <CardContent>
           {expenses && expenses.length > 0 ? (
             <div className="space-y-2">
-              {expenses.map((expense) => {
-                const category = EXPENSE_CATEGORIES.find((c) => c.value === expense.category);
+              {expenses.map(expense => {
+                const category = EXPENSE_CATEGORIES.find(
+                  c => c.value === expense.category
+                );
                 return (
-                  <div key={expense.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent">
+                  <div
+                    key={expense.id}
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent"
+                  >
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{category?.label || expense.category}</span>
+                        <span className="font-medium">
+                          {category?.label || expense.category}
+                        </span>
                         <span className="text-sm text-muted-foreground">
-                          {expense.expenseDate ? format(new Date(expense.expenseDate), "dd.MM.yyyy") : "N/A"}
+                          {expense.expenseDate
+                            ? format(
+                                new Date(expense.expenseDate),
+                                "dd.MM.yyyy"
+                              )
+                            : "N/A"}
                         </span>
                       </div>
-                      {expense.description && <p className="text-sm text-muted-foreground mt-1">{expense.description}</p>}
+                      {expense.description && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {expense.description}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className="font-semibold text-red-600">{formatCurrency(parseFloat(expense.amount))}</span>
+                      <span className="font-semibold text-red-600">
+                        {formatCurrency(parseFloat(expense.amount))}
+                      </span>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => {
-                          if (confirm("Er du sikker på at du vil slette denne utgiften?")) {
+                          if (
+                            confirm(
+                              "Er du sikker på at du vil slette denne utgiften?"
+                            )
+                          ) {
                             deleteExpense.mutate({ id: expense.id });
                           }
                         }}
@@ -405,7 +549,9 @@ function FinancialContent() {
               })}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-8">Ingen utgifter å vise</p>
+            <p className="text-sm text-muted-foreground text-center py-8">
+              Ingen utgifter å vise
+            </p>
           )}
         </CardContent>
       </Card>

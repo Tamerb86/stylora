@@ -16,7 +16,7 @@ const UIModeContext = createContext<UIModeContextType | undefined>(undefined);
 export function UIModeProvider({ children }: { children: React.ReactNode }) {
   const { data: user } = trpc.auth.me.useQuery();
   const [uiMode, setUIModeState] = useState<UIMode>("simple");
-  
+
   const updateUIModeMutation = trpc.auth.updateUIMode.useMutation();
 
   // Sync with user preference from backend
@@ -28,7 +28,7 @@ export function UIModeProvider({ children }: { children: React.ReactNode }) {
 
   const setUIMode = async (mode: UIMode) => {
     setUIModeState(mode);
-    
+
     // Persist to backend
     try {
       await updateUIModeMutation.mutateAsync({ uiMode: mode });
@@ -50,7 +50,9 @@ export function UIModeProvider({ children }: { children: React.ReactNode }) {
     toggleMode,
   };
 
-  return <UIModeContext.Provider value={value}>{children}</UIModeContext.Provider>;
+  return (
+    <UIModeContext.Provider value={value}>{children}</UIModeContext.Provider>
+  );
 }
 
 export function useUIMode() {

@@ -55,17 +55,22 @@ export async function notifyOwner(
   payload: NotificationPayload
 ): Promise<boolean> {
   const { title, content } = validatePayload(payload);
-  
+
   // Log notification for debugging
-  console.log("[Notification] Owner notification:", { title, content: content.substring(0, 100) + "..." });
-  
+  console.log("[Notification] Owner notification:", {
+    title,
+    content: content.substring(0, 100) + "...",
+  });
+
   // TODO: Implement email or push notification service
   // Options:
   // 1. AWS SES - already configured in env
   // 2. SendGrid
   // 3. Twilio for SMS
   // 4. Firebase Cloud Messaging for push
-  
-  console.warn("[Notification] Notification service not configured. Please integrate email or push service.");
+
+  console.warn(
+    "[Notification] Notification service not configured. Please integrate email or push service."
+  );
   return false;
 }

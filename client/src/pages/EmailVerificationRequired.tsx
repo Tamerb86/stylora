@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Mail, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -13,14 +19,14 @@ export default function EmailVerificationRequired() {
   const utils = trpc.useUtils();
 
   const resendMutation = trpc.signup.resendVerification.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       if (data.success) {
         toast.success(data.message);
       } else {
         toast.error(data.message);
       }
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Kunne ikke sende e-post");
     },
   });
@@ -47,7 +53,9 @@ export default function EmailVerificationRequired() {
           <CardTitle className="text-2xl">Bekreft e-postadressen din</CardTitle>
           <CardDescription className="text-base">
             Vi har sendt en bekreftelseslenke til{" "}
-            <span className="font-semibold text-foreground">{tenant?.email}</span>
+            <span className="font-semibold text-foreground">
+              {tenant?.email}
+            </span>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -55,10 +63,12 @@ export default function EmailVerificationRequired() {
             <div className="flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-blue-800">
-                <p className="font-medium mb-2">Hvorfor må jeg bekrefte e-posten min?</p>
+                <p className="font-medium mb-2">
+                  Hvorfor må jeg bekrefte e-posten min?
+                </p>
                 <p>
-                  E-postbekreftelse sikrer at du har tilgang til kontoen din og lar oss sende deg viktige
-                  varsler om bookinger og betalinger.
+                  E-postbekreftelse sikrer at du har tilgang til kontoen din og
+                  lar oss sende deg viktige varsler om bookinger og betalinger.
                 </p>
               </div>
             </div>
@@ -112,7 +122,10 @@ export default function EmailVerificationRequired() {
 
           <p className="text-xs text-center text-muted-foreground">
             Trenger du hjelp? Kontakt oss på{" "}
-            <a href="mailto:support@stylora.no" className="text-blue-600 hover:underline">
+            <a
+              href="mailto:support@stylora.no"
+              className="text-blue-600 hover:underline"
+            >
               support@stylora.no
             </a>
           </p>

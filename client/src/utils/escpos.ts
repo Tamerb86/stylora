@@ -155,14 +155,16 @@ export function generateReceiptESCPOS(data: ReceiptData): Uint8Array {
   // Items
   builder.bold().line("VARER/TJENESTER").bold(false).hr("-");
 
-  data.items.forEach((item) => {
+  data.items.forEach(item => {
     // Item name
     builder.line(item.name);
 
     // Quantity x Price = Total
     const qtyPrice = `${item.quantity} x ${item.unitPrice.toFixed(2)} kr`;
     const total = `${item.total.toFixed(2)} kr`;
-    const spacing = " ".repeat(Math.max(1, 32 - qtyPrice.length - total.length));
+    const spacing = " ".repeat(
+      Math.max(1, 32 - qtyPrice.length - total.length)
+    );
     builder.line(`  ${qtyPrice}${spacing}${total}`);
   });
 
@@ -171,7 +173,9 @@ export function generateReceiptESCPOS(data: ReceiptData): Uint8Array {
   // Totals
   const formatLine = (label: string, amount: number) => {
     const amountStr = `${amount.toFixed(2)} kr`;
-    const spacing = " ".repeat(Math.max(1, 32 - label.length - amountStr.length));
+    const spacing = " ".repeat(
+      Math.max(1, 32 - label.length - amountStr.length)
+    );
     return `${label}${spacing}${amountStr}`;
   };
 
@@ -205,7 +209,9 @@ export function generateReceiptESCPOS(data: ReceiptData): Uint8Array {
 /**
  * Generate test receipt ESC/POS
  */
-export function generateTestReceiptESCPOS(salonName: string = "Stylora"): Uint8Array {
+export function generateTestReceiptESCPOS(
+  salonName: string = "Stylora"
+): Uint8Array {
   const builder = new ESCPOSBuilder();
 
   builder

@@ -80,13 +80,18 @@ export async function validateRefreshToken(
     .limit(1);
 
   if (!tokenRecord) {
-    logger.warn("Refresh token not found", { token: token.substring(0, 10) + "..." });
+    logger.warn("Refresh token not found", {
+      token: token.substring(0, 10) + "...",
+    });
     return null;
   }
 
   // Check if revoked
   if (tokenRecord.revoked) {
-    logSecurity.unauthorizedAccess("/auth/refresh", tokenRecord.ipAddress || undefined);
+    logSecurity.unauthorizedAccess(
+      "/auth/refresh",
+      tokenRecord.ipAddress || undefined
+    );
     logger.warn("Attempted use of revoked refresh token", {
       tokenId: tokenRecord.id,
       userId: tokenRecord.userId,
@@ -144,7 +149,10 @@ export async function revokeRefreshToken(
   const revoked = result && result.length > 0;
 
   if (revoked) {
-    logger.info("Refresh token revoked", { token: token.substring(0, 10) + "...", reason });
+    logger.info("Refresh token revoked", {
+      token: token.substring(0, 10) + "...",
+      reason,
+    });
   }
 
   return revoked;
@@ -171,10 +179,7 @@ export async function revokeAllUserTokens(
       revokedReason: reason || "Logout from all devices",
     })
     .where(
-      and(
-        eq(refreshTokens.userId, userId),
-        eq(refreshTokens.revoked, false)
-      )
+      and(eq(refreshTokens.userId, userId), eq(refreshTokens.revoked, false))
     );
 
   const count = result ? result.length : 0;
@@ -272,18 +277,16 @@ export async function cleanupExpiredTokens(): Promise<number> {
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
   // Delete expired tokens OR revoked tokens older than 30 days
-  const result = await db
-    .delete(refreshTokens)
-    .where(
-      or(
-        lt(refreshTokens.expiresAt, now),
-        // Also delete old revoked tokens
-        and(
-          eq(refreshTokens.revoked, true),
-          lt(refreshTokens.revokedAt, thirtyDaysAgo)
-        )
+  const result = await db.delete(refreshTokens).where(
+    or(
+      lt(refreshTokens.expiresAt, now),
+      // Also delete old revoked tokens
+      and(
+        eq(refreshTokens.revoked, true),
+        lt(refreshTokens.revokedAt, thirtyDaysAgo)
       )
-    );
+    )
+  );
 
   const count = result ? result.length : 0;
 

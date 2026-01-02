@@ -2,19 +2,51 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, UserCog, Mail, Phone, Edit, Lock, Unlock, Key, Users, Award, TrendingUp } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Plus,
+  UserCog,
+  Mail,
+  Phone,
+  Edit,
+  Lock,
+  Unlock,
+  Key,
+  Users,
+  Award,
+  TrendingUp,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export default function Employees() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
-  
+
   const [createFormData, setCreateFormData] = useState({
     name: "",
     email: "",
@@ -33,8 +65,12 @@ export default function Employees() {
     commissionRate: "",
   });
 
-  const { data: employees, isLoading, refetch } = trpc.employees.list.useQuery();
-  
+  const {
+    data: employees,
+    isLoading,
+    refetch,
+  } = trpc.employees.list.useQuery();
+
   const createEmployee = trpc.employees.create.useMutation({
     onSuccess: () => {
       toast.success("Ansatt opprettet!");
@@ -49,7 +85,7 @@ export default function Employees() {
         commissionRate: "40",
       });
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Feil: ${error.message}`);
     },
   });
@@ -61,7 +97,7 @@ export default function Employees() {
       setSelectedEmployee(null);
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Feil: ${error.message}`);
     },
   });
@@ -71,7 +107,7 @@ export default function Employees() {
       toast.success("Ansatt deaktivert!");
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Feil: ${error.message}`);
     },
   });
@@ -81,7 +117,7 @@ export default function Employees() {
       toast.success("Ansatt aktivert!");
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Feil: ${error.message}`);
     },
   });
@@ -132,7 +168,12 @@ export default function Employees() {
   // Calculate stats
   const totalEmployees = employees?.length || 0;
   const activeEmployees = employees?.filter(e => e.isActive).length || 0;
-  const avgCommission = employees?.length ? employees.reduce((sum, e) => sum + (parseFloat(e.commissionRate) || 0), 0) / employees.length : 0;
+  const avgCommission = employees?.length
+    ? employees.reduce(
+        (sum, e) => sum + (parseFloat(e.commissionRate) || 0),
+        0
+      ) / employees.length
+    : 0;
   const employeesWithPin = employees?.filter(e => e.pin).length || 0;
 
   return (
@@ -144,7 +185,7 @@ export default function Employees() {
     >
       {/* Background gradient */}
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-indigo-50 via-blue-50 to-cyan-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-gray-900"></div>
-      
+
       <div className="p-8 space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center animate-fade-in">
@@ -152,11 +193,16 @@ export default function Employees() {
             <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 via-blue-600 to-cyan-500 bg-clip-text text-transparent">
               Ansatte
             </h1>
-            <p className="text-muted-foreground mt-1">Administrer behandlere og personale</p>
+            <p className="text-muted-foreground mt-1">
+              Administrer behandlere og personale
+            </p>
           </div>
-          
+
           {/* Create Dialog */}
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <Dialog
+            open={isCreateDialogOpen}
+            onOpenChange={setIsCreateDialogOpen}
+          >
             <DialogTrigger asChild>
               <Button className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                 <Plus className="mr-2 h-4 w-4" />
@@ -177,7 +223,12 @@ export default function Employees() {
                     id="create-name"
                     required
                     value={createFormData.name}
-                    onChange={(e) => setCreateFormData({ ...createFormData, name: e.target.value })}
+                    onChange={e =>
+                      setCreateFormData({
+                        ...createFormData,
+                        name: e.target.value,
+                      })
+                    }
                   />
                 </div>
                 <div className="space-y-2">
@@ -186,7 +237,12 @@ export default function Employees() {
                     id="create-email"
                     type="email"
                     value={createFormData.email}
-                    onChange={(e) => setCreateFormData({ ...createFormData, email: e.target.value })}
+                    onChange={e =>
+                      setCreateFormData({
+                        ...createFormData,
+                        email: e.target.value,
+                      })
+                    }
                   />
                 </div>
                 <div className="space-y-2">
@@ -194,12 +250,22 @@ export default function Employees() {
                   <Input
                     id="create-phone"
                     value={createFormData.phone}
-                    onChange={(e) => setCreateFormData({ ...createFormData, phone: e.target.value })}
+                    onChange={e =>
+                      setCreateFormData({
+                        ...createFormData,
+                        phone: e.target.value,
+                      })
+                    }
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="create-role">Rolle</Label>
-                  <Select value={createFormData.role} onValueChange={(value: any) => setCreateFormData({ ...createFormData, role: value })}>
+                  <Select
+                    value={createFormData.role}
+                    onValueChange={(value: any) =>
+                      setCreateFormData({ ...createFormData, role: value })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -211,8 +277,18 @@ export default function Employees() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="create-commissionType">Provisjonstype</Label>
-                    <Select value={createFormData.commissionType} onValueChange={(value: any) => setCreateFormData({ ...createFormData, commissionType: value })}>
+                    <Label htmlFor="create-commissionType">
+                      Provisjonstype
+                    </Label>
+                    <Select
+                      value={createFormData.commissionType}
+                      onValueChange={(value: any) =>
+                        setCreateFormData({
+                          ...createFormData,
+                          commissionType: value,
+                        })
+                      }
+                    >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -224,23 +300,36 @@ export default function Employees() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="create-commissionRate">Provisjonssats</Label>
+                    <Label htmlFor="create-commissionRate">
+                      Provisjonssats
+                    </Label>
                     <Input
                       id="create-commissionRate"
                       type="number"
                       step="0.01"
                       value={createFormData.commissionRate}
-                      onChange={(e) => setCreateFormData({ ...createFormData, commissionRate: e.target.value })}
+                      onChange={e =>
+                        setCreateFormData({
+                          ...createFormData,
+                          commissionRate: e.target.value,
+                        })
+                      }
                     />
                   </div>
                 </div>
 
                 <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsCreateDialogOpen(false)}
+                  >
                     Avbryt
                   </Button>
                   <Button type="submit" disabled={createEmployee.isPending}>
-                    {createEmployee.isPending ? "Oppretter..." : "Opprett ansatt"}
+                    {createEmployee.isPending
+                      ? "Oppretter..."
+                      : "Opprett ansatt"}
                   </Button>
                 </DialogFooter>
               </form>
@@ -249,19 +338,26 @@ export default function Employees() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+        <div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in"
+          style={{ animationDelay: "0.1s" }}
+        >
           <Card className="relative overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-indigo-600 opacity-90"></div>
             <CardHeader className="relative pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-white/90">Totalt ansatte</CardTitle>
+                <CardTitle className="text-sm font-medium text-white/90">
+                  Totalt ansatte
+                </CardTitle>
                 <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
                   <Users className="h-4 w-4 text-white" />
                 </div>
               </div>
             </CardHeader>
             <CardContent className="relative">
-              <div className="text-3xl font-bold text-white">{totalEmployees}</div>
+              <div className="text-3xl font-bold text-white">
+                {totalEmployees}
+              </div>
               <p className="text-xs text-white/80 mt-1">Registrerte ansatte</p>
             </CardContent>
           </Card>
@@ -270,14 +366,18 @@ export default function Employees() {
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-blue-600 opacity-90"></div>
             <CardHeader className="relative pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-white/90">Aktive ansatte</CardTitle>
+                <CardTitle className="text-sm font-medium text-white/90">
+                  Aktive ansatte
+                </CardTitle>
                 <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
                   <UserCog className="h-4 w-4 text-white" />
                 </div>
               </div>
             </CardHeader>
             <CardContent className="relative">
-              <div className="text-3xl font-bold text-white">{activeEmployees}</div>
+              <div className="text-3xl font-bold text-white">
+                {activeEmployees}
+              </div>
               <p className="text-xs text-white/80 mt-1">Kan booke avtaler</p>
             </CardContent>
           </Card>
@@ -286,14 +386,18 @@ export default function Employees() {
             <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-cyan-600 opacity-90"></div>
             <CardHeader className="relative pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-white/90">Snitt provisjon</CardTitle>
+                <CardTitle className="text-sm font-medium text-white/90">
+                  Snitt provisjon
+                </CardTitle>
                 <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
                   <Award className="h-4 w-4 text-white" />
                 </div>
               </div>
             </CardHeader>
             <CardContent className="relative">
-              <div className="text-3xl font-bold text-white">{avgCommission.toFixed(0)}%</div>
+              <div className="text-3xl font-bold text-white">
+                {avgCommission.toFixed(0)}%
+              </div>
               <p className="text-xs text-white/80 mt-1">Gjennomsnittlig sats</p>
             </CardContent>
           </Card>
@@ -302,14 +406,18 @@ export default function Employees() {
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-emerald-600 opacity-90"></div>
             <CardHeader className="relative pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-white/90">Med PIN-kode</CardTitle>
+                <CardTitle className="text-sm font-medium text-white/90">
+                  Med PIN-kode
+                </CardTitle>
                 <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
                   <Key className="h-4 w-4 text-white" />
                 </div>
               </div>
             </CardHeader>
             <CardContent className="relative">
-              <div className="text-3xl font-bold text-white">{employeesWithPin}</div>
+              <div className="text-3xl font-bold text-white">
+                {employeesWithPin}
+              </div>
               <p className="text-xs text-white/80 mt-1">Kan stemple inn/ut</p>
             </CardContent>
           </Card>
@@ -331,7 +439,9 @@ export default function Employees() {
                   id="edit-name"
                   required
                   value={editFormData.name}
-                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                  onChange={e =>
+                    setEditFormData({ ...editFormData, name: e.target.value })
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -340,7 +450,9 @@ export default function Employees() {
                   id="edit-email"
                   type="email"
                   value={editFormData.email}
-                  onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                  onChange={e =>
+                    setEditFormData({ ...editFormData, email: e.target.value })
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -348,7 +460,9 @@ export default function Employees() {
                 <Input
                   id="edit-phone"
                   value={editFormData.phone}
-                  onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                  onChange={e =>
+                    setEditFormData({ ...editFormData, phone: e.target.value })
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -361,7 +475,7 @@ export default function Employees() {
                     maxLength={6}
                     placeholder={selectedEmployee?.pin ? "••••" : "Ikke satt"}
                     value={editFormData.pin}
-                    onChange={(e) => {
+                    onChange={e => {
                       const value = e.target.value.replace(/\D/g, "");
                       setEditFormData({ ...editFormData, pin: value });
                     }}
@@ -374,7 +488,15 @@ export default function Employees() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-commissionType">Provisjonstype</Label>
-                  <Select value={editFormData.commissionType} onValueChange={(value: any) => setEditFormData({ ...editFormData, commissionType: value })}>
+                  <Select
+                    value={editFormData.commissionType}
+                    onValueChange={(value: any) =>
+                      setEditFormData({
+                        ...editFormData,
+                        commissionType: value,
+                      })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -392,13 +514,22 @@ export default function Employees() {
                     type="number"
                     step="0.01"
                     value={editFormData.commissionRate}
-                    onChange={(e) => setEditFormData({ ...editFormData, commissionRate: e.target.value })}
+                    onChange={e =>
+                      setEditFormData({
+                        ...editFormData,
+                        commissionRate: e.target.value,
+                      })
+                    }
                   />
                 </div>
               </div>
 
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditDialogOpen(false)}
+                >
                   Avbryt
                 </Button>
                 <Button type="submit" disabled={updateEmployee.isPending}>
@@ -412,27 +543,43 @@ export default function Employees() {
         {/* Employees Grid */}
         {isLoading ? (
           <div className="grid gap-4 md:grid-cols-2">
-            {[1, 2].map((i) => (
-              <div key={i} className="h-40 bg-gradient-to-r from-gray-100 to-gray-200 animate-pulse rounded-lg"></div>
+            {[1, 2].map(i => (
+              <div
+                key={i}
+                className="h-40 bg-gradient-to-r from-gray-100 to-gray-200 animate-pulse rounded-lg"
+              ></div>
             ))}
           </div>
         ) : employees && employees.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <div
+            className="grid gap-4 md:grid-cols-2 animate-fade-in"
+            style={{ animationDelay: "0.2s" }}
+          >
             {employees.map((employee, index) => (
-              <Card 
-                key={employee.id} 
+              <Card
+                key={employee.id}
                 className={`hover:shadow-xl transition-all duration-300 hover:scale-[1.02] border-none bg-white/80 backdrop-blur-sm animate-slide-in ${!employee.isActive ? "opacity-60" : ""}`}
                 style={{ animationDelay: `${0.05 * index}s` }}
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`p-3 rounded-lg ${employee.isActive ? "bg-gradient-to-br from-indigo-100 to-blue-100" : "bg-gray-100"}`}>
-                        <UserCog className={`h-6 w-6 ${employee.isActive ? "text-indigo-600" : "text-gray-400"}`} />
+                      <div
+                        className={`p-3 rounded-lg ${employee.isActive ? "bg-gradient-to-br from-indigo-100 to-blue-100" : "bg-gray-100"}`}
+                      >
+                        <UserCog
+                          className={`h-6 w-6 ${employee.isActive ? "text-indigo-600" : "text-gray-400"}`}
+                        />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <CardTitle className={employee.isActive ? "bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent" : ""}>
+                          <CardTitle
+                            className={
+                              employee.isActive
+                                ? "bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent"
+                                : ""
+                            }
+                          >
                             {employee.name}
                           </CardTitle>
                           {!employee.isActive && (
@@ -447,7 +594,11 @@ export default function Employees() {
                           )}
                         </div>
                         <CardDescription className="mt-1">
-                          {employee.role === "owner" ? "Eier" : employee.role === "admin" ? "Administrator" : "Behandler"}
+                          {employee.role === "owner"
+                            ? "Eier"
+                            : employee.role === "admin"
+                              ? "Administrator"
+                              : "Behandler"}
                         </CardDescription>
                       </div>
                     </div>
@@ -464,8 +615,15 @@ export default function Employees() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleToggleActive(employee)}
-                        disabled={deactivateEmployee.isPending || activateEmployee.isPending}
-                        className={employee.isActive ? "hover:bg-red-50" : "hover:bg-green-50"}
+                        disabled={
+                          deactivateEmployee.isPending ||
+                          activateEmployee.isPending
+                        }
+                        className={
+                          employee.isActive
+                            ? "hover:bg-red-50"
+                            : "hover:bg-green-50"
+                        }
                       >
                         {employee.isActive ? (
                           <Lock className="h-4 w-4 text-red-600" />
@@ -493,7 +651,8 @@ export default function Employees() {
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-cyan-100 to-blue-100">
                       <Award className="h-3 w-3 text-cyan-700" />
                       <span className="text-sm font-semibold text-cyan-700">
-                        Provisjon: {employee.commissionRate}% ({employee.commissionType})
+                        Provisjon: {employee.commissionRate}% (
+                        {employee.commissionType})
                       </span>
                     </div>
                   )}
@@ -509,9 +668,10 @@ export default function Employees() {
               </div>
               <h3 className="text-lg font-semibold mb-2">Ingen ansatte ennå</h3>
               <p className="text-muted-foreground mb-6">
-                Opprett din første ansatt for å begynne å administrere personalet ditt!
+                Opprett din første ansatt for å begynne å administrere
+                personalet ditt!
               </p>
-              <Button 
+              <Button
                 onClick={() => setIsCreateDialogOpen(true)}
                 className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white"
               >

@@ -22,12 +22,16 @@ export interface SendEmailParams {
  * @param params Email parameters
  * @returns Promise with message ID on success
  */
-export async function sendEmailViaSES(params: SendEmailParams): Promise<string> {
+export async function sendEmailViaSES(
+  params: SendEmailParams
+): Promise<string> {
   const { to, subject, htmlBody, textBody } = params;
 
   // Validate that AWS SES is configured
   if (!ENV.awsAccessKeyId || !ENV.awsSecretAccessKey || !ENV.awsSesFromEmail) {
-    throw new Error("AWS SES is not configured. Please set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_SES_FROM_EMAIL environment variables.");
+    throw new Error(
+      "AWS SES is not configured. Please set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_SES_FROM_EMAIL environment variables."
+    );
   }
 
   const command = new SendEmailCommand({
@@ -57,7 +61,9 @@ export async function sendEmailViaSES(params: SendEmailParams): Promise<string> 
 
   try {
     const response = await sesClient.send(command);
-    console.log(`[AWS SES] Email sent successfully. MessageId: ${response.MessageId}`);
+    console.log(
+      `[AWS SES] Email sent successfully. MessageId: ${response.MessageId}`
+    );
     return response.MessageId || "unknown";
   } catch (error: any) {
     console.error("[AWS SES] Failed to send email:", error);
@@ -69,5 +75,9 @@ export async function sendEmailViaSES(params: SendEmailParams): Promise<string> 
  * Check if AWS SES is properly configured
  */
 export function isAWSSESConfigured(): boolean {
-  return !!(ENV.awsAccessKeyId && ENV.awsSecretAccessKey && ENV.awsSesFromEmail);
+  return !!(
+    ENV.awsAccessKeyId &&
+    ENV.awsSecretAccessKey &&
+    ENV.awsSesFromEmail
+  );
 }

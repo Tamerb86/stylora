@@ -1,8 +1,21 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,7 +23,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Mail, Edit, Send, RotateCcw, Upload, Palette } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-type TemplateType = "reminder_24h" | "reminder_2h" | "booking_confirmation" | "booking_cancellation" | "booking_update";
+type TemplateType =
+  | "reminder_24h"
+  | "reminder_2h"
+  | "booking_confirmation"
+  | "booking_cancellation"
+  | "booking_update";
 
 interface TemplateInfo {
   type: TemplateType;
@@ -54,7 +72,9 @@ const templateTypes: TemplateInfo[] = [
 
 export function EmailTemplates() {
   const { toast } = useToast();
-  const [selectedTemplate, setSelectedTemplate] = useState<TemplateType | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateType | null>(
+    null
+  );
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [testEmailDialogOpen, setTestEmailDialogOpen] = useState(false);
   const [testEmail, setTestEmail] = useState("");
@@ -70,7 +90,7 @@ export function EmailTemplates() {
 
   const utils = trpc.useUtils();
   const { data: templates, isLoading } = trpc.emailTemplates.list.useQuery();
-  
+
   const updateMutation = trpc.emailTemplates.update.useMutation({
     onSuccess: () => {
       toast({
@@ -80,7 +100,7 @@ export function EmailTemplates() {
       utils.emailTemplates.list.invalidate();
       setEditDialogOpen(false);
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: "Feil",
         description: error.message,
@@ -90,14 +110,14 @@ export function EmailTemplates() {
   });
 
   const uploadLogoMutation = trpc.emailTemplates.uploadLogo.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       setLogoUrl(data.url);
       toast({
         title: "Logo lastet opp",
         description: "Logoen er lastet opp til S3",
       });
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: "Feil ved opplasting",
         description: error.message,
@@ -115,7 +135,7 @@ export function EmailTemplates() {
       setTestEmailDialogOpen(false);
       setTestEmail("");
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: "Feil ved sending",
         description: error.message,
@@ -133,7 +153,7 @@ export function EmailTemplates() {
       utils.emailTemplates.list.invalidate();
       setEditDialogOpen(false);
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: "Feil",
         description: error.message,
@@ -144,7 +164,7 @@ export function EmailTemplates() {
 
   const handleEditTemplate = async (type: TemplateType) => {
     setSelectedTemplate(type);
-    
+
     // Get existing template or use defaults
     const existing = templates?.find(t => t.templateType === type);
     if (existing) {
@@ -161,13 +181,13 @@ export function EmailTemplates() {
       setPrimaryColor("#8b5cf6");
       setSecondaryColor("#6366f1");
     }
-    
+
     setEditDialogOpen(true);
   };
 
   const handleSaveTemplate = () => {
     if (!selectedTemplate) return;
-    
+
     updateMutation.mutate({
       templateType: selectedTemplate,
       subject,
@@ -226,7 +246,7 @@ export function EmailTemplates() {
 
   const handleSendTest = () => {
     if (!selectedTemplate || !testEmail) return;
-    
+
     sendTestMutation.mutate({
       templateType: selectedTemplate,
       testEmail,
@@ -235,8 +255,12 @@ export function EmailTemplates() {
 
   const handleResetToDefault = () => {
     if (!selectedTemplate) return;
-    
-    if (confirm("Er du sikker på at du vil tilbakestille denne malen til standard?")) {
+
+    if (
+      confirm(
+        "Er du sikker på at du vil tilbakestille denne malen til standard?"
+      )
+    ) {
       resetMutation.mutate({
         templateType: selectedTemplate,
       });
@@ -265,17 +289,24 @@ export function EmailTemplates() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {templateTypes.map((template) => {
-          const existing = templates?.find(t => t.templateType === template.type);
-          
+        {templateTypes.map(template => {
+          const existing = templates?.find(
+            t => t.templateType === template.type
+          );
+
           return (
-            <Card key={template.type} className="hover:shadow-lg transition-shadow">
+            <Card
+              key={template.type}
+              className="hover:shadow-lg transition-shadow"
+            >
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <div className="text-4xl">{template.icon}</div>
                     <div>
-                      <CardTitle className="text-lg">{template.title}</CardTitle>
+                      <CardTitle className="text-lg">
+                        {template.title}
+                      </CardTitle>
                       <CardDescription className="text-sm">
                         {template.description}
                       </CardDescription>
@@ -295,7 +326,7 @@ export function EmailTemplates() {
                       <p>Ingen mal konfigurert ennå</p>
                     </div>
                   )}
-                  
+
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
@@ -330,10 +361,14 @@ export function EmailTemplates() {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              Rediger mal: {templateTypes.find(t => t.type === selectedTemplate)?.title}
+              Rediger mal:{" "}
+              {templateTypes.find(t => t.type === selectedTemplate)?.title}
             </DialogTitle>
             <DialogDescription>
-              Tilpass e-postinnhold, logo og farger. Bruk variabler som {`{{customerName}}`}, {`{{appointmentDate}}`}, {`{{appointmentTime}}`}, {`{{serviceName}}`}, {`{{employeeName}}`}, {`{{salonName}}`}
+              Tilpass e-postinnhold, logo og farger. Bruk variabler som{" "}
+              {`{{customerName}}`}, {`{{appointmentDate}}`},{" "}
+              {`{{appointmentTime}}`}, {`{{serviceName}}`}, {`{{employeeName}}`}
+              , {`{{salonName}}`}
             </DialogDescription>
           </DialogHeader>
 
@@ -350,7 +385,7 @@ export function EmailTemplates() {
                 <Input
                   id="subject"
                   value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
+                  onChange={e => setSubject(e.target.value)}
                   placeholder="Emne for e-posten"
                 />
               </div>
@@ -360,7 +395,7 @@ export function EmailTemplates() {
                 <Textarea
                   id="bodyHtml"
                   value={bodyHtml}
-                  onChange={(e) => setBodyHtml(e.target.value)}
+                  onChange={e => setBodyHtml(e.target.value)}
                   placeholder="HTML-innhold for e-posten"
                   rows={15}
                   className="font-mono text-sm"
@@ -402,12 +437,12 @@ export function EmailTemplates() {
                       id="primaryColor"
                       type="color"
                       value={primaryColor}
-                      onChange={(e) => setPrimaryColor(e.target.value)}
+                      onChange={e => setPrimaryColor(e.target.value)}
                       className="w-20 h-10"
                     />
                     <Input
                       value={primaryColor}
-                      onChange={(e) => setPrimaryColor(e.target.value)}
+                      onChange={e => setPrimaryColor(e.target.value)}
                       placeholder="#8b5cf6"
                       className="flex-1"
                     />
@@ -421,12 +456,12 @@ export function EmailTemplates() {
                       id="secondaryColor"
                       type="color"
                       value={secondaryColor}
-                      onChange={(e) => setSecondaryColor(e.target.value)}
+                      onChange={e => setSecondaryColor(e.target.value)}
                       className="w-20 h-10"
                     />
                     <Input
                       value={secondaryColor}
-                      onChange={(e) => setSecondaryColor(e.target.value)}
+                      onChange={e => setSecondaryColor(e.target.value)}
                       placeholder="#6366f1"
                       className="flex-1"
                     />
@@ -441,9 +476,9 @@ export function EmailTemplates() {
                   <p className="text-sm font-medium">Emne:</p>
                   <p className="text-lg">{subject || "(Ingen emne)"}</p>
                 </div>
-                <div 
+                <div
                   className="bg-white p-4 rounded border"
-                  dangerouslySetInnerHTML={{ 
+                  dangerouslySetInnerHTML={{
                     __html: bodyHtml
                       .replace(/{{primaryColor}}/g, primaryColor)
                       .replace(/{{secondaryColor}}/g, secondaryColor)
@@ -452,7 +487,7 @@ export function EmailTemplates() {
                       .replace(/{{appointmentDate}}/g, "15. desember 2024")
                       .replace(/{{appointmentTime}}/g, "14:00")
                       .replace(/{{serviceName}}/g, "Herreklipp")
-                      .replace(/{{employeeName}}/g, "Stylist Test")
+                      .replace(/{{employeeName}}/g, "Stylist Test"),
                   }}
                 />
               </div>
@@ -468,7 +503,7 @@ export function EmailTemplates() {
               <RotateCcw className="h-4 w-4 mr-2" />
               Tilbakestill til standard
             </Button>
-            
+
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -504,7 +539,7 @@ export function EmailTemplates() {
                 id="testEmail"
                 type="email"
                 value={testEmail}
-                onChange={(e) => setTestEmail(e.target.value)}
+                onChange={e => setTestEmail(e.target.value)}
                 placeholder="din@epost.no"
               />
             </div>

@@ -1,6 +1,6 @@
 /**
  * Reader Connect WebSocket Manager
- * 
+ *
  * Manages WebSocket connections to PayPal Reader for payment processing
  * Documentation: https://developer.zettle.com/docs/payment-integrations/reader-connect/overview
  */
@@ -48,15 +48,17 @@ export class ReaderConnectManager {
       try {
         // WebSocket URL format: wss://reader-connect.zettle.com/v1/links/{linkId}/ws
         const wsUrl = `wss://reader-connect.zettle.com/v1/links/${this.linkId}/ws`;
-        
+
         this.ws = new WebSocket(wsUrl, {
           headers: {
-            "Authorization": `Bearer ${this.accessToken}`,
+            Authorization: `Bearer ${this.accessToken}`,
           },
         });
 
         this.ws.on("open", () => {
-          console.log(`[ReaderConnect] WebSocket connected to link ${this.linkId}`);
+          console.log(
+            `[ReaderConnect] WebSocket connected to link ${this.linkId}`
+          );
           this.reconnectAttempts = 0;
           resolve();
         });
@@ -70,7 +72,7 @@ export class ReaderConnectManager {
           }
         });
 
-        this.ws.on("error", (error) => {
+        this.ws.on("error", error => {
           console.error("[ReaderConnect] WebSocket error:", error);
           reject(error);
         });
@@ -95,10 +97,12 @@ export class ReaderConnectManager {
     }
 
     this.reconnectAttempts++;
-    console.log(`[ReaderConnect] Reconnecting... (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+    console.log(
+      `[ReaderConnect] Reconnecting... (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`
+    );
 
     setTimeout(() => {
-      this.connect().catch((error) => {
+      this.connect().catch(error => {
         console.error("[ReaderConnect] Reconnect failed:", error);
       });
     }, this.reconnectDelay * this.reconnectAttempts);
@@ -266,7 +270,7 @@ export function getReaderConnectManager(
   accessToken: string
 ): ReaderConnectManager {
   const key = `${tenantId}:${linkId}`;
-  
+
   if (!managerInstances.has(key)) {
     const manager = new ReaderConnectManager(linkId, accessToken);
     managerInstances.set(key, manager);
@@ -278,10 +282,13 @@ export function getReaderConnectManager(
 /**
  * Remove Reader Connect manager for a tenant
  */
-export function removeReaderConnectManager(tenantId: string, linkId: string): void {
+export function removeReaderConnectManager(
+  tenantId: string,
+  linkId: string
+): void {
   const key = `${tenantId}:${linkId}`;
   const manager = managerInstances.get(key);
-  
+
   if (manager) {
     manager.disconnect();
     managerInstances.delete(key);

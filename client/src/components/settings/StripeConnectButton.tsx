@@ -1,30 +1,36 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Loader2, CheckCircle2, XCircle, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
 export function StripeConnectButton() {
   const [isConnecting, setIsConnecting] = useState(false);
-  
-  const { data: status, refetch: refetchStatus } = trpc.stripeConnect.getStatus.useQuery();
-  const { data: accountDetails } = trpc.stripeConnect.getAccountDetails.useQuery(
-    undefined,
-    { enabled: status?.connected }
-  );
-  
-  const getAuthUrlMutation = trpc.stripeConnect.getAuthUrl.useQuery(
-    undefined,
-    { enabled: false }
-  );
-  
+
+  const { data: status, refetch: refetchStatus } =
+    trpc.stripeConnect.getStatus.useQuery();
+  const { data: accountDetails } =
+    trpc.stripeConnect.getAccountDetails.useQuery(undefined, {
+      enabled: status?.connected,
+    });
+
+  const getAuthUrlMutation = trpc.stripeConnect.getAuthUrl.useQuery(undefined, {
+    enabled: false,
+  });
+
   const disconnectMutation = trpc.stripeConnect.disconnect.useMutation({
     onSuccess: () => {
       toast.success("Stripe-konto frakoblet");
       refetchStatus();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Kunne ikke koble fra Stripe");
     },
   });
@@ -32,10 +38,10 @@ export function StripeConnectButton() {
   const handleConnect = async () => {
     try {
       setIsConnecting(true);
-      
+
       // Get auth URL
       const result = await getAuthUrlMutation.refetch();
-      
+
       if (result.data?.authUrl) {
         // Redirect to Stripe OAuth
         window.location.href = result.data.authUrl;
@@ -49,10 +55,14 @@ export function StripeConnectButton() {
   };
 
   const handleDisconnect = async () => {
-    if (!confirm("Er du sikker på at du vil koble fra Stripe? Kortbetalinger vil bli deaktivert.")) {
+    if (
+      !confirm(
+        "Er du sikker på at du vil koble fra Stripe? Kortbetalinger vil bli deaktivert."
+      )
+    ) {
       return;
     }
-    
+
     disconnectMutation.mutate();
   };
 
@@ -77,19 +87,27 @@ export function StripeConnectButton() {
             <div className="rounded-lg border p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">E-post:</span>
-                <span className="text-sm text-muted-foreground">{accountDetails.email}</span>
+                <span className="text-sm text-muted-foreground">
+                  {accountDetails.email}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Konto-ID:</span>
-                <span className="text-sm text-muted-foreground font-mono">{accountDetails.id}</span>
+                <span className="text-sm text-muted-foreground font-mono">
+                  {accountDetails.id}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Land:</span>
-                <span className="text-sm text-muted-foreground">{accountDetails.country?.toUpperCase()}</span>
+                <span className="text-sm text-muted-foreground">
+                  {accountDetails.country?.toUpperCase()}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Valuta:</span>
-                <span className="text-sm text-muted-foreground">{accountDetails.currency?.toUpperCase()}</span>
+                <span className="text-sm text-muted-foreground">
+                  {accountDetails.currency?.toUpperCase()}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Status:</span>
@@ -120,7 +138,9 @@ export function StripeConnectButton() {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => window.open("https://dashboard.stripe.com", "_blank")}
+              onClick={() =>
+                window.open("https://dashboard.stripe.com", "_blank")
+              }
               className="flex-1"
             >
               <ExternalLink className="h-4 w-4 mr-2" />
@@ -131,13 +151,16 @@ export function StripeConnectButton() {
               onClick={handleDisconnect}
               disabled={disconnectMutation.isPending}
             >
-              {disconnectMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {disconnectMutation.isPending && (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              )}
               Koble fra
             </Button>
           </div>
 
           <div className="text-xs text-muted-foreground bg-muted p-3 rounded">
-            <strong>Tips:</strong> Du kan administrere kortlesere, se transaksjoner og endre innstillinger i Stripe Dashboard.
+            <strong>Tips:</strong> Du kan administrere kortlesere, se
+            transaksjoner og endre innstillinger i Stripe Dashboard.
           </div>
         </CardContent>
       </Card>
@@ -163,17 +186,20 @@ export function StripeConnectButton() {
         <div className="rounded-lg border p-4 space-y-3">
           <h4 className="font-medium text-sm">Hva er Stripe Connect?</h4>
           <p className="text-sm text-muted-foreground">
-            Stripe Connect lar deg koble din Stripe-konto til Stylora med ett klikk. 
-            Alle betalinger går direkte til din konto, og du beholder full kontroll.
+            Stripe Connect lar deg koble din Stripe-konto til Stylora med ett
+            klikk. Alle betalinger går direkte til din konto, og du beholder
+            full kontroll.
           </p>
-          
+
           <div className="space-y-2">
             <h5 className="font-medium text-sm">Fordeler:</h5>
             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
               <li>Enkel oppsett - ingen API-nøkler å kopiere</li>
               <li>Sikker OAuth-autentisering</li>
               <li>Betalinger går direkte til din bankkonto</li>
-              <li>Støtter alle betalingsmetoder (kort, Apple Pay, Google Pay)</li>
+              <li>
+                Støtter alle betalingsmetoder (kort, Apple Pay, Google Pay)
+              </li>
               <li>Administrer alt i Stripe Dashboard</li>
             </ul>
           </div>
@@ -201,8 +227,12 @@ export function StripeConnectButton() {
             </>
           ) : (
             <>
-              <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.594-7.305h.003z"/>
+              <svg
+                className="h-5 w-5 mr-2"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.594-7.305h.003z" />
               </svg>
               Koble til Stripe
             </>

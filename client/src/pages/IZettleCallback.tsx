@@ -6,7 +6,9 @@ import { Card } from "@/components/ui/card";
 
 export default function IZettleCallback() {
   const [, setLocation] = useLocation();
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    "loading"
+  );
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -20,7 +22,10 @@ export default function IZettleCallback() {
       setMessage("Din iZettle-konto er koblet til!");
     } else if (iZettleStatus === "error") {
       setStatus("error");
-      setMessage(errorMessage || "Det oppstod en feil ved tilkobling av iZettle-kontoen din.");
+      setMessage(
+        errorMessage ||
+          "Det oppstod en feil ved tilkobling av iZettle-kontoen din."
+      );
     } else {
       // Invalid parameters, redirect to payment providers
       setTimeout(() => {
@@ -34,8 +39,12 @@ export default function IZettleCallback() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
         <Card className="p-8 text-center max-w-md">
           <Loader2 className="w-16 h-16 animate-spin mx-auto text-[#4a90e2] mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Behandler tilkobling...</h2>
-          <p className="text-gray-600">Vennligst vent mens vi kobler til din iZettle-konto.</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Behandler tilkobling...
+          </h2>
+          <p className="text-gray-600">
+            Vennligst vent mens vi kobler til din iZettle-konto.
+          </p>
         </Card>
       </div>
     );
@@ -48,9 +57,11 @@ export default function IZettleCallback() {
           <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce">
             <CheckCircle2 className="w-12 h-12 text-white" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-3">Tilkobling vellykket!</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">
+            Tilkobling vellykket!
+          </h2>
           <p className="text-lg text-gray-600 mb-6">{message}</p>
-          
+
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
             <h3 className="font-semibold text-gray-900 mb-2">Hva skjer nå?</h3>
             <ul className="text-sm text-gray-700 space-y-2">
@@ -94,9 +105,11 @@ export default function IZettleCallback() {
         <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
           <XCircle className="w-12 h-12 text-red-600" />
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-3">Tilkobling mislyktes</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-3">
+          Tilkobling mislyktes
+        </h2>
         <p className="text-lg text-gray-600 mb-6">{message}</p>
-        
+
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 text-left">
           <h3 className="font-semibold text-gray-900 mb-2">Mulige årsaker:</h3>
           <ul className="text-sm text-gray-700 space-y-2">
@@ -130,7 +143,10 @@ export default function IZettleCallback() {
 
         <p className="text-sm text-gray-500 mt-6">
           Trenger du hjelp? Kontakt oss på{" "}
-          <a href="mailto:support@stylora.no" className="text-[#4a90e2] hover:underline">
+          <a
+            href="mailto:support@stylora.no"
+            className="text-[#4a90e2] hover:underline"
+          >
             support@stylora.no
           </a>
         </p>

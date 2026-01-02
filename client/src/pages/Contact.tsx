@@ -4,7 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Mail, Phone, MapPin, Send, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import Footer from "@/components/Footer";
@@ -29,7 +35,7 @@ export default function Contact() {
         description: "Vi vil svare deg så snart som mulig.",
       });
     },
-    onError: (error) => {
+    onError: error => {
       toast.error("Feil ved sending", {
         description: error.message,
       });
@@ -44,8 +50,10 @@ export default function Contact() {
     });
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData((prev) => ({
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
@@ -61,7 +69,8 @@ export default function Contact() {
             </div>
             <CardTitle className="text-2xl">Takk for din melding!</CardTitle>
             <CardDescription className="text-base mt-2">
-              Vi har mottatt din henvendelse og vil svare deg så snart som mulig.
+              Vi har mottatt din henvendelse og vil svare deg så snart som
+              mulig.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -86,7 +95,8 @@ export default function Contact() {
           <div className="container max-w-6xl">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">Kontakt oss</h1>
             <p className="text-xl opacity-90">
-              Vi er her for å hjelpe deg. Send oss en melding så svarer vi så snart som mulig.
+              Vi er her for å hjelpe deg. Send oss en melding så svarer vi så
+              snart som mulig.
             </p>
           </div>
         </div>
@@ -211,7 +221,9 @@ export default function Contact() {
                     </div>
                     <div>
                       <p className="font-semibold">E-post</p>
-                      <p className="text-muted-foreground">kontakt@stylora.no</p>
+                      <p className="text-muted-foreground">
+                        kontakt@stylora.no
+                      </p>
                     </div>
                   </div>
 
@@ -232,7 +244,8 @@ export default function Contact() {
                     <div>
                       <p className="font-semibold">Adresse</p>
                       <p className="text-muted-foreground">
-                        Eksempelveien 123<br />
+                        Eksempelveien 123
+                        <br />
                         0123 Oslo, Norge
                       </p>
                     </div>
@@ -263,8 +276,9 @@ export default function Contact() {
               <Card className="shadow-lg border-2 border-blue-200">
                 <CardContent className="pt-6">
                   <p className="text-sm text-muted-foreground">
-                    <strong>Responstid:</strong> Vi svarer vanligvis innen 24 timer på hverdager.
-                    For akutte saker, vennligst ring oss direkte.
+                    <strong>Responstid:</strong> Vi svarer vanligvis innen 24
+                    timer på hverdager. For akutte saker, vennligst ring oss
+                    direkte.
                   </p>
                 </CardContent>
               </Card>

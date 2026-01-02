@@ -1,12 +1,17 @@
 /**
  * Fiken Integration Tests
- * 
+ *
  * Tests for Fiken OAuth, customer sync, and invoice sync
  */
 
 import { describe, it, expect, beforeAll } from "vitest";
 import { getDb } from "../db";
-import { fikenSettings, customers, orders, orderItems } from "../../drizzle/schema";
+import {
+  fikenSettings,
+  customers,
+  orders,
+  orderItems,
+} from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { mapCustomerToFiken } from "./customers";
 import { mapOrderToFikenInvoice } from "./invoices";
@@ -128,7 +133,7 @@ describe("Fiken Integration", () => {
 
     it("should format dates correctly for Fiken API", () => {
       const date = new Date("2024-01-15T10:30:00Z");
-      const formatted = date.toISOString().split('T')[0];
+      const formatted = date.toISOString().split("T")[0];
 
       expect(formatted).toBe("2024-01-15");
     });
@@ -138,16 +143,19 @@ describe("Fiken Integration", () => {
       if (!db) throw new Error("Database not available");
 
       // Create test order without customer
-      const [order] = await db.insert(orders).values({
-        tenantId: testTenantId,
-        customerId: null, // No customer
-        orderDate: "2024-01-15",
-        orderTime: "10:30:00",
-        subtotal: "100.00",
-        vatAmount: "25.00",
-        total: "125.00",
-        status: "completed",
-      }).$returningId();
+      const [order] = await db
+        .insert(orders)
+        .values({
+          tenantId: testTenantId,
+          customerId: null, // No customer
+          orderDate: "2024-01-15",
+          orderTime: "10:30:00",
+          subtotal: "100.00",
+          vatAmount: "25.00",
+          total: "125.00",
+          status: "completed",
+        })
+        .$returningId();
 
       testOrderId = order.id;
 
@@ -168,16 +176,22 @@ describe("Fiken Integration", () => {
   describe("OAuth Flow", () => {
     it("should generate valid authorization URL", async () => {
       const { FikenClient } = await import("./client");
-      
+
       const clientId = "test-client-id";
       const redirectUri = "https://example.com/callback";
       const state = "test-state-123";
 
-      const authUrl = FikenClient.getAuthorizationUrl(clientId, redirectUri, state);
+      const authUrl = FikenClient.getAuthorizationUrl(
+        clientId,
+        redirectUri,
+        state
+      );
 
       expect(authUrl).toContain("https://fiken.no/oauth/authorize");
       expect(authUrl).toContain(`client_id=${clientId}`);
-      expect(authUrl).toContain(`redirect_uri=${encodeURIComponent(redirectUri)}`);
+      expect(authUrl).toContain(
+        `redirect_uri=${encodeURIComponent(redirectUri)}`
+      );
       expect(authUrl).toContain(`state=${state}`);
       expect(authUrl).toContain("response_type=code");
     });
@@ -187,7 +201,7 @@ describe("Fiken Integration", () => {
       const timestamp = Date.now();
       const state = `${tenantId}:${timestamp}`;
 
-      const [extractedTenantId, extractedTimestamp] = state.split(':');
+      const [extractedTenantId, extractedTimestamp] = state.split(":");
 
       expect(extractedTenantId).toBe(tenantId);
       expect(parseInt(extractedTimestamp)).toBeGreaterThan(0);

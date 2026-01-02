@@ -1,10 +1,14 @@
 import { useState, useCallback } from "react";
 
-export function useBulkSelection<T extends { id: number | string }>(items: T[] = []) {
-  const [selectedIds, setSelectedIds] = useState<Set<number | string>>(new Set());
+export function useBulkSelection<T extends { id: number | string }>(
+  items: T[] = []
+) {
+  const [selectedIds, setSelectedIds] = useState<Set<number | string>>(
+    new Set()
+  );
 
   const toggleSelection = useCallback((id: number | string) => {
-    setSelectedIds((prev) => {
+    setSelectedIds(prev => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -21,7 +25,7 @@ export function useBulkSelection<T extends { id: number | string }>(items: T[] =
       setSelectedIds(new Set());
     } else {
       // Select all
-      setSelectedIds(new Set(items.map((item) => item.id)));
+      setSelectedIds(new Set(items.map(item => item.id)));
     }
   }, [items, selectedIds.size]);
 
@@ -35,7 +39,8 @@ export function useBulkSelection<T extends { id: number | string }>(items: T[] =
   );
 
   const isAllSelected = items.length > 0 && selectedIds.size === items.length;
-  const isSomeSelected = selectedIds.size > 0 && selectedIds.size < items.length;
+  const isSomeSelected =
+    selectedIds.size > 0 && selectedIds.size < items.length;
 
   return {
     selectedIds: Array.from(selectedIds),

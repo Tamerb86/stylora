@@ -3,7 +3,7 @@ import * as db from "./db";
 
 /**
  * Test suite for email notifications
- * 
+ *
  * Tests booking confirmation and cancellation emails triggered by:
  * - Stripe webhook (payment completion)
  * - Manual status updates (appointments.updateStatus)
@@ -21,11 +21,13 @@ describe("Email Notifications", () => {
       throw new Error("Database not available for testing");
     }
 
-    const { tenants, users, services, customers } = await import("../drizzle/schema");
-    
+    const { tenants, users, services, customers } = await import(
+      "../drizzle/schema"
+    );
+
     // Create test tenant
     testTenantId = `test-email-tenant-${Date.now()}`;
-    
+
     await dbInstance.insert(tenants).values({
       id: testTenantId,
       name: "Test Email Salon",
@@ -354,10 +356,14 @@ describe("Email Notifications", () => {
 
   describe("Norwegian date formatting", () => {
     it("should format dates in Norwegian format", async () => {
-      const { sendAppointmentConfirmationIfPossible } = await import("./notifications-appointments");
+      const { sendAppointmentConfirmationIfPossible } = await import(
+        "./notifications-appointments"
+      );
 
       const dbInstance = await db.getDb();
-      const { appointments, appointmentServices } = await import("../drizzle/schema");
+      const { appointments, appointmentServices } = await import(
+        "../drizzle/schema"
+      );
 
       // Create appointment
       const [appointment] = await dbInstance!.insert(appointments).values({
@@ -375,8 +381,11 @@ describe("Email Notifications", () => {
       // Link service
       const { services } = await import("../drizzle/schema");
       const { eq } = await import("drizzle-orm");
-      const [service] = await dbInstance!.select().from(services).where(eq(services.id, testServiceId));
-      
+      const [service] = await dbInstance!
+        .select()
+        .from(services)
+        .where(eq(services.id, testServiceId));
+
       await dbInstance!.insert(appointmentServices).values({
         appointmentId,
         serviceId: testServiceId,

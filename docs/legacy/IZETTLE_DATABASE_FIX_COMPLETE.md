@@ -1,20 +1,25 @@
 # iZettle Database Connection - Complete Fix
 
 ## Problem Summary
+
 User was experiencing "Database connection error" when trying to connect iZettle OAuth, even after adding `DATABASE_URL` variable in Railway.
 
 ## Root Cause Analysis
 
 ### Issue 1: Missing DATABASE_URL Variable
+
 **Problem**: Application uses `process.env.DATABASE_URL` but Railway MySQL provides `MYSQL_URL`.
 
 **Solution**: Add Variable Reference in Railway barbertime service:
+
 ```
 DATABASE_URL = ${{MySQL.MYSQL_URL}}
 ```
 
 ### Issue 2: Incorrect Drizzle ORM Initialization
+
 **Problem**: The code was passing connection string directly to `drizzle()`:
+
 ```typescript
 // ❌ WRONG - This doesn't work with drizzle-orm/mysql2
 _db = drizzle(process.env.DATABASE_URL);
@@ -23,9 +28,10 @@ _db = drizzle(process.env.DATABASE_URL);
 **Root Cause**: `drizzle-orm/mysql2` requires a **mysql2 connection object**, not a string!
 
 **Solution**: Create proper MySQL connection first:
+
 ```typescript
 // ✅ CORRECT
-import mysql from 'mysql2/promise';
+import mysql from "mysql2/promise";
 
 _connection = await mysql.createConnection(process.env.DATABASE_URL);
 await _connection.ping(); // Test connection
@@ -37,6 +43,7 @@ _db = drizzle(_connection);
 ### 1. Updated `server/db.ts`
 
 **Changes Made:**
+
 - ✅ Import `mysql2/promise`
 - ✅ Create connection with `mysql.createConnection()`
 - ✅ Test connection with `connection.ping()`
@@ -46,9 +53,10 @@ _db = drizzle(_connection);
 - ✅ Add proper error handling with stack traces
 
 **Code:**
+
 ```typescript
 import { drizzle } from "drizzle-orm/mysql2";
-import mysql from 'mysql2/promise';
+import mysql from "mysql2/promise";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 let _connection: mysql.Connection | null = null;
@@ -56,15 +64,18 @@ let _connection: mysql.Connection | null = null;
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      console.log("[Database] Connecting to:", process.env.DATABASE_URL?.replace(/:\/\/.*@/, "://***@"));
-      
+      console.log(
+        "[Database] Connecting to:",
+        process.env.DATABASE_URL?.replace(/:\/\/.*@/, "://***@")
+      );
+
       // Create MySQL connection
       _connection = await mysql.createConnection(process.env.DATABASE_URL);
-      
+
       // Test connection
       await _connection.ping();
       console.log("[Database] Connection successful!");
-      
+
       // Create Drizzle instance with the connection
       _db = drizzle(_connection);
     } catch (error: any) {
@@ -90,28 +101,37 @@ export async function closeDb() {
 ### 2. Improved `server/_core/index.ts` (iZettle Callback)
 
 **Changes Made:**
+
 - ✅ Add null check for database before operations
 - ✅ Add comprehensive error logging with stack traces
 - ✅ Add try-catch blocks around all database operations
 - ✅ Return user-friendly error messages
 
 **Key Changes:**
+
 ```typescript
 const dbInstance = await getDb();
 
 if (!dbInstance) {
   console.error("[iZettle Callback] Database not available!");
-  return res.redirect("/izettle/callback?izettle=error&message=" + 
-    encodeURIComponent("Database connection failed. Please contact support."));
+  return res.redirect(
+    "/izettle/callback?izettle=error&message=" +
+      encodeURIComponent("Database connection failed. Please contact support.")
+  );
 }
 
 try {
   // Database operations...
 } catch (dbError: any) {
-  console.error("[iZettle Callback] Database operation failed:", dbError.message);
+  console.error(
+    "[iZettle Callback] Database operation failed:",
+    dbError.message
+  );
   console.error("[iZettle Callback] Error stack:", dbError.stack);
-  return res.redirect("/izettle/callback?izettle=error&message=" + 
-    encodeURIComponent("Database error. Please try again."));
+  return res.redirect(
+    "/izettle/callback?izettle=error&message=" +
+      encodeURIComponent("Database error. Please try again.")
+  );
 }
 ```
 
@@ -120,6 +140,7 @@ try {
 **File**: `server/database-connection.test.ts`
 
 **Tests Created:**
+
 1. ✅ Should connect to database successfully
 2. ✅ Should execute a simple query
 3. ✅ Should check if paymentProviders table exists
@@ -127,6 +148,7 @@ try {
 5. ✅ Should handle connection errors gracefully
 
 **Test Results:**
+
 ```
 ✓ server/database-connection.test.ts (5)
   ✓ Database Connection (5)
@@ -182,25 +204,31 @@ Test Files  1 passed (1)
 ## Troubleshooting
 
 ### Error: "Database connection failed"
+
 **Cause**: DATABASE_URL not set or MySQL service not running
 
 **Solution**:
+
 1. Verify DATABASE_URL in Railway Variables
 2. Check MySQL service status (should be "Online")
 3. Restart barbertime service
 
 ### Error: "Failed to save connection"
+
 **Cause**: paymentProviders table doesn't exist or schema mismatch
 
 **Solution**:
+
 1. Run database migrations: `pnpm db:push`
 2. Verify table exists in Railway MySQL database
 3. Check table schema matches code expectations
 
 ### Error: "Access denied for user"
+
 **Cause**: MySQL credentials incorrect
 
 **Solution**:
+
 1. Verify MYSQL_URL in Railway MySQL service
 2. Ensure password matches MYSQL_ROOT_PASSWORD
 3. Check user has proper permissions
@@ -210,6 +238,7 @@ Test Files  1 passed (1)
 ### Why This Fix Works
 
 **Before:**
+
 ```typescript
 // Drizzle receives a string
 _db = drizzle("mysql://root:pass@host:3306/db");
@@ -217,9 +246,12 @@ _db = drizzle("mysql://root:pass@host:3306/db");
 ```
 
 **After:**
+
 ```typescript
 // Drizzle receives a proper connection object
-const connection = await mysql.createConnection("mysql://root:pass@host:3306/db");
+const connection = await mysql.createConnection(
+  "mysql://root:pass@host:3306/db"
+);
 await connection.ping(); // Verify connection works
 _db = drizzle(connection);
 // ✅ Works correctly!
@@ -237,6 +269,7 @@ _db = drizzle(connection);
 ### Error Handling
 
 All database operations now have:
+
 - ✅ Try-catch blocks
 - ✅ Detailed error logging
 - ✅ Stack trace logging
@@ -246,7 +279,7 @@ All database operations now have:
 ## Files Modified
 
 1. **server/db.ts** - Fixed database connection initialization
-2. **server/_core/index.ts** - Improved iZettle callback error handling
+2. **server/\_core/index.ts** - Improved iZettle callback error handling
 3. **server/database-connection.test.ts** - Added comprehensive tests (NEW)
 4. **todo.md** - Updated with Phase 49 tracking
 
@@ -275,7 +308,7 @@ All database operations now have:
 ✅ Tokens saved to paymentProviders table  
 ✅ All tests passing (5/5)  
 ✅ Comprehensive error logging in place  
-✅ User-friendly error messages  
+✅ User-friendly error messages
 
 ---
 

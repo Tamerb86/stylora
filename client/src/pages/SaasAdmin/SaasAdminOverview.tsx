@@ -95,7 +95,10 @@ export default function SaasAdminOverview() {
         </div>
         <div className="flex items-center gap-3">
           <Link href="/saas-admin/tenants">
-            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600">
+            <Button
+              size="lg"
+              className="bg-gradient-to-r from-blue-600 to-purple-600"
+            >
               Se alle salonger
             </Button>
           </Link>
@@ -160,7 +163,7 @@ export default function SaasAdminOverview() {
 
           {recentTenants?.items && recentTenants.items.length > 0 ? (
             <div className="space-y-4">
-              {recentTenants.items.map((tenant) => (
+              {recentTenants.items.map(tenant => (
                 <div
                   key={tenant.id}
                   className="flex items-center justify-between p-4 rounded-lg border hover:bg-accent/50 transition-colors"
@@ -173,17 +176,17 @@ export default function SaasAdminOverview() {
                           tenant.status === "active"
                             ? "default"
                             : tenant.status === "trial"
-                            ? "secondary"
-                            : "destructive"
+                              ? "secondary"
+                              : "destructive"
                         }
                       >
                         {tenant.status === "active"
                           ? "Aktiv"
                           : tenant.status === "trial"
-                          ? "Prøve"
-                          : tenant.status === "suspended"
-                          ? "Suspendert"
-                          : "Kansellert"}
+                            ? "Prøve"
+                            : tenant.status === "suspended"
+                              ? "Suspendert"
+                              : "Kansellert"}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">

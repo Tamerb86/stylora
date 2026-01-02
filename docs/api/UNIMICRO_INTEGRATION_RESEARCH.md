@@ -1,9 +1,11 @@
 # Unimicro Integration Research
 
 ## Overview
+
 Unimicro is a popular Norwegian ERP/accounting system with a comprehensive REST API. This document outlines the integration possibilities for Stylora.
 
 ## Authentication
+
 - **Method**: OAuth 2.0 + OpenID Connect (OIDC)
 - **Flow Options**:
   1. **Server Application** (Recommended for Stylora)
@@ -11,16 +13,15 @@ Unimicro is a popular Norwegian ERP/accounting system with a comprehensive REST 
      - Server acts on behalf of companies without human interaction
      - Can request necessary permissions when activated on a company
      - Best for automated sync operations
-  
   2. **Traditional Web Apps**
      - Authorization Code Flow with client secret
      - Suitable for ASP.NET Core MVC, Next.js
-  
   3. **SPA/Mobile Apps**
      - Authorization Code Flow with PKCE
      - For public clients that cannot store secrets
 
 ## API Documentation
+
 - **Base URL**: https://developer.unimicro.no/
 - **Architecture**: REST API with JSON request/response
 - **Documentation**: Swagger/OpenAPI format
@@ -29,9 +30,11 @@ Unimicro is a popular Norwegian ERP/accounting system with a comprehensive REST 
 ## Key API Endpoints for Stylora Integration
 
 ### 1. CustomerInvoice (Kundefaktura)
+
 **Endpoint**: `/CustomerInvoice`
 
 **Key Fields**:
+
 - `CustomerID` (integer) - Customer reference
 - `InvoiceDate` (Date) - Invoice date
 - `InvoiceNumber` (string) - Invoice number
@@ -57,29 +60,36 @@ Unimicro is a popular Norwegian ERP/accounting system with a comprehensive REST 
 - `YourReference` (string) - Customer reference
 
 **Use Case for Stylora**:
+
 - Automatically create invoices in Unimicro when POS sales are completed
 - Sync invoice status back to Stylora (paid/unpaid)
 - Track outstanding invoices
 
 ### 2. Customer (Kunde)
+
 **Endpoint**: `/Customer` (likely available)
 
 **Use Case**:
+
 - Sync Stylora customers to Unimicro
 - Keep customer data consistent between systems
 - Avoid duplicate data entry
 
 ### 3. Account (Konto)
+
 **Endpoint**: `/Account`
 
 **Use Case**:
+
 - Map Stylora revenue categories to Unimicro chart of accounts
 - Ensure proper accounting classification
 
 ### 4. Payment (Betaling)
+
 **Endpoint**: `/Payment` or `/InvoicePayment`
 
 **Use Case**:
+
 - Record payments from Stylora POS in Unimicro
 - Match payments to invoices
 - Track cash vs card payments
@@ -127,6 +137,7 @@ Accounting System
 ## Implementation Steps
 
 ### Phase 1: Setup & Authentication
+
 1. Register Stylora as application in Unimicro Developer Portal
 2. Create server authentication client with certificate
 3. Implement OAuth 2.0 flow in backend
@@ -134,12 +145,14 @@ Accounting System
 5. Add Unimicro credentials to salonSettings table
 
 ### Phase 2: Customer Sync
+
 1. Create mapping between Stylora customers and Unimicro customers
 2. Implement customer creation endpoint
 3. Implement customer update endpoint
 4. Add "Sync to Unimicro" toggle in Settings
 
 ### Phase 3: Invoice Creation
+
 1. Create invoice generation logic
 2. Map Stylora orders to CustomerInvoice format
 3. Include line items (services + products)
@@ -147,12 +160,14 @@ Accounting System
 5. Add invoice reference to orders table
 
 ### Phase 4: Payment Sync
+
 1. Record payments in Unimicro when POS payment completed
 2. Update invoice status based on payment
 3. Handle partial payments
 4. Sync refunds as credit notes
 
 ### Phase 5: Reporting & Monitoring
+
 1. Create Unimicro sync status page in admin dashboard
 2. Show last sync time, success/failure count
 3. Display sync errors with retry button
@@ -161,6 +176,7 @@ Accounting System
 ## Database Schema Changes
 
 ### New Table: `unimicroSettings`
+
 ```sql
 CREATE TABLE unimicroSettings (
   id INTEGER PRIMARY KEY,
@@ -180,6 +196,7 @@ CREATE TABLE unimicroSettings (
 ```
 
 ### New Table: `unimicroInvoiceMapping`
+
 ```sql
 CREATE TABLE unimicroInvoiceMapping (
   id INTEGER PRIMARY KEY,
@@ -194,6 +211,7 @@ CREATE TABLE unimicroInvoiceMapping (
 ```
 
 ### New Table: `unimicroAccountMapping`
+
 ```sql
 CREATE TABLE unimicroAccountMapping (
   id INTEGER PRIMARY KEY,
@@ -276,18 +294,21 @@ CREATE TABLE unimicroAccountMapping (
 ## Risk Assessment
 
 **Low Risk**:
+
 - Well-documented API
 - Standard OAuth 2.0
 - REST architecture (familiar)
 - JSON format (easy to work with)
 
 **Medium Risk**:
+
 - Certificate-based auth (need to implement properly)
 - Token refresh logic required
 - Error handling for sync failures
 - Data mapping complexity
 
 **Mitigation**:
+
 - Start with read-only operations (test connection)
 - Implement comprehensive error logging
 - Add manual retry mechanisms

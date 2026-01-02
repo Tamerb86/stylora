@@ -44,10 +44,12 @@ PayPal Reader (Physical Device)
 ### Step 1: Purchase PayPal Reader
 
 **Where to buy:**
+
 - [PayPal Reader Norway](https://www.paypal.com/no/business/pos/card-reader)
 - Price: ~€29-49
 
 **What you get:**
+
 - PayPal Reader device
 - USB-C charging cable
 - Quick start guide
@@ -83,13 +85,14 @@ PayPal Reader (Physical Device)
    - Authorize Stylora
 
 2. **Create Reader Link**:
+
    ```
    Currently requires manual API call (UI coming soon):
-   
+
    POST /api/trpc/izettle.createReaderLink
    Headers: Authorization: Bearer {access_token}
    Body: { "linkName": "Stylora POS" }
-   
+
    Response: { "linkId": "...", "websocketUrl": "..." }
    ```
 
@@ -120,6 +123,7 @@ PayPal Reader (Physical Device)
 **Authentication:** Bearer token in WebSocket headers
 
 **Message Format:**
+
 ```json
 {
   "type": "MESSAGE",
@@ -146,11 +150,13 @@ PayPal Reader (Physical Device)
 ### Database Schema
 
 **payment_providers table:**
+
 ```sql
 config JSONB -- Stores: { "linkId": "..." }
 ```
 
 **payments table:**
+
 ```sql
 gateway_payment_id VARCHAR -- Stores internalTraceId
 gateway_metadata JSONB -- Stores full payment result
@@ -165,6 +171,7 @@ gateway_metadata JSONB -- Stores full payment result
 **Cause:** No linkId in payment provider config
 
 **Fix:**
+
 1. Create Reader Link via API
 2. Update payment provider config with linkId
 
@@ -173,11 +180,13 @@ gateway_metadata JSONB -- Stores full payment result
 **Cause:** WebSocket connection failed
 
 **Possible reasons:**
+
 - Reader is offline
 - Reader not linked to account
 - Invalid access token
 
 **Fix:**
+
 1. Check Reader WiFi connection
 2. Verify Reader is linked in Zettle app
 3. Reconnect iZettle account in Stylora
@@ -187,6 +196,7 @@ gateway_metadata JSONB -- Stores full payment result
 **Cause:** WebSocket disconnected before result
 
 **Fix:**
+
 1. Check payment status in Zettle app
 2. Manually update payment in Stylora
 3. Restart WebSocket connection
@@ -196,6 +206,7 @@ gateway_metadata JSONB -- Stores full payment result
 **Cause:** Reader not connected to internet
 
 **Fix:**
+
 1. Check Reader WiFi settings
 2. Restart Reader
 3. Re-link Reader in Zettle app

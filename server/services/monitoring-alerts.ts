@@ -1,17 +1,17 @@
 /**
  * Monitoring Alerts Service
- * 
+ *
  * Sends email alerts when critical monitoring issues are detected:
  * - Critical: 3+ consecutive failures, health < 70
  * - Error: Last sync failed, success rate < 80%
  * - Warning: No syncs in 24h, slow performance
  */
 
-import { logSecurity } from '../_core/logger';
-import { sendEmail } from '../email';
+import { logSecurity } from "../_core/logger";
+import { sendEmail } from "../email";
 
 export interface MonitoringAlert {
-  severity: 'critical' | 'error' | 'warning' | 'info';
+  severity: "critical" | "error" | "warning" | "info";
   component: string;
   title: string;
   message: string;
@@ -29,17 +29,17 @@ export async function sendMonitoringAlert(
 ): Promise<boolean> {
   try {
     const severityColors = {
-      critical: '#dc2626', // red-600
-      error: '#ea580c', // orange-600
-      warning: '#ca8a04', // yellow-600
-      info: '#2563eb', // blue-600
+      critical: "#dc2626", // red-600
+      error: "#ea580c", // orange-600
+      warning: "#ca8a04", // yellow-600
+      info: "#2563eb", // blue-600
     };
 
     const severityLabels = {
-      critical: 'KRITISK',
-      error: 'FEIL',
-      warning: 'ADVARSEL',
-      info: 'INFO',
+      critical: "KRITISK",
+      error: "FEIL",
+      warning: "ADVARSEL",
+      info: "INFO",
     };
 
     const color = severityColors[alert.severity];
@@ -112,9 +112,9 @@ export async function sendMonitoringAlert(
                     Tidspunkt:
                   </td>
                   <td style="color: #1f2937; font-size: 14px; text-align: right; padding-top: 10px;">
-                    ${alert.timestamp.toLocaleString('no-NO', { 
-                      dateStyle: 'medium', 
-                      timeStyle: 'short' 
+                    ${alert.timestamp.toLocaleString("no-NO", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
                     })}
                   </td>
                 </tr>
@@ -122,7 +122,9 @@ export async function sendMonitoringAlert(
             </td>
           </tr>
 
-          ${alert.details ? `
+          ${
+            alert.details
+              ? `
           <!-- Details -->
           <tr>
             <td style="padding: 0 40px 20px;">
@@ -130,7 +132,9 @@ export async function sendMonitoringAlert(
                 Detaljer:
               </h3>
               <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; border-radius: 6px; padding: 15px;">
-                ${Object.entries(alert.details).map(([key, value]) => `
+                ${Object.entries(alert.details)
+                  .map(
+                    ([key, value]) => `
                   <tr>
                     <td style="color: #6b7280; font-size: 14px; padding: 5px 0;">
                       ${key}:
@@ -139,16 +143,20 @@ export async function sendMonitoringAlert(
                       ${value}
                     </td>
                   </tr>
-                `).join('')}
+                `
+                  )
+                  .join("")}
               </table>
             </td>
           </tr>
-          ` : ''}
+          `
+              : ""
+          }
 
           <!-- Action Button -->
           <tr>
             <td style="padding: 0 40px 30px; text-align: center;">
-              <a href="${process.env.VITE_APP_URL || 'https://stylora.no'}/monitoring" 
+              <a href="${process.env.VITE_APP_URL || "https://stylora.no"}/monitoring" 
                  style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; padding: 12px 30px; border-radius: 6px; font-weight: 600; font-size: 16px;">
                 Gå til Monitoring Dashboard
               </a>
@@ -183,14 +191,20 @@ ${alert.title}
 ${alert.message}
 
 Komponent: ${alert.component}
-Tidspunkt: ${alert.timestamp.toLocaleString('no-NO')}
+Tidspunkt: ${alert.timestamp.toLocaleString("no-NO")}
 
-${alert.details ? `
+${
+  alert.details
+    ? `
 Detaljer:
-${Object.entries(alert.details).map(([key, value]) => `${key}: ${value}`).join('\n')}
-` : ''}
+${Object.entries(alert.details)
+  .map(([key, value]) => `${key}: ${value}`)
+  .join("\n")}
+`
+    : ""
+}
 
-Gå til Monitoring Dashboard: ${process.env.VITE_APP_URL || 'https://stylora.no'}/monitoring
+Gå til Monitoring Dashboard: ${process.env.VITE_APP_URL || "https://stylora.no"}/monitoring
 
 ---
 Dette er en automatisk varsling fra Stylora Systemovervåking.
@@ -202,15 +216,18 @@ Hvis du trenger hjelp, kontakt support@stylora.no
       subject: `[${label}] ${alert.title} - Stylora Systemovervåking`,
       html: htmlContent,
     });
-    
+
     const success = true;
 
     if (success) {
-      logSecurity(`Monitoring alert email sent: ${alert.severity} - ${alert.title}`, {
-        tenantId,
-        component: alert.component,
-        recipient: recipientEmail,
-      });
+      logSecurity(
+        `Monitoring alert email sent: ${alert.severity} - ${alert.title}`,
+        {
+          tenantId,
+          component: alert.component,
+          recipient: recipientEmail,
+        }
+      );
     } else {
       logSecurity(`Failed to send monitoring alert email: ${alert.title}`, {
         tenantId,
@@ -243,7 +260,7 @@ const COOLDOWN_MINUTES = {
 
 export function shouldSendAlert(
   alertKey: string,
-  severity: MonitoringAlert['severity']
+  severity: MonitoringAlert["severity"]
 ): boolean {
   const now = Date.now();
   const lastSent = alertCooldowns.get(alertKey);
@@ -267,19 +284,19 @@ export async function alertUnimicroFailure(
   lastError: string
 ): Promise<boolean> {
   const alertKey = `unimicro-failure-${tenantId}`;
-  
-  if (!shouldSendAlert(alertKey, 'critical')) {
+
+  if (!shouldSendAlert(alertKey, "critical")) {
     return false;
   }
 
   const alert: MonitoringAlert = {
-    severity: 'critical',
-    component: 'Unimicro Integration',
-    title: 'Unimicro Sync Feilet',
+    severity: "critical",
+    component: "Unimicro Integration",
+    title: "Unimicro Sync Feilet",
     message: `Unimicro-synkronisering har feilet ${failureCount} ganger på rad. Vennligst sjekk integrasjonsinnstillingene og loggene.`,
     details: {
-      'Antall feil': failureCount,
-      'Siste feilmelding': lastError,
+      "Antall feil": failureCount,
+      "Siste feilmelding": lastError,
     },
     timestamp: new Date(),
   };
@@ -298,21 +315,21 @@ export async function alertLowEmailDeliveryRate(
   failedCount: number
 ): Promise<boolean> {
   const alertKey = `email-delivery-${tenantId}`;
-  const severity = successRate < 50 ? 'critical' : 'error';
-  
+  const severity = successRate < 50 ? "critical" : "error";
+
   if (!shouldSendAlert(alertKey, severity)) {
     return false;
   }
 
   const alert: MonitoringAlert = {
     severity,
-    component: 'Email Service',
-    title: 'Lav E-post Leveringsrate',
+    component: "Email Service",
+    title: "Lav E-post Leveringsrate",
     message: `E-post leveringsraten er ${successRate.toFixed(1)}%, som er under terskelen. Sjekk SMTP-innstillingene.`,
     details: {
-      'Suksessrate': `${successRate.toFixed(1)}%`,
-      'Totalt sendt': totalSent,
-      'Feilet': failedCount,
+      Suksessrate: `${successRate.toFixed(1)}%`,
+      "Totalt sendt": totalSent,
+      Feilet: failedCount,
     },
     timestamp: new Date(),
   };
@@ -331,21 +348,21 @@ export async function alertLowSMSDeliveryRate(
   failedCount: number
 ): Promise<boolean> {
   const alertKey = `sms-delivery-${tenantId}`;
-  const severity = successRate < 50 ? 'critical' : 'error';
-  
+  const severity = successRate < 50 ? "critical" : "error";
+
   if (!shouldSendAlert(alertKey, severity)) {
     return false;
   }
 
   const alert: MonitoringAlert = {
     severity,
-    component: 'SMS Service',
-    title: 'Lav SMS Leveringsrate',
+    component: "SMS Service",
+    title: "Lav SMS Leveringsrate",
     message: `SMS leveringsraten er ${successRate.toFixed(1)}%, som er under terskelen. Sjekk SMS-leverandørinnstillingene.`,
     details: {
-      'Suksessrate': `${successRate.toFixed(1)}%`,
-      'Totalt sendt': totalSent,
-      'Feilet': failedCount,
+      Suksessrate: `${successRate.toFixed(1)}%`,
+      "Totalt sendt": totalSent,
+      Feilet: failedCount,
     },
     timestamp: new Date(),
   };
@@ -363,20 +380,20 @@ export async function alertSystemHealthDegraded(
   issues: string[]
 ): Promise<boolean> {
   const alertKey = `system-health-${tenantId}`;
-  const severity = healthScore < 50 ? 'critical' : 'warning';
-  
+  const severity = healthScore < 50 ? "critical" : "warning";
+
   if (!shouldSendAlert(alertKey, severity)) {
     return false;
   }
 
   const alert: MonitoringAlert = {
     severity,
-    component: 'System Health',
-    title: 'Systemhelse Forverret',
-    message: `Systemhelsepoengsum er ${healthScore}/100. Følgende problemer ble oppdaget: ${issues.join(', ')}`,
+    component: "System Health",
+    title: "Systemhelse Forverret",
+    message: `Systemhelsepoengsum er ${healthScore}/100. Følgende problemer ble oppdaget: ${issues.join(", ")}`,
     details: {
-      'Helsepoengsum': `${healthScore}/100`,
-      'Antall problemer': issues.length,
+      Helsepoengsum: `${healthScore}/100`,
+      "Antall problemer": issues.length,
     },
     timestamp: new Date(),
   };

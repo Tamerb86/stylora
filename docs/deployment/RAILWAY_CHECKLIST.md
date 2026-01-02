@@ -3,18 +3,21 @@
 ## 🎯 Pre-Deployment Checklist
 
 ### 1. Railway Account Setup
+
 - [ ] Create Railway account at https://railway.app
 - [ ] Verify email address
 - [ ] Add payment method (required after free trial)
 - [ ] Install Railway CLI (optional): `npm install -g @railway/cli`
 
 ### 2. GitHub Repository
+
 - [ ] Code pushed to GitHub repository
 - [ ] Repository is accessible (public or Railway has access)
 - [ ] All sensitive files in `.gitignore`
 - [ ] Latest changes committed and pushed
 
 ### 3. Local Build Test
+
 - [ ] ✅ Build works locally: `pnpm build`
 - [ ] ✅ No critical errors in build output
 - [ ] ✅ All dependencies in `package.json`
@@ -25,6 +28,7 @@
 ## 🚀 Railway Deployment Steps
 
 ### Step 1: Create New Project
+
 - [ ] Go to Railway dashboard
 - [ ] Click **"New Project"**
 - [ ] Select **"Deploy from GitHub repo"**
@@ -32,6 +36,7 @@
 - [ ] Railway starts initial deployment
 
 ### Step 2: Add MySQL Database
+
 - [ ] In project, click **"+ New"**
 - [ ] Select **"Database"** → **"Add MySQL"**
 - [ ] Wait for database to provision
@@ -39,6 +44,7 @@
 - [ ] Copy `DATABASE_URL` for reference
 
 ### Step 3: Configure Environment Variables
+
 - [ ] Go to service → **"Variables"** tab
 - [ ] Add required variables (see list below)
 - [ ] Verify all Stylora variables are present
@@ -46,6 +52,7 @@
 - [ ] Click **"Deploy"** to apply changes
 
 #### Required Variables:
+
 ```
 ✅ Auto-injected by Stylora:
 - BUILT_IN_FORGE_API_KEY
@@ -67,6 +74,7 @@
 ```
 
 #### Optional Variables (if using):
+
 ```
 Stripe:
 - STRIPE_SECRET_KEY
@@ -96,6 +104,7 @@ Vipps:
 ```
 
 ### Step 4: Run Database Migrations
+
 - [ ] Wait for deployment to complete
 - [ ] Open Railway CLI or use dashboard
 - [ ] Run: `railway run pnpm db:push`
@@ -103,6 +112,7 @@ Vipps:
 - [ ] Check database tables created
 
 ### Step 5: Configure Custom Domain (Optional)
+
 - [ ] Go to service → **"Settings"**
 - [ ] Click **"Domains"** section
 - [ ] Click **"Generate Domain"** for free Railway domain
@@ -111,6 +121,7 @@ Vipps:
 - [ ] Wait for DNS propagation (5-30 minutes)
 
 ### Step 6: Setup Stripe Webhooks (If Using Stripe)
+
 - [ ] Go to https://dashboard.stripe.com/webhooks
 - [ ] Click **"Add endpoint"**
 - [ ] Enter URL: `https://your-railway-domain/api/stripe/webhook`
@@ -129,24 +140,28 @@ Vipps:
 ## ✅ Post-Deployment Verification
 
 ### 1. Application Health
+
 - [ ] Visit Railway-provided URL
 - [ ] Homepage loads correctly
 - [ ] No console errors in browser
 - [ ] Check Railway logs for errors
 
 ### 2. Database Connection
+
 - [ ] Application connects to database
 - [ ] No database connection errors in logs
 - [ ] Tables exist in database
 - [ ] Can view database in Railway dashboard
 
 ### 3. Authentication
+
 - [ ] Admin login page loads: `/saas-admin/login`
 - [ ] Can log in with test account
 - [ ] Supabase authentication works
 - [ ] JWT tokens are generated
 
 ### 4. Core Features
+
 - [ ] Dashboard loads after login
 - [ ] Can view customers list
 - [ ] Can view appointments
@@ -154,12 +169,14 @@ Vipps:
 - [ ] Public booking page works: `/book?tenantId=xxx`
 
 ### 5. Integrations (If Configured)
+
 - [ ] Stripe checkout works (test mode)
 - [ ] Emails send successfully
 - [ ] Vipps payment works (test mode)
 - [ ] Webhooks receive events
 
 ### 6. Performance
+
 - [ ] Page load time < 3 seconds
 - [ ] No memory leaks in logs
 - [ ] CPU usage normal
@@ -170,8 +187,10 @@ Vipps:
 ## 🐛 Troubleshooting Guide
 
 ### Build Fails
+
 **Symptoms**: Deployment fails during build
 **Solutions**:
+
 - [ ] Check build logs in Railway dashboard
 - [ ] Verify `pnpm build` works locally
 - [ ] Check all dependencies in `package.json`
@@ -179,8 +198,10 @@ Vipps:
 - [ ] Check for TypeScript errors (13 warnings are OK)
 
 ### Application Won't Start
+
 **Symptoms**: Build succeeds but app crashes
 **Solutions**:
+
 - [ ] Check application logs
 - [ ] Verify `PORT=3000` is set
 - [ ] Check `DATABASE_URL` is correct
@@ -188,8 +209,10 @@ Vipps:
 - [ ] Check `pnpm start` works locally
 
 ### Database Connection Failed
+
 **Symptoms**: "Database connection error" in logs
 **Solutions**:
+
 - [ ] Verify MySQL service is running
 - [ ] Check `DATABASE_URL` format is correct
 - [ ] Ensure database migrations ran
@@ -197,8 +220,10 @@ Vipps:
 - [ ] Verify network connectivity
 
 ### 502 Bad Gateway
+
 **Symptoms**: Website shows 502 error
 **Solutions**:
+
 - [ ] Check application is running in Railway
 - [ ] Verify port is set to 3000
 - [ ] Check for application crashes in logs
@@ -206,8 +231,10 @@ Vipps:
 - [ ] Check health check endpoint
 
 ### Stripe Webhooks Not Working
+
 **Symptoms**: Payments succeed but not recorded
 **Solutions**:
+
 - [ ] Verify webhook URL is correct
 - [ ] Check `STRIPE_WEBHOOK_SECRET` matches
 - [ ] Test webhook in Stripe dashboard
@@ -215,8 +242,10 @@ Vipps:
 - [ ] Verify webhook events are selected
 
 ### Emails Not Sending
+
 **Symptoms**: No emails received
 **Solutions**:
+
 - [ ] Check SMTP credentials
 - [ ] Verify email provider allows SMTP
 - [ ] For Gmail: use App Password, not regular password
@@ -228,18 +257,21 @@ Vipps:
 ## 📊 Monitoring & Maintenance
 
 ### Daily Checks
+
 - [ ] Check Railway dashboard for errors
 - [ ] Monitor application logs
 - [ ] Check database size and usage
 - [ ] Verify backups are running
 
 ### Weekly Checks
+
 - [ ] Review error logs
 - [ ] Check performance metrics
 - [ ] Monitor database growth
 - [ ] Review user feedback
 
 ### Monthly Checks
+
 - [ ] Update dependencies: `pnpm update`
 - [ ] Review and rotate secrets
 - [ ] Check Railway billing
@@ -251,12 +283,14 @@ Vipps:
 ## 💰 Cost Estimation
 
 ### Railway Costs
+
 - **Hobby Plan**: $5/month (500 execution hours)
 - **Pro Plan**: $20/month (unlimited)
 - **MySQL Database**: $5-10/month (based on usage)
 - **Bandwidth**: Included in plan
 
 ### External Services
+
 - **Supabase**: Free tier or $25/month (Pro)
 - **Stripe**: 2.9% + $0.30 per transaction
 - **AWS SES**: $0.10 per 1,000 emails
@@ -269,6 +303,7 @@ Vipps:
 ## 🔒 Security Checklist
 
 ### Before Going Live
+
 - [ ] Change all test API keys to production keys
 - [ ] Use strong JWT_SECRET (32+ characters)
 - [ ] Enable 2FA on Railway account
@@ -281,6 +316,7 @@ Vipps:
 - [ ] Enable database backups
 
 ### After Going Live
+
 - [ ] Monitor for suspicious activity
 - [ ] Set up error tracking (Sentry)
 - [ ] Configure uptime monitoring
@@ -293,12 +329,14 @@ Vipps:
 ## 📞 Support Resources
 
 ### Railway
+
 - **Docs**: https://docs.railway.app
 - **Discord**: https://discord.gg/railway
 - **Status**: https://status.railway.app
 - **Support**: support@railway.app
 
 ### Integrations
+
 - **Stripe**: https://support.stripe.com
 - **Supabase**: https://supabase.com/support
 - **AWS**: https://aws.amazon.com/support

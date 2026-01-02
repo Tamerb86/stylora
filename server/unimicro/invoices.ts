@@ -6,7 +6,7 @@
 import { getDb } from "../db";
 import { getUnimicroClient } from "./client";
 import { syncCustomerToUnimicro } from "./customers";
-import { 
+import {
   orders,
   orderItems,
   customers,
@@ -30,7 +30,7 @@ export interface UnimicroInvoice {
   InvoiceDate: string; // ISO date format
   DueDate: string; // ISO date format
   Currency: string;
-  Status?: 'Draft' | 'Invoiced' | 'Paid' | 'Cancelled';
+  Status?: "Draft" | "Invoiced" | "Paid" | "Cancelled";
   Lines: UnimicroInvoiceLine[];
   Notes?: string;
   TotalAmount?: number;
@@ -54,27 +54,24 @@ export interface UnimicroInvoiceLine {
 async function getOrderWithDetails(tenantId: string, orderId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   // Get order
   const [order] = await db
     .select()
     .from(orders)
-    .where(and(
-      eq(orders.id, orderId),
-      eq(orders.tenantId, tenantId)
-    ))
+    .where(and(eq(orders.id, orderId), eq(orders.tenantId, tenantId)))
     .limit(1);
-  
+
   if (!order) {
     throw new Error(`Order ${orderId} not found`);
   }
-  
+
   // Get order items
   const items = await db
     .select()
     .from(orderItems)
     .where(eq(orderItems.orderId, orderId));
-  
+
   // Get customer if exists
   let customer = null;
   if (order.customerId) {
@@ -85,27 +82,27 @@ async function getOrderWithDetails(tenantId: string, orderId: number) {
       .limit(1);
     customer = c;
   }
-  
+
   // Get payment info
   const [payment] = await db
     .select()
     .from(payments)
     .where(eq(payments.orderId, orderId))
     .limit(1);
-  
+
   // Enrich items with service/product names
   const enrichedItems = await Promise.all(
-    items.map(async (item) => {
+    items.map(async item => {
       let name = `Item ${item.itemId}`; // Default name
-      
-      if (item.itemType === 'service') {
+
+      if (item.itemType === "service") {
         const [service] = await db
           .select()
           .from(services)
           .where(eq(services.id, item.itemId))
           .limit(1);
         if (service) name = service.name;
-      } else if (item.itemType === 'product') {
+      } else if (item.itemType === "product") {
         const [product] = await db
           .select()
           .from(products)
@@ -113,14 +110,14 @@ async function getOrderWithDetails(tenantId: string, orderId: number) {
           .limit(1);
         if (product) name = product.name;
       }
-      
+
       return {
         ...item,
         name,
       };
     })
   );
-  
+
   return {
     order,
     items: enrichedItems,
@@ -137,25 +134,28 @@ async function mapOrderToUnimicroInvoice(
   orderId: number,
   unimicroCustomerId: number
 ): Promise<UnimicroInvoice> {
-  const { order, items, payment } = await getOrderWithDetails(tenantId, orderId);
-  
+  const { order, items, payment } = await getOrderWithDetails(
+    tenantId,
+    orderId
+  );
+
   // Calculate invoice dates
   const orderDate = order.createdAt || new Date();
-  const invoiceDate = new Date(orderDate).toISOString().split('T')[0];
+  const invoiceDate = new Date(orderDate).toISOString().split("T")[0];
   const dueDate = new Date(orderDate);
   dueDate.setDate(dueDate.getDate() + 14); // 14 days payment term
-  const dueDateStr = dueDate.toISOString().split('T')[0];
-  
+  const dueDateStr = dueDate.toISOString().split("T")[0];
+
   // Map order items to invoice lines
-  const lines: UnimicroInvoiceLine[] = items.map((item) => {
+  const lines: UnimicroInvoiceLine[] = items.map(item => {
     const unitPrice = parseFloat(item.unitPrice);
     const quantity = item.quantity || 1;
     const vatRate = 25; // Norwegian standard VAT rate
-    
+
     const amount = unitPrice * quantity;
     const vatAmount = amount * (vatRate / 100);
     const totalAmount = amount + vatAmount;
-    
+
     return {
       Description: item.name,
       Quantity: quantity,
@@ -166,33 +166,34 @@ async function mapOrderToUnimicroInvoice(
       TotalAmount: totalAmount,
     };
   });
-  
+
   // Calculate totals
   const totalAmount = lines.reduce((sum, line) => sum + (line.Amount || 0), 0);
   const totalVAT = lines.reduce((sum, line) => sum + (line.VATAmount || 0), 0);
   const totalWithVAT = totalAmount + totalVAT;
-  
+
   // Determine invoice status
-  let status: 'Draft' | 'Invoiced' | 'Paid' = 'Invoiced';
-  if (payment && payment.status === 'completed') {
-    status = 'Paid';
+  let status: "Draft" | "Invoiced" | "Paid" = "Invoiced";
+  if (payment && payment.status === "completed") {
+    status = "Paid";
   }
-  
+
   // Build notes
   const notes = [];
   if (payment) {
-    const paymentMethodDisplay = payment.paymentGateway || payment.paymentMethod;
+    const paymentMethodDisplay =
+      payment.paymentGateway || payment.paymentMethod;
     notes.push(`Betalt via ${paymentMethodDisplay} - ${invoiceDate}`);
   }
-  
+
   return {
     CustomerID: unimicroCustomerId,
     InvoiceDate: invoiceDate,
     DueDate: dueDateStr,
-    Currency: 'NOK',
+    Currency: "NOK",
     Status: status,
     Lines: lines,
-    Notes: notes.join('\n') || undefined,
+    Notes: notes.join("\n") || undefined,
     TotalAmount: totalAmount,
     TotalVAT: totalVAT,
     TotalWithVAT: totalWithVAT,
@@ -205,52 +206,56 @@ async function mapOrderToUnimicroInvoice(
 export async function syncOrderToUnimicro(
   tenantId: string,
   orderId: number
-): Promise<{ 
-  success: boolean; 
-  unimicroInvoiceId?: number; 
+): Promise<{
+  success: boolean;
+  unimicroInvoiceId?: number;
   unimicroInvoiceNumber?: string;
-  error?: string 
+  error?: string;
 }> {
   const startTime = Date.now();
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   try {
     // Get order details
     const { order, customer } = await getOrderWithDetails(tenantId, orderId);
-    
+
     // Check if order is already synced
     const [existingMapping] = await db
       .select()
       .from(unimicroInvoiceMapping)
-      .where(and(
-        eq(unimicroInvoiceMapping.tenantId, tenantId),
-        eq(unimicroInvoiceMapping.orderId, orderId)
-      ))
+      .where(
+        and(
+          eq(unimicroInvoiceMapping.tenantId, tenantId),
+          eq(unimicroInvoiceMapping.orderId, orderId)
+        )
+      )
       .limit(1);
-    
-    if (existingMapping && existingMapping.status === 'synced') {
+
+    if (existingMapping && existingMapping.status === "synced") {
       return {
         success: true,
         unimicroInvoiceId: existingMapping.unimicroInvoiceId,
         unimicroInvoiceNumber: existingMapping.unimicroInvoiceNumber,
       };
     }
-    
+
     // Ensure customer exists in Unimicro
     let unimicroCustomerId: number;
-    
+
     if (customer) {
       // Check if customer is already synced
       const [customerMapping] = await db
         .select()
         .from(unimicroCustomerMapping)
-        .where(and(
-          eq(unimicroCustomerMapping.tenantId, tenantId),
-          eq(unimicroCustomerMapping.customerId, customer.id)
-        ))
+        .where(
+          and(
+            eq(unimicroCustomerMapping.tenantId, tenantId),
+            eq(unimicroCustomerMapping.customerId, customer.id)
+          )
+        )
         .limit(1);
-      
+
       if (customerMapping) {
         unimicroCustomerId = customerMapping.unimicroCustomerId;
       } else {
@@ -266,19 +271,27 @@ export async function syncOrderToUnimicro(
       // For now, throw error - this should be handled separately
       throw new Error("Walk-in customers not yet supported for Unimicro sync");
     }
-    
+
     // Get Unimicro client
     const client = await getUnimicroClient(tenantId);
-    
+
     // Map order to invoice
-    const invoice = await mapOrderToUnimicroInvoice(tenantId, orderId, unimicroCustomerId);
-    
+    const invoice = await mapOrderToUnimicroInvoice(
+      tenantId,
+      orderId,
+      unimicroCustomerId
+    );
+
     // Create invoice in Unimicro
-    const response = await client.post<UnimicroInvoice>('/api/CustomerInvoice', invoice);
-    
+    const response = await client.post<UnimicroInvoice>(
+      "/api/CustomerInvoice",
+      invoice
+    );
+
     const unimicroInvoiceId = response.ID!;
-    const unimicroInvoiceNumber = response.InvoiceNumber || `INV-${unimicroInvoiceId}`;
-    
+    const unimicroInvoiceNumber =
+      response.InvoiceNumber || `INV-${unimicroInvoiceId}`;
+
     // Create or update mapping
     if (existingMapping) {
       await db
@@ -286,7 +299,7 @@ export async function syncOrderToUnimicro(
         .set({
           unimicroInvoiceId,
           unimicroInvoiceNumber,
-          status: 'synced',
+          status: "synced",
           syncedAt: new Date(),
           errorMessage: null,
         })
@@ -297,25 +310,25 @@ export async function syncOrderToUnimicro(
         orderId,
         unimicroInvoiceId,
         unimicroInvoiceNumber,
-        status: 'synced',
+        status: "synced",
         syncedAt: new Date(),
       });
     }
-    
+
     const duration = Date.now() - startTime;
-    
+
     // Log success
     await db.insert(unimicroSyncLog).values({
       tenantId,
-      operation: 'invoice_sync',
-      status: 'success',
+      operation: "invoice_sync",
+      status: "success",
       itemsProcessed: 1,
       itemsFailed: 0,
       details: { invoiceIds: [orderId] },
       duration,
-      triggeredBy: 'manual',
+      triggeredBy: "manual",
     });
-    
+
     return {
       success: true,
       unimicroInvoiceId,
@@ -323,23 +336,25 @@ export async function syncOrderToUnimicro(
     };
   } catch (error: any) {
     const duration = Date.now() - startTime;
-    const errorMessage = error.message || 'Unknown error';
-    
+    const errorMessage = error.message || "Unknown error";
+
     // Update mapping with error if exists
     const [existingMapping] = await db
       .select()
       .from(unimicroInvoiceMapping)
-      .where(and(
-        eq(unimicroInvoiceMapping.tenantId, tenantId),
-        eq(unimicroInvoiceMapping.orderId, orderId)
-      ))
+      .where(
+        and(
+          eq(unimicroInvoiceMapping.tenantId, tenantId),
+          eq(unimicroInvoiceMapping.orderId, orderId)
+        )
+      )
       .limit(1);
-    
+
     if (existingMapping) {
       await db
         .update(unimicroInvoiceMapping)
         .set({
-          status: 'failed',
+          status: "failed",
           errorMessage,
         })
         .where(eq(unimicroInvoiceMapping.id, existingMapping.id));
@@ -349,30 +364,33 @@ export async function syncOrderToUnimicro(
         tenantId,
         orderId,
         unimicroInvoiceId: 0, // Placeholder
-        unimicroInvoiceNumber: '',
-        status: 'failed',
+        unimicroInvoiceNumber: "",
+        status: "failed",
         errorMessage,
       });
     }
-    
+
     // Log failure
     await db.insert(unimicroSyncLog).values({
       tenantId,
-      operation: 'invoice_sync',
-      status: 'failed',
+      operation: "invoice_sync",
+      status: "failed",
       itemsProcessed: 0,
       itemsFailed: 1,
       errorMessage,
-      details: { 
+      details: {
         invoiceIds: [orderId],
         errors: [{ id: orderId, error: errorMessage }],
       },
       duration,
-      triggeredBy: 'manual',
+      triggeredBy: "manual",
     });
-    
-    console.error(`[Unimicro] Invoice sync failed for order ${orderId}:`, error);
-    
+
+    console.error(
+      `[Unimicro] Invoice sync failed for order ${orderId}:`,
+      error
+    );
+
     return {
       success: false,
       error: errorMessage,
@@ -395,40 +413,44 @@ export async function syncOrdersToUnimicro(
   const startTime = Date.now();
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   let processed = 0;
   let failed = 0;
   const errors: Array<{ orderId: number; error: string }> = [];
-  
+
   for (const orderId of orderIds) {
     const result = await syncOrderToUnimicro(tenantId, orderId);
     if (result.success) {
       processed++;
     } else {
       failed++;
-      errors.push({ orderId, error: result.error || 'Unknown error' });
+      errors.push({ orderId, error: result.error || "Unknown error" });
     }
   }
-  
+
   const duration = Date.now() - startTime;
-  const status = failed === 0 ? 'success' : (processed > 0 ? 'partial' : 'failed');
-  
+  const status =
+    failed === 0 ? "success" : processed > 0 ? "partial" : "failed";
+
   // Log bulk sync
   await db.insert(unimicroSyncLog).values({
     tenantId,
-    operation: 'invoice_sync',
+    operation: "invoice_sync",
     status,
     itemsProcessed: processed,
     itemsFailed: failed,
     errorMessage: failed > 0 ? `${failed} invoices failed to sync` : null,
-    details: { 
+    details: {
       invoiceIds: orderIds,
-      errors: errors.length > 0 ? errors.map(e => ({ id: e.orderId, error: e.error })) : undefined,
+      errors:
+        errors.length > 0
+          ? errors.map(e => ({ id: e.orderId, error: e.error }))
+          : undefined,
     },
     duration,
-    triggeredBy: 'manual',
+    triggeredBy: "manual",
   });
-  
+
   return {
     success: failed === 0,
     processed,
@@ -443,26 +465,25 @@ export async function syncOrdersToUnimicro(
 export async function getUnsyncedOrders(tenantId: string): Promise<any[]> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   // Get all completed/paid orders
   const allOrders = await db
     .select()
     .from(orders)
-    .where(and(
-      eq(orders.tenantId, tenantId),
-      eq(orders.status, 'completed')
-    ));
-  
+    .where(and(eq(orders.tenantId, tenantId), eq(orders.status, "completed")));
+
   // Get synced mappings
   const syncedMappings = await db
     .select()
     .from(unimicroInvoiceMapping)
-    .where(and(
-      eq(unimicroInvoiceMapping.tenantId, tenantId),
-      eq(unimicroInvoiceMapping.status, 'synced')
-    ));
-  
+    .where(
+      and(
+        eq(unimicroInvoiceMapping.tenantId, tenantId),
+        eq(unimicroInvoiceMapping.status, "synced")
+      )
+    );
+
   const syncedOrderIds = new Set(syncedMappings.map(m => m.orderId));
-  
+
   return allOrders.filter(o => !syncedOrderIds.has(o.id));
 }

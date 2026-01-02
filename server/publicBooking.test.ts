@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { 
-  createTestTenant, 
-  createTestService, 
+import {
+  createTestTenant,
+  createTestService,
   createTestEmployee,
   createTestCustomer,
-  cleanupTestTenant 
+  cleanupTestTenant,
 } from "./test-helpers";
 import { appRouter } from "./routers";
 import * as db from "./db";
@@ -21,7 +21,11 @@ describe("Public Booking API", () => {
     testTenantId = tenantId;
 
     // Create public context (no authenticated user)
-    caller = appRouter.createCaller({ user: null, req: {} as any, res: {} as any });
+    caller = appRouter.createCaller({
+      user: null,
+      req: {} as any,
+      res: {} as any,
+    });
   });
 
   describe("getSalonInfo", () => {
@@ -170,12 +174,15 @@ describe("Public Booking API", () => {
       const { userId: employeeId } = await createTestEmployee(testTenantId);
 
       // Create existing customer
-      const { customerId: existingCustomerId } = await createTestCustomer(testTenantId, {
-        firstName: "Jane",
-        lastName: "Doe",
-        phone: "87654321",
-        email: "jane@test.com",
-      });
+      const { customerId: existingCustomerId } = await createTestCustomer(
+        testTenantId,
+        {
+          firstName: "Jane",
+          lastName: "Doe",
+          phone: "87654321",
+          email: "jane@test.com",
+        }
+      );
 
       const result = await caller.publicBooking.createBooking({
         tenantId: testTenantId,

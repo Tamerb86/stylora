@@ -1,27 +1,42 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { MessageSquare, Send } from "lucide-react";
 
 export function SMSSettingsTab() {
   const [smsPhoneNumber, setSmsPhoneNumber] = useState("");
-  const [smsProvider, setSmsProvider] = useState<"mock" | "pswincom" | "linkmobility" | "twilio">("mock");
+  const [smsProvider, setSmsProvider] = useState<
+    "mock" | "pswincom" | "linkmobility" | "twilio"
+  >("mock");
   const [smsApiKey, setSmsApiKey] = useState("");
   const [smsApiSecret, setSmsApiSecret] = useState("");
   const [testPhoneNumber, setTestPhoneNumber] = useState("");
 
   // Load SMS settings
-  const { data: smsSettings, isLoading } = trpc.salonSettings.getSmsSettings.useQuery();
+  const { data: smsSettings, isLoading } =
+    trpc.salonSettings.getSmsSettings.useQuery();
   const updateSmsMutation = trpc.salonSettings.updateSmsSettings.useMutation({
     onSuccess: () => {
       toast.success("SMS-innstillinger lagret!");
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Kunne ikke lagre SMS-innstillinger");
     },
   });
@@ -30,7 +45,7 @@ export function SMSSettingsTab() {
     onSuccess: () => {
       toast.success("Test-SMS sendt! Sjekk telefonen din.");
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Kunne ikke sende test-SMS");
     },
   });
@@ -78,7 +93,10 @@ export function SMSSettingsTab() {
           {/* SMS Provider */}
           <div className="space-y-2">
             <Label htmlFor="smsProvider">SMS-leverandør</Label>
-            <Select value={smsProvider} onValueChange={(value: any) => setSmsProvider(value)}>
+            <Select
+              value={smsProvider}
+              onValueChange={(value: any) => setSmsProvider(value)}
+            >
               <SelectTrigger id="smsProvider">
                 <SelectValue placeholder="Velg SMS-leverandør" />
               </SelectTrigger>
@@ -100,11 +118,12 @@ export function SMSSettingsTab() {
             <Input
               id="smsPhoneNumber"
               value={smsPhoneNumber}
-              onChange={(e) => setSmsPhoneNumber(e.target.value)}
+              onChange={e => setSmsPhoneNumber(e.target.value)}
               placeholder="+4712345678"
             />
             <p className="text-sm text-muted-foreground">
-              Telefonnummeret som vises som avsender i SMS-er til kunder (format: +47xxxxxxxx)
+              Telefonnummeret som vises som avsender i SMS-er til kunder
+              (format: +47xxxxxxxx)
             </p>
           </div>
 
@@ -117,7 +136,7 @@ export function SMSSettingsTab() {
                   id="smsApiKey"
                   type="password"
                   value={smsApiKey}
-                  onChange={(e) => setSmsApiKey(e.target.value)}
+                  onChange={e => setSmsApiKey(e.target.value)}
                   placeholder="Din API-nøkkel fra SMS-leverandøren"
                 />
               </div>
@@ -128,7 +147,7 @@ export function SMSSettingsTab() {
                   id="smsApiSecret"
                   type="password"
                   value={smsApiSecret}
-                  onChange={(e) => setSmsApiSecret(e.target.value)}
+                  onChange={e => setSmsApiSecret(e.target.value)}
                   placeholder="Din API-hemmelighet fra SMS-leverandøren"
                 />
               </div>
@@ -138,7 +157,17 @@ export function SMSSettingsTab() {
                 <p className="font-medium mb-2">Slik får du API-tilgang:</p>
                 {smsProvider === "pswincom" && (
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>Gå til <a href="https://www.pswin.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">PSWinCom</a></li>
+                    <li>
+                      Gå til{" "}
+                      <a
+                        href="https://www.pswin.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        PSWinCom
+                      </a>
+                    </li>
                     <li>Opprett en konto eller logg inn</li>
                     <li>Gå til API-innstillinger og generer en API-nøkkel</li>
                     <li>Kopier API-nøkkelen og passordet hit</li>
@@ -146,7 +175,17 @@ export function SMSSettingsTab() {
                 )}
                 {smsProvider === "linkmobility" && (
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>Gå til <a href="https://www.linkmobility.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Link Mobility</a></li>
+                    <li>
+                      Gå til{" "}
+                      <a
+                        href="https://www.linkmobility.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        Link Mobility
+                      </a>
+                    </li>
                     <li>Opprett en konto eller logg inn</li>
                     <li>Gå til API-innstillinger og generer en API-nøkkel</li>
                     <li>Kopier Platform ID og Partner ID hit</li>
@@ -154,22 +193,37 @@ export function SMSSettingsTab() {
                 )}
                 {smsProvider === "twilio" && (
                   <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                    <li>Gå til <a href="https://www.twilio.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Twilio</a></li>
+                    <li>
+                      Gå til{" "}
+                      <a
+                        href="https://www.twilio.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        Twilio
+                      </a>
+                    </li>
                     <li>Opprett en konto eller logg inn</li>
                     <li>Gå til Console Dashboard</li>
-                    <li>Kopier Account SID (API-nøkkel) og Auth Token (API-hemmelighet)</li>
+                    <li>
+                      Kopier Account SID (API-nøkkel) og Auth Token
+                      (API-hemmelighet)
+                    </li>
                   </ul>
                 )}
               </div>
             </>
           )}
 
-          <Button 
+          <Button
             onClick={handleSaveSmsSettings}
             disabled={updateSmsMutation.isPending || isLoading}
             className="w-full"
           >
-            {updateSmsMutation.isPending ? "Lagrer..." : "Lagre SMS-innstillinger"}
+            {updateSmsMutation.isPending
+              ? "Lagrer..."
+              : "Lagre SMS-innstillinger"}
           </Button>
         </CardContent>
       </Card>
@@ -191,7 +245,7 @@ export function SMSSettingsTab() {
             <Input
               id="testPhoneNumber"
               value={testPhoneNumber}
-              onChange={(e) => setTestPhoneNumber(e.target.value)}
+              onChange={e => setTestPhoneNumber(e.target.value)}
               placeholder="+4712345678"
             />
             <p className="text-sm text-muted-foreground">
@@ -199,7 +253,7 @@ export function SMSSettingsTab() {
             </p>
           </div>
 
-          <Button 
+          <Button
             onClick={handleTestSms}
             disabled={testSmsMutation.isPending || !testPhoneNumber}
             variant="outline"

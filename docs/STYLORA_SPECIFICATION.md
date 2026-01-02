@@ -263,13 +263,21 @@ To support future payment providers (especially Vipps), Stylora implements an ab
 
 ```typescript
 interface PaymentProvider {
-  createPayment(amount: number, currency: string, metadata: object): Promise<PaymentSession>;
+  createPayment(
+    amount: number,
+    currency: string,
+    metadata: object
+  ): Promise<PaymentSession>;
   refundPayment(paymentId: string, amount?: number): Promise<RefundResult>;
   getPaymentStatus(paymentId: string): Promise<PaymentStatus>;
 }
 
-class StripeProvider implements PaymentProvider { /* ... */ }
-class VippsProvider implements PaymentProvider { /* placeholder for future */ }
+class StripeProvider implements PaymentProvider {
+  /* ... */
+}
+class VippsProvider implements PaymentProvider {
+  /* placeholder for future */
+}
 ```
 
 This allows adding Vipps integration without changing application logic—just implement the interface and configure the provider.
@@ -475,8 +483,17 @@ Similar abstraction for email providers (Resend, SendGrid, Postmark):
 
 ```typescript
 interface EmailProvider {
-  sendEmail(to: string, subject: string, body: string, from: string): Promise<EmailResult>;
-  sendTemplateEmail(to: string, templateId: string, variables: object): Promise<EmailResult>;
+  sendEmail(
+    to: string,
+    subject: string,
+    body: string,
+    from: string
+  ): Promise<EmailResult>;
+  sendTemplateEmail(
+    to: string,
+    templateId: string,
+    variables: object
+  ): Promise<EmailResult>;
 }
 ```
 
@@ -1182,6 +1199,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 **Request**: None (redirects to OAuth portal)
 
 **Response**:
+
 ```typescript
 {
   redirectUrl: string; // OAuth login URL
@@ -1191,6 +1209,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 **Validation**: None
 
 **Error codes**:
+
 - `INTERNAL_SERVER_ERROR`: OAuth configuration error
 
 ---
@@ -1204,6 +1223,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 **Request**: None
 
 **Response**:
+
 ```typescript
 {
   id: number;
@@ -1229,6 +1249,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 **Request**: None
 
 **Response**:
+
 ```typescript
 {
   success: true;
@@ -1250,6 +1271,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 **Purpose**: Create new salon tenant (onboarding)
 
 **Request**:
+
 ```typescript
 {
   name: string; // Salon name
@@ -1262,16 +1284,18 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Response**:
+
 ```typescript
 {
   tenantId: string;
   subdomain: string;
-  status: 'trial';
+  status: "trial";
   trialEndsAt: Date;
 }
 ```
 
 **Validation**:
+
 - `name`: Required, 2-255 characters
 - `subdomain`: Required, 3-63 characters, lowercase alphanumeric and hyphens only, must be unique
 - `orgNumber`: Optional, must match Norwegian format (9 digits)
@@ -1279,6 +1303,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 - `email`: Required, valid email format
 
 **Error codes**:
+
 - `BAD_REQUEST`: Validation failure
 - `CONFLICT`: Subdomain already taken
 - `INTERNAL_SERVER_ERROR`: Database error
@@ -1294,6 +1319,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 **Purpose**: Get available time slots for booking
 
 **Request**:
+
 ```typescript
 {
   employeeId: number;
@@ -1303,6 +1329,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Response**:
+
 ```typescript
 {
   date: string;
@@ -1315,11 +1342,13 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Validation**:
+
 - `employeeId`: Required, must exist and be active
 - `serviceId`: Required, must exist and be active
 - `date`: Required, must be valid date in future (not past)
 
 **Error codes**:
+
 - `BAD_REQUEST`: Invalid input
 - `NOT_FOUND`: Employee or service not found
 - `UNAUTHORIZED`: Not authenticated
@@ -1333,6 +1362,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 **Purpose**: Create new appointment
 
 **Request**:
+
 ```typescript
 {
   customerId: number;
@@ -1345,10 +1375,11 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Response**:
+
 ```typescript
 {
   appointmentId: number;
-  status: 'confirmed';
+  status: "confirmed";
   totalDuration: number; // minutes
   totalPrice: number; // NOK
   confirmationSent: boolean;
@@ -1356,6 +1387,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Validation**:
+
 - `customerId`: Required, must exist in same tenant
 - `employeeId`: Required, must exist and be active
 - `serviceIds`: Required, non-empty array, all services must exist
@@ -1363,12 +1395,14 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 - `startTime`: Required, must be valid time format, must be within employee working hours, must not conflict with existing appointments
 
 **Error codes**:
+
 - `BAD_REQUEST`: Validation failure
 - `CONFLICT`: Time slot not available
 - `NOT_FOUND`: Customer, employee, or service not found
 - `UNAUTHORIZED`: Not authenticated or wrong tenant
 
 **Side effects**:
+
 - Creates appointment record
 - Creates appointment_services records
 - Queues confirmation notification
@@ -1383,6 +1417,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 **Purpose**: Update existing appointment (reschedule, change services)
 
 **Request**:
+
 ```typescript
 {
   appointmentId: number;
@@ -1394,6 +1429,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Response**:
+
 ```typescript
 {
   appointmentId: number;
@@ -1403,17 +1439,20 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Validation**:
+
 - `appointmentId`: Required, must exist in same tenant
 - If rescheduling: new time must be available
 - If changing services: all services must exist
 
 **Error codes**:
+
 - `BAD_REQUEST`: Validation failure
 - `CONFLICT`: New time slot not available
 - `NOT_FOUND`: Appointment not found
 - `FORBIDDEN`: Cannot modify past or canceled appointments
 
 **Side effects**:
+
 - Updates appointment record
 - Creates audit log entry
 - Sends notification to customer about change
@@ -1428,15 +1467,17 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 **Purpose**: Cancel appointment
 
 **Request**:
+
 ```typescript
 {
   appointmentId: number;
   reason: string;
-  canceledBy: 'customer' | 'staff';
+  canceledBy: "customer" | "staff";
 }
 ```
 
 **Response**:
+
 ```typescript
 {
   appointmentId: number;
@@ -1446,15 +1487,18 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Validation**:
+
 - `appointmentId`: Required, must exist
 - `reason`: Required, 1-500 characters
 
 **Error codes**:
+
 - `BAD_REQUEST`: Validation failure
 - `NOT_FOUND`: Appointment not found
 - `FORBIDDEN`: Already canceled or completed
 
 **Side effects**:
+
 - Updates appointment status to 'canceled'
 - Records cancellation reason and timestamp
 - Applies cancellation fee if applicable
@@ -1473,6 +1517,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 **Purpose**: List all customers for tenant
 
 **Request**:
+
 ```typescript
 {
   search?: string; // Search by name, phone, or email
@@ -1482,6 +1527,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Response**:
+
 ```typescript
 {
   customers: Array<{
@@ -1499,11 +1545,13 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Validation**:
+
 - `search`: Optional, max 100 characters
 - `limit`: Optional, 1-200
 - `offset`: Optional, non-negative
 
 **Error codes**:
+
 - `BAD_REQUEST`: Invalid pagination parameters
 - `UNAUTHORIZED`: Not authenticated
 
@@ -1516,6 +1564,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 **Purpose**: Create new customer
 
 **Request**:
+
 ```typescript
 {
   firstName: string;
@@ -1530,6 +1579,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Response**:
+
 ```typescript
 {
   customerId: number;
@@ -1538,6 +1588,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Validation**:
+
 - `firstName`: Required, 1-100 characters
 - `lastName`: Optional, max 100 characters
 - `phone`: Required, valid Norwegian phone format
@@ -1545,11 +1596,13 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 - `dateOfBirth`: Optional, valid date, not in future
 
 **Error codes**:
+
 - `BAD_REQUEST`: Validation failure
 - `CONFLICT`: Customer with same phone already exists in tenant
 - `UNAUTHORIZED`: Not authenticated
 
 **Side effects**:
+
 - Creates customer record
 - Records consent timestamp and IP if consent given
 
@@ -1564,6 +1617,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 **Purpose**: List all employees for tenant
 
 **Request**:
+
 ```typescript
 {
   includeInactive?: boolean; // Default false
@@ -1571,13 +1625,14 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Response**:
+
 ```typescript
 {
   employees: Array<{
     id: number;
     name: string;
     email: string;
-    role: 'owner' | 'admin' | 'employee';
+    role: "owner" | "admin" | "employee";
     isActive: boolean;
     commissionRate: number | null;
   }>;
@@ -1587,6 +1642,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 **Validation**: None
 
 **Error codes**:
+
 - `UNAUTHORIZED`: Not authenticated
 
 ---
@@ -1598,6 +1654,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 **Purpose**: Soft delete employee
 
 **Request**:
+
 ```typescript
 {
   employeeId: number;
@@ -1607,6 +1664,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Response**:
+
 ```typescript
 {
   employeeId: number;
@@ -1618,16 +1676,19 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Validation**:
+
 - `employeeId`: Required, must exist and be active
 - `reassignTo`: Optional, must be active employee if provided
 - Cannot deactivate last active owner
 
 **Error codes**:
+
 - `BAD_REQUEST`: Validation failure
 - `NOT_FOUND`: Employee not found
 - `FORBIDDEN`: Insufficient permissions or trying to deactivate last owner
 
 **Side effects**:
+
 - Sets `isActive = false` and `deactivatedAt` timestamp
 - Reassigns or cancels future appointments
 - Sends notifications to affected customers
@@ -1644,6 +1705,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 **Purpose**: Create Stripe Checkout session for appointment payment
 
 **Request**:
+
 ```typescript
 {
   appointmentId: number;
@@ -1651,6 +1713,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Response**:
+
 ```typescript
 {
   sessionId: string;
@@ -1659,14 +1722,17 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Validation**:
+
 - `appointmentId`: Required, must exist, must not already be paid
 
 **Error codes**:
+
 - `BAD_REQUEST`: Appointment already paid
 - `NOT_FOUND`: Appointment not found
 - `INTERNAL_SERVER_ERROR`: Stripe API error
 
 **Side effects**:
+
 - Creates Stripe Checkout session
 - Records session ID in database for webhook verification
 
@@ -1681,6 +1747,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 **Request**: Raw Stripe webhook payload with signature header
 
 **Response**:
+
 ```typescript
 {
   received: true;
@@ -1688,14 +1755,17 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Validation**:
+
 - Verifies Stripe webhook signature
 - Validates event type
 
 **Error codes**:
+
 - `BAD_REQUEST`: Invalid signature or payload
 - `INTERNAL_SERVER_ERROR`: Processing error
 
 **Side effects** (depends on event type):
+
 - `checkout.session.completed`: Marks appointment as paid, sends confirmation
 - `charge.refunded`: Updates payment status, creates refund record
 
@@ -1710,6 +1780,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 **Purpose**: Get daily sales report
 
 **Request**:
+
 ```typescript
 {
   date: string; // YYYY-MM-DD
@@ -1717,6 +1788,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Response**:
+
 ```typescript
 {
   date: string;
@@ -1727,7 +1799,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
     cash: number;
     card: number;
     vipps: number;
-  };
+  }
   topServices: Array<{
     serviceName: string;
     count: number;
@@ -1742,9 +1814,11 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Validation**:
+
 - `date`: Required, valid date format
 
 **Error codes**:
+
 - `BAD_REQUEST`: Invalid date
 - `UNAUTHORIZED`: Not authenticated
 - `FORBIDDEN`: Employee role cannot access (owner/admin only)
@@ -1758,6 +1832,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 **Purpose**: Generate and download CSV export
 
 **Request**:
+
 ```typescript
 {
   reportType: 'sales' | 'appointments' | 'customers';
@@ -1768,6 +1843,7 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Response**:
+
 ```typescript
 {
   downloadUrl: string; // Pre-signed URL to download CSV
@@ -1776,17 +1852,20 @@ Stylora uses **tRPC** for type-safe API communication between frontend and backe
 ```
 
 **Validation**:
+
 - `reportType`: Required, must be valid type
 - `startDate`: Required, valid date
 - `endDate`: Required, valid date, must be after startDate
 - Date range max 1 year
 
 **Error codes**:
+
 - `BAD_REQUEST`: Validation failure
 - `UNAUTHORIZED`: Not authenticated
 - `FORBIDDEN`: Insufficient permissions
 
 **Side effects**:
+
 - Generates CSV file with UTF-8 BOM encoding
 - Uploads to S3 with 1-hour expiration
 - Creates audit log entry
@@ -1909,6 +1988,7 @@ Stylora consists of two main applications: **Public Booking Site** (for customer
 Stylora uses a modern, clean design with Norwegian sensibilities:
 
 **Color Palette**:
+
 - Primary: Deep blue (#1E3A8A) - trust, professionalism
 - Accent: Warm orange (#F97316) - energy, action
 - Success: Green (#10B981)
@@ -1917,16 +1997,19 @@ Stylora uses a modern, clean design with Norwegian sensibilities:
 - Neutral: Gray scale (#F9FAFB to #111827)
 
 **Typography**:
+
 - Headings: Inter (sans-serif), bold, large sizes
 - Body: Inter, regular, 16px base size
 - UI elements: Inter, medium, 14px
 
 **Spacing**:
+
 - Consistent 8px grid system
 - Component padding: 16px (mobile), 24px (desktop)
 - Section spacing: 48px (mobile), 96px (desktop)
 
 **Components**:
+
 - Rounded corners: 8px (buttons, cards), 12px (modals)
 - Shadows: Subtle, layered (0 1px 3px rgba(0,0,0,0.1))
 - Buttons: Large touch targets (min 44px height), clear hover states
@@ -1939,6 +2022,7 @@ Stylora uses a modern, clean design with Norwegian sensibilities:
 **Font sizes**: Minimum 14px for UI text, 16px for body content, scalable with browser zoom
 
 **Keyboard usage**:
+
 - All interactive elements are keyboard accessible
 - Clear focus indicators (blue outline)
 - Logical tab order
@@ -1946,6 +2030,7 @@ Stylora uses a modern, clean design with Norwegian sensibilities:
 - Enter key submits forms
 
 **Screen readers**:
+
 - Semantic HTML (nav, main, section, article)
 - ARIA labels for icon-only buttons
 - ARIA live regions for dynamic content (notifications, loading states)
@@ -2297,6 +2382,7 @@ jobs:
 ```
 
 **Deployment Flow**:
+
 1. Developer pushes to `main` branch
 2. GitHub Actions runs tests and type checking
 3. If tests pass, deploys to Vercel production
@@ -2304,6 +2390,7 @@ jobs:
 5. Deployment completes, new version is live
 
 **Environment Variables** (stored in Vercel):
+
 - `DATABASE_URL`: PostgreSQL connection string
 - `JWT_SECRET`: Session signing secret
 - `STRIPE_SECRET_KEY`: Stripe API key
@@ -2349,6 +2436,7 @@ Stylora offers three subscription tiers:
 **Price**: 299 NOK/month
 
 **Features**:
+
 - 1 employee (owner)
 - 1 location
 - 100 SMS/month
@@ -2366,6 +2454,7 @@ Stylora offers three subscription tiers:
 **Price**: 799 NOK/month
 
 **Features**:
+
 - Up to 5 employees
 - 1 location
 - 500 SMS/month
@@ -2384,6 +2473,7 @@ Stylora offers three subscription tiers:
 **Price**: 1499 NOK/month
 
 **Features**:
+
 - Unlimited employees
 - Multiple locations
 - 2000 SMS/month
@@ -2506,11 +2596,13 @@ Stylora offers three subscription tiers:
 ### Phase 2: Enhanced Features (Months 4-6)
 
 **POS (Point-of-Sale) Enhancements**:
+
 - Barcode scanner integration for product sales
 - Receipt printing (thermal printer support)
 - Tip handling (staff can add tips at checkout)
 
 **AI-Driven Insights**:
+
 - Predictive analytics: "Customers who book [Service A] often return for [Service B] within 6 weeks. Consider sending targeted promotions."
 - Optimal pricing suggestions: "Your [Service] is priced 15% below market average. Consider raising to X NOK."
 - Staffing recommendations: "Thursdays 14:00-16:00 have high demand. Consider adding staff during this time."
@@ -2518,11 +2610,13 @@ Stylora offers three subscription tiers:
 ### Phase 3: Marketing Tools (Months 7-9)
 
 **SMS Campaigns**:
+
 - Bulk SMS to customer segments (e.g., "Customers who haven't visited in 3+ months")
 - Automated campaigns: birthday discounts, seasonal promotions
 - A/B testing for message content
 
 **Email Campaigns**:
+
 - Newsletter builder with drag-and-drop editor
 - Automated email sequences (welcome series, re-engagement)
 - Campaign analytics (open rate, click rate, conversion)
@@ -2530,12 +2624,14 @@ Stylora offers three subscription tiers:
 ### Phase 4: Multi-Branch Management (Months 10-12)
 
 **Chain Support**:
+
 - Parent account with multiple child locations
 - Centralized reporting across all locations
 - Customer data shared across locations (customer can book at any branch)
 - Inventory transfer between locations
 
 **Franchise Features**:
+
 - Franchise owner can set policies for all franchisees
 - Franchisees have limited autonomy (cannot change certain settings)
 - Consolidated reporting for franchise owner
@@ -2543,18 +2639,21 @@ Stylora offers three subscription tiers:
 ### Phase 5: Advanced Integrations (Year 2)
 
 **Gift Cards & Memberships**:
+
 - Sell gift cards (physical and digital)
 - Track gift card balances and redemptions
 - Membership plans (e.g., "Unlimited haircuts for 2000 NOK/month")
 - Membership auto-renewal via Stripe
 
 **Accounting System Integration**:
+
 - Direct integration with Tripletex (most popular in Norway)
 - Automatic sync of sales data to accounting system
 - Reduced manual data entry for accountants
 - Integration with PowerOffice, Visma, and other Norwegian accounting platforms
 
 **Vipps Integration**:
+
 - Native Vipps payment in booking flow
 - Vipps recurring payments for subscriptions
 - Vipps QR code for in-salon payments
@@ -2562,15 +2661,18 @@ Stylora offers three subscription tiers:
 ### Phase 6: Platform & API (Year 2+)
 
 **Public API**:
+
 - RESTful API for third-party integrations
 - Webhooks for real-time event notifications (new booking, cancellation, payment)
 - API documentation with interactive examples
 
 **Marketplace**:
+
 - Third-party developers can build integrations and plugins
 - Salon owners can browse and install integrations (e.g., "Instagram Auto-Posting", "Google Ads Integration")
 
 **White Label**:
+
 - Large salon chains can white-label Stylora
 - Custom branding (logo, colors, domain)
 - Premium pricing tier for white-label customers

@@ -99,7 +99,9 @@ function loadMapScript() {
 
     // Check if API key is configured
     if (!API_KEY) {
-      console.warn("Google Maps API key not configured. Set VITE_GOOGLE_MAPS_API_KEY environment variable.");
+      console.warn(
+        "Google Maps API key not configured. Set VITE_GOOGLE_MAPS_API_KEY environment variable."
+      );
       reject(new Error("Google Maps API key not configured"));
       return;
     }
@@ -159,7 +161,9 @@ export function MapView({
     } catch (error) {
       console.error("Failed to initialize map:", error);
       if (onError) {
-        onError(error instanceof Error ? error : new Error("Failed to initialize map"));
+        onError(
+          error instanceof Error ? error : new Error("Failed to initialize map")
+        );
       }
     }
   });
@@ -171,7 +175,12 @@ export function MapView({
   // Show fallback if API key is not configured
   if (!API_KEY) {
     return (
-      <div className={cn("w-full h-[500px] bg-gray-100 flex items-center justify-center rounded-lg border", className)}>
+      <div
+        className={cn(
+          "w-full h-[500px] bg-gray-100 flex items-center justify-center rounded-lg border",
+          className
+        )}
+      >
         <div className="text-center text-gray-500">
           <p className="font-medium">Kart ikke tilgjengelig</p>
           <p className="text-sm">Google Maps API-nøkkel er ikke konfigurert</p>

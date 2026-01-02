@@ -2,22 +2,33 @@
 import React from "react";
 import Footer from "@/components/Footer";
 import { useAuth, getLoginUrl } from "@/_core/hooks/useAuth";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
-import { 
-  Calendar, 
-  CreditCard, 
-  Globe, 
-  MessageSquare, 
-  FileText, 
-  Calculator, 
-  ShoppingCart, 
-  Users, 
-  Scissors, 
-  UserCog, 
-  Package, 
+import {
+  Calendar,
+  CreditCard,
+  Globe,
+  MessageSquare,
+  FileText,
+  Calculator,
+  ShoppingCart,
+  Users,
+  Scissors,
+  UserCog,
+  Package,
   BarChart3,
   Check,
   CheckCircle2,
@@ -37,103 +48,140 @@ import {
   Play,
   Rocket,
   Target,
-  Smile
+  Smile,
 } from "lucide-react";
 
 export default function Home() {
   const { user } = useAuth();
   const isOwner = user?.openId === import.meta.env.VITE_OWNER_OPEN_ID;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-  
+
   const features = [
     {
       icon: Calendar,
       title: "Smart Timebok",
-      description: "Intelligent kalender som forstår din virksomhet. Automatisk planlegging, ingen dobbeltbookinger, og full kontroll over alle avtaler.",
+      description:
+        "Intelligent kalender som forstår din virksomhet. Automatisk planlegging, ingen dobbeltbookinger, og full kontroll over alle avtaler.",
       color: "from-blue-500 to-cyan-500",
-      benefits: ["Drag & drop", "Automatisk planlegging", "Fargekodet oversikt"],
-      image: "/images/real-photos/dashboard-calendar.webp"
+      benefits: [
+        "Drag & drop",
+        "Automatisk planlegging",
+        "Fargekodet oversikt",
+      ],
+      image: "/images/real-photos/dashboard-calendar.webp",
     },
     {
       icon: Globe,
       title: "24/7 Online Booking",
-      description: "Kundene dine bestiller når det passer dem – selv når du sover. Automatiske bekreftelser og påminnelser holder kalenderen full.",
+      description:
+        "Kundene dine bestiller når det passer dem – selv når du sover. Automatiske bekreftelser og påminnelser holder kalenderen full.",
       color: "from-purple-500 to-pink-500",
-      benefits: ["Mobilvennlig", "Automatiske bekreftelser", "Ingen dobbeltbookinger"],
-      image: "/images/real-photos/salon-modern-minimalist.webp"
+      benefits: [
+        "Mobilvennlig",
+        "Automatiske bekreftelser",
+        "Ingen dobbeltbookinger",
+      ],
+      image: "/images/real-photos/salon-modern-minimalist.webp",
     },
     {
       icon: MessageSquare,
       title: "Smarte Påminnelser",
-      description: "Automatiske SMS-varsler 24 og 2 timer før timen. Våre kunder rapporterer opptil 80% reduksjon i no-shows.",
+      description:
+        "Automatiske SMS-varsler 24 og 2 timer før timen. Våre kunder rapporterer opptil 80% reduksjon i no-shows.",
       color: "from-orange-500 to-red-500",
       benefits: ["80% færre no-shows", "Automatiske SMS", "E-post varsler"],
-      image: "/images/real-photos/salon-white-clean.webp"
+      image: "/images/real-photos/salon-white-clean.webp",
     },
     {
       icon: CreditCard,
       title: "Enkel Betaling",
-      description: "Integrasjon med Vipps og kortterminaler. Få betalt raskt, og hold oversikt over all omsetning på étt sted.",
+      description:
+        "Integrasjon med Vipps og kortterminaler. Få betalt raskt, og hold oversikt over all omsetning på étt sted.",
       color: "from-green-500 to-emerald-500",
       benefits: ["Vipps", "Stripe", "Kontant registrering"],
-      image: "/images/real-photos/dashboard-modern.webp"
+      image: "/images/real-photos/dashboard-modern.webp",
     },
     {
       icon: Users,
       title: "Komplett Kunderegister",
-      description: "Alt du trenger å vite om kundene dine. Besøkshistorikk, preferanser, notater og GDPR-kompatibel databehandling.",
+      description:
+        "Alt du trenger å vite om kundene dine. Besøkshistorikk, preferanser, notater og GDPR-kompatibel databehandling.",
       color: "from-indigo-500 to-blue-500",
       benefits: ["Besøkshistorikk", "Lojalitetsprogram", "GDPR-sikker"],
-      image: "/images/real-photos/salon-active-customers.webp"
+      image: "/images/real-photos/salon-active-customers.webp",
     },
     {
       icon: BarChart3,
       title: "Kraftige Analyser",
-      description: "Omsetning, trender og ansattes ytelse – alt visualisert og lett å forstå. Ta datadrevne beslutninger som øker lønnsomheten.",
+      description:
+        "Omsetning, trender og ansattes ytelse – alt visualisert og lett å forstå. Ta datadrevne beslutninger som øker lønnsomheten.",
       color: "from-pink-500 to-rose-500",
       benefits: ["Sanntidsrapporter", "Eksport til Excel", "Visuell analyse"],
-      image: "/images/real-photos/dashboard-analytics.webp"
-    }
+      image: "/images/real-photos/dashboard-analytics.webp",
+    },
   ];
 
   const stats = [
-    { number: "5000+", label: "Fornøyde salonger", icon: Heart, color: "from-red-500 to-pink-500" },
-    { number: "98%", label: "Kundetilfredshet", icon: Star, color: "from-yellow-500 to-orange-500" },
-    { number: "24/7", label: "Online booking", icon: Clock, color: "from-blue-500 to-cyan-500" },
-    { number: "80%", label: "Færre uteblitte timer", icon: TrendingUp, color: "from-green-500 to-emerald-500" }
+    {
+      number: "5000+",
+      label: "Fornøyde salonger",
+      icon: Heart,
+      color: "from-red-500 to-pink-500",
+    },
+    {
+      number: "98%",
+      label: "Kundetilfredshet",
+      icon: Star,
+      color: "from-yellow-500 to-orange-500",
+    },
+    {
+      number: "24/7",
+      label: "Online booking",
+      icon: Clock,
+      color: "from-blue-500 to-cyan-500",
+    },
+    {
+      number: "80%",
+      label: "Færre uteblitte timer",
+      icon: TrendingUp,
+      color: "from-green-500 to-emerald-500",
+    },
   ];
 
   const salonImages = [
     "/images/real-photos/salon-luxury-interior.webp",
     "/images/real-photos/salon-modern-minimalist.webp",
-    "/images/real-photos/salon-active-customers.webp"
+    "/images/real-photos/salon-active-customers.webp",
   ];
 
   const testimonials = [
     {
       name: "Maria Johnsen",
       role: "Eier, Glamour Frisør Oslo",
-      content: "Stylora har transformert hvordan vi driver salongen. Vi sparer 5+ timer hver uke på administrasjon, og kundene elsker hvor enkelt det er å bestille time!",
+      content:
+        "Stylora har transformert hvordan vi driver salongen. Vi sparer 5+ timer hver uke på administrasjon, og kundene elsker hvor enkelt det er å bestille time!",
       rating: 5,
       avatar: "MJ",
-      color: "from-purple-500 to-pink-500"
+      color: "from-purple-500 to-pink-500",
     },
     {
       name: "Hassan Al-Rashid",
       role: "Eier, Classic Barbershop Bergen",
-      content: "Endelig et system som forstår norske salonger. SMS-påminnelsene har redusert no-shows med 75%, og rapportene gir oss innsikt vi aldri har hatt før!",
+      content:
+        "Endelig et system som forstår norske salonger. SMS-påminnelsene har redusert no-shows med 75%, og rapportene gir oss innsikt vi aldri har hatt før!",
       rating: 5,
       avatar: "HA",
-      color: "from-blue-500 to-cyan-500"
+      color: "from-blue-500 to-cyan-500",
     },
     {
       name: "Linda Svendsen",
       role: "Daglig leder, Beauty Studio Trondheim",
-      content: "Utrolig intuitivt! Hele teamet var i gang på under 10 minutter. Stylora har gjort oss mer profesjonelle og effektive – kundene merker forskjellen.",
+      content:
+        "Utrolig intuitivt! Hele teamet var i gang på under 10 minutter. Stylora har gjort oss mer profesjonelle og effektive – kundene merker forskjellen.",
       rating: 5,
       avatar: "LS",
-      color: "from-orange-500 to-red-500"
-    }
+      color: "from-orange-500 to-red-500",
+    },
   ];
 
   const plans = [
@@ -147,11 +195,11 @@ export default function Home() {
         "Online booking",
         "Kunderegister",
         "Grunnleggende rapporter",
-        "E-post support"
+        "E-post support",
       ],
       highlighted: false,
       icon: Rocket,
-      color: "from-blue-500 to-cyan-500"
+      color: "from-blue-500 to-cyan-500",
     },
     {
       name: "Pro",
@@ -164,12 +212,12 @@ export default function Home() {
         "Varelager",
         "Provisjonsberegning",
         "Avanserte rapporter",
-        "Prioritert support"
+        "Prioritert support",
       ],
       highlighted: true,
       icon: Target,
       color: "from-purple-500 to-pink-500",
-      badge: "Mest populær"
+      badge: "Mest populær",
     },
     {
       name: "Premium",
@@ -182,46 +230,52 @@ export default function Home() {
         "Flerlokalitetsstyring",
         "API-tilgang",
         "Tilpassede rapporter",
-        "Dedikert kontaktperson"
+        "Dedikert kontaktperson",
       ],
       highlighted: false,
       icon: Award,
-      color: "from-orange-500 to-red-500"
-    }
+      color: "from-orange-500 to-red-500",
+    },
   ];
 
   const faqs = [
     {
       question: "Må jeg være teknisk for å bruke Stylora?",
-      answer: "Nei, absolutt ikke. Stylora er designet med enkelhet i fokus. Du trenger ingen teknisk erfaring – systemet er intuitivt og selvforklarende. Vi guider deg gjennom oppsettet, og de fleste salonger er oppe og kjører på under 10 minutter."
+      answer:
+        "Nei, absolutt ikke. Stylora er designet med enkelhet i fokus. Du trenger ingen teknisk erfaring – systemet er intuitivt og selvforklarende. Vi guider deg gjennom oppsettet, og de fleste salonger er oppe og kjører på under 10 minutter.",
     },
     {
       question: "Fungerer dette med regnskapsfører?",
-      answer: "Ja! Stylora eksporterer alle salgsdata i formater som er kompatible med norske regnskapssystemer. Du kan enkelt dele rapporter med regnskapsføreren din, og all MVA er automatisk beregnet etter norske regler. Perfekt for årsoppgjør og revisjon."
+      answer:
+        "Ja! Stylora eksporterer alle salgsdata i formater som er kompatible med norske regnskapssystemer. Du kan enkelt dele rapporter med regnskapsføreren din, og all MVA er automatisk beregnet etter norske regler. Perfekt for årsoppgjør og revisjon.",
     },
     {
       question: "Støtter dere Vipps?",
-      answer: "Vipps-integrasjon er planlagt og kommer snart. Akkurat nå støtter vi kortbetaling via Stripe, samt manuell registrering av kontant- og Vipps-betalinger i kassen."
+      answer:
+        "Vipps-integrasjon er planlagt og kommer snart. Akkurat nå støtter vi kortbetaling via Stripe, samt manuell registrering av kontant- og Vipps-betalinger i kassen.",
     },
     {
       question: "Hva med GDPR og personvern?",
-      answer: "Stylora er fullt GDPR-kompatibel og tar personvern på alvor. Vi lagrer kun nødvendig informasjon, all data er kryptert, og kundene dine har full kontroll. De kan når som helst be om innsyn eller sletting av sine data. Trygt for deg og kundene dine."
+      answer:
+        "Stylora er fullt GDPR-kompatibel og tar personvern på alvor. Vi lagrer kun nødvendig informasjon, all data er kryptert, og kundene dine har full kontroll. De kan når som helst be om innsyn eller sletting av sine data. Trygt for deg og kundene dine.",
     },
     {
       question: "Kan ansatte ha egne innlogginger?",
-      answer: "Ja! Hver ansatt får sin egen innlogging med tilpassede rettigheter basert på rolle. De kan se sin timeplan, registrere salg, få oversikt over provisjon, og mye mer. Full kontroll og oversikt for alle."
+      answer:
+        "Ja! Hver ansatt får sin egen innlogging med tilpassede rettigheter basert på rolle. De kan se sin timeplan, registrere salg, få oversikt over provisjon, og mye mer. Full kontroll og oversikt for alle.",
     },
     {
       question: "Kan jeg prøve før jeg kjøper?",
-      answer: "Ja! Vi tilbyr 14 dagers gratis prøveperiode uten kredittkort. Du får full tilgang til alle funksjoner og kan teste Stylora grundig med dine egne data. Ingen forpliktelser, ingen skjulte kostnader."
-    }
+      answer:
+        "Ja! Vi tilbyr 14 dagers gratis prøveperiode uten kredittkort. Du får full tilgang til alle funksjoner og kan teste Stylora grundig med dine egne data. Ingen forpliktelser, ingen skjulte kostnader.",
+    },
   ];
 
   const trustBadges = [
     { icon: Shield, text: "GDPR-kompatibel", color: "text-green-600" },
     { icon: Globe, text: "EU-servere", color: "text-blue-600" },
     { icon: Zap, text: "Ingen bindingstid", color: "text-purple-600" },
-    { icon: CheckCircle2, text: "SSL-kryptert", color: "text-orange-600" }
+    { icon: CheckCircle2, text: "SSL-kryptert", color: "text-orange-600" },
   ];
 
   // Structured Data for SEO
@@ -231,109 +285,104 @@ export default function Home() {
       {
         "@type": "Organization",
         "@id": "https://stylora.no/#organization",
-        "name": "Stylora",
-        "url": "https://stylora.no",
-        "logo": {
+        name: "Stylora",
+        url: "https://stylora.no",
+        logo: {
           "@type": "ImageObject",
-          "url": "https://stylora.no/stylora-logo.webp"
+          url: "https://stylora.no/stylora-logo.webp",
         },
-        "description": "Komplett bookingsystem for norske frisørsalonger, barbershops og skjønnhetssalonger",
-        "address": {
+        description:
+          "Komplett bookingsystem for norske frisørsalonger, barbershops og skjønnhetssalonger",
+        address: {
           "@type": "PostalAddress",
-          "addressCountry": "NO"
+          addressCountry: "NO",
         },
-        "sameAs": [
+        sameAs: [
           "https://www.facebook.com/stylora",
-          "https://www.instagram.com/stylora"
-        ]
+          "https://www.instagram.com/stylora",
+        ],
       },
       {
         "@type": "SoftwareApplication",
         "@id": "https://stylora.no/#software",
-        "name": "Stylora",
-        "applicationCategory": "BusinessApplication",
-        "operatingSystem": "Web",
-        "offers": {
+        name: "Stylora",
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web",
+        offers: {
           "@type": "AggregateOffer",
-          "priceCurrency": "NOK",
-          "lowPrice": "299",
-          "highPrice": "1299",
-          "priceSpecification": [
+          priceCurrency: "NOK",
+          lowPrice: "299",
+          highPrice: "1299",
+          priceSpecification: [
             {
               "@type": "UnitPriceSpecification",
-              "price": "299",
-              "priceCurrency": "NOK",
-              "name": "Start",
-              "billingDuration": "P1M"
+              price: "299",
+              priceCurrency: "NOK",
+              name: "Start",
+              billingDuration: "P1M",
             },
             {
               "@type": "UnitPriceSpecification",
-              "price": "699",
-              "priceCurrency": "NOK",
-              "name": "Pro",
-              "billingDuration": "P1M"
+              price: "699",
+              priceCurrency: "NOK",
+              name: "Pro",
+              billingDuration: "P1M",
             },
             {
               "@type": "UnitPriceSpecification",
-              "price": "1299",
-              "priceCurrency": "NOK",
-              "name": "Enterprise",
-              "billingDuration": "P1M"
-            }
-          ]
+              price: "1299",
+              priceCurrency: "NOK",
+              name: "Enterprise",
+              billingDuration: "P1M",
+            },
+          ],
         },
-        "aggregateRating": {
+        aggregateRating: {
           "@type": "AggregateRating",
-          "ratingValue": "4.9",
-          "ratingCount": "127",
-          "bestRating": "5"
-        }
+          ratingValue: "4.9",
+          ratingCount: "127",
+          bestRating: "5",
+        },
       },
       {
         "@type": "LocalBusiness",
         "@id": "https://stylora.no/#localbusiness",
-        "name": "Stylora",
-        "image": "https://stylora.no/stylora-logo.webp",
-        "url": "https://stylora.no",
-        "telephone": "+47-XXX-XXXXX",
-        "priceRange": "299-1299 NOK/måned",
-        "address": {
+        name: "Stylora",
+        image: "https://stylora.no/stylora-logo.webp",
+        url: "https://stylora.no",
+        telephone: "+47-XXX-XXXXX",
+        priceRange: "299-1299 NOK/måned",
+        address: {
           "@type": "PostalAddress",
-          "addressCountry": "NO"
+          addressCountry: "NO",
         },
-        "geo": {
+        geo: {
           "@type": "GeoCoordinates",
-          "latitude": 59.9139,
-          "longitude": 10.7522
+          latitude: 59.9139,
+          longitude: 10.7522,
         },
-        "openingHoursSpecification": {
+        openingHoursSpecification: {
           "@type": "OpeningHoursSpecification",
-          "dayOfWeek": [
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday"
-          ],
-          "opens": "09:00",
-          "closes": "17:00"
+          dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          opens: "09:00",
+          closes: "17:00",
         },
-        "sameAs": [
+        sameAs: [
           "https://www.facebook.com/stylora",
-          "https://www.instagram.com/stylora"
-        ]
+          "https://www.instagram.com/stylora",
+        ],
       },
       {
         "@type": "WebSite",
         "@id": "https://stylora.no/#website",
-        "url": "https://stylora.no",
-        "name": "Stylora",
-        "publisher": {
-          "@id": "https://stylora.no/#organization"
+        url: "https://stylora.no",
+        name: "Stylora",
+        publisher: {
+          "@id": "https://stylora.no/#organization",
         },
-        "inLanguage": "nb-NO"
-      }
-    ]
+        inLanguage: "nb-NO",
+      },
+    ],
   };
 
   return (
@@ -363,13 +412,22 @@ export default function Home() {
 
               {/* Desktop Navigation */}
               <div className="hidden md:flex items-center gap-8">
-                <a href="#funksjoner" className="text-gray-700 hover:text-purple-600 transition-colors font-medium">
+                <a
+                  href="#funksjoner"
+                  className="text-gray-700 hover:text-purple-600 transition-colors font-medium"
+                >
                   Funksjoner
                 </a>
-                <a href="#priser" className="text-gray-700 hover:text-purple-600 transition-colors font-medium">
+                <a
+                  href="#priser"
+                  className="text-gray-700 hover:text-purple-600 transition-colors font-medium"
+                >
                   Priser
                 </a>
-                <a href="#faq" className="text-gray-700 hover:text-purple-600 transition-colors font-medium">
+                <a
+                  href="#faq"
+                  className="text-gray-700 hover:text-purple-600 transition-colors font-medium"
+                >
                   FAQ
                 </a>
                 <Link href="/about">
@@ -434,13 +492,22 @@ export default function Home() {
             {/* Mobile Menu */}
             {isMobileMenuOpen && (
               <div className="md:hidden mt-4 pb-4 space-y-3 animate-in slide-in-from-top duration-300">
-                <a href="#funksjoner" className="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-lg transition-colors font-medium">
+                <a
+                  href="#funksjoner"
+                  className="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-lg transition-colors font-medium"
+                >
                   Funksjoner
                 </a>
-                <a href="#priser" className="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-lg transition-colors font-medium">
+                <a
+                  href="#priser"
+                  className="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-lg transition-colors font-medium"
+                >
                   Priser
                 </a>
-                <a href="#faq" className="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-lg transition-colors font-medium">
+                <a
+                  href="#faq"
+                  className="block px-4 py-2 text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-lg transition-colors font-medium"
+                >
                   FAQ
                 </a>
                 <Link href="/about">
@@ -523,7 +590,10 @@ export default function Home() {
 
               {/* Subheadline */}
               <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom duration-700 delay-200">
-                Stylora er det komplette styringssystemet for moderne salonger. Timebok, online booking, betaling og innsikt – alt i én elegant løsning. Designet for norske frisørsalonger, barbershops og skjønnhetssalonger som vil vokse.
+                Stylora er det komplette styringssystemet for moderne salonger.
+                Timebok, online booking, betaling og innsikt – alt i én elegant
+                løsning. Designet for norske frisørsalonger, barbershops og
+                skjønnhetssalonger som vil vokse.
               </p>
 
               {/* CTA Buttons */}
@@ -550,7 +620,9 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  <span className="font-medium">Ingen kredittkort nødvendig</span>
+                  <span className="font-medium">
+                    Ingen kredittkort nødvendig
+                  </span>
                 </div>
               </div>
 
@@ -559,37 +631,49 @@ export default function Home() {
                 <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white/50 backdrop-blur-sm">
                   {/* Video Placeholder with Play Button */}
                   <div className="relative group cursor-pointer">
-                    <img 
-                      src="/images/real-photos/salon-vintage-barber.webp" 
+                    <img
+                      src="/images/real-photos/salon-vintage-barber.webp"
                       alt="Stylora system demo preview"
                       className="w-full h-auto object-cover"
                       loading="eager"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-                    
+
                     {/* Play Button Overlay */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="relative">
                         <div className="absolute inset-0 bg-purple-600 rounded-full blur-2xl opacity-50 animate-pulse"></div>
-                        <button 
-                          onClick={() => window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank')}
+                        <button
+                          onClick={() =>
+                            window.open(
+                              "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                              "_blank"
+                            )
+                          }
                           className="relative w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-300"
                         >
-                          <Play className="w-8 h-8 text-purple-600 ml-1" fill="currentColor" />
+                          <Play
+                            className="w-8 h-8 text-purple-600 ml-1"
+                            fill="currentColor"
+                          />
                         </button>
                       </div>
                     </div>
-                    
+
                     {/* Video Duration Badge */}
                     <div className="absolute bottom-4 right-4 px-3 py-1.5 bg-black/80 backdrop-blur-sm rounded-lg text-white text-sm font-semibold">
                       <Clock className="w-4 h-4 inline mr-1" />
                       2:30
                     </div>
-                    
+
                     {/* Video Title */}
                     <div className="absolute bottom-4 left-4 text-white">
-                      <p className="text-lg font-bold drop-shadow-lg">Se Stylora i aksjon</p>
-                      <p className="text-sm opacity-90">Komplett systemgjennomgang</p>
+                      <p className="text-lg font-bold drop-shadow-lg">
+                        Se Stylora i aksjon
+                      </p>
+                      <p className="text-sm opacity-90">
+                        Komplett systemgjennomgang
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -599,7 +683,11 @@ export default function Home() {
 
           {/* Decorative Wave */}
           <div className="absolute bottom-0 left-0 right-0">
-            <svg className="w-full h-16 md:h-24 fill-white" viewBox="0 0 1440 120" preserveAspectRatio="none">
+            <svg
+              className="w-full h-16 md:h-24 fill-white"
+              viewBox="0 0 1440 120"
+              preserveAspectRatio="none"
+            >
               <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,64C960,75,1056,85,1152,80C1248,75,1344,53,1392,42.7L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
             </svg>
           </div>
@@ -617,7 +705,9 @@ export default function Home() {
                     className="text-center group animate-in fade-in slide-in-from-bottom duration-700"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
-                    <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br ${stat.color} mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                    <div
+                      className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br ${stat.color} mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}
+                    >
                       <Icon className="w-8 h-8 text-white" />
                     </div>
                     <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 to-orange-500 bg-clip-text text-transparent mb-2">
@@ -683,14 +773,16 @@ export default function Home() {
                     {/* Feature Image */}
                     {feature.image && (
                       <div className="relative h-48 overflow-hidden">
-                        <img 
-                          src={feature.image} 
+                        <img
+                          src={feature.image}
                           alt={feature.title}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                           loading="lazy"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                        <div className={`absolute top-4 left-4 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} shadow-lg`}>
+                        <div
+                          className={`absolute top-4 left-4 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} shadow-lg`}
+                        >
                           <Icon className="w-6 h-6 text-white" />
                         </div>
                       </div>
@@ -706,7 +798,10 @@ export default function Home() {
                     <CardContent>
                       <ul className="space-y-2">
                         {feature.benefits.map((benefit, i) => (
-                          <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
+                          <li
+                            key={i}
+                            className="flex items-center gap-2 text-sm text-gray-700"
+                          >
                             <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
                             <span>{benefit}</span>
                           </li>
@@ -754,8 +849,8 @@ export default function Home() {
                 >
                   {/* Salon Image */}
                   <div className="relative h-48 overflow-hidden">
-                    <img 
-                      src={salonImages[index]} 
+                    <img
+                      src={salonImages[index]}
                       alt={`${testimonial.name} salon`}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       loading="lazy"
@@ -763,18 +858,27 @@ export default function Home() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
                     <div className="absolute bottom-4 left-4 flex gap-1">
                       {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                        <Star
+                          key={i}
+                          className="w-5 h-5 fill-yellow-400 text-yellow-400"
+                        />
                       ))}
                     </div>
                   </div>
                   <CardHeader>
                     <div className="flex items-center gap-4 mb-4">
-                      <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${testimonial.color} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
+                      <div
+                        className={`w-14 h-14 rounded-full bg-gradient-to-br ${testimonial.color} flex items-center justify-center text-white font-bold text-lg shadow-lg`}
+                      >
                         {testimonial.avatar}
                       </div>
                       <div>
-                        <div className="font-bold text-gray-900">{testimonial.name}</div>
-                        <div className="text-sm text-gray-600">{testimonial.role}</div>
+                        <div className="font-bold text-gray-900">
+                          {testimonial.name}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {testimonial.role}
+                        </div>
                       </div>
                     </div>
                   </CardHeader>
@@ -832,7 +936,9 @@ export default function Home() {
                       </div>
                     )}
                     <CardHeader className="text-center pb-8">
-                      <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br ${plan.color} mb-4 mx-auto shadow-lg`}>
+                      <div
+                        className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br ${plan.color} mb-4 mx-auto shadow-lg`}
+                      >
                         <Icon className="w-8 h-8 text-white" />
                       </div>
                       <CardTitle className="text-2xl font-bold text-gray-900 mb-2">
@@ -842,7 +948,9 @@ export default function Home() {
                         <span className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-orange-500 bg-clip-text text-transparent">
                           {plan.price}
                         </span>
-                        <span className="text-gray-600 font-medium">NOK/mnd</span>
+                        <span className="text-gray-600 font-medium">
+                          NOK/mnd
+                        </span>
                       </div>
                       <CardDescription className="text-base text-gray-600">
                         {plan.description}
@@ -851,7 +959,10 @@ export default function Home() {
                     <CardContent className="space-y-6">
                       <ul className="space-y-3">
                         {plan.features.map((feature, i) => (
-                          <li key={i} className="flex items-start gap-3 text-gray-700">
+                          <li
+                            key={i}
+                            className="flex items-start gap-3 text-gray-700"
+                          >
                             <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
                             <span className="text-sm">{feature}</span>
                           </li>
@@ -876,7 +987,8 @@ export default function Home() {
 
             <div className="text-center mt-12 space-y-4">
               <p className="text-gray-600">
-                Alle planer inkluderer 14 dagers gratis prøveperiode. Ingen kredittkort nødvendig.
+                Alle planer inkluderer 14 dagers gratis prøveperiode. Ingen
+                kredittkort nødvendig.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
@@ -897,7 +1009,10 @@ export default function Home() {
         </section>
 
         {/* FAQ Section */}
-        <section id="faq" className="py-20 bg-gradient-to-br from-gray-50 to-white">
+        <section
+          id="faq"
+          className="py-20 bg-gradient-to-br from-gray-50 to-white"
+        >
           <div className="container mx-auto px-4">
             <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
               <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 px-4 py-1.5 text-sm font-semibold">
@@ -955,7 +1070,8 @@ export default function Home() {
               </h2>
 
               <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto">
-                Bli med 5000+ fornøyde salonger som allerede bruker Stylora. Ingen kredittkort nødvendig.
+                Bli med 5000+ fornøyde salonger som allerede bruker Stylora.
+                Ingen kredittkort nødvendig.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
@@ -975,7 +1091,9 @@ export default function Home() {
               <div className="flex flex-wrap items-center justify-center gap-8 pt-8 text-white/90">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5" />
-                  <span className="font-medium">14 dagers gratis prøveperiode</span>
+                  <span className="font-medium">
+                    14 dagers gratis prøveperiode
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5" />

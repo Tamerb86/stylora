@@ -139,7 +139,7 @@ describe("POS Refund System", () => {
       .where(eq(refunds.orderId, newOrderId));
 
     const totalRefunded = existingRefunds
-      .filter((r) => r.status === "completed")
+      .filter(r => r.status === "completed")
       .reduce((sum, r) => sum + parseFloat(r.amount), 0);
 
     const originalAmount = 1000;
@@ -258,7 +258,7 @@ describe("POS Refund System", () => {
       .where(eq(refunds.orderId, newOrderId));
 
     const totalRefunded = existingRefunds
-      .filter((r) => r.status === "completed")
+      .filter(r => r.status === "completed")
       .reduce((sum, r) => sum + parseFloat(r.amount), 0);
 
     const originalAmount = 1000;
@@ -267,7 +267,7 @@ describe("POS Refund System", () => {
     // Verify that attempting to refund more than available would be caught
     expect(availableAmount).toBe(400);
     expect(totalRefunded).toBe(600);
-    
+
     // Attempting to refund 500 kr should fail (only 400 kr available)
     const attemptedRefund = 500;
     const wouldExceed = attemptedRefund > availableAmount;

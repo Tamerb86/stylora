@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { getDb } from "./db";
-import { orders, orderItems, users, services, tenants } from "../drizzle/schema";
+import {
+  orders,
+  orderItems,
+  users,
+  services,
+  tenants,
+} from "../drizzle/schema";
 import { eq, sql, and } from "drizzle-orm";
 
 describe("Financial Reports API", () => {
@@ -14,16 +20,14 @@ describe("Financial Reports API", () => {
 
     // Create test tenant
     const tenantId = `test-tenant-${Date.now()}`;
-    await dbInstance
-      .insert(tenants)
-      .values({
-        id: tenantId,
-        name: "Test Salon",
-        subdomain: `test-${Date.now()}`,
-        phone: "12345678",
-        email: "test@test.com",
-        status: "active",
-      });
+    await dbInstance.insert(tenants).values({
+      id: tenantId,
+      name: "Test Salon",
+      subdomain: `test-${Date.now()}`,
+      phone: "12345678",
+      email: "test@test.com",
+      status: "active",
+    });
 
     testTenantId = tenantId;
 
@@ -119,9 +123,13 @@ describe("Financial Reports API", () => {
     if (!dbInstance) return;
 
     // Clean up test data
-    await dbInstance.delete(orderItems).where(eq(orderItems.orderId, testEmployeeId));
+    await dbInstance
+      .delete(orderItems)
+      .where(eq(orderItems.orderId, testEmployeeId));
     await dbInstance.delete(orders).where(eq(orders.tenantId, testTenantId));
-    await dbInstance.delete(services).where(eq(services.tenantId, testTenantId));
+    await dbInstance
+      .delete(services)
+      .where(eq(services.tenantId, testTenantId));
     await dbInstance.delete(users).where(eq(users.tenantId, testTenantId));
     await dbInstance.delete(tenants).where(eq(tenants.id, testTenantId));
   });
@@ -195,10 +203,9 @@ describe("Financial Reports API", () => {
     const completedOrders = await dbInstance
       .select()
       .from(orders)
-      .where(and(
-        eq(orders.tenantId, testTenantId),
-        eq(orders.status, "completed")
-      ));
+      .where(
+        and(eq(orders.tenantId, testTenantId), eq(orders.status, "completed"))
+      );
 
     expect(completedOrders.length).toBeGreaterThan(0);
     expect(completedOrders[0].status).toBe("completed");
@@ -216,9 +223,12 @@ describe("Financial Reports API", () => {
 
     expect(allOrders).toBeDefined();
     expect(allOrders.length).toBeGreaterThan(0);
-    
+
     // Verify we can calculate total revenue
-    const totalRevenue = allOrders.reduce((sum, order) => sum + parseFloat(order.total), 0);
+    const totalRevenue = allOrders.reduce(
+      (sum, order) => sum + parseFloat(order.total),
+      0
+    );
     expect(totalRevenue).toBeGreaterThan(0);
   });
 });

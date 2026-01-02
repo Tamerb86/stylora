@@ -27,12 +27,16 @@ export async function createContext(
       user = result.user;
       impersonatedTenantId = result.impersonatedTenantId;
     }
-    
+
     // Fix: If tenantId looks like an email (contains @), fetch fresh data from DB
-    if (user && user.tenantId && user.tenantId.includes('@')) {
+    if (user && user.tenantId && user.tenantId.includes("@")) {
       const db = await getDb();
       if (db) {
-        const freshUser = await db.select().from(users).where(eq(users.id, user.id)).limit(1);
+        const freshUser = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, user.id))
+          .limit(1);
         if (freshUser.length > 0) {
           user = freshUser[0];
         }

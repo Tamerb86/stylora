@@ -1,4 +1,5 @@
 # Environment Variables Template
+
 # نموذج متغيرات البيئة
 
 انسخ هذا الملف إلى `.env` واملأ القيم المناسبة.

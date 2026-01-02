@@ -14,7 +14,15 @@ describe("myBookings.reschedule", () => {
     const dbInstance = await db.getDb();
     if (!dbInstance) throw new Error("Database not available");
 
-    const { tenants, customers, users, services, appointments, appointmentServices, employeeSchedules } = await import("../drizzle/schema");
+    const {
+      tenants,
+      customers,
+      users,
+      services,
+      appointments,
+      appointmentServices,
+      employeeSchedules,
+    } = await import("../drizzle/schema");
 
     // Create test tenant
     testTenantId = `test-tenant-reschedule-${Date.now()}`;
@@ -96,13 +104,27 @@ describe("myBookings.reschedule", () => {
     const dbInstance = await db.getDb();
     if (!dbInstance) return;
 
-    const { tenants, customers, users, services, appointments, appointmentServices, employeeSchedules } = await import("../drizzle/schema");
+    const {
+      tenants,
+      customers,
+      users,
+      services,
+      appointments,
+      appointmentServices,
+      employeeSchedules,
+    } = await import("../drizzle/schema");
     const { eq } = await import("drizzle-orm");
 
     // Cleanup
-    await dbInstance.delete(appointmentServices).where(eq(appointmentServices.appointmentId, testAppointmentId));
-    await dbInstance.delete(appointments).where(eq(appointments.id, testAppointmentId));
-    await dbInstance.delete(employeeSchedules).where(eq(employeeSchedules.employeeId, testEmployeeId));
+    await dbInstance
+      .delete(appointmentServices)
+      .where(eq(appointmentServices.appointmentId, testAppointmentId));
+    await dbInstance
+      .delete(appointments)
+      .where(eq(appointments.id, testAppointmentId));
+    await dbInstance
+      .delete(employeeSchedules)
+      .where(eq(employeeSchedules.employeeId, testEmployeeId));
     await dbInstance.delete(services).where(eq(services.id, testServiceId));
     await dbInstance.delete(customers).where(eq(customers.id, testCustomerId));
     await dbInstance.delete(users).where(eq(users.id, testEmployeeId));

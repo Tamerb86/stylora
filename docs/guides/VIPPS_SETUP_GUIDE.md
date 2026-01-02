@@ -18,13 +18,13 @@ By enabling Vipps payments on your online booking page, you provide customers wi
 
 Before you begin, ensure you have the following:
 
-| Requirement | Description |
-|------------|-------------|
-| **Norwegian Business** | Your salon must be registered as a business in Norway with a valid organization number |
-| **Bank Account** | A Norwegian business bank account for receiving payments |
-| **Vipps Business Account** | An active Vipps business account (we'll guide you through setup) |
-| **Admin Access** | Administrator access to your Stylora system |
-| **Time Required** | Approximately 30-45 minutes for complete setup |
+| Requirement                | Description                                                                            |
+| -------------------------- | -------------------------------------------------------------------------------------- |
+| **Norwegian Business**     | Your salon must be registered as a business in Norway with a valid organization number |
+| **Bank Account**           | A Norwegian business bank account for receiving payments                               |
+| **Vipps Business Account** | An active Vipps business account (we'll guide you through setup)                       |
+| **Admin Access**           | Administrator access to your Stylora system                                            |
+| **Time Required**          | Approximately 30-45 minutes for complete setup                                         |
 
 ---
 
@@ -80,22 +80,22 @@ Click the button **"Opprett nye nøkler"** (Create new keys) or **"Legg til"** (
 
 You will be prompted to provide:
 
-| Field | Description | Example |
-|-------|-------------|---------|
+| Field                | Description                             | Example                  |
+| -------------------- | --------------------------------------- | ------------------------ |
 | **Application Name** | A descriptive name for your integration | "Stylora Online Booking" |
-| **Environment** | Choose **Production** for live payments | Production |
-| **API Product** | Select **"eCommerce API"** | eCommerce API |
+| **Environment**      | Choose **Production** for live payments | Production               |
+| **API Product**      | Select **"eCommerce API"**              | eCommerce API            |
 
 ### 3.2 Retrieve Your Credentials
 
 After creation, Vipps will display four critical pieces of information. **Copy and save these immediately** as some values are only shown once:
 
-| Credential | Description | Format |
-|-----------|-------------|--------|
-| **Client ID** | Your application identifier | UUID format (e.g., `a1b2c3d4-...`) |
-| **Client Secret** | Secret key for authentication | Long alphanumeric string |
-| **Subscription Key** | API subscription identifier | Alphanumeric string (Ocp-Apim-Subscription-Key) |
-| **Merchant Serial Number** | Your unique merchant ID | 6-digit number (e.g., `123456`) |
+| Credential                 | Description                   | Format                                          |
+| -------------------------- | ----------------------------- | ----------------------------------------------- |
+| **Client ID**              | Your application identifier   | UUID format (e.g., `a1b2c3d4-...`)              |
+| **Client Secret**          | Secret key for authentication | Long alphanumeric string                        |
+| **Subscription Key**       | API subscription identifier   | Alphanumeric string (Ocp-Apim-Subscription-Key) |
+| **Merchant Serial Number** | Your unique merchant ID       | 6-digit number (e.g., `123456`)                 |
 
 > **Security Warning:** Treat these credentials like passwords. Never share them publicly or commit them to version control systems. Store them securely in a password manager or encrypted vault.
 
@@ -121,12 +121,12 @@ When enabled, a configuration form will appear below.
 
 Fill in the four fields with the credentials you obtained from Vipps Portal:
 
-| Field in Stylora | Vipps Credential | Where to Find It |
-|-------------------|-----------------|------------------|
-| **Client ID** | Client ID | Vipps Portal → Developer → API Keys |
-| **Client Secret** | Client Secret | Shown once during key creation |
-| **Subscription Key** | Subscription Key (Ocp-Apim-Subscription-Key) | Vipps Portal → Developer → API Keys |
-| **Merchant Serial Number** | Merchant Serial Number (MSN) | Vipps Portal → Developer → API Keys |
+| Field in Stylora           | Vipps Credential                             | Where to Find It                    |
+| -------------------------- | -------------------------------------------- | ----------------------------------- |
+| **Client ID**              | Client ID                                    | Vipps Portal → Developer → API Keys |
+| **Client Secret**          | Client Secret                                | Shown once during key creation      |
+| **Subscription Key**       | Subscription Key (Ocp-Apim-Subscription-Key) | Vipps Portal → Developer → API Keys |
+| **Merchant Serial Number** | Merchant Serial Number (MSN)                 | Vipps Portal → Developer → API Keys |
 
 ### 4.4 Save Configuration
 
@@ -189,10 +189,10 @@ Vipps will automatically appear as a payment option on your public booking page 
 
 You can monitor Vipps transactions in two places:
 
-| Platform | What You Can See |
-|----------|-----------------|
+| Platform              | What You Can See                                  |
+| --------------------- | ------------------------------------------------- |
 | **Stylora Dashboard** | Appointments with payment status, booking details |
-| **Vipps Portal** | Transaction history, settlement reports, refunds |
+| **Vipps Portal**      | Transaction history, settlement reports, refunds  |
 
 ### 6.3 Settlement Schedule
 
@@ -209,6 +209,7 @@ Vipps typically settles funds to your bank account within **1-2 business days** 
 **Cause:** Incorrect Client ID or Client Secret
 
 **Solution:**
+
 1. Double-check that you copied the credentials correctly (no extra spaces)
 2. Verify you're using **Production** keys, not Test keys
 3. Regenerate keys in Vipps Portal if necessary
@@ -218,6 +219,7 @@ Vipps typically settles funds to your bank account within **1-2 business days** 
 **Cause:** Missing or incorrect Subscription Key
 
 **Solution:**
+
 1. Ensure you copied the **Ocp-Apim-Subscription-Key** value
 2. Check that the key is active in Vipps Portal
 3. Verify the key hasn't expired
@@ -227,6 +229,7 @@ Vipps typically settles funds to your bank account within **1-2 business days** 
 **Cause:** Incorrect Merchant Serial Number
 
 **Solution:**
+
 1. Confirm the MSN is a 6-digit number
 2. Verify it matches the MSN shown in Vipps Portal
 3. Ensure your Vipps business account is fully activated
@@ -236,6 +239,7 @@ Vipps typically settles funds to your bank account within **1-2 business days** 
 **Cause:** Callback URL not whitelisted
 
 **Solution:**
+
 1. Log in to Vipps Portal
 2. Navigate to **Developer → API Keys → Your Application**
 3. Add your Stylora domain to the **Allowed Callback URLs** list:
@@ -247,6 +251,7 @@ Vipps typically settles funds to your bank account within **1-2 business days** 
 **Cause:** Vipps not enabled in payment settings
 
 **Solution:**
+
 1. Go to Stylora Settings → Betaling
 2. Ensure the **"Vipps-betaling"** toggle is **ON**
 3. Click **"Lagre innstillinger"** to save
@@ -259,13 +264,13 @@ Protecting your Vipps credentials and customer payment data is critical. Follow 
 
 ### Credential Management
 
-| Best Practice | Description |
-|--------------|-------------|
-| **Never Share Credentials** | Do not share API keys via email, chat, or public channels |
+| Best Practice                 | Description                                                    |
+| ----------------------------- | -------------------------------------------------------------- |
+| **Never Share Credentials**   | Do not share API keys via email, chat, or public channels      |
 | **Use Environment Variables** | Store credentials in secure environment variables, not in code |
-| **Rotate Keys Regularly** | Change API keys every 6-12 months |
-| **Limit Access** | Only grant Vipps Portal access to trusted team members |
-| **Monitor Activity** | Regularly review transaction logs for suspicious activity |
+| **Rotate Keys Regularly**     | Change API keys every 6-12 months                              |
+| **Limit Access**              | Only grant Vipps Portal access to trusted team members         |
+| **Monitor Activity**          | Regularly review transaction logs for suspicious activity      |
 
 ### Compliance
 
@@ -283,12 +288,12 @@ Ensure your Vipps integration complies with:
 
 For further assistance and detailed technical documentation, refer to these official Vipps resources:
 
-| Resource | URL | Description |
-|----------|-----|-------------|
-| **Vipps Developer Portal** | [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com) | Complete API documentation |
-| **Vipps Support** | [https://vipps.no/hjelp](https://vipps.no/hjelp) | Customer support and FAQs |
-| **Vipps Business Portal** | [https://portal.vipps.no](https://portal.vipps.no) | Manage your business account |
-| **Vipps API GitHub** | [https://github.com/vippsas](https://github.com/vippsas) | Code examples and SDKs |
+| Resource                   | URL                                                                          | Description                  |
+| -------------------------- | ---------------------------------------------------------------------------- | ---------------------------- |
+| **Vipps Developer Portal** | [https://developer.vippsmobilepay.com](https://developer.vippsmobilepay.com) | Complete API documentation   |
+| **Vipps Support**          | [https://vipps.no/hjelp](https://vipps.no/hjelp)                             | Customer support and FAQs    |
+| **Vipps Business Portal**  | [https://portal.vipps.no](https://portal.vipps.no)                           | Manage your business account |
+| **Vipps API GitHub**       | [https://github.com/vippsas](https://github.com/vippsas)                     | Code examples and SDKs       |
 
 ---
 
@@ -297,10 +302,12 @@ For further assistance and detailed technical documentation, refer to these offi
 If you encounter issues not covered in this guide, contact support:
 
 **Stylora Support:**
+
 - Email: support@stylora.no
 - Help Center: [https://help.stylora.no](https://help.stylora.no)
 
 **Vipps Support:**
+
 - Business Support: +47 22 48 28 00
 - Email: bedrift@vipps.no
 - Portal: [https://portal.vipps.no](https://portal.vipps.no)

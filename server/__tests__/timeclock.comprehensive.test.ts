@@ -4,7 +4,7 @@ import { sql } from "drizzle-orm";
 
 /**
  * Comprehensive Time Clock System Tests
- * 
+ *
  * Tests all aspects of the time clock system:
  * - Clock-in functionality
  * - Clock-out functionality
@@ -29,20 +29,20 @@ describe("Time Clock System - Comprehensive Tests", () => {
       sql`INSERT INTO tenants (id, name, subdomain, status, timezone) 
           VALUES ('test-timeclock-tenant', 'Test Salon', 'test-timeclock', 'active', 'Europe/Oslo')`
     );
-    testTenantId = 'test-timeclock-tenant';
+    testTenantId = "test-timeclock-tenant";
 
     // Create test employee with PIN
     await dbInstance.execute(
       sql`INSERT INTO users (tenantId, openId, name, role, pin, isActive) 
           VALUES (${testTenantId}, 'test-emp-timeclock', 'Test Employee', 'employee', '1234', 1)`
     );
-    
+
     // Retrieve the employee ID
     const [empRows] = await dbInstance.execute(
       sql`SELECT id FROM users WHERE tenantId = ${testTenantId} AND openId = 'test-emp-timeclock' LIMIT 1`
     );
     testEmployeeId = (empRows as any[])[0].id;
-    testEmployeePin = '1234';
+    testEmployeePin = "1234";
   });
 
   afterAll(async () => {
@@ -50,9 +50,15 @@ describe("Time Clock System - Comprehensive Tests", () => {
     if (!dbInstance) return;
 
     // Cleanup test data
-    await dbInstance.execute(sql`DELETE FROM timesheets WHERE tenantId = ${testTenantId}`);
-    await dbInstance.execute(sql`DELETE FROM users WHERE tenantId = ${testTenantId}`);
-    await dbInstance.execute(sql`DELETE FROM tenants WHERE id = ${testTenantId}`);
+    await dbInstance.execute(
+      sql`DELETE FROM timesheets WHERE tenantId = ${testTenantId}`
+    );
+    await dbInstance.execute(
+      sql`DELETE FROM users WHERE tenantId = ${testTenantId}`
+    );
+    await dbInstance.execute(
+      sql`DELETE FROM tenants WHERE id = ${testTenantId}`
+    );
   });
 
   describe("Clock-In Tests", () => {
@@ -77,7 +83,7 @@ describe("Time Clock System - Comprehensive Tests", () => {
             AND clockOut IS NULL 
             LIMIT 1`
       );
-      const existingShift = (existingShiftResult[0] as any[]);
+      const existingShift = existingShiftResult[0] as any[];
 
       // If there's an open shift, clock out first
       if (existingShift.length > 0) {
@@ -127,7 +133,7 @@ describe("Time Clock System - Comprehensive Tests", () => {
             AND clockOut IS NULL 
             LIMIT 1`
       );
-      const existingShift = (existingShiftResult[0] as any[]);
+      const existingShift = existingShiftResult[0] as any[];
 
       expect(existingShift.length).toBeGreaterThan(0);
       // Should not allow duplicate clock-in
@@ -201,9 +207,9 @@ describe("Time Clock System - Comprehensive Tests", () => {
             VALUES (
               ${testTenantId}, 
               ${testEmployeeId}, 
-              ${clockInTime.toISOString().slice(0, 19).replace('T', ' ')}, 
-              ${clockOutTime.toISOString().slice(0, 19).replace('T', ' ')},
-              TIMESTAMPDIFF(SECOND, ${clockInTime.toISOString().slice(0, 19).replace('T', ' ')}, ${clockOutTime.toISOString().slice(0, 19).replace('T', ' ')}) / 3600,
+              ${clockInTime.toISOString().slice(0, 19).replace("T", " ")}, 
+              ${clockOutTime.toISOString().slice(0, 19).replace("T", " ")},
+              TIMESTAMPDIFF(SECOND, ${clockInTime.toISOString().slice(0, 19).replace("T", " ")}, ${clockOutTime.toISOString().slice(0, 19).replace("T", " ")}) / 3600,
               CURDATE()
             )`
       );
@@ -223,7 +229,9 @@ describe("Time Clock System - Comprehensive Tests", () => {
       expect(parseFloat(timesheet.totalHours)).toBeCloseTo(expectedHours, 1);
 
       // Cleanup
-      await dbInstance.execute(sql`DELETE FROM timesheets WHERE id = ${timesheetId}`);
+      await dbInstance.execute(
+        sql`DELETE FROM timesheets WHERE id = ${timesheetId}`
+      );
     });
 
     it("should prevent clock-out without clock-in", async () => {
@@ -235,7 +243,7 @@ describe("Time Clock System - Comprehensive Tests", () => {
         sql`INSERT INTO users (tenantId, openId, name, role, pin, isActive) 
             VALUES (${testTenantId}, 'test-emp-2', 'Test Employee 2', 'employee', '5678', 1)`
       );
-      
+
       // Retrieve the employee ID
       const [newEmpRows] = await dbInstance.execute(
         sql`SELECT id FROM users WHERE tenantId = ${testTenantId} AND openId = 'test-emp-2' LIMIT 1`
@@ -250,7 +258,7 @@ describe("Time Clock System - Comprehensive Tests", () => {
             AND clockOut IS NULL 
             LIMIT 1`
       );
-      const activeShift = (activeShiftResult[0] as any[]);
+      const activeShift = activeShiftResult[0] as any[];
 
       expect(activeShift.length).toBe(0);
 
@@ -279,10 +287,10 @@ describe("Time Clock System - Comprehensive Tests", () => {
             AND t.clockOut IS NULL
             ORDER BY t.clockIn DESC`
       );
-      const activeEmployees = (activeResult[0] as any[]);
+      const activeEmployees = activeResult[0] as any[];
 
       expect(activeEmployees.length).toBeGreaterThan(0);
-      expect(activeEmployees[0].employeeName).toBe('Test Employee');
+      expect(activeEmployees[0].employeeName).toBe("Test Employee");
 
       // Cleanup - clock out
       await dbInstance.execute(
@@ -305,7 +313,7 @@ describe("Time Clock System - Comprehensive Tests", () => {
 
       await dbInstance.execute(
         sql`INSERT INTO timesheets (tenantId, employeeId, clockIn, workDate) 
-            VALUES (${testTenantId}, ${testEmployeeId}, ${twoHoursAgo.toISOString().slice(0, 19).replace('T', ' ')}, CURDATE())`
+            VALUES (${testTenantId}, ${testEmployeeId}, ${twoHoursAgo.toISOString().slice(0, 19).replace("T", " ")}, CURDATE())`
       );
 
       // Get active shift
@@ -321,7 +329,8 @@ describe("Time Clock System - Comprehensive Tests", () => {
 
       // Calculate elapsed time (frontend logic)
       const clockInTime = new Date(activeShift.clockIn);
-      const elapsedHours = (new Date().getTime() - clockInTime.getTime()) / (1000 * 60 * 60);
+      const elapsedHours =
+        (new Date().getTime() - clockInTime.getTime()) / (1000 * 60 * 60);
 
       expect(elapsedHours).toBeGreaterThanOrEqual(2);
       expect(elapsedHours).toBeLessThan(2.1); // Allow small margin
@@ -349,7 +358,7 @@ describe("Time Clock System - Comprehensive Tests", () => {
       );
       const tenant = (tenantResult[0] as any[])[0];
 
-      expect(tenant.timezone).toBe('Europe/Oslo');
+      expect(tenant.timezone).toBe("Europe/Oslo");
 
       // Clock in
       await dbInstance.execute(
@@ -369,8 +378,12 @@ describe("Time Clock System - Comprehensive Tests", () => {
       const timesheet = (timesheetResult[0] as any[])[0];
 
       // Verify workDate matches current date in tenant timezone
-      const osloDate = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Oslo' });
-      const workDateStr = new Date(timesheet.workDate).toISOString().slice(0, 10);
+      const osloDate = new Date().toLocaleDateString("sv-SE", {
+        timeZone: "Europe/Oslo",
+      });
+      const workDateStr = new Date(timesheet.workDate)
+        .toISOString()
+        .slice(0, 10);
 
       expect(workDateStr).toBe(osloDate);
 
@@ -396,7 +409,7 @@ describe("Time Clock System - Comprehensive Tests", () => {
         sql`INSERT INTO timesheets (tenantId, employeeId, clockIn, workDate) 
             VALUES (${testTenantId}, ${testEmployeeId}, NOW(), CURDATE())`
       );
-      
+
       // Retrieve the timesheet ID
       const [tsRows3] = await dbInstance.execute(
         sql`SELECT id FROM timesheets WHERE tenantId = ${testTenantId} AND employeeId = ${testEmployeeId} AND clockOut IS NULL ORDER BY clockIn DESC LIMIT 1`
@@ -424,7 +437,9 @@ describe("Time Clock System - Comprehensive Tests", () => {
       expect(parseFloat(timesheet.totalHours)).toBeLessThan(0.01); // Less than 0.01 hours (36 seconds)
 
       // Cleanup
-      await dbInstance.execute(sql`DELETE FROM timesheets WHERE id = ${timesheetId}`);
+      await dbInstance.execute(
+        sql`DELETE FROM timesheets WHERE id = ${timesheetId}`
+      );
     });
 
     it("should handle long shifts (> 12 hours)", async () => {
@@ -437,9 +452,9 @@ describe("Time Clock System - Comprehensive Tests", () => {
 
       await dbInstance.execute(
         sql`INSERT INTO timesheets (tenantId, employeeId, clockIn, workDate) 
-            VALUES (${testTenantId}, ${testEmployeeId}, ${fifteenHoursAgo.toISOString().slice(0, 19).replace('T', ' ')}, CURDATE())`
+            VALUES (${testTenantId}, ${testEmployeeId}, ${fifteenHoursAgo.toISOString().slice(0, 19).replace("T", " ")}, CURDATE())`
       );
-      
+
       // Retrieve the timesheet ID
       const [tsRows4] = await dbInstance.execute(
         sql`SELECT id FROM timesheets WHERE tenantId = ${testTenantId} AND employeeId = ${testEmployeeId} AND clockOut IS NULL ORDER BY clockIn DESC LIMIT 1`
@@ -464,7 +479,9 @@ describe("Time Clock System - Comprehensive Tests", () => {
       expect(parseFloat(timesheet.totalHours)).toBeLessThan(16);
 
       // Cleanup
-      await dbInstance.execute(sql`DELETE FROM timesheets WHERE id = ${timesheetId}`);
+      await dbInstance.execute(
+        sql`DELETE FROM timesheets WHERE id = ${timesheetId}`
+      );
     });
 
     it("should allow clock-out next day (forgot yesterday)", async () => {
@@ -478,9 +495,9 @@ describe("Time Clock System - Comprehensive Tests", () => {
 
       await dbInstance.execute(
         sql`INSERT INTO timesheets (tenantId, employeeId, clockIn, workDate) 
-            VALUES (${testTenantId}, ${testEmployeeId}, ${yesterday.toISOString().slice(0, 19).replace('T', ' ')}, DATE_SUB(CURDATE(), INTERVAL 1 DAY))`
+            VALUES (${testTenantId}, ${testEmployeeId}, ${yesterday.toISOString().slice(0, 19).replace("T", " ")}, DATE_SUB(CURDATE(), INTERVAL 1 DAY))`
       );
-      
+
       // Retrieve the timesheet ID
       const [tsRows5] = await dbInstance.execute(
         sql`SELECT id FROM timesheets WHERE tenantId = ${testTenantId} AND employeeId = ${testEmployeeId} AND clockOut IS NULL ORDER BY clockIn DESC LIMIT 1`
@@ -519,7 +536,9 @@ describe("Time Clock System - Comprehensive Tests", () => {
       expect(parseFloat(timesheet.totalHours)).toBeGreaterThan(20);
 
       // Cleanup
-      await dbInstance.execute(sql`DELETE FROM timesheets WHERE id = ${timesheetId}`);
+      await dbInstance.execute(
+        sql`DELETE FROM timesheets WHERE id = ${timesheetId}`
+      );
     });
   });
 });

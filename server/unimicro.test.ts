@@ -5,8 +5,8 @@
 
 import { describe, it, expect, beforeAll } from "vitest";
 import { getDb } from "./db";
-import { 
-  unimicroSettings, 
+import {
+  unimicroSettings,
   unimicroCustomerMapping,
   unimicroInvoiceMapping,
   unimicroSyncLog,
@@ -25,10 +25,18 @@ describe("Unimicro Integration", () => {
     if (!db) throw new Error("Database not available");
 
     // Clean up test data
-    await db.delete(unimicroSettings).where(eq(unimicroSettings.tenantId, TEST_TENANT_ID));
-    await db.delete(unimicroCustomerMapping).where(eq(unimicroCustomerMapping.tenantId, TEST_TENANT_ID));
-    await db.delete(unimicroInvoiceMapping).where(eq(unimicroInvoiceMapping.tenantId, TEST_TENANT_ID));
-    await db.delete(unimicroSyncLog).where(eq(unimicroSyncLog.tenantId, TEST_TENANT_ID));
+    await db
+      .delete(unimicroSettings)
+      .where(eq(unimicroSettings.tenantId, TEST_TENANT_ID));
+    await db
+      .delete(unimicroCustomerMapping)
+      .where(eq(unimicroCustomerMapping.tenantId, TEST_TENANT_ID));
+    await db
+      .delete(unimicroInvoiceMapping)
+      .where(eq(unimicroInvoiceMapping.tenantId, TEST_TENANT_ID));
+    await db
+      .delete(unimicroSyncLog)
+      .where(eq(unimicroSyncLog.tenantId, TEST_TENANT_ID));
   });
 
   describe("Database Schema", () => {
@@ -78,10 +86,12 @@ describe("Unimicro Integration", () => {
       const [mapping] = await db
         .select()
         .from(unimicroCustomerMapping)
-        .where(and(
-          eq(unimicroCustomerMapping.tenantId, TEST_TENANT_ID),
-          eq(unimicroCustomerMapping.customerId, 1)
-        ))
+        .where(
+          and(
+            eq(unimicroCustomerMapping.tenantId, TEST_TENANT_ID),
+            eq(unimicroCustomerMapping.customerId, 1)
+          )
+        )
         .limit(1);
 
       expect(mapping).toBeDefined();
@@ -107,10 +117,12 @@ describe("Unimicro Integration", () => {
       const [mapping] = await db
         .select()
         .from(unimicroInvoiceMapping)
-        .where(and(
-          eq(unimicroInvoiceMapping.tenantId, TEST_TENANT_ID),
-          eq(unimicroInvoiceMapping.orderId, 1)
-        ))
+        .where(
+          and(
+            eq(unimicroInvoiceMapping.tenantId, TEST_TENANT_ID),
+            eq(unimicroInvoiceMapping.orderId, 1)
+          )
+        )
         .limit(1);
 
       expect(mapping).toBeDefined();
@@ -253,7 +265,7 @@ describe("Unimicro Integration", () => {
 
       // Simulate mapping logic
       const name = `${testCustomer.firstName} ${testCustomer.lastName}`;
-      const parts = testCustomer.address.split(',').map(s => s.trim());
+      const parts = testCustomer.address.split(",").map(s => s.trim());
       const address = parts[0];
       const lastPart = parts[parts.length - 1];
       const match = lastPart.match(/(\d{4})\s+(.+)/);
@@ -278,7 +290,7 @@ describe("Unimicro Integration", () => {
       };
 
       const name = `${testCustomer.firstName} ${testCustomer.lastName}`;
-      
+
       expect(name).toBe("Ali Hassan");
       expect(testCustomer.address).toBeNull();
     });
@@ -338,7 +350,7 @@ describe("Unimicro Integration", () => {
       const dueDate = new Date(invoiceDate);
       dueDate.setDate(dueDate.getDate() + 14);
 
-      expect(dueDate.toISOString().split('T')[0]).toBe("2025-12-16");
+      expect(dueDate.toISOString().split("T")[0]).toBe("2025-12-16");
     });
   });
 
@@ -360,10 +372,12 @@ describe("Unimicro Integration", () => {
       const logs = await db
         .select()
         .from(unimicroSyncLog)
-        .where(and(
-          eq(unimicroSyncLog.tenantId, TEST_TENANT_ID),
-          eq(unimicroSyncLog.operation, "invoice_sync")
-        ));
+        .where(
+          and(
+            eq(unimicroSyncLog.tenantId, TEST_TENANT_ID),
+            eq(unimicroSyncLog.operation, "invoice_sync")
+          )
+        );
 
       expect(logs.length).toBeGreaterThan(0);
       const log = logs[logs.length - 1];
@@ -390,10 +404,12 @@ describe("Unimicro Integration", () => {
       const logs = await db
         .select()
         .from(unimicroSyncLog)
-        .where(and(
-          eq(unimicroSyncLog.tenantId, TEST_TENANT_ID),
-          eq(unimicroSyncLog.status, "failed")
-        ));
+        .where(
+          and(
+            eq(unimicroSyncLog.tenantId, TEST_TENANT_ID),
+            eq(unimicroSyncLog.status, "failed")
+          )
+        );
 
       expect(logs.length).toBeGreaterThan(0);
       const log = logs[logs.length - 1];
@@ -419,10 +435,12 @@ describe("Unimicro Integration", () => {
       const logs = await db
         .select()
         .from(unimicroSyncLog)
-        .where(and(
-          eq(unimicroSyncLog.tenantId, TEST_TENANT_ID),
-          eq(unimicroSyncLog.status, "partial")
-        ));
+        .where(
+          and(
+            eq(unimicroSyncLog.tenantId, TEST_TENANT_ID),
+            eq(unimicroSyncLog.status, "partial")
+          )
+        );
 
       expect(logs.length).toBeGreaterThan(0);
       const log = logs[logs.length - 1];

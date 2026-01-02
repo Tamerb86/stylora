@@ -1,6 +1,10 @@
 import { FikenClient } from "./client";
 import { getDb } from "../db";
-import { payments, fikenInvoiceMapping, fikenSyncLog } from "../../drizzle/schema";
+import {
+  payments,
+  fikenInvoiceMapping,
+  fikenSyncLog,
+} from "../../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 
 /**

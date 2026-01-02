@@ -68,7 +68,7 @@ describe("Employee Dashboard API", () => {
     const caller = appRouter.createCaller(ctx);
 
     const appointments = await caller.employee.myAppointments({
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toISOString().split("T")[0],
     });
 
     expect(Array.isArray(appointments)).toBe(true);
@@ -90,7 +90,7 @@ describe("Employee Dashboard API", () => {
     const caller = appRouter.createCaller(ctx);
 
     const appointments = await caller.employee.myAppointments({
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toISOString().split("T")[0],
     });
 
     expect(Array.isArray(appointments)).toBe(true);

@@ -16,16 +16,17 @@
 
 هذه العناصر **يجب** إصلاحها قبل أي deployment للإنتاج.
 
-| الملف | المشكلة | الحل المطلوب | الأولوية |
-|-------|---------|--------------|----------|
-| `server/storage.ts` | يعتمد على `BUILT_IN_FORGE_API_URL` و `BUILT_IN_FORGE_API_KEY` | استبدال بـ AWS S3 أو Cloudflare R2 أو Supabase Storage | **عالية جداً** |
-| `client/src/components/ManusDialog.tsx` | Dialog يطلب "Login with Manus" | حذف الملف أو استبداله بـ Login Dialog عادي | **عالية** |
-| `client/src/_core/hooks/useAuth.ts` | يخزن في `manus-runtime-user-info` | تغيير اسم localStorage key إلى `stylora-user-info` | **متوسطة** |
-| `server/_core/env.ts` | يحتوي على `forgeApiUrl` و `forgeApiKey` | إزالة أو استبدال بـ S3 credentials | **عالية** |
+| الملف                                   | المشكلة                                                       | الحل المطلوب                                           | الأولوية       |
+| --------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------ | -------------- |
+| `server/storage.ts`                     | يعتمد على `BUILT_IN_FORGE_API_URL` و `BUILT_IN_FORGE_API_KEY` | استبدال بـ AWS S3 أو Cloudflare R2 أو Supabase Storage | **عالية جداً** |
+| `client/src/components/ManusDialog.tsx` | Dialog يطلب "Login with Manus"                                | حذف الملف أو استبداله بـ Login Dialog عادي             | **عالية**      |
+| `client/src/_core/hooks/useAuth.ts`     | يخزن في `manus-runtime-user-info`                             | تغيير اسم localStorage key إلى `stylora-user-info`     | **متوسطة**     |
+| `server/_core/env.ts`                   | يحتوي على `forgeApiUrl` و `forgeApiKey`                       | إزالة أو استبدال بـ S3 credentials                     | **عالية**      |
 
 ### التفاصيل:
 
 #### 1. Storage (التخزين) - الأهم
+
 ```typescript
 // الوضع الحالي في server/storage.ts
 if (!baseUrl || !apiKey) {
@@ -36,9 +37,14 @@ if (!baseUrl || !apiKey) {
 ```
 
 **الحل:** استبدال بـ AWS S3 SDK أو Supabase Storage:
+
 ```typescript
 // الحل المقترح
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3";
 
 const s3Client = new S3Client({
   region: process.env.AWS_REGION,
@@ -50,7 +56,9 @@ const s3Client = new S3Client({
 ```
 
 #### 2. ManusDialog - حذف أو استبدال
+
 الملف `ManusDialog.tsx` يعرض dialog لتسجيل الدخول عبر Manus OAuth. يجب:
+
 - حذف الملف بالكامل
 - أو استبداله بـ Login Dialog يستخدم email/password
 
@@ -60,32 +68,40 @@ const s3Client = new S3Client({
 
 هذه العناصر مهمة لكن لن تمنع المشروع من العمل.
 
-| الملف | المشكلة | الحل المطلوب | الأولوية |
-|-------|---------|--------------|----------|
-| `server/_core/llm.ts` | LLM integration معطل بالفعل | إضافة OpenAI/Anthropic integration إذا لزم | **منخفضة** |
-| `server/_core/notification.ts` | Notification system معطل | استبدال بـ email notifications (SendGrid/AWS SES) | **متوسطة** |
-| `server/_core/types/manusTypes.ts` | Types غير مستخدمة | حذف الملف | **منخفضة** |
-| Test files (*.test.ts) | `loginMethod: "manus"` في mock data | تغيير إلى `loginMethod: "email"` | **منخفضة** |
+| الملف                              | المشكلة                             | الحل المطلوب                                      | الأولوية   |
+| ---------------------------------- | ----------------------------------- | ------------------------------------------------- | ---------- |
+| `server/_core/llm.ts`              | LLM integration معطل بالفعل         | إضافة OpenAI/Anthropic integration إذا لزم        | **منخفضة** |
+| `server/_core/notification.ts`     | Notification system معطل            | استبدال بـ email notifications (SendGrid/AWS SES) | **متوسطة** |
+| `server/_core/types/manusTypes.ts` | Types غير مستخدمة                   | حذف الملف                                         | **منخفضة** |
+| Test files (\*.test.ts)            | `loginMethod: "manus"` في mock data | تغيير إلى `loginMethod: "email"`                  | **منخفضة** |
 
 ### التفاصيل:
 
 #### 1. LLM Integration
+
 ```typescript
 // الوضع الحالي - معطل بالفعل ✅
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
-  throw new Error("LLM integration disabled. Please configure OpenAI or another LLM provider.");
+  throw new Error(
+    "LLM integration disabled. Please configure OpenAI or another LLM provider."
+  );
 }
 ```
+
 **الحالة:** ✅ معطل بالفعل - لا يحتاج تعديل فوري
 
 #### 2. Notification System
+
 ```typescript
 // الوضع الحالي - معطل بالفعل ✅
-export async function notifyOwner(payload: NotificationPayload): Promise<boolean> {
+export async function notifyOwner(
+  payload: NotificationPayload
+): Promise<boolean> {
   console.warn("[Notification] Manus notification system disabled.");
   return false;
 }
 ```
+
 **الحالة:** ✅ معطل بالفعل - يمكن إضافة email notifications لاحقاً
 
 ---
@@ -94,11 +110,11 @@ export async function notifyOwner(payload: NotificationPayload): Promise<boolean
 
 هذه العناصر تجميلية ولا تؤثر على عمل المشروع.
 
-| الملف | المشكلة | الحل المطلوب | الأولوية |
-|-------|---------|--------------|----------|
+| الملف                           | المشكلة                             | الحل المطلوب           | الأولوية        |
+| ------------------------------- | ----------------------------------- | ---------------------- | --------------- |
 | `server/test-email-template.ts` | URL يحتوي على `stylora.manus.space` | تغيير إلى `stylora.no` | **منخفضة جداً** |
-| Comments في الكود | تعليقات تذكر "Manus" | تنظيف التعليقات | **منخفضة جداً** |
-| `MANUS_REMOVAL_TODO.md` | ملف توثيق | إبقاء للمرجعية أو حذف | **منخفضة جداً** |
+| Comments في الكود               | تعليقات تذكر "Manus"                | تنظيف التعليقات        | **منخفضة جداً** |
+| `MANUS_REMOVAL_TODO.md`         | ملف توثيق                           | إبقاء للمرجعية أو حذف  | **منخفضة جداً** |
 
 ---
 
@@ -145,6 +161,7 @@ grep -r "BUILT_IN_FORGE\|FORGE_API" --include="*.ts" .
 ## Environment Variables المطلوبة للاستقلالية
 
 ### Variables يجب إزالتها:
+
 - `BUILT_IN_FORGE_API_URL` ❌
 - `BUILT_IN_FORGE_API_KEY` ❌
 - `VITE_FRONTEND_FORGE_API_KEY` ❌
@@ -153,6 +170,7 @@ grep -r "BUILT_IN_FORGE\|FORGE_API" --include="*.ts" .
 - `VITE_OAUTH_PORTAL_URL` ❌
 
 ### Variables يجب إضافتها للبديل:
+
 ```env
 # AWS S3 للتخزين
 AWS_ACCESS_KEY_ID=xxx
@@ -170,11 +188,11 @@ SUPABASE_SERVICE_KEY=xxx
 
 ## ملخص الحالة الحالية
 
-| الفئة | العدد | الحالة |
-|-------|-------|--------|
-| ضروري قبل الإنتاج | 4 | 🔴 يحتاج عمل |
-| مهم لكن ممكن لاحقاً | 4 | 🟡 معظمها معطل |
-| كماليات | 3 | 🟢 تجميلي |
+| الفئة               | العدد | الحالة         |
+| ------------------- | ----- | -------------- |
+| ضروري قبل الإنتاج   | 4     | 🔴 يحتاج عمل   |
+| مهم لكن ممكن لاحقاً | 4     | 🟡 معظمها معطل |
+| كماليات             | 3     | 🟢 تجميلي      |
 
 ### الخلاصة:
 

@@ -14,10 +14,10 @@ describe("Email Templates", () => {
     // Create a test tenant
     const db = await getDb();
     if (!db) throw new Error("Database not available");
-    
+
     const timestamp = Date.now();
     tenantId = randomUUID();
-    
+
     await db.insert(tenants).values({
       id: tenantId,
       name: "Test Salon for Email Templates",
@@ -50,7 +50,7 @@ describe("Email Templates", () => {
       secondaryColor: "#10B981",
       isActive: true,
     });
-    
+
     templateId = result.insertId;
 
     // Mock context with admin user
@@ -77,7 +77,7 @@ describe("Email Templates", () => {
     expect(templates).toBeDefined();
     expect(Array.isArray(templates)).toBe(true);
     expect(templates.length).toBeGreaterThanOrEqual(1);
-    
+
     // Check that our test template exists
     const testTemplate = templates.find(t => t.id === templateId);
     expect(testTemplate).toBeDefined();
@@ -86,7 +86,9 @@ describe("Email Templates", () => {
 
   it("should get a specific template by type", async () => {
     const caller = appRouter.createCaller(ctx);
-    const template = await caller.emailTemplates.getByType({ templateType: "reminder_24h" });
+    const template = await caller.emailTemplates.getByType({
+      templateType: "reminder_24h",
+    });
 
     expect(template).toBeDefined();
     expect(template?.templateType).toBe("reminder_24h");
@@ -97,7 +99,7 @@ describe("Email Templates", () => {
 
   it("should update a template", async () => {
     const caller = appRouter.createCaller(ctx);
-    
+
     // Update the template
     const updatedTemplate = await caller.emailTemplates.update({
       templateType: "reminder_24h",
@@ -109,16 +111,20 @@ describe("Email Templates", () => {
 
     expect(updatedTemplate).toBeDefined();
     expect(updatedTemplate.subject).toBe("Updated Subject - Test");
-    expect(updatedTemplate.bodyHtml).toBe("<p>Updated body content with {{customerName}}</p>");
+    expect(updatedTemplate.bodyHtml).toBe(
+      "<p>Updated body content with {{customerName}}</p>"
+    );
     expect(updatedTemplate.primaryColor).toBe("#FF0000");
     expect(updatedTemplate.secondaryColor).toBe("#00FF00");
   });
 
   it("should reset template to default", async () => {
     const caller = appRouter.createCaller(ctx);
-    
+
     // Reset the template
-    const resetTemplate = await caller.emailTemplates.resetToDefault({ templateType: "reminder_24h" });
+    const resetTemplate = await caller.emailTemplates.resetToDefault({
+      templateType: "reminder_24h",
+    });
 
     expect(resetTemplate).toBeDefined();
     expect(resetTemplate.subject.toLowerCase()).toContain("påminnelse");
@@ -127,7 +133,9 @@ describe("Email Templates", () => {
 
   it("should handle template variables correctly", async () => {
     const caller = appRouter.createCaller(ctx);
-    const template = await caller.emailTemplates.getByType({ templateType: "reminder_24h" });
+    const template = await caller.emailTemplates.getByType({
+      templateType: "reminder_24h",
+    });
 
     expect(template).toBeDefined();
     // Check that template contains expected variables

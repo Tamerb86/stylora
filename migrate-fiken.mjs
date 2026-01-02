@@ -1,13 +1,13 @@
-import { drizzle } from 'drizzle-orm/mysql2';
-import mysql from 'mysql2/promise';
-import * as dotenv from 'dotenv';
+import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2/promise";
+import * as dotenv from "dotenv";
 
 dotenv.config();
 
 const connection = await mysql.createConnection(process.env.DATABASE_URL);
 const db = drizzle(connection);
 
-console.log('Creating Fiken integration tables...');
+console.log("Creating Fiken integration tables...");
 
 try {
   // Create fikenSettings table
@@ -37,7 +37,7 @@ try {
       INDEX fiken_settings_tenant_idx (tenantId)
     )
   `);
-  console.log('✓ fikenSettings table created');
+  console.log("✓ fikenSettings table created");
 
   // Create fikenCustomerMapping table
   await connection.execute(`
@@ -57,7 +57,7 @@ try {
       INDEX fiken_customer_status_idx (status)
     )
   `);
-  console.log('✓ fikenCustomerMapping table created');
+  console.log("✓ fikenCustomerMapping table created");
 
   // Create fikenInvoiceMapping table
   await connection.execute(`
@@ -80,7 +80,7 @@ try {
       INDEX fiken_invoice_status_idx (status)
     )
   `);
-  console.log('✓ fikenInvoiceMapping table created');
+  console.log("✓ fikenInvoiceMapping table created");
 
   // Create fikenProductMapping table
   await connection.execute(`
@@ -100,7 +100,7 @@ try {
       INDEX fiken_product_id_idx (fikenProductId)
     )
   `);
-  console.log('✓ fikenProductMapping table created');
+  console.log("✓ fikenProductMapping table created");
 
   // Create fikenSyncLog table
   await connection.execute(`
@@ -121,11 +121,11 @@ try {
       INDEX fiken_log_created_idx (createdAt)
     )
   `);
-  console.log('✓ fikenSyncLog table created');
+  console.log("✓ fikenSyncLog table created");
 
-  console.log('\n✅ All Fiken tables created successfully!');
+  console.log("\n✅ All Fiken tables created successfully!");
 } catch (error) {
-  console.error('❌ Error creating tables:', error.message);
+  console.error("❌ Error creating tables:", error.message);
   process.exit(1);
 } finally {
   await connection.end();

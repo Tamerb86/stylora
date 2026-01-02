@@ -3,14 +3,19 @@ import { promisify } from "util";
 import { createReadStream, createWriteStream, unlinkSync } from "fs";
 import { pipeline } from "stream/promises";
 import { createGzip } from "zlib";
-import { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  ListObjectsV2Command,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
 import * as Sentry from "@sentry/node";
 
 const execAsync = promisify(exec);
 
 /**
  * Database Backup Service
- * 
+ *
  * Features:
  * - Daily automated backups
  * - Compression (gzip)
@@ -18,7 +23,7 @@ const execAsync = promisify(exec);
  * - 30-day retention policy
  * - Backup verification
  * - Error monitoring with Sentry
- * 
+ *
  * Environment variables required:
  * - DATABASE_URL: MySQL connection string
  * - BACKUP_S3_ENDPOINT: S3-compatible endpoint (e.g., Backblaze B2)
@@ -58,7 +63,7 @@ function getBackupConfig(): BackupConfig {
 
   // Parse database URL
   const url = new URL(databaseUrl);
-  
+
   return {
     databaseUrl,
     s3Endpoint: process.env.BACKUP_S3_ENDPOINT || "",
@@ -101,9 +106,12 @@ function parseDatabaseUrl(url: string) {
 /**
  * Create database backup using mysqldump
  */
-async function createDatabaseDump(config: BackupConfig, filename: string): Promise<void> {
+async function createDatabaseDump(
+  config: BackupConfig,
+  filename: string
+): Promise<void> {
   const db = parseDatabaseUrl(config.databaseUrl);
-  
+
   // mysqldump command with compression
   const dumpCommand = `mysqldump \
     --host=${db.host} \
@@ -119,10 +127,10 @@ async function createDatabaseDump(config: BackupConfig, filename: string): Promi
     ${db.database}`;
 
   const compressedFilename = `${filename}.gz`;
-  
+
   // Execute dump and compress
   await execAsync(`${dumpCommand} | gzip > /tmp/${compressedFilename}`);
-  
+
   console.log(`✅ Database dump created: ${compressedFilename}`);
 }
 
@@ -140,7 +148,7 @@ async function uploadToS3(
 
   // Read file and upload
   const fileStream = createReadStream(localPath);
-  
+
   const command = new PutObjectCommand({
     Bucket: config.s3Bucket,
     Key: s3Key,
@@ -148,21 +156,25 @@ async function uploadToS3(
     ContentType: "application/gzip",
     Metadata: {
       "backup-date": new Date().toISOString(),
-      "database": parseDatabaseUrl(config.databaseUrl).database,
+      database: parseDatabaseUrl(config.databaseUrl).database,
     },
   });
 
   await s3Client.send(command);
-  
+
   // Get file size
-  const { size } = await execAsync(`stat -f%z ${localPath} || stat -c%s ${localPath}`);
+  const { size } = await execAsync(
+    `stat -f%z ${localPath} || stat -c%s ${localPath}`
+  );
   const fileSize = parseInt(size.trim(), 10);
-  
+
   // Clean up local file
   unlinkSync(localPath);
-  
-  console.log(`✅ Backup uploaded to S3: ${s3Key} (${(fileSize / 1024 / 1024).toFixed(2)} MB)`);
-  
+
+  console.log(
+    `✅ Backup uploaded to S3: ${s3Key} (${(fileSize / 1024 / 1024).toFixed(2)} MB)`
+  );
+
   return fileSize;
 }
 
@@ -213,39 +225,48 @@ async function cleanupOldBackups(
  */
 export async function performBackup(): Promise<BackupResult> {
   const startTime = Date.now();
-  
+
   try {
     console.log("🔄 Starting database backup...");
-    
+
     // Get configuration
     const config = getBackupConfig();
-    
+
     // Validate S3 configuration
-    if (!config.s3Endpoint || !config.s3Bucket || !config.s3AccessKey || !config.s3SecretKey) {
-      throw new Error("S3 backup configuration is incomplete. Please set BACKUP_S3_* environment variables.");
+    if (
+      !config.s3Endpoint ||
+      !config.s3Bucket ||
+      !config.s3AccessKey ||
+      !config.s3SecretKey
+    ) {
+      throw new Error(
+        "S3 backup configuration is incomplete. Please set BACKUP_S3_* environment variables."
+      );
     }
-    
+
     // Create S3 client
     const s3Client = createS3Client(config);
-    
+
     // Generate filename with timestamp
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const dbName = parseDatabaseUrl(config.databaseUrl).database;
     const filename = `${dbName}-${timestamp}.sql`;
-    
+
     // Create database dump
     await createDatabaseDump(config, filename);
-    
+
     // Upload to S3
     const fileSize = await uploadToS3(s3Client, config, filename);
-    
+
     // Cleanup old backups
     await cleanupOldBackups(s3Client, config);
-    
+
     const duration = Date.now() - startTime;
-    
-    console.log(`✅ Backup completed successfully in ${(duration / 1000).toFixed(2)}s`);
-    
+
+    console.log(
+      `✅ Backup completed successfully in ${(duration / 1000).toFixed(2)}s`
+    );
+
     return {
       success: true,
       filename: `${filename}.gz`,
@@ -255,16 +276,16 @@ export async function performBackup(): Promise<BackupResult> {
   } catch (error) {
     const duration = Date.now() - startTime;
     const errorMessage = error instanceof Error ? error.message : String(error);
-    
+
     console.error("❌ Backup failed:", errorMessage);
-    
+
     // Send error to Sentry
     Sentry.captureException(error, {
       tags: {
         service: "database-backup",
       },
     });
-    
+
     return {
       success: false,
       filename: "",
@@ -283,9 +304,11 @@ export function scheduleBackups() {
   // Check if backup is configured
   try {
     const config = getBackupConfig();
-    
+
     if (!config.s3Endpoint || !config.s3Bucket) {
-      console.warn("⚠️ Database backup not configured. Skipping backup scheduler.");
+      console.warn(
+        "⚠️ Database backup not configured. Skipping backup scheduler."
+      );
       return;
     }
   } catch (error) {
@@ -296,28 +319,30 @@ export function scheduleBackups() {
   // Run backup every day at 3:00 AM
   const BACKUP_HOUR = 3;
   const BACKUP_MINUTE = 0;
-  
+
   function scheduleNextBackup() {
     const now = new Date();
     const nextBackup = new Date();
-    
+
     nextBackup.setHours(BACKUP_HOUR, BACKUP_MINUTE, 0, 0);
-    
+
     // If we've passed today's backup time, schedule for tomorrow
     if (now > nextBackup) {
       nextBackup.setDate(nextBackup.getDate() + 1);
     }
-    
+
     const msUntilBackup = nextBackup.getTime() - now.getTime();
-    
-    console.log(`📅 Next database backup scheduled for: ${nextBackup.toISOString()}`);
-    
+
+    console.log(
+      `📅 Next database backup scheduled for: ${nextBackup.toISOString()}`
+    );
+
     setTimeout(async () => {
       await performBackup();
       scheduleNextBackup(); // Schedule next backup
     }, msUntilBackup);
   }
-  
+
   scheduleNextBackup();
   console.log("✅ Database backup scheduler started");
 }

@@ -29,7 +29,8 @@ export function BusinessHoursTab() {
   const [hours, setHours] = useState<DayHours[]>([]);
   const [hasChanges, setHasChanges] = useState(false);
 
-  const { data: businessHours, isLoading } = trpc.businessHours.getAll.useQuery();
+  const { data: businessHours, isLoading } =
+    trpc.businessHours.getAll.useQuery();
   const updateAll = trpc.businessHours.updateAll.useMutation({
     onSuccess: () => {
       toast.success("Åpningstider lagret", {
@@ -37,7 +38,7 @@ export function BusinessHoursTab() {
       });
       setHasChanges(false);
     },
-    onError: (error) => {
+    onError: error => {
       toast.error("Feil ved lagring", {
         description: error.message,
       });
@@ -49,7 +50,7 @@ export function BusinessHoursTab() {
     if (businessHours) {
       const initialHours: DayHours[] = [];
       for (let i = 0; i <= 6; i++) {
-        const dayData = businessHours.find((h) => h.dayOfWeek === i);
+        const dayData = businessHours.find(h => h.dayOfWeek === i);
         initialHours.push({
           dayOfWeek: i,
           isOpen: dayData?.isOpen ?? false,
@@ -62,8 +63,8 @@ export function BusinessHoursTab() {
   }, [businessHours]);
 
   const handleToggle = (dayOfWeek: number) => {
-    setHours((prev) =>
-      prev.map((h) =>
+    setHours(prev =>
+      prev.map(h =>
         h.dayOfWeek === dayOfWeek ? { ...h, isOpen: !h.isOpen } : h
       )
     );
@@ -75,10 +76,8 @@ export function BusinessHoursTab() {
     field: "openTime" | "closeTime",
     value: string
   ) => {
-    setHours((prev) =>
-      prev.map((h) =>
-        h.dayOfWeek === dayOfWeek ? { ...h, [field]: value } : h
-      )
+    setHours(prev =>
+      prev.map(h => (h.dayOfWeek === dayOfWeek ? { ...h, [field]: value } : h))
     );
     setHasChanges(true);
   };
@@ -88,11 +87,11 @@ export function BusinessHoursTab() {
   };
 
   const handleCopyToAll = (sourceDay: number) => {
-    const source = hours.find((h) => h.dayOfWeek === sourceDay);
+    const source = hours.find(h => h.dayOfWeek === sourceDay);
     if (!source) return;
 
-    setHours((prev) =>
-      prev.map((h) => ({
+    setHours(prev =>
+      prev.map(h => ({
         ...h,
         isOpen: source.isOpen,
         openTime: source.openTime,
@@ -121,7 +120,7 @@ export function BusinessHoursTab() {
       </div>
 
       <div className="space-y-4">
-        {hours.map((day) => (
+        {hours.map(day => (
           <Card key={day.dayOfWeek} className="p-4">
             <div className="flex items-center gap-4">
               {/* Day name and toggle */}
@@ -130,9 +129,7 @@ export function BusinessHoursTab() {
                   checked={day.isOpen}
                   onCheckedChange={() => handleToggle(day.dayOfWeek)}
                 />
-                <Label className="font-medium">
-                  {dayNames[day.dayOfWeek]}
-                </Label>
+                <Label className="font-medium">{dayNames[day.dayOfWeek]}</Label>
               </div>
 
               {/* Time inputs */}
@@ -143,8 +140,12 @@ export function BusinessHoursTab() {
                     <Input
                       type="time"
                       value={day.openTime}
-                      onChange={(e) =>
-                        handleTimeChange(day.dayOfWeek, "openTime", e.target.value)
+                      onChange={e =>
+                        handleTimeChange(
+                          day.dayOfWeek,
+                          "openTime",
+                          e.target.value
+                        )
                       }
                       className="w-32"
                     />
@@ -153,8 +154,12 @@ export function BusinessHoursTab() {
                   <Input
                     type="time"
                     value={day.closeTime}
-                    onChange={(e) =>
-                      handleTimeChange(day.dayOfWeek, "closeTime", e.target.value)
+                    onChange={e =>
+                      handleTimeChange(
+                        day.dayOfWeek,
+                        "closeTime",
+                        e.target.value
+                      )
                     }
                     className="w-32"
                   />

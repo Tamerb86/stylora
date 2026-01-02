@@ -30,12 +30,8 @@ describe("Payment Settings API", () => {
       await dbInstance
         .delete(paymentSettings)
         .where(eq(paymentSettings.tenantId, testTenantId));
-      await dbInstance
-        .delete(users)
-        .where(eq(users.email, testEmail));
-      await dbInstance
-        .delete(tenants)
-        .where(eq(tenants.id, testTenantId));
+      await dbInstance.delete(users).where(eq(users.email, testEmail));
+      await dbInstance.delete(tenants).where(eq(tenants.id, testTenantId));
 
       // Create test tenant
       await dbInstance.insert(tenants).values({
@@ -68,12 +64,8 @@ describe("Payment Settings API", () => {
       await dbInstance
         .delete(paymentSettings)
         .where(eq(paymentSettings.tenantId, testTenantId));
-      await dbInstance
-        .delete(users)
-        .where(eq(users.email, testEmail));
-      await dbInstance
-        .delete(tenants)
-        .where(eq(tenants.id, testTenantId));
+      await dbInstance.delete(users).where(eq(users.email, testEmail));
+      await dbInstance.delete(tenants).where(eq(tenants.id, testTenantId));
     }
   });
 
@@ -91,7 +83,7 @@ describe("Payment Settings API", () => {
 
   it("should create new payment settings", async () => {
     const caller = appRouter.createCaller(mockContext as any);
-    
+
     const updated = await caller.paymentSettings.update({
       vippsEnabled: true,
       cardEnabled: false,
@@ -111,7 +103,7 @@ describe("Payment Settings API", () => {
 
   it("should update existing payment settings", async () => {
     const caller = appRouter.createCaller(mockContext as any);
-    
+
     // Update again
     const updated = await caller.paymentSettings.update({
       vippsEnabled: true,
@@ -131,7 +123,7 @@ describe("Payment Settings API", () => {
 
   it("should retrieve updated payment settings", async () => {
     const caller = appRouter.createCaller(mockContext as any);
-    
+
     const settings = await caller.paymentSettings.get();
 
     expect(settings).toBeDefined();
@@ -143,7 +135,7 @@ describe("Payment Settings API", () => {
 
   it("should return public payment settings without sensitive data", async () => {
     const caller = appRouter.createCaller({} as any); // Public endpoint
-    
+
     const settings = await caller.paymentSettings.getPublic({
       tenantId: testTenantId,
     });
@@ -153,7 +145,7 @@ describe("Payment Settings API", () => {
     expect(settings.cardEnabled).toBe(true);
     expect(settings.cashEnabled).toBe(false);
     expect(settings.payAtSalonEnabled).toBe(true);
-    
+
     // Sensitive fields should not be exposed
     expect((settings as any).vippsClientId).toBeUndefined();
     expect((settings as any).vippsClientSecret).toBeUndefined();
@@ -162,7 +154,7 @@ describe("Payment Settings API", () => {
 
   it("should return default public settings for non-existent tenant", async () => {
     const caller = appRouter.createCaller({} as any);
-    
+
     const settings = await caller.paymentSettings.getPublic({
       tenantId: "non-existent-tenant",
     });

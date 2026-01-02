@@ -3,20 +3,77 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { toast } from "sonner";
-import { TrendingUp, DollarSign, ShoppingCart, Users, Download, Calendar, Filter } from "lucide-react";
-import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
-import { format, subDays, startOfMonth, endOfMonth, startOfDay, endOfDay } from "date-fns";
+import {
+  TrendingUp,
+  DollarSign,
+  ShoppingCart,
+  Users,
+  Download,
+  Calendar,
+  Filter,
+} from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
+import {
+  format,
+  subDays,
+  startOfMonth,
+  endOfMonth,
+  startOfDay,
+  endOfDay,
+} from "date-fns";
 import { nb } from "date-fns/locale";
 import { safeToFixed } from "@/lib/utils";
 
-const COLORS = ["#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b", "#10b981", "#6366f1"];
+const COLORS = [
+  "#3b82f6",
+  "#8b5cf6",
+  "#ec4899",
+  "#f59e0b",
+  "#10b981",
+  "#6366f1",
+];
 
 export default function POSFinancialReports() {
-  const [dateRange, setDateRange] = useState<"today" | "7days" | "30days" | "month" | "custom">("today");
+  const [dateRange, setDateRange] = useState<
+    "today" | "7days" | "30days" | "month" | "custom"
+  >("today");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
   const [employeeFilter, setEmployeeFilter] = useState<string>("all");
@@ -29,14 +86,22 @@ export default function POSFinancialReports() {
       case "today":
         return { startDate: startOfDay(now), endDate: endOfDay(now) };
       case "7days":
-        return { startDate: startOfDay(subDays(now, 7)), endDate: endOfDay(now) };
+        return {
+          startDate: startOfDay(subDays(now, 7)),
+          endDate: endOfDay(now),
+        };
       case "30days":
-        return { startDate: startOfDay(subDays(now, 30)), endDate: endOfDay(now) };
+        return {
+          startDate: startOfDay(subDays(now, 30)),
+          endDate: endOfDay(now),
+        };
       case "month":
         return { startDate: startOfMonth(now), endDate: endOfMonth(now) };
       case "custom":
         return {
-          startDate: customStartDate ? new Date(customStartDate) : startOfDay(now),
+          startDate: customStartDate
+            ? new Date(customStartDate)
+            : startOfDay(now),
           endDate: customEndDate ? new Date(customEndDate) : endOfDay(now),
         };
       default:
@@ -44,31 +109,42 @@ export default function POSFinancialReports() {
     }
   }, [dateRange, customStartDate, customEndDate]);
 
-  const { data: report, isLoading } = trpc.posReports.getDetailedReport.useQuery({
-    startDate: startDate.toISOString(),
-    endDate: endDate.toISOString(),
-    employeeId: employeeFilter === "all" ? undefined : parseInt(employeeFilter),
-    paymentMethod: paymentMethodFilter === "all" ? undefined : paymentMethodFilter as any,
-  });
+  const { data: report, isLoading } =
+    trpc.posReports.getDetailedReport.useQuery({
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      employeeId:
+        employeeFilter === "all" ? undefined : parseInt(employeeFilter),
+      paymentMethod:
+        paymentMethodFilter === "all"
+          ? undefined
+          : (paymentMethodFilter as any),
+    });
 
   const { data: employees } = trpc.employees.list.useQuery();
 
   // Prepare chart data
-  const salesByEmployeeData = report?.salesByEmployee.map(e => ({
-    name: e.employeeName,
-    sales: parseFloat(e.totalSales),
-    orders: e.orderCount,
-  })) || [];
+  const salesByEmployeeData =
+    report?.salesByEmployee.map(e => ({
+      name: e.employeeName,
+      sales: parseFloat(e.totalSales),
+      orders: e.orderCount,
+    })) || [];
 
-  const salesByPaymentMethodData = report?.salesByPaymentMethod.map(p => ({
-    name: p.paymentMethod === "split" ? "Delt" : p.paymentMethod.charAt(0).toUpperCase() + p.paymentMethod.slice(1),
-    value: parseFloat(p.totalAmount),
-  })) || [];
+  const salesByPaymentMethodData =
+    report?.salesByPaymentMethod.map(p => ({
+      name:
+        p.paymentMethod === "split"
+          ? "Delt"
+          : p.paymentMethod.charAt(0).toUpperCase() + p.paymentMethod.slice(1),
+      value: parseFloat(p.totalAmount),
+    })) || [];
 
-  const hourlySalesData = report?.hourlySales.map(h => ({
-    hour: `${h.hour}:00`,
-    sales: parseFloat(h.totalSales),
-  })) || [];
+  const hourlySalesData =
+    report?.hourlySales.map(h => ({
+      hour: `${h.hour}:00`,
+      sales: parseFloat(h.totalSales),
+    })) || [];
 
   const handleExportPDF = () => {
     toast.info("PDF-eksport kommer snart");
@@ -102,7 +178,10 @@ export default function POSFinancialReports() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <Label htmlFor="dateRange">Tidsperiode</Label>
-                <Select value={dateRange} onValueChange={(v: any) => setDateRange(v)}>
+                <Select
+                  value={dateRange}
+                  onValueChange={(v: any) => setDateRange(v)}
+                >
                   <SelectTrigger id="dateRange">
                     <SelectValue />
                   </SelectTrigger>
@@ -124,7 +203,7 @@ export default function POSFinancialReports() {
                       id="customStart"
                       type="date"
                       value={customStartDate}
-                      onChange={(e) => setCustomStartDate(e.target.value)}
+                      onChange={e => setCustomStartDate(e.target.value)}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     />
                   </div>
@@ -134,7 +213,7 @@ export default function POSFinancialReports() {
                       id="customEnd"
                       type="date"
                       value={customEndDate}
-                      onChange={(e) => setCustomEndDate(e.target.value)}
+                      onChange={e => setCustomEndDate(e.target.value)}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     />
                   </div>
@@ -143,7 +222,10 @@ export default function POSFinancialReports() {
 
               <div>
                 <Label htmlFor="employee">Ansatt</Label>
-                <Select value={employeeFilter} onValueChange={setEmployeeFilter}>
+                <Select
+                  value={employeeFilter}
+                  onValueChange={setEmployeeFilter}
+                >
                   <SelectTrigger id="employee">
                     <SelectValue />
                   </SelectTrigger>
@@ -160,7 +242,10 @@ export default function POSFinancialReports() {
 
               <div>
                 <Label htmlFor="paymentMethod">Betalingsmetode</Label>
-                <Select value={paymentMethodFilter} onValueChange={setPaymentMethodFilter}>
+                <Select
+                  value={paymentMethodFilter}
+                  onValueChange={setPaymentMethodFilter}
+                >
                   <SelectTrigger id="paymentMethod">
                     <SelectValue />
                   </SelectTrigger>
@@ -190,9 +275,13 @@ export default function POSFinancialReports() {
         </Card>
 
         {isLoading ? (
-          <div className="text-center py-12 text-muted-foreground">Laster rapport...</div>
+          <div className="text-center py-12 text-muted-foreground">
+            Laster rapport...
+          </div>
         ) : !report ? (
-          <div className="text-center py-12 text-muted-foreground">Ingen data tilgjengelig</div>
+          <div className="text-center py-12 text-muted-foreground">
+            Ingen data tilgjengelig
+          </div>
         ) : (
           <>
             {/* Summary Cards */}
@@ -260,7 +349,9 @@ export default function POSFinancialReports() {
               <Card>
                 <CardHeader>
                   <CardTitle>Salg per ansatt</CardTitle>
-                  <CardDescription>Totalt salg fordelt på ansatte</CardDescription>
+                  <CardDescription>
+                    Totalt salg fordelt på ansatte
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
@@ -269,7 +360,13 @@ export default function POSFinancialReports() {
                       <XAxis dataKey="name" />
                       <YAxis />
                       <Tooltip />
-                      <Legend wrapperStyle={{ fontSize: '16px', fontWeight: '700', color: '#000000' }} />
+                      <Legend
+                        wrapperStyle={{
+                          fontSize: "16px",
+                          fontWeight: "700",
+                          color: "#000000",
+                        }}
+                      />
                       <Bar dataKey="sales" fill="#3b82f6" name="Salg (NOK)" />
                     </BarChart>
                   </ResponsiveContainer>
@@ -280,7 +377,9 @@ export default function POSFinancialReports() {
               <Card>
                 <CardHeader>
                   <CardTitle>Salg per betalingsmetode</CardTitle>
-                  <CardDescription>Fordeling av betalingsmetoder</CardDescription>
+                  <CardDescription>
+                    Fordeling av betalingsmetoder
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ResponsiveContainer width="100%" height={300}>
@@ -290,13 +389,18 @@ export default function POSFinancialReports() {
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        label={(entry) => `${entry.name}: ${safeToFixed(entry.value, 0)} NOK`}
+                        label={entry =>
+                          `${entry.name}: ${safeToFixed(entry.value, 0)} NOK`
+                        }
                         outerRadius={80}
                         fill="#8884d8"
                         dataKey="value"
                       >
                         {salesByPaymentMethodData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
                         ))}
                       </Pie>
                       <Tooltip />
@@ -319,8 +423,20 @@ export default function POSFinancialReports() {
                     <XAxis dataKey="hour" />
                     <YAxis />
                     <Tooltip />
-                    <Legend wrapperStyle={{ fontSize: '16px', fontWeight: '700', color: '#000000' }} />
-                    <Line type="monotone" dataKey="sales" stroke="#8b5cf6" name="Salg (NOK)" strokeWidth={2} />
+                    <Legend
+                      wrapperStyle={{
+                        fontSize: "16px",
+                        fontWeight: "700",
+                        color: "#000000",
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="sales"
+                      stroke="#8b5cf6"
+                      name="Salg (NOK)"
+                      strokeWidth={2}
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -346,8 +462,12 @@ export default function POSFinancialReports() {
                     <TableBody>
                       {report.topServices.slice(0, 10).map((service, idx) => (
                         <TableRow key={idx}>
-                          <TableCell className="font-medium">{service.serviceName}</TableCell>
-                          <TableCell className="text-right">{service.count}</TableCell>
+                          <TableCell className="font-medium">
+                            {service.serviceName}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {service.count}
+                          </TableCell>
                           <TableCell className="text-right font-semibold">
                             {safeToFixed(service.totalRevenue, 2)} NOK
                           </TableCell>
@@ -376,8 +496,12 @@ export default function POSFinancialReports() {
                     <TableBody>
                       {report.topProducts.slice(0, 10).map((product, idx) => (
                         <TableRow key={idx}>
-                          <TableCell className="font-medium">{product.productName}</TableCell>
-                          <TableCell className="text-right">{product.quantity}</TableCell>
+                          <TableCell className="font-medium">
+                            {product.productName}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {product.quantity}
+                          </TableCell>
                           <TableCell className="text-right font-semibold">
                             {safeToFixed(product.totalRevenue, 2)} NOK
                           </TableCell>
@@ -394,7 +518,9 @@ export default function POSFinancialReports() {
               <Card>
                 <CardHeader>
                   <CardTitle>Delte betalinger</CardTitle>
-                  <CardDescription>Detaljer om delte betalinger i perioden</CardDescription>
+                  <CardDescription>
+                    Detaljer om delte betalinger i perioden
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Table>
@@ -407,15 +533,21 @@ export default function POSFinancialReports() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {report.splitPaymentDetails.map((split) => (
+                      {report.splitPaymentDetails.map(split => (
                         <TableRow key={split.orderId}>
-                          <TableCell className="font-medium">#{split.orderId}</TableCell>
+                          <TableCell className="font-medium">
+                            #{split.orderId}
+                          </TableCell>
                           <TableCell className="font-semibold">
                             {safeToFixed(split.totalAmount, 2)} NOK
                           </TableCell>
                           <TableCell>{split.methodsUsed}</TableCell>
                           <TableCell>
-                            {format(new Date(split.createdAt), "dd.MM.yyyy HH:mm", { locale: nb })}
+                            {format(
+                              new Date(split.createdAt),
+                              "dd.MM.yyyy HH:mm",
+                              { locale: nb }
+                            )}
                           </TableCell>
                         </TableRow>
                       ))}

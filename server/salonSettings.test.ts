@@ -27,15 +27,13 @@ describe("salonSettings router", () => {
 
     // Create test user
     const { users } = await import("../drizzle/schema");
-    const result = await dbInstance
-      .insert(users)
-      .values({
-        tenantId: testTenantId,
-        openId: `test-user-${Date.now()}`,
-        email: "test@example.com",
-        name: "Test User",
-        role: "admin",
-      });
+    const result = await dbInstance.insert(users).values({
+      tenantId: testTenantId,
+      openId: `test-user-${Date.now()}`,
+      email: "test@example.com",
+      name: "Test User",
+      role: "admin",
+    });
     testUserId = Number(result.insertId);
   });
 

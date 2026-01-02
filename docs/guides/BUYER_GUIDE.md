@@ -1,4 +1,5 @@
 # Stylora - دليل المشتري الشامل
+
 # Stylora - Complete Buyer's Guide
 
 ---
@@ -13,22 +14,23 @@
 
 ## 🏗️ البنية التقنية | Tech Stack
 
-| Component | Technology |
-|-----------|------------|
-| **Frontend** | React 19 + TypeScript + Tailwind CSS 4 |
-| **Backend** | Node.js + Express + tRPC |
-| **Database** | MySQL (via Drizzle ORM) |
-| **Authentication** | Supabase Auth (Email/Password) |
-| **File Storage** | AWS S3 |
-| **Payments** | Stripe (Checkout + Terminal) |
-| **Email** | AWS SES / Nodemailer |
-| **Hosting** | Railway (recommended) |
+| Component          | Technology                             |
+| ------------------ | -------------------------------------- |
+| **Frontend**       | React 19 + TypeScript + Tailwind CSS 4 |
+| **Backend**        | Node.js + Express + tRPC               |
+| **Database**       | MySQL (via Drizzle ORM)                |
+| **Authentication** | Supabase Auth (Email/Password)         |
+| **File Storage**   | AWS S3                                 |
+| **Payments**       | Stripe (Checkout + Terminal)           |
+| **Email**          | AWS SES / Nodemailer                   |
+| **Hosting**        | Railway (recommended)                  |
 
 ---
 
 ## ✨ الميزات الرئيسية | Key Features
 
 ### إدارة الصالون | Salon Management
+
 - ✅ لوحة تحكم شاملة مع إحصائيات يومية
 - ✅ إدارة الخدمات والأسعار
 - ✅ إدارة الموظفين مع الصلاحيات
@@ -37,24 +39,28 @@
 - ✅ سحب وإفلات للمواعيد
 
 ### الحجوزات | Bookings
+
 - ✅ صفحة حجز عامة للعملاء
 - ✅ اختيار الخدمة والموظف والوقت
 - ✅ تأكيد الحجز بالبريد الإلكتروني
 - ✅ إشعارات SMS (Twilio)
 
 ### المدفوعات | Payments
+
 - ✅ Stripe Checkout للدفع أونلاين
 - ✅ Stripe Terminal للدفع في الصالون
 - ✅ نظام نقاط البيع (POS)
 - ✅ تتبع المدفوعات والفواتير
 
 ### التقارير | Reports
+
 - ✅ تقارير مالية شاملة
 - ✅ تحليلات الأداء
 - ✅ تقارير الموظفين
 - ✅ تصدير PDF و CSV
 
 ### ميزات إضافية | Additional Features
+
 - ✅ نظام الولاء (نقاط المكافآت)
 - ✅ ساعة الحضور للموظفين
 - ✅ دعم متعدد اللغات (نرويجي/إنجليزي)
@@ -68,13 +74,13 @@
 
 قبل البدء، تحتاج إلى إنشاء حسابات في الخدمات التالية:
 
-| Service | Purpose | Cost | Link |
-|---------|---------|------|------|
-| **GitHub** | استضافة الكود | مجاني | [github.com](https://github.com) |
-| **Railway** | استضافة التطبيق + MySQL | $5-25/شهر | [railway.app](https://railway.app) |
-| **Supabase** | المصادقة (Auth) | مجاني | [supabase.com](https://supabase.com) |
-| **Stripe** | المدفوعات | 2.9% + رسوم | [stripe.com](https://stripe.com) |
-| **AWS** | تخزين الملفات + البريد | $1-10/شهر | [aws.amazon.com](https://aws.amazon.com) |
+| Service      | Purpose                 | Cost        | Link                                     |
+| ------------ | ----------------------- | ----------- | ---------------------------------------- |
+| **GitHub**   | استضافة الكود           | مجاني       | [github.com](https://github.com)         |
+| **Railway**  | استضافة التطبيق + MySQL | $5-25/شهر   | [railway.app](https://railway.app)       |
+| **Supabase** | المصادقة (Auth)         | مجاني       | [supabase.com](https://supabase.com)     |
+| **Stripe**   | المدفوعات               | 2.9% + رسوم | [stripe.com](https://stripe.com)         |
+| **AWS**      | تخزين الملفات + البريد  | $1-10/شهر   | [aws.amazon.com](https://aws.amazon.com) |
 
 ---
 
@@ -128,6 +134,7 @@
 
 1. أنشئ bucket جديد باسم `stylora-uploads`
 2. اضبط CORS policy:
+
 ```json
 [
   {
@@ -227,6 +234,7 @@ AWS_SES_FROM_EMAIL=noreply@yourdomain.com
 ```
 
 4. **تشغيل Migrations:**
+
 ```bash
 # تثبيت Railway CLI
 npm install -g @railway/cli
@@ -328,14 +336,14 @@ pnpm update package-name
 
 ## 💰 التكلفة الشهرية المتوقعة | Expected Monthly Costs
 
-| Service | Free Tier | Production |
-|---------|-----------|------------|
-| **Railway** | $5 credit | $10-25 |
-| **Supabase** | 50K MAU | $25+ |
-| **Stripe** | - | 2.9% + fees |
-| **AWS S3** | 5GB | $1-5 |
-| **AWS SES** | 62K emails | $0.10/1K |
-| **Domain** | - | $10-15/year |
+| Service      | Free Tier  | Production  |
+| ------------ | ---------- | ----------- |
+| **Railway**  | $5 credit  | $10-25      |
+| **Supabase** | 50K MAU    | $25+        |
+| **Stripe**   | -          | 2.9% + fees |
+| **AWS S3**   | 5GB        | $1-5        |
+| **AWS SES**  | 62K emails | $0.10/1K    |
+| **Domain**   | -          | $10-15/year |
 
 **المجموع التقديري**: $15-60/شهر (حسب الاستخدام)
 
@@ -366,13 +374,13 @@ pnpm update package-name
 
 ### مشاكل شائعة | Common Issues
 
-| المشكلة | الحل |
-|---------|------|
-| Build failed | تحقق من logs في Railway |
-| Database connection error | تأكد من DATABASE_URL |
-| Auth not working | تحقق من Supabase keys |
-| Payments failing | تحقق من Stripe webhook |
-| Images not uploading | تحقق من AWS S3 CORS |
+| المشكلة                   | الحل                    |
+| ------------------------- | ----------------------- |
+| Build failed              | تحقق من logs في Railway |
+| Database connection error | تأكد من DATABASE_URL    |
+| Auth not working          | تحقق من Supabase keys   |
+| Payments failing          | تحقق من Stripe webhook  |
+| Images not uploading      | تحقق من AWS S3 CORS     |
 
 ### الحصول على المساعدة | Getting Help
 
