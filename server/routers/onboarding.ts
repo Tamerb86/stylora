@@ -109,7 +109,7 @@ export const onboardingRouter = router({
         .limit(1);
 
       if (existingTenant.length > 0) {
-        throw new Error("النطاق الفرعي غير متاح");
+        throw new Error("Subdomain not available");
       }
 
       // 2. Create tenant
@@ -242,16 +242,16 @@ export const onboardingRouter = router({
         // Create default category (id is autoincrement)
         const result = await db.insert(serviceCategories).values({
           tenantId,
-          name: "خدمات عامة",
+          name: "General Services",
           displayOrder: 1,
         });
         const categoryId = Number(result[0].insertId);
         
         // Create default services
         const defaultServices = [
-          { name: "قص شعر رجالي", duration: 30, price: "250" },
-          { name: "حلاقة ذقن", duration: 20, price: "150" },
-          { name: "قص شعر + حلاقة", duration: 45, price: "350" },
+          { name: "Men's Haircut", duration: 30, price: "250" },
+          { name: "Beard Trim", duration: 20, price: "150" },
+          { name: "Haircut + Beard", duration: 45, price: "350" },
         ];
 
         for (const svc of defaultServices) {
@@ -304,7 +304,7 @@ export const onboardingRouter = router({
         tenantId,
         subdomain: salonInfo.subdomain,
         email: ownerAccount.ownerEmail,
-        message: "تم إنشاء حسابك بنجاح! تحقق من بريدك الإلكتروني للحصول على تعليمات تسجيل الدخول.",
+        message: "Account created successfully! Check your email for login instructions.",
       };
     }),
 
