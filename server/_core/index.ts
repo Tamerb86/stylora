@@ -47,7 +47,7 @@ const generalLimiter = rateLimit({
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   skip: req => {
     // Skip rate limiting for specific webhook, callback, and tRPC URLs
-    // Use req.path to get the path without query parameters for consistent matching
+    // Use req.path (excludes query params) for consistent matching, fallback to req.url, then empty string
     const path = req.path || req.url || "";
     return (
       path.startsWith("/api/trpc") || // Exclude tRPC requests

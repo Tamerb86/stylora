@@ -171,7 +171,7 @@ export default function Employees() {
   const activeEmployees = employees?.filter(e => e.isActive).length || 0;
   const avgCommission = employees?.length
     ? employees.reduce(
-        (sum, e) => sum + (parseFloat(e.commissionRate || "0") || 0),
+        (sum, e) => sum + parseFloat(e.commissionRate || "0"),
         0
       ) / employees.length
     : 0;
