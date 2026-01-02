@@ -3,12 +3,28 @@ import { useRoute, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { 
-  ArrowLeft, Phone, Mail, Calendar, MapPin, Gift, Receipt, 
-  Clock, User, Scissors, CreditCard, FileText 
+import {
+  ArrowLeft,
+  Phone,
+  Mail,
+  Calendar,
+  MapPin,
+  Gift,
+  Receipt,
+  Clock,
+  User,
+  Scissors,
+  CreditCard,
+  FileText,
 } from "lucide-react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -18,26 +34,40 @@ export default function CustomerDetails() {
   const [, setLocation] = useLocation();
   const customerId = parseInt(params?.id || "0");
 
-  const { data: customer, isLoading: customerLoading } = trpc.customers.getById.useQuery({ id: customerId });
-  const { data: appointments, isLoading: appointmentsLoading } = trpc.appointments.list.useQuery({ tenantId: "" });
-  const { data: loyaltyPoints } = trpc.loyalty.getPoints.useQuery({ customerId });
+  const { data: customer, isLoading: customerLoading } =
+    trpc.customers.getById.useQuery({ id: customerId });
+  const { data: appointments, isLoading: appointmentsLoading } =
+    trpc.appointments.list.useQuery({ tenantId: "" });
+  const { data: loyaltyPoints } = trpc.loyalty.getPoints.useQuery({
+    customerId,
+  });
 
   // Filter appointments for this customer
-  const customerAppointments = appointments?.filter(apt => apt.customerId === customerId)
-    .sort((a, b) => new Date(b.appointmentDate).getTime() - new Date(a.appointmentDate).getTime()) || [];
+  const customerAppointments =
+    appointments
+      ?.filter(apt => apt.customerId === customerId)
+      .sort(
+        (a, b) =>
+          new Date(b.appointmentDate).getTime() -
+          new Date(a.appointmentDate).getTime()
+      ) || [];
 
-  const completedAppointments = customerAppointments.filter(apt => apt.status === "completed");
-  const upcomingAppointments = customerAppointments.filter(apt => 
-    apt.status === "confirmed" || apt.status === "pending"
+  const completedAppointments = customerAppointments.filter(
+    apt => apt.status === "completed"
+  );
+  const upcomingAppointments = customerAppointments.filter(
+    apt => apt.status === "confirmed" || apt.status === "pending"
   );
 
   if (customerLoading) {
     return (
-      <DashboardLayout breadcrumbs={[
-        { label: "Dashboard", href: "/dashboard" },
-        { label: "Kunder", href: "/customers" },
-        { label: "Laster..." },
-      ]}>
+      <DashboardLayout
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Kunder", href: "/customers" },
+          { label: "Laster..." },
+        ]}
+      >
         <div className="p-8">
           <div className="h-64 bg-muted animate-pulse rounded-lg"></div>
         </div>
@@ -47,11 +77,13 @@ export default function CustomerDetails() {
 
   if (!customer) {
     return (
-      <DashboardLayout breadcrumbs={[
-        { label: "Dashboard", href: "/dashboard" },
-        { label: "Kunder", href: "/customers" },
-        { label: "Ikke funnet" },
-      ]}>
+      <DashboardLayout
+        breadcrumbs={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Kunder", href: "/customers" },
+          { label: "Ikke funnet" },
+        ]}
+      >
         <div className="p-8">
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
@@ -100,14 +132,20 @@ export default function CustomerDetails() {
                 <CardDescription className="space-y-2 mt-3">
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4" />
-                    <a href={`tel:${customer.phone}`} className="hover:underline">
+                    <a
+                      href={`tel:${customer.phone}`}
+                      className="hover:underline"
+                    >
                       {customer.phone}
                     </a>
                   </div>
                   {customer.email && (
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4" />
-                      <a href={`mailto:${customer.email}`} className="hover:underline">
+                      <a
+                        href={`mailto:${customer.email}`}
+                        className="hover:underline"
+                      >
                         {customer.email}
                       </a>
                     </div>
@@ -115,7 +153,10 @@ export default function CustomerDetails() {
                   {customer.dateOfBirth && (
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      Født: {format(new Date(customer.dateOfBirth), "d. MMMM yyyy", { locale: nb })}
+                      Født:{" "}
+                      {format(new Date(customer.dateOfBirth), "d. MMMM yyyy", {
+                        locale: nb,
+                      })}
                     </div>
                   )}
                   {customer.address && (
@@ -127,13 +168,21 @@ export default function CustomerDetails() {
                 </CardDescription>
               </div>
               <div className="text-right space-y-2">
-                <div className="text-sm text-muted-foreground">Totalt besøk</div>
+                <div className="text-sm text-muted-foreground">
+                  Totalt besøk
+                </div>
                 <div className="text-3xl font-bold">{customer.totalVisits}</div>
-                <div className="text-sm text-muted-foreground">Total omsetning</div>
-                <div className="text-2xl font-bold text-green-600">{customer.totalRevenue} NOK</div>
+                <div className="text-sm text-muted-foreground">
+                  Total omsetning
+                </div>
+                <div className="text-2xl font-bold text-green-600">
+                  {customer.totalRevenue} NOK
+                </div>
                 {loyaltyPoints && loyaltyPoints.currentPoints > 0 && (
                   <>
-                    <div className="text-sm text-muted-foreground mt-4">Lojalitetspoeng</div>
+                    <div className="text-sm text-muted-foreground mt-4">
+                      Lojalitetspoeng
+                    </div>
                     <div className="flex items-center gap-2 text-primary font-semibold">
                       <Gift className="h-5 w-5" />
                       {loyaltyPoints.currentPoints}
@@ -150,7 +199,9 @@ export default function CustomerDetails() {
                   <FileText className="h-4 w-4 mt-0.5 text-muted-foreground" />
                   <div>
                     <div className="font-medium text-sm mb-1">Notater</div>
-                    <p className="text-sm text-muted-foreground">{customer.notes}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {customer.notes}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -168,11 +219,18 @@ export default function CustomerDetails() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {upcomingAppointments.map((apt) => (
-                <div key={apt.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+              {upcomingAppointments.map(apt => (
+                <div
+                  key={apt.id}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                >
                   <div className="space-y-1">
                     <div className="font-medium">
-                      {format(new Date(apt.appointmentDate), "EEEE d. MMMM yyyy", { locale: nb })}
+                      {format(
+                        new Date(apt.appointmentDate),
+                        "EEEE d. MMMM yyyy",
+                        { locale: nb }
+                      )}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       Kl. {apt.startTime} - {apt.endTime}
@@ -181,7 +239,11 @@ export default function CustomerDetails() {
                       {/* Service name from join */}
                     </div>
                   </div>
-                  <Badge variant={apt.status === "confirmed" ? "default" : "secondary"}>
+                  <Badge
+                    variant={
+                      apt.status === "confirmed" ? "default" : "secondary"
+                    }
+                  >
                     {apt.status === "confirmed" ? "Bekreftet" : "Venter"}
                   </Badge>
                 </div>
@@ -204,8 +266,11 @@ export default function CustomerDetails() {
           <CardContent>
             {appointmentsLoading ? (
               <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-24 bg-muted animate-pulse rounded-lg"></div>
+                {[1, 2, 3].map(i => (
+                  <div
+                    key={i}
+                    className="h-24 bg-muted animate-pulse rounded-lg"
+                  ></div>
                 ))}
               </div>
             ) : completedAppointments.length > 0 ? (
@@ -219,7 +284,11 @@ export default function CustomerDetails() {
                           <div className="flex items-center gap-3">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             <span className="font-medium">
-                              {format(new Date(apt.appointmentDate), "EEEE d. MMMM yyyy", { locale: nb })}
+                              {format(
+                                new Date(apt.appointmentDate),
+                                "EEEE d. MMMM yyyy",
+                                { locale: nb }
+                              )}
                             </span>
                           </div>
                           <div className="flex items-center gap-3">
@@ -230,9 +299,11 @@ export default function CustomerDetails() {
                           </div>
                           <div className="flex items-center gap-3">
                             <Scissors className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">{/* Service name from join */}</span>
+                            <span className="text-sm">
+                              {/* Service name from join */}
+                            </span>
                           </div>
-                                          {apt.employeeId && (
+                          {apt.employeeId && (
                             <div className="flex items-center gap-3">
                               <User className="h-4 w-4 text-muted-foreground" />
                               <span className="text-sm text-muted-foreground">
@@ -254,7 +325,6 @@ export default function CustomerDetails() {
                             <CreditCard className="h-4 w-4" />
                             {/* Price from join */} NOK
                           </div>
-
                         </div>
                       </div>
                     </div>

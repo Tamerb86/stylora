@@ -7,21 +7,26 @@ This PR successfully addresses the login failure issue reported for email `app.r
 ## Changes Summary
 
 ### 🔧 Backend Improvements
+
 **File: `server/_core/auth-simple.ts`**
 
 1. **Email Validation Utility** (NEW)
+
    ```typescript
-   function validateEmail(email: string): string | null
+   function validateEmail(email: string): string | null;
    ```
+
    - Centralized email validation logic
    - Trims whitespace
    - Validates format with RFC 5322 simplified regex
    - Reusable across all auth endpoints
 
 2. **Case-Insensitive Email Lookup**
+
    ```typescript
    .where(sql`LOWER(${users.email}) = LOWER(${trimmedEmail})`)
    ```
+
    - Works with any email case variation
    - Drizzle ORM handles SQL sanitization
    - Applied to: login, register, forgot-password
@@ -45,6 +50,7 @@ This PR successfully addresses the login failure issue reported for email `app.r
    - Helps with debugging and auditing
 
 ### 🎨 Frontend Improvements
+
 **File: `client/src/pages/Login.tsx`**
 
 1. **Error Hint Display**
@@ -53,9 +59,11 @@ This PR successfully addresses the login failure issue reported for email `app.r
    - Better visual hierarchy
 
 ### 🧪 Testing
+
 **File: `server/auth.login.test.ts`**
 
 Comprehensive test coverage:
+
 - Case-insensitive matching
 - Email trimming
 - Email validation
@@ -64,12 +72,15 @@ Comprehensive test coverage:
 - Minimum password length
 
 ### 📝 Documentation
+
 **Files Created:**
+
 1. `docs/LOGIN_IMPROVEMENTS.md` - Technical deep dive
 2. `LOGIN_FAILURE_RESOLUTION.md` - Executive summary
 3. `scripts/test-login.mjs` - Manual testing script
 
 ### 🔒 Security
+
 - SQL injection prevention (Drizzle ORM sanitization)
 - No email enumeration (generic errors)
 - Password never logged
@@ -78,26 +89,28 @@ Comprehensive test coverage:
 
 ## Error Messages (Norwegian)
 
-| Scenario | Error | Hint |
-|----------|-------|------|
-| Missing credentials | E-post og passord er påkrevd | - |
-| Invalid email format | Vennligst oppgi en gyldig e-postadresse | - |
-| Wrong credentials | Ugyldig e-post eller passord | Hvis du har glemt passordet... |
-| No password set | Kontoen din bruker en annen innloggingsmetode | Kontakt support... |
-| Account deactivated | Kontoen er deaktivert | Kontakt support for å reaktivere |
-| Tenant suspended | Abonnementet er suspendert | Kontakt support... |
-| Tenant canceled | Abonnementet er avsluttet | Kontakt support... |
-| DB unavailable | Tjenesten er midlertidig utilgjengelig | Prøv igjen senere |
-| Unexpected error | En uventet feil oppstod | Prøv igjen... |
+| Scenario             | Error                                         | Hint                             |
+| -------------------- | --------------------------------------------- | -------------------------------- |
+| Missing credentials  | E-post og passord er påkrevd                  | -                                |
+| Invalid email format | Vennligst oppgi en gyldig e-postadresse       | -                                |
+| Wrong credentials    | Ugyldig e-post eller passord                  | Hvis du har glemt passordet...   |
+| No password set      | Kontoen din bruker en annen innloggingsmetode | Kontakt support...               |
+| Account deactivated  | Kontoen er deaktivert                         | Kontakt support for å reaktivere |
+| Tenant suspended     | Abonnementet er suspendert                    | Kontakt support...               |
+| Tenant canceled      | Abonnementet er avsluttet                     | Kontakt support...               |
+| DB unavailable       | Tjenesten er midlertidig utilgjengelig        | Prøv igjen senere                |
+| Unexpected error     | En uventet feil oppstod                       | Prøv igjen...                    |
 
 ## Performance Notes
 
 Current implementation:
+
 - ✅ Email validation: O(1) - regex match
 - ✅ User lookup: O(log n) - indexed email column
 - ⚠️ Tenant lookup: O(log n) - additional query per login
 
 Optimization opportunities (future work):
+
 1. Cache tenant status (requires invalidation strategy)
 2. JOIN user and tenant in single query
 3. Move tenant check to middleware
@@ -106,20 +119,24 @@ Optimization opportunities (future work):
 ## Code Quality
 
 ✅ **DRY Principle**
+
 - Single email validation function
 - No duplicate code
 
 ✅ **Security**
+
 - SQL injection prevented
 - Email enumeration prevented
 - Proper error handling
 
 ✅ **Maintainability**
+
 - Clear comments
 - Consistent error format
 - Comprehensive logging
 
 ✅ **Testing**
+
 - Unit tests provided
 - Manual test script
 - Test documentation
@@ -127,6 +144,7 @@ Optimization opportunities (future work):
 ## Testing Instructions
 
 ### Prerequisites
+
 ```bash
 # Install dependencies
 pnpm install
@@ -136,11 +154,13 @@ pnpm install
 ```
 
 ### Run Automated Tests
+
 ```bash
 pnpm test server/auth.login.test.ts
 ```
 
 ### Run Manual Tests
+
 ```bash
 # Start server
 pnpm dev
@@ -181,6 +201,7 @@ node scripts/test-login.mjs
 ## Backward Compatibility
 
 ✅ **100% Backward Compatible**
+
 - No database migrations required
 - No breaking API changes
 - Existing users unaffected
@@ -190,6 +211,7 @@ node scripts/test-login.mjs
 ## Migration Path
 
 No migration needed! Changes are:
+
 - Code-only improvements
 - Fully backward compatible
 - Can be deployed immediately
@@ -199,21 +221,25 @@ No migration needed! Changes are:
 ### Log Examples
 
 **Successful login:**
+
 ```
 [Auth] Successful login for user: 123 email: user@example.com
 ```
 
 **Failed login - wrong password:**
+
 ```
 [Auth] Invalid password for user: 123
 ```
 
 **Failed login - non-existent:**
+
 ```
 [Auth] Login attempt for non-existent user: notfound@example.com
 ```
 
 **Failed login - deactivated:**
+
 ```
 [Auth] Login attempt for deactivated user: 123
 ```
@@ -221,11 +247,13 @@ No migration needed! Changes are:
 ### Database Queries
 
 **Check user exists:**
+
 ```sql
 SELECT * FROM users WHERE LOWER(email) = LOWER('app.riyalmind@gmail.com');
 ```
 
 **Check account status:**
+
 ```sql
 SELECT u.*, t.status as tenant_status
 FROM users u
@@ -245,6 +273,7 @@ When user reports login issues:
 6. **Guide user** based on specific issue
 
 Common resolutions:
+
 - Wrong password → Password reset
 - Account deactivated → Reactivate account
 - Tenant suspended → Reactivate subscription
@@ -253,6 +282,7 @@ Common resolutions:
 ## Success Metrics
 
 ✅ **Implementation**
+
 - Case-insensitive email matching ✅
 - Enhanced error messages ✅
 - Input validation ✅
@@ -261,6 +291,7 @@ Common resolutions:
 - Documentation ✅
 
 🎯 **Expected Outcomes**
+
 - Reduced login failures due to case
 - Faster issue resolution
 - Better user experience
@@ -292,6 +323,7 @@ Common resolutions:
 ## Conclusion
 
 All login failure issues have been resolved with:
+
 - ✅ Robust case-insensitive email matching
 - ✅ Clear, helpful error messages
 - ✅ Comprehensive validation and logging

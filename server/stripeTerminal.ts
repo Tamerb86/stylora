@@ -2,21 +2,24 @@ import Stripe from "stripe";
 
 // Initialize Stripe with secret key from environment
 // Supports both platform key (for Connected Accounts) and direct API keys
-const getStripeClient = (apiKey?: string, connectedAccountId?: string): Stripe => {
+const getStripeClient = (
+  apiKey?: string,
+  connectedAccountId?: string
+): Stripe => {
   const key = apiKey || process.env.STRIPE_SECRET_KEY;
   if (!key) {
     throw new Error("Stripe API key not configured");
   }
-  
+
   const config: Stripe.StripeConfig = {
     apiVersion: "2025-11-17.clover",
   };
-  
+
   // If connectedAccountId is provided, use Stripe Connect
   if (connectedAccountId) {
     config.stripeAccount = connectedAccountId;
   }
-  
+
   return new Stripe(key, config);
 };
 
@@ -24,7 +27,10 @@ const getStripeClient = (apiKey?: string, connectedAccountId?: string): Stripe =
  * Create a connection token for Stripe Terminal SDK
  * Required by the frontend SDK to discover and connect to readers
  */
-export async function createConnectionToken(apiKey?: string, connectedAccountId?: string): Promise<string> {
+export async function createConnectionToken(
+  apiKey?: string,
+  connectedAccountId?: string
+): Promise<string> {
   const stripe = getStripeClient(apiKey, connectedAccountId);
   const connectionToken = await stripe.terminal.connectionTokens.create();
   return connectionToken.secret;
@@ -33,7 +39,10 @@ export async function createConnectionToken(apiKey?: string, connectedAccountId?
 /**
  * List all registered readers for this Stripe account
  */
-export async function listReaders(apiKey?: string, connectedAccountId?: string) {
+export async function listReaders(
+  apiKey?: string,
+  connectedAccountId?: string
+) {
   const stripe = getStripeClient(apiKey, connectedAccountId);
   const readers = await stripe.terminal.readers.list({ limit: 100 });
   return readers.data;
@@ -42,7 +51,11 @@ export async function listReaders(apiKey?: string, connectedAccountId?: string) 
 /**
  * Get a specific reader by ID
  */
-export async function getReader(readerId: string, apiKey?: string, connectedAccountId?: string) {
+export async function getReader(
+  readerId: string,
+  apiKey?: string,
+  connectedAccountId?: string
+) {
   const stripe = getStripeClient(apiKey, connectedAccountId);
   return await stripe.terminal.readers.retrieve(readerId);
 }
@@ -58,7 +71,7 @@ export async function createTerminalPaymentIntent(
   connectedAccountId?: string
 ) {
   const stripe = getStripeClient(apiKey, connectedAccountId);
-  
+
   return await stripe.paymentIntents.create({
     amount: Math.round(amount * 100), // Convert to cents
     currency: currency.toLowerCase(),
@@ -101,15 +114,15 @@ export async function refundTerminalPayment(
   apiKey?: string
 ) {
   const stripe = getStripeClient(apiKey);
-  
+
   const refundData: Stripe.RefundCreateParams = {
     payment_intent: paymentIntentId,
   };
-  
+
   if (amount) {
     refundData.amount = Math.round(amount * 100);
   }
-  
+
   return await stripe.refunds.create(refundData);
 }
 
@@ -118,5 +131,7 @@ export async function refundTerminalPayment(
  */
 export async function simulateTestPayment(readerId: string, apiKey?: string) {
   const stripe = getStripeClient(apiKey);
-  return await stripe.testHelpers.terminal.readers.presentPaymentMethod(readerId);
+  return await stripe.testHelpers.terminal.readers.presentPaymentMethod(
+    readerId
+  );
 }

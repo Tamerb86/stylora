@@ -2,8 +2,25 @@ import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, Download, Database, Users, Briefcase, Package, FileText, AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Upload,
+  Download,
+  Database,
+  Users,
+  Briefcase,
+  Package,
+  FileText,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+} from "lucide-react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
@@ -16,7 +33,7 @@ export default function DataImport() {
   const { data: imports, refetch } = trpc.imports.list.useQuery();
 
   const importCustomers = trpc.imports.importCustomers.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success(`Importert ${data.imported} av ${data.total} kunder`);
       if (data.failed > 0) {
         toast.warning(`${data.failed} kunder feilet`);
@@ -24,14 +41,14 @@ export default function DataImport() {
       setUploading(false);
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Kunne ikke importere kunder");
       setUploading(false);
     },
   });
 
   const importServices = trpc.imports.importServices.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success(`Importert ${data.imported} av ${data.total} tjenester`);
       if (data.failed > 0) {
         toast.warning(`${data.failed} tjenester feilet`);
@@ -39,14 +56,14 @@ export default function DataImport() {
       setUploading(false);
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Kunne ikke importere tjenester");
       setUploading(false);
     },
   });
 
   const importProducts = trpc.imports.importProducts.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success(`Importert ${data.imported} av ${data.total} produkter`);
       if (data.failed > 0) {
         toast.warning(`${data.failed} produkter feilet`);
@@ -54,14 +71,14 @@ export default function DataImport() {
       setUploading(false);
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Kunne ikke importere produkter");
       setUploading(false);
     },
   });
 
   const restoreSQL = trpc.imports.restoreSQL.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success(`Utført ${data.executed} av ${data.total} SQL-setninger`);
       if (data.failed > 0) {
         toast.warning(`${data.failed} setninger feilet`);
@@ -69,22 +86,30 @@ export default function DataImport() {
       setUploading(false);
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Kunne ikke gjenopprette sikkerhetskopi");
       setUploading(false);
     },
   });
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: string) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    type: string
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     // Validate file type
-    const validExtensions = type === "sql" ? [".sql"] : [".csv", ".xlsx", ".xls"];
-    const fileExtension = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
-    
+    const validExtensions =
+      type === "sql" ? [".sql"] : [".csv", ".xlsx", ".xls"];
+    const fileExtension = file.name
+      .substring(file.name.lastIndexOf("."))
+      .toLowerCase();
+
     if (!validExtensions.includes(fileExtension)) {
-      toast.error(`Ugyldig filtype. Tillatte typer: ${validExtensions.join(", ")}`);
+      toast.error(
+        `Ugyldig filtype. Tillatte typer: ${validExtensions.join(", ")}`
+      );
       return;
     }
 
@@ -99,7 +124,7 @@ export default function DataImport() {
     try {
       // Read file as base64
       const reader = new FileReader();
-      reader.onload = async (e) => {
+      reader.onload = async e => {
         const base64Content = e.target?.result as string;
         const base64Data = base64Content.split(",")[1]; // Remove data:*/*;base64, prefix
 
@@ -124,7 +149,11 @@ export default function DataImport() {
             });
             break;
           case "sql":
-            if (confirm("ADVARSEL: Dette vil gjenopprette databasen fra sikkerhetskopien. Er du sikker?")) {
+            if (
+              confirm(
+                "ADVARSEL: Dette vil gjenopprette databasen fra sikkerhetskopien. Er du sikker?"
+              )
+            ) {
               await restoreSQL.mutateAsync({
                 fileContent: base64Data,
                 fileName: file.name,
@@ -169,8 +198,10 @@ export default function DataImport() {
         fileName = "services_template.csv";
         break;
       case "products":
-        csvContent = "name,description,price,costPrice,stock,lowStockThreshold,sku,barcode\n";
-        csvContent += "Shampoo,Profesjonell shampoo,150,75,50,10,SH001,1234567890123\n";
+        csvContent =
+          "name,description,price,costPrice,stock,lowStockThreshold,sku,barcode\n";
+        csvContent +=
+          "Shampoo,Profesjonell shampoo,150,75,50,10,SH001,1234567890123\n";
         csvContent += "Voks,Stylingvoks,120,60,30,5,WX001,9876543210987\n";
         fileName = "products_template.csv";
         break;
@@ -218,11 +249,16 @@ export default function DataImport() {
 
   const getImportTypeLabel = (type: string) => {
     switch (type) {
-      case "customers": return "Kunder";
-      case "services": return "Tjenester";
-      case "products": return "Produkter";
-      case "sql_restore": return "SQL Gjenoppretting";
-      default: return type;
+      case "customers":
+        return "Kunder";
+      case "services":
+        return "Tjenester";
+      case "products":
+        return "Produkter";
+      case "sql_restore":
+        return "SQL Gjenoppretting";
+      default:
+        return type;
     }
   };
 
@@ -286,11 +322,7 @@ export default function DataImport() {
                   </Button>
 
                   <label htmlFor="customers-upload">
-                    <Button
-                      variant="default"
-                      disabled={uploading}
-                      asChild
-                    >
+                    <Button variant="default" disabled={uploading} asChild>
                       <span>
                         <Upload className="h-4 w-4 mr-2" />
                         {uploading ? "Laster opp..." : "Last opp fil"}
@@ -301,7 +333,7 @@ export default function DataImport() {
                       type="file"
                       accept=".csv,.xlsx,.xls"
                       className="hidden"
-                      onChange={(e) => handleFileUpload(e, "customers")}
+                      onChange={e => handleFileUpload(e, "customers")}
                       disabled={uploading}
                     />
                   </label>
@@ -313,11 +345,21 @@ export default function DataImport() {
                     <div className="text-sm text-blue-900 dark:text-blue-100">
                       <p className="font-semibold mb-2">Påkrevde kolonner:</p>
                       <ul className="list-disc list-inside space-y-1">
-                        <li><code>firstName</code> - Fornavn (påkrevd)</li>
-                        <li><code>phone</code> - Telefonnummer (påkrevd)</li>
-                        <li><code>lastName</code> - Etternavn (valgfritt)</li>
-                        <li><code>email</code> - E-post (valgfritt)</li>
-                        <li><code>notes</code> - Notater (valgfritt)</li>
+                        <li>
+                          <code>firstName</code> - Fornavn (påkrevd)
+                        </li>
+                        <li>
+                          <code>phone</code> - Telefonnummer (påkrevd)
+                        </li>
+                        <li>
+                          <code>lastName</code> - Etternavn (valgfritt)
+                        </li>
+                        <li>
+                          <code>email</code> - E-post (valgfritt)
+                        </li>
+                        <li>
+                          <code>notes</code> - Notater (valgfritt)
+                        </li>
                       </ul>
                     </div>
                   </div>
@@ -346,11 +388,7 @@ export default function DataImport() {
                   </Button>
 
                   <label htmlFor="services-upload">
-                    <Button
-                      variant="default"
-                      disabled={uploading}
-                      asChild
-                    >
+                    <Button variant="default" disabled={uploading} asChild>
                       <span>
                         <Upload className="h-4 w-4 mr-2" />
                         {uploading ? "Laster opp..." : "Last opp fil"}
@@ -361,7 +399,7 @@ export default function DataImport() {
                       type="file"
                       accept=".csv,.xlsx,.xls"
                       className="hidden"
-                      onChange={(e) => handleFileUpload(e, "services")}
+                      onChange={e => handleFileUpload(e, "services")}
                       disabled={uploading}
                     />
                   </label>
@@ -373,10 +411,18 @@ export default function DataImport() {
                     <div className="text-sm text-blue-900 dark:text-blue-100">
                       <p className="font-semibold mb-2">Påkrevde kolonner:</p>
                       <ul className="list-disc list-inside space-y-1">
-                        <li><code>name</code> - Tjenestenavn (påkrevd)</li>
-                        <li><code>price</code> - Pris i NOK (påkrevd)</li>
-                        <li><code>duration</code> - Varighet i minutter (påkrevd)</li>
-                        <li><code>description</code> - Beskrivelse (valgfritt)</li>
+                        <li>
+                          <code>name</code> - Tjenestenavn (påkrevd)
+                        </li>
+                        <li>
+                          <code>price</code> - Pris i NOK (påkrevd)
+                        </li>
+                        <li>
+                          <code>duration</code> - Varighet i minutter (påkrevd)
+                        </li>
+                        <li>
+                          <code>description</code> - Beskrivelse (valgfritt)
+                        </li>
                       </ul>
                     </div>
                   </div>
@@ -405,11 +451,7 @@ export default function DataImport() {
                   </Button>
 
                   <label htmlFor="products-upload">
-                    <Button
-                      variant="default"
-                      disabled={uploading}
-                      asChild
-                    >
+                    <Button variant="default" disabled={uploading} asChild>
                       <span>
                         <Upload className="h-4 w-4 mr-2" />
                         {uploading ? "Laster opp..." : "Last opp fil"}
@@ -420,7 +462,7 @@ export default function DataImport() {
                       type="file"
                       accept=".csv,.xlsx,.xls"
                       className="hidden"
-                      onChange={(e) => handleFileUpload(e, "products")}
+                      onChange={e => handleFileUpload(e, "products")}
                       disabled={uploading}
                     />
                   </label>
@@ -432,14 +474,31 @@ export default function DataImport() {
                     <div className="text-sm text-blue-900 dark:text-blue-100">
                       <p className="font-semibold mb-2">Påkrevde kolonner:</p>
                       <ul className="list-disc list-inside space-y-1">
-                        <li><code>name</code> - Produktnavn (påkrevd)</li>
-                        <li><code>price</code> - Salgspris i NOK (påkrevd)</li>
-                        <li><code>description</code> - Beskrivelse (valgfritt)</li>
-                        <li><code>costPrice</code> - Innkjøpspris (valgfritt)</li>
-                        <li><code>stock</code> - Lagerbeholdning (valgfritt)</li>
-                        <li><code>lowStockThreshold</code> - Lavt lager-terskel (valgfritt)</li>
-                        <li><code>sku</code> - Varenummer (valgfritt)</li>
-                        <li><code>barcode</code> - Strekkode (valgfritt)</li>
+                        <li>
+                          <code>name</code> - Produktnavn (påkrevd)
+                        </li>
+                        <li>
+                          <code>price</code> - Salgspris i NOK (påkrevd)
+                        </li>
+                        <li>
+                          <code>description</code> - Beskrivelse (valgfritt)
+                        </li>
+                        <li>
+                          <code>costPrice</code> - Innkjøpspris (valgfritt)
+                        </li>
+                        <li>
+                          <code>stock</code> - Lagerbeholdning (valgfritt)
+                        </li>
+                        <li>
+                          <code>lowStockThreshold</code> - Lavt lager-terskel
+                          (valgfritt)
+                        </li>
+                        <li>
+                          <code>sku</code> - Varenummer (valgfritt)
+                        </li>
+                        <li>
+                          <code>barcode</code> - Strekkode (valgfritt)
+                        </li>
                       </ul>
                     </div>
                   </div>
@@ -459,11 +518,7 @@ export default function DataImport() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <label htmlFor="sql-upload">
-                  <Button
-                    variant="default"
-                    disabled={uploading}
-                    asChild
-                  >
+                  <Button variant="default" disabled={uploading} asChild>
                     <span>
                       <Upload className="h-4 w-4 mr-2" />
                       {uploading ? "Laster opp..." : "Last opp SQL-fil"}
@@ -474,7 +529,7 @@ export default function DataImport() {
                     type="file"
                     accept=".sql"
                     className="hidden"
-                    onChange={(e) => handleFileUpload(e, "sql")}
+                    onChange={e => handleFileUpload(e, "sql")}
                     disabled={uploading}
                   />
                 </label>
@@ -485,7 +540,9 @@ export default function DataImport() {
                     <div className="text-sm text-red-900 dark:text-red-100">
                       <p className="font-semibold mb-2">ADVARSEL:</p>
                       <ul className="list-disc list-inside space-y-1">
-                        <li>Dette vil utføre SQL-setninger fra sikkerhetskopien</li>
+                        <li>
+                          Dette vil utføre SQL-setninger fra sikkerhetskopien
+                        </li>
                         <li>Sørg for at SQL-filen er fra en sikker kilde</li>
                         <li>Ta en sikkerhetskopi før du gjenoppretter</li>
                         <li>Prosessen kan ikke angres</li>
@@ -511,7 +568,9 @@ export default function DataImport() {
               <div className="text-center py-12 text-muted-foreground">
                 <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p className="text-lg">Ingen importer ennå</p>
-                <p className="text-sm mt-2">Last opp en fil for å komme i gang</p>
+                <p className="text-sm mt-2">
+                  Last opp en fil for å komme i gang
+                </p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -532,13 +591,14 @@ export default function DataImport() {
 
                       <div className="text-sm text-muted-foreground space-y-1">
                         <div>
-                          {format(new Date(imp.createdAt), "PPP 'kl.' HH:mm", { locale: nb })}
+                          {format(new Date(imp.createdAt), "PPP 'kl.' HH:mm", {
+                            locale: nb,
+                          })}
                         </div>
                         <div>
-                          Størrelse: {formatFileSize(imp.fileSize)} | 
-                          Totalt: {imp.recordsTotal} | 
-                          Importert: {imp.recordsImported} | 
-                          Feilet: {imp.recordsFailed}
+                          Størrelse: {formatFileSize(imp.fileSize)} | Totalt:{" "}
+                          {imp.recordsTotal} | Importert: {imp.recordsImported}{" "}
+                          | Feilet: {imp.recordsFailed}
                         </div>
                       </div>
 

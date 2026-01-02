@@ -4,7 +4,12 @@ import { fikenSettings } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { syncCustomerToFiken, bulkSyncCustomers } from "./customers";
 import { syncOrderToFiken, bulkSyncOrders } from "./invoices";
-import { syncServiceToFiken, syncProductToFiken, bulkSyncServices, bulkSyncProducts } from "./products";
+import {
+  syncServiceToFiken,
+  syncProductToFiken,
+  bulkSyncServices,
+  bulkSyncProducts,
+} from "./products";
 
 /**
  * Scheduled sync intervals in milliseconds
@@ -43,7 +48,9 @@ export async function startFikenScheduler(tenantId: string): Promise<void> {
     .limit(1);
 
   if (!settings || !settings.enabled) {
-    console.log(`[FikenScheduler] Fiken integration not enabled for tenant ${tenantId}`);
+    console.log(
+      `[FikenScheduler] Fiken integration not enabled for tenant ${tenantId}`
+    );
     return;
   }
 
@@ -54,7 +61,9 @@ export async function startFikenScheduler(tenantId: string): Promise<void> {
 
   const interval = SYNC_INTERVALS[settings.syncFrequency];
   if (!interval) {
-    console.error(`[FikenScheduler] Invalid sync frequency: ${settings.syncFrequency}`);
+    console.error(
+      `[FikenScheduler] Invalid sync frequency: ${settings.syncFrequency}`
+    );
     return;
   }
 
@@ -132,9 +141,14 @@ async function runScheduledSync(tenantId: string): Promise<void> {
         .where(eq(fikenSettings.tenantId, tenantId));
     }
 
-    console.log(`[FikenScheduler] Completed scheduled sync for tenant ${tenantId}`);
+    console.log(
+      `[FikenScheduler] Completed scheduled sync for tenant ${tenantId}`
+    );
   } catch (error) {
-    console.error(`[FikenScheduler] Error during scheduled sync for tenant ${tenantId}:`, error);
+    console.error(
+      `[FikenScheduler] Error during scheduled sync for tenant ${tenantId}:`,
+      error
+    );
   }
 }
 
@@ -142,7 +156,9 @@ async function runScheduledSync(tenantId: string): Promise<void> {
  * Initialize schedulers for all enabled tenants
  */
 export async function initializeFikenSchedulers(): Promise<void> {
-  console.log("[FikenScheduler] Initializing schedulers for all enabled tenants");
+  console.log(
+    "[FikenScheduler] Initializing schedulers for all enabled tenants"
+  );
 
   const db = await getDb();
   if (!db) {

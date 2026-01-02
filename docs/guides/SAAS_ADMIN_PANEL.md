@@ -7,6 +7,7 @@ The SaaS Admin Panel is a platform-level administration interface that allows th
 ## Key Features
 
 ### 1. Platform-Wide Overview (`/saas-admin`)
+
 - **Total Tenants**: Count of all registered salons
 - **Active Tenants**: Tenants with active subscriptions
 - **Trial Tenants**: Tenants in trial period
@@ -18,6 +19,7 @@ The SaaS Admin Panel is a platform-level administration interface that allows th
 - **Recent Tenants List**: Quick view of newly created salons
 
 ### 2. Tenants Management (`/saas-admin/tenants`)
+
 - **List All Tenants** with pagination (20 per page)
 - **Search** by:
   - Tenant name
@@ -38,6 +40,7 @@ The SaaS Admin Panel is a platform-level administration interface that allows th
   - Total order amount
 
 ### 3. Tenant Details (`/saas-admin/tenants/:tenantId`)
+
 - **Basic Information**:
   - Name, subdomain, org number
   - Creation date
@@ -60,6 +63,7 @@ The SaaS Admin Panel is a platform-level administration interface that allows th
   - Update plan and status
 
 ### 4. Tenant Impersonation
+
 - **Purpose**: Platform owner can "log in as" any tenant to:
   - Test features from tenant perspective
   - Troubleshoot issues
@@ -77,17 +81,22 @@ The SaaS Admin Panel is a platform-level administration interface that allows th
 ### Backend
 
 #### Authorization Middleware
+
 ```typescript
 // server/routers.ts
 const platformAdminProcedure = protectedProcedure.use(({ ctx, next }) => {
   if (ctx.user.openId !== ENV.ownerOpenId) {
-    throw new TRPCError({ code: "FORBIDDEN", message: "Platform admin access required" });
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Platform admin access required",
+    });
   }
   return next({ ctx });
 });
 ```
 
 #### tRPC Router: `saasAdmin`
+
 Located in `server/routers.ts`, includes:
 
 1. **getOverview**: Platform-wide statistics
@@ -123,6 +132,7 @@ Located in `server/routers.ts`, includes:
 #### Impersonation Implementation
 
 **JWT Payload Extension** (`server/_core/sdk.ts`):
+
 ```typescript
 export type SessionPayload = {
   openId: string;
@@ -133,17 +143,18 @@ export type SessionPayload = {
 ```
 
 **Session Context Override** (`server/_core/sdk.ts`):
+
 ```typescript
 async authenticateRequest(req: Request): Promise<User> {
   // ... existing auth logic ...
-  
+
   // Handle impersonation
   if (session.impersonatedTenantId && session.openId === ENV.ownerOpenId) {
     if (user) {
       user = { ...user, tenantId: session.impersonatedTenantId };
     }
   }
-  
+
   return user;
 }
 ```
@@ -151,11 +162,13 @@ async authenticateRequest(req: Request): Promise<User> {
 ### Frontend
 
 #### Pages
+
 - `client/src/pages/SaasAdmin/SaasAdminOverview.tsx`
 - `client/src/pages/SaasAdmin/SaasAdminTenants.tsx`
 - `client/src/pages/SaasAdmin/SaasAdminTenantDetails.tsx`
 
 #### Routes (in `client/src/App.tsx`)
+
 ```typescript
 <Route path="/saas-admin" component={SaasAdminOverview} />
 <Route path="/saas-admin/tenants" component={SaasAdminTenants} />
@@ -163,6 +176,7 @@ async authenticateRequest(req: Request): Promise<User> {
 ```
 
 #### Design
+
 - **Color Scheme**: Gradient blue → purple for SaaS admin branding
 - **Stats Cards**: Glassmorphism effect with gradient backgrounds
 - **Responsive**: Full mobile support
@@ -173,6 +187,7 @@ async authenticateRequest(req: Request): Promise<User> {
 **Test File**: `server/saasAdmin.test.ts`
 
 **Coverage**: 14 comprehensive tests
+
 - ✅ Authorization (platform owner vs regular user)
 - ✅ getOverview returns correct structure
 - ✅ listTenants with pagination, search, filtering
@@ -183,6 +198,7 @@ async authenticateRequest(req: Request): Promise<User> {
 - ✅ clearImpersonation
 
 **Run tests**:
+
 ```bash
 pnpm test server/saasAdmin.test.ts
 ```
@@ -190,7 +206,9 @@ pnpm test server/saasAdmin.test.ts
 ## Access Control
 
 ### Environment Variable
+
 The platform owner is identified by:
+
 ```
 OWNER_OPEN_ID=<platform-owner-openid>
 ```
@@ -198,6 +216,7 @@ OWNER_OPEN_ID=<platform-owner-openid>
 This is automatically set by the Stylora platform and available in `ENV.ownerOpenId`.
 
 ### Frontend Protection
+
 While routes are not explicitly protected on the frontend, all backend procedures use `platformAdminProcedure` which throws `FORBIDDEN` error if accessed by non-owner.
 
 **Recommendation**: Add frontend route guard to redirect non-owners away from `/saas-admin/*` routes for better UX.
@@ -205,6 +224,7 @@ While routes are not explicitly protected on the frontend, all backend procedure
 ## Usage in Production
 
 ### Accessing the Panel
+
 1. Log in to Stylora as the platform owner
 2. Navigate to `/saas-admin`
 3. You'll see the platform overview dashboard
@@ -212,11 +232,13 @@ While routes are not explicitly protected on the frontend, all backend procedure
 ### Common Tasks
 
 #### View All Tenants
+
 1. Go to `/saas-admin/tenants`
 2. Use search bar to find specific tenant
 3. Use status filter to view only active/trial/suspended tenants
 
 #### Change Tenant Plan
+
 1. Go to tenant details: `/saas-admin/tenants/:tenantId`
 2. Scroll to "Abonnement" section
 3. Select new plan from dropdown
@@ -224,6 +246,7 @@ While routes are not explicitly protected on the frontend, all backend procedure
 5. Click "Lagre endringer"
 
 #### Impersonate Tenant for Support
+
 1. Find tenant in list or details page
 2. Click "Logg inn" button
 3. You'll be redirected to `/dashboard` with that tenant's context
@@ -235,6 +258,7 @@ While routes are not explicitly protected on the frontend, all backend procedure
 ## Database Schema
 
 ### Relevant Tables
+
 - `tenants`: Tenant basic info and status
 - `subscriptions`: Tenant subscription details
 - `subscriptionPlans`: Available plans
@@ -243,7 +267,9 @@ While routes are not explicitly protected on the frontend, all backend procedure
 - `orders`: For revenue metrics
 
 ### Key Queries
+
 All complex aggregation queries are in `server/routers.ts` within the `saasAdmin` router. Examples:
+
 - Count tenants by status
 - Sum orders/appointments in last 30 days
 - Join subscriptions with plans for tenant details
@@ -258,6 +284,7 @@ All complex aggregation queries are in `server/routers.ts` within the `saasAdmin
 ## Future Enhancements
 
 ### Recommended Additions
+
 1. **Impersonation Banner**: Show banner when impersonating with "Exit" button
 2. **Audit Logs**: Track all platform admin actions (plan changes, impersonations)
 3. **Tenant Analytics**: More detailed charts (revenue trends, churn rate, etc.)
@@ -272,34 +299,40 @@ All complex aggregation queries are in `server/routers.ts` within the `saasAdmin
 ## Files Modified/Created
 
 ### Backend
+
 - `server/routers.ts`: Added `platformAdminProcedure` and `saasAdmin` router
 - `server/_core/sdk.ts`: Extended `SessionPayload` with `impersonatedTenantId`
 - `server/_core/env.ts`: Already had `ownerOpenId` (no changes needed)
 - `server/saasAdmin.test.ts`: **Created** - 14 comprehensive tests
 
 ### Frontend
+
 - `client/src/App.tsx`: Added 3 SaaS admin routes
 - `client/src/pages/SaasAdmin/SaasAdminOverview.tsx`: **Created**
 - `client/src/pages/SaasAdmin/SaasAdminTenants.tsx`: **Created**
 - `client/src/pages/SaasAdmin/SaasAdminTenantDetails.tsx`: **Created**
 
 ### Documentation
+
 - `SAAS_ADMIN_PANEL.md`: **Created** - This file
 - `todo.md`: Added Phase 42 with 114 tasks (all completed)
 
 ## Troubleshooting
 
 ### "Platform admin access required" error
+
 - Verify you're logged in as the platform owner
 - Check `ENV.ownerOpenId` matches your `openId`
 - Check browser console for JWT payload
 
 ### Impersonation not working
+
 - Verify tenant exists in database
 - Check browser cookies - should see new JWT after impersonation
 - Check `ctx.user.tenantId` in subsequent requests
 
 ### Statistics showing zero
+
 - Verify tenants have data in `appointments` and `orders` tables
 - Check date filtering (last 30 days calculation)
 - Run queries manually in database to verify data exists
@@ -307,6 +340,7 @@ All complex aggregation queries are in `server/routers.ts` within the `saasAdmin
 ## Support
 
 For issues or questions about the SaaS Admin Panel:
+
 1. Check this documentation
 2. Review test file `server/saasAdmin.test.ts` for usage examples
 3. Check browser console for tRPC errors

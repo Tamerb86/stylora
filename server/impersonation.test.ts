@@ -5,11 +5,11 @@ import type { User } from "../drizzle/schema";
 
 /**
  * Test impersonation banner detection logic
- * 
+ *
  * The banner should ONLY show when:
  * 1. Platform owner (OWNER_OPEN_ID) is logged in
  * 2. impersonatedTenantId is set in the session
- * 
+ *
  * The banner should NOT show when:
  * 1. Regular users are logged in (even if tenantId is not "default-tenant")
  * 2. Platform owner is logged in without impersonation
@@ -57,7 +57,7 @@ describe("Impersonation Banner Logic", () => {
 
     // Regular user should NOT have impersonatedTenantId set
     expect(result?.impersonatedTenantId).toBeNull();
-    
+
     // This means banner will NOT show (isImpersonating = false)
     const isImpersonating = result && result.impersonatedTenantId;
     expect(isImpersonating).toBeFalsy();
@@ -102,7 +102,7 @@ describe("Impersonation Banner Logic", () => {
 
     // Platform owner impersonating should have impersonatedTenantId set
     expect(result?.impersonatedTenantId).toBe("impersonated-tenant-456");
-    
+
     // This means banner WILL show (isImpersonating = true)
     const isImpersonating = result && result.impersonatedTenantId;
     expect(isImpersonating).toBeTruthy();
@@ -147,7 +147,7 @@ describe("Impersonation Banner Logic", () => {
 
     // Platform owner without impersonation should NOT have impersonatedTenantId set
     expect(result?.impersonatedTenantId).toBeNull();
-    
+
     // This means banner will NOT show (isImpersonating = false)
     const isImpersonating = result && result.impersonatedTenantId;
     expect(isImpersonating).toBeFalsy();

@@ -27,7 +27,9 @@ export default function PrintReceipt() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-2">Ordre ikke funnet</h1>
-          <p className="text-muted-foreground">Kunne ikke finne ordre #{orderId}</p>
+          <p className="text-muted-foreground">
+            Kunne ikke finne ordre #{orderId}
+          </p>
         </div>
       </div>
     );
@@ -45,7 +47,7 @@ export default function PrintReceipt() {
         total: parseFloat(order.total),
         paymentMethod: order.status || "cash",
       }}
-      items={items.map((item) => ({
+      items={items.map(item => ({
         name: item.itemType === "product" ? "Produkt" : "Tjeneste",
         quantity: item.quantity || 1,
         price: parseFloat(item.unitPrice),

@@ -19,17 +19,17 @@
    - Wave emoji (👋) in title
    - Subtitle: "Kom i gang med å administrere salongen din"
    - Three purple gradient buttons (stacked vertically):
-     * "Opprett ny avtale" + "Administrer timeboken din"
-     * "Legg til nye kunder" + "Bygg kunderegisteret ditt"
-     * "Administrer tjenester" + "Sett opp priser og varighet"
+     - "Opprett ny avtale" + "Administrer timeboken din"
+     - "Legg til nye kunder" + "Bygg kunderegisteret ditt"
+     - "Administrer tjenester" + "Sett opp priser og varighet"
 
 4. **Performance Card (Right)**
    - Chart emoji (📈) in title
    - Subtitle: "Sammendrag av aktivitet"
    - Three metrics with colored backgrounds:
-     * "Fullførte avtaler" - 0 (blue background)
-     * "Omsetning" - 0.00 NOK (green background with green text)
-     * "Ventende" - 0 (orange background with orange text)
+     - "Fullførte avtaler" - 0 (blue background)
+     - "Omsetning" - 0.00 NOK (green background with green text)
+     - "Ventende" - 0 (orange background with orange text)
    - "Se fullstendig analyse →" link at bottom
 
 ### ✅ Design Matches Reference:
@@ -50,6 +50,7 @@
 ## Comparison with Reference Design:
 
 The current implementation successfully matches the reference design with:
+
 - Exact same layout structure
 - Same color scheme (pastel backgrounds)
 - Same content organization

@@ -1,4 +1,5 @@
 # Stylora Codebase Analysis Report
+
 ## Payments / Billing / Stripe / POS / Appointments / Multi-Tenant
 
 **Date:** November 29, 2025  
@@ -12,6 +13,7 @@
 The Stylora codebase has **comprehensive database schemas** for payments, appointments, and multi-tenant isolation, but **NO payment processing logic** has been implemented yet. The database is ready, but all Stripe integration, POS functionality, and payment workflows need to be built from scratch.
 
 **Key Findings:**
+
 - ✅ Database schemas are complete and well-designed
 - ✅ Appointments/booking system is fully functional
 - ✅ Multi-tenant isolation is properly implemented
@@ -29,16 +31,27 @@ The Stylora codebase has **comprehensive database schemas** for payments, appoin
 **File:** `/home/ubuntu/stylora/drizzle/schema.ts` (lines 265-288)
 
 **Schema:**
+
 ```typescript
 export const payments = mysqlTable("payments", {
   id: int("id").autoincrement().primaryKey(),
   tenantId: varchar("tenantId", { length: 36 }).notNull(),
   orderId: int("orderId"), // For product sales
   appointmentId: int("appointmentId"), // For appointment bookings
-  paymentMethod: mysqlEnum("paymentMethod", ["cash", "card", "vipps", "stripe"]).notNull(),
+  paymentMethod: mysqlEnum("paymentMethod", [
+    "cash",
+    "card",
+    "vipps",
+    "stripe",
+  ]).notNull(),
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   currency: varchar("currency", { length: 3 }).default("NOK").notNull(),
-  status: mysqlEnum("status", ["pending", "completed", "failed", "refunded"]).default("pending"),
+  status: mysqlEnum("status", [
+    "pending",
+    "completed",
+    "failed",
+    "refunded",
+  ]).default("pending"),
   paymentGateway: mysqlEnum("paymentGateway", ["stripe", "vipps"]),
   gatewayPaymentId: varchar("gatewayPaymentId", { length: 255 }), // Stripe Payment Intent ID
   gatewaySessionId: varchar("gatewaySessionId", { length: 255 }), // Stripe Checkout Session ID
@@ -53,22 +66,26 @@ export const payments = mysqlTable("payments", {
 ```
 
 **Entities:**
+
 - `payments` - Main payment records
 - `refunds` - Refund tracking (lines 290-301)
 
 **Payment Status Enum:**
+
 - `pending` - Payment initiated but not completed
 - `completed` - Payment successful
 - `failed` - Payment failed
 - `refunded` - Payment refunded
 
 **Payment Method Enum:**
+
 - `cash` - Cash payment
 - `card` - Card payment (generic)
 - `vipps` - Norwegian mobile payment
 - `stripe` - Stripe payment
 
 **Notes:**
+
 - Schema is **Stripe-ready** with `gatewayPaymentId` and `gatewaySessionId` fields
 - Supports both appointment payments (`appointmentId`) and product sales (`orderId`)
 - Multi-tenant isolation via `tenantId`
@@ -82,6 +99,7 @@ export const payments = mysqlTable("payments", {
 **File:** `/home/ubuntu/stylora/drizzle/schema.ts` (lines 229-259)
 
 **Schema:**
+
 ```typescript
 export const orders = mysqlTable("orders", {
   id: int("id").autoincrement().primaryKey(),
@@ -94,7 +112,12 @@ export const orders = mysqlTable("orders", {
   subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
   vatAmount: decimal("vatAmount", { precision: 10, scale: 2 }).notNull(),
   totalAmount: decimal("totalAmount", { precision: 10, scale: 2 }).notNull(),
-  status: mysqlEnum("status", ["pending", "completed", "refunded", "partially_refunded"]).default("pending"),
+  status: mysqlEnum("status", [
+    "pending",
+    "completed",
+    "refunded",
+    "partially_refunded",
+  ]).default("pending"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -112,12 +135,14 @@ export const orderItems = mysqlTable("orderItems", {
 ```
 
 **Order Status Enum:**
+
 - `pending` - Order created but not paid
 - `completed` - Order paid and fulfilled
 - `refunded` - Full refund issued
 - `partially_refunded` - Partial refund issued
 
 **Notes:**
+
 - Supports both appointment-linked orders and standalone product sales
 - VAT calculation built into schema (Norwegian 25% VAT)
 - Line items can be services OR products
@@ -130,6 +155,7 @@ export const orderItems = mysqlTable("orderItems", {
 **File:** `/home/ubuntu/stylora/drizzle/schema.ts` (lines 137-186)
 
 **Schema:**
+
 ```typescript
 export const appointments = mysqlTable("appointments", {
   id: int("id").autoincrement().primaryKey(),
@@ -139,7 +165,13 @@ export const appointments = mysqlTable("appointments", {
   appointmentDate: date("appointmentDate").notNull(),
   startTime: time("startTime").notNull(),
   endTime: time("endTime").notNull(),
-  status: mysqlEnum("status", ["pending", "confirmed", "completed", "canceled", "no_show"]).default("pending"),
+  status: mysqlEnum("status", [
+    "pending",
+    "confirmed",
+    "completed",
+    "canceled",
+    "no_show",
+  ]).default("pending"),
   cancellationReason: text("cancellationReason"),
   canceledBy: mysqlEnum("canceledBy", ["customer", "staff", "system"]),
   canceledAt: timestamp("canceledAt"),
@@ -162,6 +194,7 @@ export const recurrenceRules = mysqlTable("recurrenceRules", {
 ```
 
 **Appointment Status Enum:**
+
 - `pending` - Appointment booked but not confirmed
 - `confirmed` - Appointment confirmed
 - `completed` - Service delivered
@@ -169,6 +202,7 @@ export const recurrenceRules = mysqlTable("recurrenceRules", {
 - `no_show` - Customer didn't show up
 
 **Notes:**
+
 - **FULLY IMPLEMENTED** - appointments system works end-to-end
 - Multi-service appointments supported via `appointmentServices` junction table
 - Recurrence rules schema exists but not implemented yet
@@ -181,6 +215,7 @@ export const recurrenceRules = mysqlTable("recurrenceRules", {
 **File:** `/home/ubuntu/stylora/drizzle/schema.ts` (lines 378-404)
 
 **Schema:**
+
 ```typescript
 export const subscriptionPlans = mysqlTable("subscriptionPlans", {
   id: int("id").autoincrement().primaryKey(),
@@ -199,7 +234,12 @@ export const tenantSubscriptions = mysqlTable("tenantSubscriptions", {
   id: int("id").autoincrement().primaryKey(),
   tenantId: varchar("tenantId", { length: 36 }).notNull(),
   planId: int("planId").notNull(),
-  status: mysqlEnum("status", ["active", "past_due", "canceled", "paused"]).default("active"),
+  status: mysqlEnum("status", [
+    "active",
+    "past_due",
+    "canceled",
+    "paused",
+  ]).default("active"),
   currentPeriodStart: date("currentPeriodStart").notNull(),
   currentPeriodEnd: date("currentPeriodEnd").notNull(),
   stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
@@ -209,6 +249,7 @@ export const tenantSubscriptions = mysqlTable("tenantSubscriptions", {
 ```
 
 **Notes:**
+
 - Schema includes `stripeSubscriptionId` for Stripe Billing integration
 - Designed for SaaS subscription model (monthly plans)
 - **NO CODE USES THIS YET** - subscription logic not implemented
@@ -220,6 +261,7 @@ export const tenantSubscriptions = mysqlTable("tenantSubscriptions", {
 **File:** `/home/ubuntu/stylora/drizzle/schema.ts` (lines 27-69)
 
 **Schema:**
+
 ```typescript
 export const tenants = mysqlTable("tenants", {
   id: varchar("id", { length: 36 }).primaryKey(), // UUID
@@ -234,7 +276,12 @@ export const tenants = mysqlTable("tenants", {
   timezone: varchar("timezone", { length: 50 }).default("Europe/Oslo"),
   currency: varchar("currency", { length: 3 }).default("NOK"),
   vatRate: decimal("vatRate", { precision: 5, scale: 2 }).default("25.00"),
-  status: mysqlEnum("status", ["trial", "active", "suspended", "canceled"]).default("trial"),
+  status: mysqlEnum("status", [
+    "trial",
+    "active",
+    "suspended",
+    "canceled",
+  ]).default("trial"),
   trialEndsAt: timestamp("trialEndsAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -254,6 +301,7 @@ export const users = mysqlTable("users", {
 ```
 
 **Notes:**
+
 - Every data table includes `tenantId` for row-level isolation
 - Norwegian-specific: `orgNumber`, `vatRate` (25%), timezone (`Europe/Oslo`)
 - Tenant status tracks trial/active/suspended/canceled states
@@ -268,12 +316,12 @@ export const users = mysqlTable("users", {
 
 **Procedures:**
 
-| Procedure | Type | Auth | Description |
-|-----------|------|------|-------------|
-| `list` | query | tenant | Get appointments by date range for tenant |
-| `getById` | query | tenant | Get single appointment details |
-| `create` | mutation | tenant | Create new appointment with services |
-| `reschedule` | mutation | tenant | Change appointment date/time |
+| Procedure      | Type     | Auth   | Description                                                  |
+| -------------- | -------- | ------ | ------------------------------------------------------------ |
+| `list`         | query    | tenant | Get appointments by date range for tenant                    |
+| `getById`      | query    | tenant | Get single appointment details                               |
+| `create`       | mutation | tenant | Create new appointment with services                         |
+| `reschedule`   | mutation | tenant | Change appointment date/time                                 |
 | `updateStatus` | mutation | tenant | Update status (pending/confirmed/completed/canceled/no_show) |
 
 **Key Implementation Details:**
@@ -301,6 +349,7 @@ appointments.list: tenantProcedure
 ```
 
 **Notes:**
+
 - **FULLY FUNCTIONAL** - all CRUD operations work
 - Automatic loyalty points awarded when status changes to `completed`
 - Multi-service appointments supported
@@ -314,13 +363,13 @@ appointments.list: tenantProcedure
 
 **Procedures:**
 
-| Procedure | Type | Auth | Description |
-|-----------|------|------|-------------|
-| `getSalonInfo` | query | public | Get salon details by tenantId |
-| `getAvailableServices` | query | public | List active services |
-| `getAvailableEmployees` | query | public | List active employees |
-| `getAvailableTimeSlots` | query | public | Generate available time slots for date/service |
-| `createBooking` | mutation | public | Create appointment from public booking form |
+| Procedure               | Type     | Auth   | Description                                    |
+| ----------------------- | -------- | ------ | ---------------------------------------------- |
+| `getSalonInfo`          | query    | public | Get salon details by tenantId                  |
+| `getAvailableServices`  | query    | public | List active services                           |
+| `getAvailableEmployees` | query    | public | List active employees                          |
+| `getAvailableTimeSlots` | query    | public | Generate available time slots for date/service |
+| `createBooking`         | mutation | public | Create appointment from public booking form    |
 
 **Booking Flow:**
 
@@ -331,6 +380,7 @@ appointments.list: tenantProcedure
 5. **NO PAYMENT STEP** - appointment created with status `pending`
 
 **Notes:**
+
 - **FULLY FUNCTIONAL** - public booking works
 - Time slot generation: 8:00-20:00, 30-minute intervals
 - Conflict detection prevents double-booking
@@ -344,12 +394,14 @@ appointments.list: tenantProcedure
 **Status:** ❌ **DOES NOT EXIST**
 
 **Search Results:**
+
 - No `payments:` router found in `routers.ts`
 - No `stripe:` router found
 - No `checkout:` router found
 - No payment-related procedures anywhere
 
 **What's Missing:**
+
 - Create order endpoint
 - Process payment endpoint
 - Stripe checkout session creation
@@ -366,25 +418,25 @@ appointments.list: tenantProcedure
 
 **All Routers:**
 
-| Router | Status | Lines | Description |
-|--------|--------|-------|-------------|
-| `auth` | ✅ Complete | 53-60 | Login/logout |
-| `customers` | ✅ Complete | 65-170 | Customer CRUD |
-| `services` | ✅ Complete | 171-241 | Service CRUD |
-| `appointments` | ✅ Complete | 242-418 | Appointment management |
-| `employees` | ✅ Complete | 423-581 | Employee management |
-| `products` | ✅ Complete | 582-654 | Product inventory |
-| `loyalty` | ✅ Complete | 655-846 | Loyalty points system |
-| `employee` | ✅ Complete | 847-1195 | Employee dashboard |
-| `notifications` | ✅ Complete | 1196-1232 | Notification log |
-| `financial` | ✅ Complete | 1233-1328 | Financial reports |
-| `publicBooking` | ✅ Complete | 1329-1610 | Public booking flow |
-| `analytics` | ✅ Complete | 1615-1773 | Analytics charts |
-| `attendance` | ✅ Complete | 1774-1942 | Time clock/timesheets |
-| `dashboard` | ✅ Complete | 1943-1983 | Dashboard stats |
-| **`payments`** | ❌ **MISSING** | - | **NOT IMPLEMENTED** |
-| **`pos`** | ❌ **MISSING** | - | **NOT IMPLEMENTED** |
-| **`checkout`** | ❌ **MISSING** | - | **NOT IMPLEMENTED** |
+| Router          | Status         | Lines     | Description            |
+| --------------- | -------------- | --------- | ---------------------- |
+| `auth`          | ✅ Complete    | 53-60     | Login/logout           |
+| `customers`     | ✅ Complete    | 65-170    | Customer CRUD          |
+| `services`      | ✅ Complete    | 171-241   | Service CRUD           |
+| `appointments`  | ✅ Complete    | 242-418   | Appointment management |
+| `employees`     | ✅ Complete    | 423-581   | Employee management    |
+| `products`      | ✅ Complete    | 582-654   | Product inventory      |
+| `loyalty`       | ✅ Complete    | 655-846   | Loyalty points system  |
+| `employee`      | ✅ Complete    | 847-1195  | Employee dashboard     |
+| `notifications` | ✅ Complete    | 1196-1232 | Notification log       |
+| `financial`     | ✅ Complete    | 1233-1328 | Financial reports      |
+| `publicBooking` | ✅ Complete    | 1329-1610 | Public booking flow    |
+| `analytics`     | ✅ Complete    | 1615-1773 | Analytics charts       |
+| `attendance`    | ✅ Complete    | 1774-1942 | Time clock/timesheets  |
+| `dashboard`     | ✅ Complete    | 1943-1983 | Dashboard stats        |
+| **`payments`**  | ❌ **MISSING** | -         | **NOT IMPLEMENTED**    |
+| **`pos`**       | ❌ **MISSING** | -         | **NOT IMPLEMENTED**    |
+| **`checkout`**  | ❌ **MISSING** | -         | **NOT IMPLEMENTED**    |
 
 ---
 
@@ -395,6 +447,7 @@ appointments.list: tenantProcedure
 **Status:** ❌ **ZERO STRIPE CODE EXISTS**
 
 **Search Results:**
+
 - No `stripe.ts` file
 - No `lib/stripe.ts` file
 - No `utils/stripe.ts` file
@@ -420,6 +473,7 @@ export const ENV = {
 ```
 
 **Notes:**
+
 - According to webdev config, Stripe secrets exist: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `VITE_STRIPE_PUBLISHABLE_KEY`
 - These are injected by the platform but **NOT USED IN CODE**
 - Need to add Stripe keys to `env.ts`
@@ -515,19 +569,14 @@ customers.list: tenantProcedure.query(async ({ ctx }) => {
 export async function getCustomersByTenant(tenantId: string) {
   const db = await getDb();
   if (!db) return [];
-  
+
   const { customers } = await import("../drizzle/schema");
   const { eq, isNull } = await import("drizzle-orm");
-  
+
   return db
     .select()
     .from(customers)
-    .where(
-      and(
-        eq(customers.tenantId, tenantId),
-        isNull(customers.deletedAt)
-      )
-    );
+    .where(and(eq(customers.tenantId, tenantId), isNull(customers.deletedAt)));
 }
 ```
 
@@ -544,15 +593,25 @@ export async function getCustomersByTenant(tenantId: string) {
 // Owner/Admin only
 const adminProcedure = tenantProcedure.use(({ ctx, next }) => {
   if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
-    throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Admin access required",
+    });
   }
   return next({ ctx });
 });
 
 // Employee access
 const employeeProcedure = tenantProcedure.use(({ ctx, next }) => {
-  if (ctx.user.role !== "owner" && ctx.user.role !== "admin" && ctx.user.role !== "employee") {
-    throw new TRPCError({ code: "FORBIDDEN", message: "Employee access required" });
+  if (
+    ctx.user.role !== "owner" &&
+    ctx.user.role !== "admin" &&
+    ctx.user.role !== "employee"
+  ) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Employee access required",
+    });
   }
   return next({ ctx });
 });
@@ -575,6 +634,7 @@ const employeeProcedure = tenantProcedure.use(({ ctx, next }) => {
    - Prevent cross-tenant payment access
 
 3. **Metadata Pattern:**
+
    ```typescript
    const session = await stripe.checkout.sessions.create({
      metadata: {
@@ -587,10 +647,11 @@ const employeeProcedure = tenantProcedure.use(({ ctx, next }) => {
    ```
 
 4. **Webhook Validation:**
+
    ```typescript
    // In webhook handler
    const { tenantId, appointmentId } = event.data.object.metadata;
-   
+
    // Verify appointment belongs to tenant
    const appointment = await db.getAppointmentById(appointmentId);
    if (appointment.tenantId !== tenantId) {
@@ -606,33 +667,33 @@ const employeeProcedure = tenantProcedure.use(({ ctx, next }) => {
 
 **Existing Functions:**
 
-| Function | Description |
-|----------|-------------|
-| `getDb()` | Get Drizzle instance |
-| `upsertUser()` | Create/update user |
-| `getUserByOpenId()` | Get user by OAuth ID |
-| `getTenantBySubdomain()` | Get tenant by subdomain |
-| `getTenantById()` | Get tenant by ID |
-| `getCustomersByTenant()` | Get customers (filtered by tenant) |
-| `getCustomerById()` | Get single customer |
-| `getServicesByTenant()` | Get services (filtered by tenant) |
-| `getServiceById()` | Get single service |
+| Function                    | Description                                        |
+| --------------------------- | -------------------------------------------------- |
+| `getDb()`                   | Get Drizzle instance                               |
+| `upsertUser()`              | Create/update user                                 |
+| `getUserByOpenId()`         | Get user by OAuth ID                               |
+| `getTenantBySubdomain()`    | Get tenant by subdomain                            |
+| `getTenantById()`           | Get tenant by ID                                   |
+| `getCustomersByTenant()`    | Get customers (filtered by tenant)                 |
+| `getCustomerById()`         | Get single customer                                |
+| `getServicesByTenant()`     | Get services (filtered by tenant)                  |
+| `getServiceById()`          | Get single service                                 |
 | `getAppointmentsByTenant()` | Get appointments (filtered by tenant + date range) |
-| `getAppointmentById()` | Get single appointment |
+| `getAppointmentById()`      | Get single appointment                             |
 
 **Missing Functions (Needed for Payments):**
 
 ```typescript
 // Need to add these to db.ts
-export async function createPayment(data: InsertPayment) { }
-export async function getPaymentById(paymentId: number) { }
-export async function getPaymentsByTenant(tenantId: string) { }
-export async function getPaymentsByAppointment(appointmentId: number) { }
-export async function updatePaymentStatus(paymentId: number, status: string) { }
+export async function createPayment(data: InsertPayment) {}
+export async function getPaymentById(paymentId: number) {}
+export async function getPaymentsByTenant(tenantId: string) {}
+export async function getPaymentsByAppointment(appointmentId: number) {}
+export async function updatePaymentStatus(paymentId: number, status: string) {}
 
-export async function createOrder(data: InsertOrder) { }
-export async function getOrderById(orderId: number) { }
-export async function getOrdersByTenant(tenantId: string) { }
+export async function createOrder(data: InsertOrder) {}
+export async function getOrderById(orderId: number) {}
+export async function getOrdersByTenant(tenantId: string) {}
 ```
 
 ---
@@ -744,7 +805,12 @@ type PaymentGateway = "stripe" | "vipps";
 type OrderStatus = "pending" | "completed" | "refunded" | "partially_refunded";
 
 // Appointment status
-type AppointmentStatus = "pending" | "confirmed" | "completed" | "canceled" | "no_show";
+type AppointmentStatus =
+  | "pending"
+  | "confirmed"
+  | "completed"
+  | "canceled"
+  | "no_show";
 ```
 
 ---
@@ -754,11 +820,13 @@ type AppointmentStatus = "pending" | "confirmed" | "completed" | "canceled" | "n
 **1. No Payment Validation in Booking Flow**
 
 **Problem:** Public booking creates appointments without payment, leading to:
+
 - High no-show rates
 - Revenue leakage
 - Manual payment collection burden
 
 **Solution:** Add optional prepayment requirement:
+
 ```typescript
 // In publicBooking.createBooking
 if (tenantSettings.requirePrepayment) {
@@ -775,6 +843,7 @@ if (tenantSettings.requirePrepayment) {
 **Problem:** Appointment can be `completed` but payment is `pending`
 
 **Solution:** Add validation:
+
 ```typescript
 // In appointments.updateStatus
 if (input.status === "completed") {
@@ -782,7 +851,7 @@ if (input.status === "completed") {
   if (!payment || payment.status !== "completed") {
     throw new TRPCError({
       code: "PRECONDITION_FAILED",
-      message: "Cannot complete appointment without payment"
+      message: "Cannot complete appointment without payment",
     });
   }
 }
@@ -793,6 +862,7 @@ if (input.status === "completed") {
 **Problem:** `orders` table exists but no code creates orders
 
 **Solution:** Implement POS flow:
+
 1. Staff adds services/products to cart
 2. System creates order with `status: "pending"`
 3. Staff processes payment (cash/card/Stripe)
@@ -804,8 +874,9 @@ if (input.status === "completed") {
 **Problem:** Without signature verification, fake webhooks could manipulate payment status
 
 **Solution:** Always verify webhook signature:
+
 ```typescript
-const sig = req.headers['stripe-signature'];
+const sig = req.headers["stripe-signature"];
 const event = stripe.webhooks.constructEvent(
   req.body,
   sig,
@@ -817,7 +888,8 @@ const event = stripe.webhooks.constructEvent(
 
 **Problem:** Should each tenant have their own Stripe account (Stripe Connect) or use single platform account?
 
-**Current Recommendation:** 
+**Current Recommendation:**
+
 - **MVP:** Single Stripe account, all payments go to platform
 - **Future:** Migrate to Stripe Connect for tenant-specific accounts
 
@@ -834,6 +906,7 @@ const event = stripe.webhooks.constructEvent(
 **Problem:** Schema has `vatRate` fields but no code calculates VAT automatically
 
 **Solution:** Add VAT calculation helper:
+
 ```typescript
 export function calculateVAT(subtotal: number, vatRate: number) {
   const vatAmount = subtotal * (vatRate / 100);

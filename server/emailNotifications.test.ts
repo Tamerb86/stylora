@@ -5,7 +5,13 @@
 
 import { describe, it, expect, beforeAll } from "vitest";
 import { getDb } from "./db";
-import { appointments, customers, users, tenants, services } from "../drizzle/schema";
+import {
+  appointments,
+  customers,
+  users,
+  tenants,
+  services,
+} from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { runEmailScheduler } from "./emailScheduler";
 import { createRecurringAppointments } from "./recurringAppointments";
@@ -23,13 +29,25 @@ describe("Email Notifications & Recurring Appointments", () => {
     const [tenant] = await db.select().from(tenants).limit(1);
     testTenantId = tenant.id;
 
-    const [customer] = await db.select().from(customers).where(eq(customers.tenantId, testTenantId)).limit(1);
+    const [customer] = await db
+      .select()
+      .from(customers)
+      .where(eq(customers.tenantId, testTenantId))
+      .limit(1);
     testCustomerId = customer.id;
 
-    const [employee] = await db.select().from(users).where(eq(users.tenantId, testTenantId)).limit(1);
+    const [employee] = await db
+      .select()
+      .from(users)
+      .where(eq(users.tenantId, testTenantId))
+      .limit(1);
     testEmployeeId = employee.id;
 
-    const [service] = await db.select().from(services).where(eq(services.tenantId, testTenantId)).limit(1);
+    const [service] = await db
+      .select()
+      .from(services)
+      .where(eq(services.tenantId, testTenantId))
+      .limit(1);
     testServiceId = service.id;
   });
 

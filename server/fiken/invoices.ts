@@ -1,16 +1,16 @@
 /**
  * Fiken Invoice Sync Module
- * 
+ *
  * Handles syncing orders/invoices between Stylora and Fiken
  */
 
 import { getDb } from "../db";
-import { 
-  orders, 
-  orderItems, 
-  fikenInvoiceMapping, 
+import {
+  orders,
+  orderItems,
+  fikenInvoiceMapping,
   fikenCustomerMapping,
-  fikenSyncLog 
+  fikenSyncLog,
 } from "../../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 import { FikenClient, FikenInvoice } from "./client";
@@ -37,10 +37,7 @@ export async function mapOrderToFikenInvoice(
   const [order] = await db
     .select()
     .from(orders)
-    .where(and(
-      eq(orders.id, orderId),
-      eq(orders.tenantId, tenantId)
-    ))
+    .where(and(eq(orders.id, orderId), eq(orders.tenantId, tenantId)))
     .limit(1);
 
   if (!order) {
@@ -55,21 +52,27 @@ export async function mapOrderToFikenInvoice(
 
   // Check if order has a customer
   if (!order.customerId) {
-    throw new Error(`Order ${orderId} has no customer assigned. Cannot create invoice.`);
+    throw new Error(
+      `Order ${orderId} has no customer assigned. Cannot create invoice.`
+    );
   }
 
   // Get Fiken customer ID
   const [customerMapping] = await db
     .select()
     .from(fikenCustomerMapping)
-    .where(and(
-      eq(fikenCustomerMapping.tenantId, tenantId),
-      eq(fikenCustomerMapping.customerId, order.customerId)
-    ))
+    .where(
+      and(
+        eq(fikenCustomerMapping.tenantId, tenantId),
+        eq(fikenCustomerMapping.customerId, order.customerId)
+      )
+    )
     .limit(1);
 
   if (!customerMapping) {
-    throw new Error(`Customer ${order.customerId} not synced to Fiken. Please sync customer first.`);
+    throw new Error(
+      `Customer ${order.customerId} not synced to Fiken. Please sync customer first.`
+    );
   }
 
   // Calculate dates
@@ -95,8 +98,8 @@ export async function mapOrderToFikenInvoice(
 
   return {
     customerId: customerMapping.fikenContactId,
-    issueDate: issueDate.toISOString().split('T')[0],
-    dueDate: dueDate.toISOString().split('T')[0],
+    issueDate: issueDate.toISOString().split("T")[0],
+    dueDate: dueDate.toISOString().split("T")[0],
     lines,
     currency: "NOK",
   };
@@ -123,10 +126,12 @@ export async function syncOrderToFiken(
     const [existingMapping] = await db
       .select()
       .from(fikenInvoiceMapping)
-      .where(and(
-        eq(fikenInvoiceMapping.tenantId, tenantId),
-        eq(fikenInvoiceMapping.orderId, orderId)
-      ))
+      .where(
+        and(
+          eq(fikenInvoiceMapping.tenantId, tenantId),
+          eq(fikenInvoiceMapping.orderId, orderId)
+        )
+      )
       .limit(1);
 
     if (existingMapping && existingMapping.status === "sent") {
@@ -180,16 +185,19 @@ export async function syncOrderToFiken(
       fikenInvoiceNumber: fikenInvoice.invoiceNumber || undefined,
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
 
     // Log error in mapping table
     const [existingMapping] = await db
       .select()
       .from(fikenInvoiceMapping)
-      .where(and(
-        eq(fikenInvoiceMapping.tenantId, tenantId),
-        eq(fikenInvoiceMapping.orderId, orderId)
-      ))
+      .where(
+        and(
+          eq(fikenInvoiceMapping.tenantId, tenantId),
+          eq(fikenInvoiceMapping.orderId, orderId)
+        )
+      )
       .limit(1);
 
     if (existingMapping) {
@@ -249,17 +257,19 @@ export async function bulkSyncOrders(
         .select()
         .from(orders)
         .where(eq(orders.tenantId, tenantId));
-      
+
       ordersToSync = ordersToSync.filter(o => orderIds.includes(o.id));
     } else {
       // Sync all unsynced orders
       const syncedOrderIds = await db
         .select({ orderId: fikenInvoiceMapping.orderId })
         .from(fikenInvoiceMapping)
-        .where(and(
-          eq(fikenInvoiceMapping.tenantId, tenantId),
-          eq(fikenInvoiceMapping.status, "sent")
-        ));
+        .where(
+          and(
+            eq(fikenInvoiceMapping.tenantId, tenantId),
+            eq(fikenInvoiceMapping.status, "sent")
+          )
+        );
 
       const syncedIds = syncedOrderIds.map(m => m.orderId);
 
@@ -289,15 +299,22 @@ export async function bulkSyncOrders(
     await db.insert(fikenSyncLog).values({
       tenantId,
       operation: "invoice_sync",
-      status: totalFailed === 0 ? "success" : totalFailed === totalProcessed ? "failed" : "partial",
+      status:
+        totalFailed === 0
+          ? "success"
+          : totalFailed === totalProcessed
+            ? "failed"
+            : "partial",
       itemsProcessed: totalProcessed,
       itemsFailed: totalFailed,
       details: {
         invoiceIds: results.map(r => r.orderId),
-        errors: results.filter(r => !r.success).map(r => ({
-          id: r.orderId,
-          error: r.error || "Unknown error",
-        })),
+        errors: results
+          .filter(r => !r.success)
+          .map(r => ({
+            id: r.orderId,
+            error: r.error || "Unknown error",
+          })),
       },
       duration,
       triggeredBy: "manual",
@@ -311,7 +328,8 @@ export async function bulkSyncOrders(
     };
   } catch (error) {
     const duration = Date.now() - startTime;
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
 
     // Log failed sync
     await db.insert(fikenSyncLog).values({
@@ -332,7 +350,9 @@ export async function bulkSyncOrders(
 /**
  * Get unsynced orders count
  */
-export async function getUnsyncedOrdersCount(tenantId: string): Promise<number> {
+export async function getUnsyncedOrdersCount(
+  tenantId: string
+): Promise<number> {
   const db = await getDb();
   if (!db) return 0;
 
@@ -346,10 +366,12 @@ export async function getUnsyncedOrdersCount(tenantId: string): Promise<number> 
   const syncedOrders = await db
     .select({ orderId: fikenInvoiceMapping.orderId })
     .from(fikenInvoiceMapping)
-    .where(and(
-      eq(fikenInvoiceMapping.tenantId, tenantId),
-      eq(fikenInvoiceMapping.status, "sent")
-    ));
+    .where(
+      and(
+        eq(fikenInvoiceMapping.tenantId, tenantId),
+        eq(fikenInvoiceMapping.status, "sent")
+      )
+    );
 
   const syncedIds = syncedOrders.map(m => m.orderId);
   const unsyncedCount = allOrders.filter(o => !syncedIds.includes(o.id)).length;

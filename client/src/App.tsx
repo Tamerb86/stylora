@@ -25,8 +25,8 @@ import { Communications } from "@/pages/Communications";
 import { BulkMessaging } from "@/pages/BulkMessaging";
 import { CampaignAnalytics } from "@/pages/CampaignAnalytics";
 import { EmailTemplates } from "@/pages/EmailTemplates";
-import Analytics from '@/pages/Analytics';
-import Monitoring from '@/pages/Monitoring';
+import Analytics from "@/pages/Analytics";
+import Monitoring from "@/pages/Monitoring";
 import EmployeeDashboard from "@/pages/EmployeeDashboard";
 import PublicBooking from "@/pages/PublicBooking";
 import BookingSuccess from "@/pages/BookingSuccess";
@@ -95,7 +95,10 @@ function Router() {
       <Route path="/signup" component={SignUp} />
       <Route path="/onboard" component={Onboarding} />
       <Route path="/verify-email" component={VerifyEmail} />
-      <Route path="/email-verification-required" component={EmailVerificationRequired} />
+      <Route
+        path="/email-verification-required"
+        component={EmailVerificationRequired}
+      />
       <Route path="/setup-wizard" component={SetupWizard} />
       <Route path="/book" component={PublicBooking} />
       <Route path="/book/success" component={BookingSuccess} />
@@ -199,11 +202,10 @@ function Router() {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        switchable
-      >
-        <StripeTerminalProvider providerId={import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ""}>
+      <ThemeProvider defaultTheme="light" switchable>
+        <StripeTerminalProvider
+          providerId={import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ""}
+        >
           <ThermalPrinterProvider>
             <TooltipProvider>
               <ImpersonationBannerWrapper />
@@ -218,13 +220,13 @@ function App() {
 
 function ImpersonationBannerWrapper() {
   const { data: user } = trpc.auth.me.useQuery();
-  
+
   // Show banner only if impersonatedTenantId is explicitly set in the session
   // This means the platform owner is actively impersonating another tenant
   const isImpersonating = user && user.impersonatedTenantId;
-  
+
   if (!isImpersonating) return null;
-  
+
   return <ImpersonationBanner />;
 }
 

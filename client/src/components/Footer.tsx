@@ -1,4 +1,4 @@
-import { Link } from 'wouter';
+import { Link } from "wouter";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -21,7 +21,10 @@ export default function Footer() {
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-6 text-sm">
-            <Link href="/privacy" className="hover:text-white transition-colors">
+            <Link
+              href="/privacy"
+              className="hover:text-white transition-colors"
+            >
               Personvernerklæring
             </Link>
             <Link href="/terms" className="hover:text-white transition-colors">
@@ -30,7 +33,10 @@ export default function Footer() {
             <Link href="/about" className="hover:text-white transition-colors">
               Om oss
             </Link>
-            <Link href="/contact" className="hover:text-white transition-colors">
+            <Link
+              href="/contact"
+              className="hover:text-white transition-colors"
+            >
               Kontakt
             </Link>
           </div>

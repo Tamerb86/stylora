@@ -1,6 +1,7 @@
 # iZettle Reader Connect API Support Ticket
 
 ## Summary
+
 **Issue**: Unable to pair PayPal Reader using Reader Connect API - receiving "Must be a valid code" error despite following documentation
 
 **Priority**: High  
@@ -15,12 +16,15 @@
 We are integrating Reader Connect API into our web-based POS system for Norwegian salons. We have successfully implemented OAuth authentication and can create Reader Links via the API, but we are unable to pair the physical PayPal Reader with the generated 8-digit code.
 
 ### What We're Trying to Achieve
+
 - Integrate PayPal Reader with our web-based POS system
 - Use Reader Connect API (REST + WebSocket) for cloud-based payment processing
 - Target platform: Web (React/TypeScript)
 
 ### Current Implementation Status
+
 ✅ **Working**:
+
 - OAuth 2.0 authentication (Authorization Code Grant)
 - Access token retrieval and refresh
 - Token encryption/decryption
@@ -29,6 +33,7 @@ We are integrating Reader Connect API into our web-based POS system for Norwegia
 - WebSocket connection preparation
 
 ❌ **Not Working**:
+
 - Physical reader pairing with 8-digit code
 - Reader consistently shows: **"Must be a valid code"**
 
@@ -37,6 +42,7 @@ We are integrating Reader Connect API into our web-based POS system for Norwegia
 ## Steps to Reproduce
 
 ### 1. OAuth Authentication
+
 ```typescript
 // Successfully obtaining access token
 const authUrl = `https://oauth.zettle.com/authorize?response_type=code&client_id=${CLIENT_ID}&scope=READ:PAYMENT&redirect_uri=${REDIRECT_URI}`;
@@ -46,21 +52,26 @@ const authUrl = `https://oauth.zettle.com/authorize?response_type=code&client_id
 **Result**: ✅ Access token obtained successfully
 
 ### 2. Create Reader Link
+
 ```typescript
-const response = await fetch('https://reader-connect.zettle.com/reader-connect/v1/reader-links', {
-  method: 'POST',
-  headers: {
-    'Authorization': `Bearer ${accessToken}`,
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    organizationUuid: '01JFGXNX3FWXQ6CQHBQHVP5YK0',
-    label: 'Stylora POS'
-  })
-});
+const response = await fetch(
+  "https://reader-connect.zettle.com/reader-connect/v1/reader-links",
+  {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      organizationUuid: "01JFGXNX3FWXQ6CQHBQHVP5YK0",
+      label: "Stylora POS",
+    }),
+  }
+);
 ```
 
 **Result**: ✅ Success - Returns:
+
 ```json
 {
   "linkId": "01JFQR5KXVZQPWG3KCFBXZM123",
@@ -73,7 +84,9 @@ const response = await fetch('https://reader-connect.zettle.com/reader-connect/v
 ```
 
 ### 3. Attempt to Pair Reader
+
 **Steps on Physical Reader**:
+
 1. Turn on PayPal Reader
 2. Navigate to Settings → Integrations
 3. Select "Connect to POS"
@@ -87,29 +100,34 @@ const response = await fetch('https://reader-connect.zettle.com/reader-connect/v
 ## What We've Tried
 
 ### Attempt 1: Different API Endpoints
+
 - ✅ Tried: `https://reader-connect.zettle.com/reader-connect/v1/reader-links`
 - ✅ Tried: `https://reader-connect.izettle.com/reader-connect/v1/reader-links`
 - ❌ Result: Same error
 
 ### Attempt 2: Different Code Formats
+
 - ✅ Tried: 8-digit code as returned by API
 - ✅ Tried: Adding leading zeros
 - ✅ Tried: Different code generation times
 - ❌ Result: Same error
 
 ### Attempt 3: Different OAuth Scopes
+
 - ✅ Tried: `READ:PAYMENT`
 - ✅ Tried: `READ:PAYMENT WRITE:PAYMENT`
 - ✅ Tried: `READ:PAYMENT READ:PURCHASE`
 - ❌ Result: Same error
 
 ### Attempt 4: Verify Organization UUID
+
 ```bash
 curl -X GET "https://oauth.zettle.com/users/self" \
   -H "Authorization: Bearer ${ACCESS_TOKEN}"
 ```
 
 **Response**:
+
 ```json
 {
   "uuid": "01JFGXNX3FWXQ6CQHBQHVP5YK0",
@@ -120,18 +138,21 @@ curl -X GET "https://oauth.zettle.com/users/self" \
 ✅ Organization UUID matches
 
 ### Attempt 5: Check Reader Compatibility
+
 - **Reader Model**: PayPal Reader (new model, purchased 2024)
 - **Firmware**: Latest version (auto-updated)
 - **Region**: Norway
 - **Account**: Norwegian Zettle account
 
 ### Attempt 6: Wait for Code Activation
+
 - ✅ Waited 1 minute after code creation
 - ✅ Waited 5 minutes after code creation
 - ✅ Tried immediately after creation
 - ❌ Result: Same error
 
 ### Attempt 7: Multiple Reader Link Creations
+
 - Created 10+ different reader links
 - Each with unique 8-digit codes
 - All codes show same error on reader
@@ -141,14 +162,17 @@ curl -X GET "https://oauth.zettle.com/users/self" \
 ## Error Messages
 
 ### From Reader Display
+
 ```
 Must be a valid code
 ```
 
 ### From API (No errors)
+
 All API calls return HTTP 200/201 with valid responses. No error messages in API responses.
 
 ### From Backend Logs
+
 ```
 [INFO] Reader link created successfully
 [INFO] LinkId: 01JFQR5KXVZQPWG3KCFBXZM123
@@ -164,6 +188,7 @@ No errors in backend logs.
 ## Request Details
 
 ### API Request (Create Reader Link)
+
 ```http
 POST /reader-connect/v1/reader-links HTTP/1.1
 Host: reader-connect.zettle.com
@@ -177,6 +202,7 @@ Content-Type: application/json
 ```
 
 ### API Response
+
 ```http
 HTTP/1.1 201 Created
 Content-Type: application/json
@@ -196,6 +222,7 @@ Content-Type: application/json
 ## Environment Details
 
 ### Development Environment
+
 - **Platform**: Web (Browser-based)
 - **Frontend**: React 19 + TypeScript
 - **Backend**: Node.js 22 + TypeScript
@@ -203,6 +230,7 @@ Content-Type: application/json
 - **API Client**: Fetch API
 
 ### Account Details
+
 - **Market**: Norway
 - **Account Type**: Business account
 - **Organization UUID**: `01JFGXNX3FWXQ6CQHBQHVP5YK0`
@@ -210,6 +238,7 @@ Content-Type: application/json
 - **API Credentials**: Valid (OAuth working)
 
 ### Reader Details
+
 - **Model**: PayPal Reader (2024 model)
 - **Purchase Date**: December 2024
 - **Firmware**: Latest (auto-updated)
@@ -261,12 +290,14 @@ Content-Type: application/json
 ## Additional Information
 
 ### Time Spent
+
 - 10+ hours debugging
 - 50+ pairing attempts
 - Multiple code reviews
 - Extensive documentation reading
 
 ### Documentation Reviewed
+
 - ✅ Reader Connect API Overview
 - ✅ Reader Connect REST API Reference
 - ✅ OAuth 2.0 Authorization Guide
@@ -274,9 +305,11 @@ Content-Type: application/json
 - ✅ WebSocket API Reference
 
 ### Code Repository
+
 We have a complete implementation ready. Can provide code samples if needed.
 
 ### Business Impact
+
 - Blocking launch of POS system for Norwegian salons
 - Need to decide between:
   - Waiting for iZettle fix

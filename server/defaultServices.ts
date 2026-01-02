@@ -9,7 +9,8 @@ export const DEFAULT_BARBER_SERVICES = [
     durationMinutes: 30,
     priceNok: 420,
     category: "Klipp",
-    description: "En klassisk herreklipp med maskin og saks. Inkluderer styling.",
+    description:
+      "En klassisk herreklipp med maskin og saks. Inkluderer styling.",
     isActive: true,
     displayOrder: 1,
   },
@@ -96,4 +97,4 @@ export const DEFAULT_BARBER_SERVICES = [
   },
 ] as const;
 
-export type DefaultService = typeof DEFAULT_BARBER_SERVICES[number];
+export type DefaultService = (typeof DEFAULT_BARBER_SERVICES)[number];

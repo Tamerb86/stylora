@@ -1,12 +1,28 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useState } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
-import { Loader2, Smartphone, CheckCircle2, AlertCircle, Info, Wifi, WifiOff, Trash2, RefreshCw } from "lucide-react";
+import {
+  Loader2,
+  Smartphone,
+  CheckCircle2,
+  AlertCircle,
+  Info,
+  Wifi,
+  WifiOff,
+  Trash2,
+  RefreshCw,
+} from "lucide-react";
 
 export function PayPalReaderPairing() {
   const [code, setCode] = useState("");
@@ -14,17 +30,22 @@ export function PayPalReaderPairing() {
   const [showPairingForm, setShowPairingForm] = useState(false);
 
   // Fetch linked readers
-  const { data: linkedReadersData, isLoading: loadingReaders, refetch: refetchReaders } = 
-    trpc.izettle.getLinkedReaders.useQuery();
+  const {
+    data: linkedReadersData,
+    isLoading: loadingReaders,
+    refetch: refetchReaders,
+  } = trpc.izettle.getLinkedReaders.useQuery();
 
   const pairMutation = trpc.izettle.pairReader.useMutation({
-    onSuccess: (data) => {
-      toast.success(`PayPal Reader koblet til! Serienummer: ${data.serialNumber}`);
+    onSuccess: data => {
+      toast.success(
+        `PayPal Reader koblet til! Serienummer: ${data.serialNumber}`
+      );
       setCode("");
       setShowPairingForm(false);
       refetchReaders();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Kunne ikke koble til PayPal Reader");
     },
   });
@@ -55,13 +76,15 @@ export function PayPalReaderPairing() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-medium">Tilkoblede Readers</h3>
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => refetchReaders()}
               disabled={loadingReaders}
             >
-              <RefreshCw className={`h-4 w-4 ${loadingReaders ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`h-4 w-4 ${loadingReaders ? "animate-spin" : ""}`}
+              />
             </Button>
           </div>
 
@@ -72,7 +95,7 @@ export function PayPalReaderPairing() {
           ) : linkedReaders.length > 0 ? (
             <div className="space-y-2">
               {linkedReaders.map((reader: any) => (
-                <div 
+                <div
                   key={reader.linkId}
                   className="flex items-center justify-between p-4 border rounded-lg bg-green-50 border-green-200"
                 >
@@ -81,7 +104,9 @@ export function PayPalReaderPairing() {
                       <Wifi className="h-5 w-5 text-green-600" />
                     </div>
                     <div>
-                      <p className="font-medium">{reader.deviceName || 'PayPal Reader'}</p>
+                      <p className="font-medium">
+                        {reader.deviceName || "PayPal Reader"}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {reader.model} • S/N: {reader.serialNumber}
                       </p>
@@ -99,7 +124,8 @@ export function PayPalReaderPairing() {
             <Alert>
               <WifiOff className="h-4 w-4" />
               <AlertDescription>
-                Ingen PayPal Readers er koblet til ennå. Koble til en reader nedenfor.
+                Ingen PayPal Readers er koblet til ennå. Koble til en reader
+                nedenfor.
               </AlertDescription>
             </Alert>
           )}
@@ -107,8 +133,8 @@ export function PayPalReaderPairing() {
 
         {/* Toggle Pairing Form */}
         {!showPairingForm && (
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setShowPairingForm(true)}
             className="w-full"
           >
@@ -122,8 +148,8 @@ export function PayPalReaderPairing() {
           <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
             <div className="flex items-center justify-between">
               <h3 className="font-medium">Koble til ny Reader</h3>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => setShowPairingForm(false)}
               >
@@ -136,10 +162,17 @@ export function PayPalReaderPairing() {
               <Info className="h-4 w-4" />
               <AlertDescription>
                 <div className="space-y-2 text-sm">
-                  <p className="font-medium">Slik kobler du til PayPal Reader:</p>
+                  <p className="font-medium">
+                    Slik kobler du til PayPal Reader:
+                  </p>
                   <ol className="list-decimal list-inside space-y-1 ml-2">
-                    <li>Slå på PayPal Reader og skriv inn <strong>4578</strong></li>
-                    <li>Koble Reader til WiFi via <strong>http://192.168.4.1/</strong></li>
+                    <li>
+                      Slå på PayPal Reader og skriv inn <strong>4578</strong>
+                    </li>
+                    <li>
+                      Koble Reader til WiFi via{" "}
+                      <strong>http://192.168.4.1/</strong>
+                    </li>
                     <li>Readeren vil vise en 8-sifret kode på skjermen</li>
                     <li>Skriv inn koden nedenfor og klikk "Koble til"</li>
                   </ol>
@@ -148,12 +181,16 @@ export function PayPalReaderPairing() {
             </Alert>
 
             <div>
-              <Label htmlFor="readerCode">8-sifret kode fra PayPal Reader</Label>
+              <Label htmlFor="readerCode">
+                8-sifret kode fra PayPal Reader
+              </Label>
               <Input
                 id="readerCode"
                 placeholder="ABCD1234"
                 value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 8))}
+                onChange={e =>
+                  setCode(e.target.value.toUpperCase().slice(0, 8))
+                }
                 maxLength={8}
                 className="font-mono text-lg tracking-wider"
               />
@@ -168,14 +205,14 @@ export function PayPalReaderPairing() {
                 id="deviceName"
                 placeholder="Stylora POS"
                 value={deviceName}
-                onChange={(e) => setDeviceName(e.target.value)}
+                onChange={e => setDeviceName(e.target.value)}
               />
               <p className="text-sm text-muted-foreground mt-1">
                 Gi readeren et navn for å gjenkjenne den
               </p>
             </div>
 
-            <Button 
+            <Button
               onClick={handlePair}
               disabled={pairMutation.isPending || code.length !== 8}
               className="w-full"
@@ -199,9 +236,10 @@ export function PayPalReaderPairing() {
         <Alert variant="default" className="bg-blue-50 border-blue-200">
           <AlertCircle className="h-4 w-4 text-blue-600" />
           <AlertDescription className="text-sm text-blue-900">
-            <strong>Trenger du hjelp?</strong> Hvis readeren viser QR-kode i stedet for 8-sifret kode, 
-            skann QR-koden med telefonen din for å koble til via PayPal-appen, deretter vil readeren 
-            automatisk vises her.
+            <strong>Trenger du hjelp?</strong> Hvis readeren viser QR-kode i
+            stedet for 8-sifret kode, skann QR-koden med telefonen din for å
+            koble til via PayPal-appen, deretter vil readeren automatisk vises
+            her.
           </AlertDescription>
         </Alert>
       </CardContent>

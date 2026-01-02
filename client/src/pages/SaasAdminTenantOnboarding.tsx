@@ -4,11 +4,25 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Check, ChevronLeft, ChevronRight, Loader2, Copy, CheckCircle2, Sparkles } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Copy,
+  CheckCircle2,
+  Sparkles,
+} from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,7 +41,8 @@ const DEFAULT_BARBER_SERVICES = [
     duration: 30,
     price: 420,
     category: "Klipp",
-    description: "En klassisk herreklipp med maskin og saks. Inkluderer styling.",
+    description:
+      "En klassisk herreklipp med maskin og saks. Inkluderer styling.",
   },
   {
     name: "Skin Fade",
@@ -103,16 +118,16 @@ interface FormData {
   orgNumber: string;
   contactEmail: string;
   contactPhone: string;
-  
+
   // Step 2: Plan
   planId: number | null;
-  
+
   // Step 3: Admin User
   adminFirstName: string;
   adminLastName: string;
   adminEmail: string;
   adminPhone: string;
-  
+
   // Step 4: Services
   salonType: SalonType;
   selectedServices: Array<{ name: string; duration: number; price: number }>;
@@ -137,7 +152,8 @@ export default function SaasAdminTenantOnboarding() {
   const [, setLocation] = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(initialFormData);
-  const [subdomainCheckDebounce, setSubdomainCheckDebounce] = useState<NodeJS.Timeout | null>(null);
+  const [subdomainCheckDebounce, setSubdomainCheckDebounce] =
+    useState<NodeJS.Timeout | null>(null);
   const [createdTenant, setCreatedTenant] = useState<{
     tenantId: string;
     subdomain: string;
@@ -150,18 +166,21 @@ export default function SaasAdminTenantOnboarding() {
 
   // Queries
   const { data: plans } = trpc.saasAdmin.getSubscriptionPlans.useQuery();
-  const { data: serviceTemplates } = trpc.saasAdmin.getServiceTemplates.useQuery(
-    { salonType: formData.salonType },
-    { enabled: currentStep === 4 }
-  );
+  const { data: serviceTemplates } =
+    trpc.saasAdmin.getServiceTemplates.useQuery(
+      { salonType: formData.salonType },
+      { enabled: currentStep === 4 }
+    );
 
   // Mutations
   const utils = trpc.useUtils();
-  const checkSubdomainMutation = trpc.saasAdmin.checkSubdomainAvailability.useQuery(
-    { subdomain: formData.subdomain },
-    { enabled: false }
-  );
-  const createTenantMutation = trpc.saasAdmin.createTenantWithOnboarding.useMutation();
+  const checkSubdomainMutation =
+    trpc.saasAdmin.checkSubdomainAvailability.useQuery(
+      { subdomain: formData.subdomain },
+      { enabled: false }
+    );
+  const createTenantMutation =
+    trpc.saasAdmin.createTenantWithOnboarding.useMutation();
 
   const updateFormData = (field: keyof FormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -179,7 +198,9 @@ export default function SaasAdminTenantOnboarding() {
 
     if (cleaned.length >= 3) {
       const timeout = setTimeout(() => {
-        utils.saasAdmin.checkSubdomainAvailability.fetch({ subdomain: cleaned });
+        utils.saasAdmin.checkSubdomainAvailability.fetch({
+          subdomain: cleaned,
+        });
       }, 500);
       setSubdomainCheckDebounce(timeout);
     }
@@ -188,8 +209,13 @@ export default function SaasAdminTenantOnboarding() {
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 1:
-        if (!formData.name || !formData.subdomain || !formData.orgNumber || 
-            !formData.contactEmail || !formData.contactPhone) {
+        if (
+          !formData.name ||
+          !formData.subdomain ||
+          !formData.orgNumber ||
+          !formData.contactEmail ||
+          !formData.contactPhone
+        ) {
           toast.error("Vennligst fyll ut alle feltene");
           return false;
         }
@@ -201,7 +227,10 @@ export default function SaasAdminTenantOnboarding() {
           toast.error("Organisasjonsnummer må være 9 siffer");
           return false;
         }
-        if (checkSubdomainMutation.data && !checkSubdomainMutation.data.available) {
+        if (
+          checkSubdomainMutation.data &&
+          !checkSubdomainMutation.data.available
+        ) {
           toast.error("Subdomain er allerede i bruk");
           return false;
         }
@@ -215,8 +244,12 @@ export default function SaasAdminTenantOnboarding() {
         return true;
 
       case 3:
-        if (!formData.adminFirstName || !formData.adminLastName || 
-            !formData.adminEmail || !formData.adminPhone) {
+        if (
+          !formData.adminFirstName ||
+          !formData.adminLastName ||
+          !formData.adminEmail ||
+          !formData.adminPhone
+        ) {
           toast.error("Vennligst fyll ut alle feltene");
           return false;
         }
@@ -291,7 +324,9 @@ export default function SaasAdminTenantOnboarding() {
   const loadDefaultServices = () => {
     updateFormData("selectedServices", DEFAULT_BARBER_SERVICES);
     updateFormData("salonType", "barber");
-    toast.success(`${DEFAULT_BARBER_SERVICES.length} standard barber-tjenester lastet inn`);
+    toast.success(
+      `${DEFAULT_BARBER_SERVICES.length} standard barber-tjenester lastet inn`
+    );
     setShowReplaceDialog(false);
   };
 
@@ -305,15 +340,24 @@ export default function SaasAdminTenantOnboarding() {
     updateFormData("selectedServices", []);
   };
 
-  const handleToggleService = (service: { name: string; duration: number; price: number }) => {
-    const isSelected = formData.selectedServices.some(s => s.name === service.name);
+  const handleToggleService = (service: {
+    name: string;
+    duration: number;
+    price: number;
+  }) => {
+    const isSelected = formData.selectedServices.some(
+      s => s.name === service.name
+    );
     if (isSelected) {
       updateFormData(
         "selectedServices",
         formData.selectedServices.filter(s => s.name !== service.name)
       );
     } else {
-      updateFormData("selectedServices", [...formData.selectedServices, service]);
+      updateFormData("selectedServices", [
+        ...formData.selectedServices,
+        service,
+      ]);
     }
   };
 
@@ -327,8 +371,8 @@ export default function SaasAdminTenantOnboarding() {
               step < currentStep
                 ? "bg-primary text-primary-foreground"
                 : step === currentStep
-                ? "bg-primary text-primary-foreground ring-4 ring-primary/20"
-                : "bg-muted text-muted-foreground"
+                  ? "bg-primary text-primary-foreground ring-4 ring-primary/20"
+                  : "bg-muted text-muted-foreground"
             }`}
           >
             {step < currentStep ? <Check className="w-5 h-5" /> : step}
@@ -372,11 +416,16 @@ export default function SaasAdminTenantOnboarding() {
             placeholder="salong-elegant"
           />
           <p className="text-sm text-muted-foreground mt-1">
-            Din salong vil være tilgjengelig på: <strong>{formData.subdomain || "subdomain"}.stylora.no</strong>
+            Din salong vil være tilgjengelig på:{" "}
+            <strong>{formData.subdomain || "subdomain"}.stylora.no</strong>
           </p>
           {checkSubdomainMutation.data && formData.subdomain.length >= 3 && (
-            <p className={`text-sm mt-1 ${checkSubdomainMutation.data.available ? "text-green-600" : "text-red-600"}`}>
-              {checkSubdomainMutation.data.available ? "✓ Tilgjengelig" : "✗ Allerede i bruk"}
+            <p
+              className={`text-sm mt-1 ${checkSubdomainMutation.data.available ? "text-green-600" : "text-red-600"}`}
+            >
+              {checkSubdomainMutation.data.available
+                ? "✓ Tilgjengelig"
+                : "✗ Allerede i bruk"}
             </p>
           )}
         </div>
@@ -386,7 +435,12 @@ export default function SaasAdminTenantOnboarding() {
           <Input
             id="orgNumber"
             value={formData.orgNumber}
-            onChange={e => updateFormData("orgNumber", e.target.value.replace(/\D/g, "").slice(0, 9))}
+            onChange={e =>
+              updateFormData(
+                "orgNumber",
+                e.target.value.replace(/\D/g, "").slice(0, 9)
+              )
+            }
             placeholder="123456789"
             maxLength={9}
           />
@@ -422,7 +476,9 @@ export default function SaasAdminTenantOnboarding() {
     <Card>
       <CardHeader>
         <CardTitle>Velg abonnementsplan</CardTitle>
-        <CardDescription>Velg hvilken plan salongen skal starte med</CardDescription>
+        <CardDescription>
+          Velg hvilken plan salongen skal starte med
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {!plans ? (
@@ -445,14 +501,34 @@ export default function SaasAdminTenantOnboarding() {
                   }`}
                   onClick={() => updateFormData("planId", plan.id)}
                 >
-                  <RadioGroupItem value={plan.id.toString()} className="absolute top-4 right-4" />
-                  <h3 className="font-semibold text-lg mb-2">{plan.displayNameNo}</h3>
+                  <RadioGroupItem
+                    value={plan.id.toString()}
+                    className="absolute top-4 right-4"
+                  />
+                  <h3 className="font-semibold text-lg mb-2">
+                    {plan.displayNameNo}
+                  </h3>
                   <p className="text-2xl font-bold mb-4">
-                    {plan.priceMonthly} kr<span className="text-sm font-normal text-muted-foreground">/mnd</span>
+                    {plan.priceMonthly} kr
+                    <span className="text-sm font-normal text-muted-foreground">
+                      /mnd
+                    </span>
                   </p>
                   <div className="space-y-2 text-sm text-muted-foreground">
-                    <p>✓ {plan.maxEmployees === 999 ? "Ubegrenset" : plan.maxEmployees} ansatte</p>
-                    <p>✓ {plan.maxLocations === 999 ? "Ubegrenset" : plan.maxLocations} lokasjon(er)</p>
+                    <p>
+                      ✓{" "}
+                      {plan.maxEmployees === 999
+                        ? "Ubegrenset"
+                        : plan.maxEmployees}{" "}
+                      ansatte
+                    </p>
+                    <p>
+                      ✓{" "}
+                      {plan.maxLocations === 999
+                        ? "Ubegrenset"
+                        : plan.maxLocations}{" "}
+                      lokasjon(er)
+                    </p>
                     <p>✓ Online booking</p>
                     {plan.id >= 2 && <p>✓ SMS-påminnelser</p>}
                     {plan.id >= 3 && <p>✓ Prioritert support</p>}
@@ -522,8 +598,8 @@ export default function SaasAdminTenantOnboarding() {
         <div className="bg-muted p-4 rounded-lg space-y-2">
           <p className="text-sm font-medium">ℹ️ Viktig informasjon</p>
           <p className="text-sm text-muted-foreground">
-            Et sikkert passord vil bli generert automatisk og vist på neste side.
-            Admin-brukeren må endre passordet ved første innlogging.
+            Et sikkert passord vil bli generert automatisk og vist på neste
+            side. Admin-brukeren må endre passordet ved første innlogging.
           </p>
         </div>
       </CardContent>
@@ -535,7 +611,9 @@ export default function SaasAdminTenantOnboarding() {
     <Card>
       <CardHeader>
         <CardTitle>Velg tjenester</CardTitle>
-        <CardDescription>Velg hvilke tjenester salongen skal tilby</CardDescription>
+        <CardDescription>
+          Velg hvilke tjenester salongen skal tilby
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
@@ -550,34 +628,50 @@ export default function SaasAdminTenantOnboarding() {
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="frisør" id="type-frisor" />
-              <Label htmlFor="type-frisor" className="cursor-pointer">Frisør</Label>
+              <Label htmlFor="type-frisor" className="cursor-pointer">
+                Frisør
+              </Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="barber" id="type-barber" />
-              <Label htmlFor="type-barber" className="cursor-pointer">Barber</Label>
+              <Label htmlFor="type-barber" className="cursor-pointer">
+                Barber
+              </Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="skjønnhet" id="type-skjonnhet" />
-              <Label htmlFor="type-skjonnhet" className="cursor-pointer">Skjønnhet</Label>
+              <Label htmlFor="type-skjonnhet" className="cursor-pointer">
+                Skjønnhet
+              </Label>
             </div>
           </RadioGroup>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button 
-            type="button" 
-            variant="default" 
-            size="sm" 
+          <Button
+            type="button"
+            variant="default"
+            size="sm"
             onClick={handleLoadDefaultBarberServices}
             className="bg-gradient-to-r from-blue-600 to-orange-500"
           >
             <Sparkles className="w-4 h-4 mr-2" />
             Bruk standard barber-tjenester
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={handleSelectAllServices}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleSelectAllServices}
+          >
             Velg alle
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={handleDeselectAllServices}>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleDeselectAllServices}
+          >
             Fjern alle
           </Button>
         </div>
@@ -588,16 +682,27 @@ export default function SaasAdminTenantOnboarding() {
             <Label>Valgte tjenester (kan redigeres)</Label>
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {formData.selectedServices.map((service, index) => (
-                <div key={index} className="p-3 border rounded-lg bg-primary/5 space-y-2">
+                <div
+                  key={index}
+                  className="p-3 border rounded-lg bg-primary/5 space-y-2"
+                >
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label htmlFor={`service-name-${index}`} className="text-xs">Navn</Label>
+                      <Label
+                        htmlFor={`service-name-${index}`}
+                        className="text-xs"
+                      >
+                        Navn
+                      </Label>
                       <Input
                         id={`service-name-${index}`}
                         value={service.name}
-                        onChange={(e) => {
+                        onChange={e => {
                           const updated = [...formData.selectedServices];
-                          updated[index] = { ...updated[index], name: e.target.value };
+                          updated[index] = {
+                            ...updated[index],
+                            name: e.target.value,
+                          };
                           updateFormData("selectedServices", updated);
                         }}
                         className="h-8"
@@ -605,28 +710,44 @@ export default function SaasAdminTenantOnboarding() {
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <Label htmlFor={`service-duration-${index}`} className="text-xs">Min</Label>
+                        <Label
+                          htmlFor={`service-duration-${index}`}
+                          className="text-xs"
+                        >
+                          Min
+                        </Label>
                         <Input
                           id={`service-duration-${index}`}
                           type="number"
                           value={service.duration}
-                          onChange={(e) => {
+                          onChange={e => {
                             const updated = [...formData.selectedServices];
-                            updated[index] = { ...updated[index], duration: parseInt(e.target.value) || 0 };
+                            updated[index] = {
+                              ...updated[index],
+                              duration: parseInt(e.target.value) || 0,
+                            };
                             updateFormData("selectedServices", updated);
                           }}
                           className="h-8"
                         />
                       </div>
                       <div>
-                        <Label htmlFor={`service-price-${index}`} className="text-xs">Kr</Label>
+                        <Label
+                          htmlFor={`service-price-${index}`}
+                          className="text-xs"
+                        >
+                          Kr
+                        </Label>
                         <Input
                           id={`service-price-${index}`}
                           type="number"
                           value={service.price}
-                          onChange={(e) => {
+                          onChange={e => {
                             const updated = [...formData.selectedServices];
-                            updated[index] = { ...updated[index], price: parseInt(e.target.value) || 0 };
+                            updated[index] = {
+                              ...updated[index],
+                              price: parseInt(e.target.value) || 0,
+                            };
                             updateFormData("selectedServices", updated);
                           }}
                           className="h-8"
@@ -640,7 +761,9 @@ export default function SaasAdminTenantOnboarding() {
                     size="sm"
                     className="h-7 text-xs text-destructive hover:text-destructive"
                     onClick={() => {
-                      const updated = formData.selectedServices.filter((_, i) => i !== index);
+                      const updated = formData.selectedServices.filter(
+                        (_, i) => i !== index
+                      );
                       updateFormData("selectedServices", updated);
                     }}
                   >
@@ -709,37 +832,53 @@ export default function SaasAdminTenantOnboarding() {
         <CardContent className="space-y-6">
           <div className="bg-muted p-4 rounded-lg space-y-3">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Salongnavn</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Salongnavn
+              </p>
               <p className="font-semibold">{formData.name}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">URL</p>
-              <p className="font-semibold">{createdTenant.subdomain}.stylora.no</p>
+              <p className="font-semibold">
+                {createdTenant.subdomain}.stylora.no
+              </p>
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Admin e-post</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Admin e-post
+              </p>
               <p className="font-semibold">{createdTenant.adminEmail}</p>
             </div>
           </div>
 
           <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg space-y-3">
-            <p className="text-sm font-medium text-yellow-900">🔐 Midlertidig passord</p>
+            <p className="text-sm font-medium text-yellow-900">
+              🔐 Midlertidig passord
+            </p>
             <div className="flex items-center gap-2">
               <code className="flex-1 bg-white px-3 py-2 rounded border text-lg font-mono">
                 {createdTenant.generatedPassword}
               </code>
-              <Button type="button" variant="outline" size="icon" onClick={handleCopyPassword}>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={handleCopyPassword}
+              >
                 <Copy className="w-4 h-4" />
               </Button>
             </div>
             <p className="text-sm text-yellow-800">
-              ⚠️ <strong>Viktig:</strong> Admin-brukeren må endre passordet ved første innlogging.
+              ⚠️ <strong>Viktig:</strong> Admin-brukeren må endre passordet ved
+              første innlogging.
             </p>
           </div>
 
           <div className="flex gap-3">
             <Button
-              onClick={() => setLocation(`/saas-admin/tenants/${createdTenant.tenantId}`)}
+              onClick={() =>
+                setLocation(`/saas-admin/tenants/${createdTenant.tenantId}`)
+              }
               className="flex-1"
             >
               Vis salongdetaljer
@@ -764,7 +903,10 @@ export default function SaasAdminTenantOnboarding() {
   return (
     <div className="container max-w-4xl py-8">
       <div className="mb-8">
-        <Button variant="ghost" onClick={() => setLocation("/saas-admin/tenants")}>
+        <Button
+          variant="ghost"
+          onClick={() => setLocation("/saas-admin/tenants")}
+        >
           <ChevronLeft className="w-4 h-4 mr-2" />
           Tilbake til salonger
         </Button>
@@ -825,9 +967,14 @@ export default function SaasAdminTenantOnboarding() {
       <AlertDialog open={showReplaceDialog} onOpenChange={setShowReplaceDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Erstatte eksisterende tjenester?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Erstatte eksisterende tjenester?
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Dette vil erstatte de {formData.selectedServices.length} eksisterende tjenestene i veiviseren med {DEFAULT_BARBER_SERVICES.length} standard barber-tjenester. Fortsette?
+              Dette vil erstatte de {formData.selectedServices.length}{" "}
+              eksisterende tjenestene i veiviseren med{" "}
+              {DEFAULT_BARBER_SERVICES.length} standard barber-tjenester.
+              Fortsette?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

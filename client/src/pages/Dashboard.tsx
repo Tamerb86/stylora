@@ -3,12 +3,12 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  CalendarPlus, 
-  UserPlus, 
-  ShoppingCart, 
-  Clock, 
-  User, 
+import {
+  CalendarPlus,
+  UserPlus,
+  ShoppingCart,
+  Clock,
+  User,
   TrendingUp,
   DollarSign,
   CheckCircle2,
@@ -19,31 +19,35 @@ import {
   Package,
   ArrowUpRight,
   Activity,
-  Zap
+  Zap,
 } from "lucide-react";
-import { useTranslation } from 'react-i18next';
-import AppointmentsChart from '@/components/charts/AppointmentsChart';
-import StatusDistributionChart from '@/components/charts/StatusDistributionChart';
-import MiniCalendar from '@/components/MiniCalendar';
-import TodayAppointments from '@/components/TodayAppointments';
-import { BarChart3, PieChart, Calendar as CalendarIcon } from 'lucide-react';
-import QuickBookingDialog from '@/components/QuickBookingDialog';
-import { useState } from 'react';
+import { useTranslation } from "react-i18next";
+import AppointmentsChart from "@/components/charts/AppointmentsChart";
+import StatusDistributionChart from "@/components/charts/StatusDistributionChart";
+import MiniCalendar from "@/components/MiniCalendar";
+import TodayAppointments from "@/components/TodayAppointments";
+import { BarChart3, PieChart, Calendar as CalendarIcon } from "lucide-react";
+import QuickBookingDialog from "@/components/QuickBookingDialog";
+import { useState } from "react";
 
 export default function Dashboard() {
   const { t, i18n } = useTranslation();
   const { data: stats, isLoading } = trpc.dashboard.todayStats.useQuery();
   const { data: wizardStatus } = trpc.wizard.getStatus.useQuery();
   const { data: upcomingAppointments } = trpc.appointments.list.useQuery({
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    startDate: new Date().toISOString().split("T")[0],
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0],
   });
   const { data: employees } = trpc.employees.list.useQuery();
   const { data: services } = trpc.services.list.useQuery();
-  const { data: appointmentsOverTime } = trpc.dashboard.appointmentsOverTime.useQuery();
-  const { data: statusDistribution } = trpc.dashboard.statusDistribution.useQuery();
+  const { data: appointmentsOverTime } =
+    trpc.dashboard.appointmentsOverTime.useQuery();
+  const { data: statusDistribution } =
+    trpc.dashboard.statusDistribution.useQuery();
   const [, setLocation] = useLocation();
-  const isRTL = i18n.language === 'ar';
+  const isRTL = i18n.language === "ar";
   const [showQuickBooking, setShowQuickBooking] = useState(false);
 
   // Redirect to wizard if not completed
@@ -58,8 +62,11 @@ export default function Dashboard() {
         <div className="p-8">
           <div className="animate-pulse space-y-6">
             <div className="grid grid-cols-2 gap-6">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-[140px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl"></div>
+              {[1, 2, 3, 4].map(i => (
+                <div
+                  key={i}
+                  className="h-[140px] bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl"
+                ></div>
               ))}
             </div>
           </div>
@@ -70,7 +77,7 @@ export default function Dashboard() {
 
   const statCards = [
     {
-      label: t('dashboard.todayAppointments'),
+      label: t("dashboard.todayAppointments"),
       value: stats?.todayAppointments || 0,
       gradient: "from-blue-500 via-blue-600 to-indigo-600",
       icon: CalendarPlus,
@@ -79,7 +86,7 @@ export default function Dashboard() {
       trendUp: true,
     },
     {
-      label: t('dashboard.pending'),
+      label: t("dashboard.pending"),
       value: stats?.pendingAppointments || 0,
       gradient: "from-amber-500 via-orange-500 to-red-500",
       icon: AlertCircle,
@@ -88,7 +95,7 @@ export default function Dashboard() {
       trendUp: false,
     },
     {
-      label: t('dashboard.completed'),
+      label: t("dashboard.completed"),
       value: stats?.completedAppointments || 0,
       gradient: "from-emerald-500 via-green-500 to-teal-500",
       icon: CheckCircle2,
@@ -97,7 +104,7 @@ export default function Dashboard() {
       trendUp: true,
     },
     {
-      label: t('dashboard.totalCustomers'),
+      label: t("dashboard.totalCustomers"),
       value: stats?.totalCustomers || 0,
       gradient: "from-purple-500 via-violet-500 to-pink-500",
       icon: User,
@@ -109,21 +116,21 @@ export default function Dashboard() {
 
   const quickActions = [
     {
-      label: t('dashboard.quickBooking', 'Quick Booking'),
+      label: t("dashboard.quickBooking", "Quick Booking"),
       icon: CalendarPlus,
       onClick: () => setShowQuickBooking(true),
       gradient: "from-blue-600 via-cyan-500 to-teal-500",
       description: "Book new appointment",
     },
     {
-      label: t('dashboard.newCustomer'),
+      label: t("dashboard.newCustomer"),
       icon: UserPlus,
       onClick: () => setLocation("/customers"),
       gradient: "from-purple-600 via-pink-500 to-rose-500",
       description: "Add new customer",
     },
     {
-      label: t('dashboard.newSale'),
+      label: t("dashboard.newSale"),
       icon: ShoppingCart,
       onClick: () => setLocation("/pos"),
       gradient: "from-orange-600 via-amber-500 to-yellow-500",
@@ -137,20 +144,25 @@ export default function Dashboard() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    const locale = i18n.language === 'ar' ? 'ar-SA' : 
-                   i18n.language === 'uk' ? 'uk-UA' : 
-                   i18n.language === 'en' ? 'en-US' : 'no-NO';
-    return date.toLocaleDateString(locale, { 
-      weekday: 'short', 
-      day: 'numeric', 
-      month: 'short' 
+    const locale =
+      i18n.language === "ar"
+        ? "ar-SA"
+        : i18n.language === "uk"
+          ? "uk-UA"
+          : i18n.language === "en"
+            ? "en-US"
+            : "no-NO";
+    return date.toLocaleDateString(locale, {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
     });
   };
 
   // Calculate salon insights
   const activeEmployees = employees?.filter(e => e.isActive).length || 0;
   const totalServices = services?.length || 0;
-  const mostPopularService = services?.[0]?.name || t('dashboard.noData');
+  const mostPopularService = services?.[0]?.name || t("dashboard.noData");
 
   return (
     <DashboardLayout>
@@ -163,11 +175,11 @@ export default function Dashboard() {
             </div>
             <div>
               <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                {t('dashboard.title')}
+                {t("dashboard.title")}
               </h1>
               <p className="text-muted-foreground text-sm md:text-base flex items-center gap-2">
                 <Activity className="w-4 h-4" />
-                {t('dashboard.welcome')}
+                {t("dashboard.welcome")}
               </p>
             </div>
           </div>
@@ -184,8 +196,10 @@ export default function Dashboard() {
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 {/* Gradient Background */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-100`}></div>
-                
+                <div
+                  className={`absolute inset-0 bg-gradient-to-br ${card.gradient} opacity-100`}
+                ></div>
+
                 {/* Animated Background Pattern */}
                 <div className="absolute inset-0 opacity-10">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.8),rgba(255,255,255,0))]"></div>
@@ -202,17 +216,23 @@ export default function Dashboard() {
                         {card.value}
                       </p>
                     </div>
-                    <div className={`${card.iconBg} p-3 rounded-xl backdrop-blur-sm group-hover:scale-110 transition-transform duration-300`}>
+                    <div
+                      className={`${card.iconBg} p-3 rounded-xl backdrop-blur-sm group-hover:scale-110 transition-transform duration-300`}
+                    >
                       <Icon className="w-7 h-7 text-white" />
                     </div>
                   </div>
 
                   {/* Trend Indicator */}
                   <div className="flex items-center gap-2">
-                    <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
-                      card.trendUp ? 'bg-white/20' : 'bg-black/20'
-                    }`}>
-                      <ArrowUpRight className={`w-3 h-3 ${card.trendUp ? '' : 'rotate-90'}`} />
+                    <div
+                      className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
+                        card.trendUp ? "bg-white/20" : "bg-black/20"
+                      }`}
+                    >
+                      <ArrowUpRight
+                        className={`w-3 h-3 ${card.trendUp ? "" : "rotate-90"}`}
+                      />
                       {card.trend}
                     </div>
                     <span className="text-xs text-white/80">vs last week</span>
@@ -230,7 +250,7 @@ export default function Dashboard() {
               <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
                 <Zap className="w-5 h-5" />
               </div>
-              {t('dashboard.quickActions')}
+              {t("dashboard.quickActions")}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6 bg-gradient-to-br from-white to-slate-50">
@@ -245,14 +265,18 @@ export default function Dashboard() {
                   >
                     {/* Animated Background */}
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.3),rgba(255,255,255,0))] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    
+
                     <div className="relative flex flex-col items-center gap-3">
                       <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
                         <Icon className="w-7 h-7" />
                       </div>
                       <div className="text-center">
-                        <span className="text-base font-bold block">{action.label}</span>
-                        <span className="text-xs opacity-90">{action.description}</span>
+                        <span className="text-base font-bold block">
+                          {action.label}
+                        </span>
+                        <span className="text-xs opacity-90">
+                          {action.description}
+                        </span>
                       </div>
                     </div>
                   </Button>
@@ -274,7 +298,7 @@ export default function Dashboard() {
               <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
                 <TrendingUp className="w-5 h-5" />
               </div>
-              {t('dashboard.salonInsights')}
+              {t("dashboard.salonInsights")}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6 bg-gradient-to-br from-white to-slate-50">
@@ -286,9 +310,13 @@ export default function Dashboard() {
                     <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
                       <Users className="w-6 h-6 text-white" />
                     </div>
-                    <p className="text-sm font-semibold text-white/90">{t('dashboard.activeStaff')}</p>
+                    <p className="text-sm font-semibold text-white/90">
+                      {t("dashboard.activeStaff")}
+                    </p>
                   </div>
-                  <p className="text-4xl font-bold text-white">{activeEmployees}</p>
+                  <p className="text-4xl font-bold text-white">
+                    {activeEmployees}
+                  </p>
                 </div>
               </div>
 
@@ -299,9 +327,13 @@ export default function Dashboard() {
                     <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
                       <Package className="w-6 h-6 text-white" />
                     </div>
-                    <p className="text-sm font-semibold text-white/90">{t('dashboard.totalServices')}</p>
+                    <p className="text-sm font-semibold text-white/90">
+                      {t("dashboard.totalServices")}
+                    </p>
                   </div>
-                  <p className="text-4xl font-bold text-white">{totalServices}</p>
+                  <p className="text-4xl font-bold text-white">
+                    {totalServices}
+                  </p>
                 </div>
               </div>
 
@@ -312,9 +344,13 @@ export default function Dashboard() {
                     <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
                       <Star className="w-6 h-6 text-white" />
                     </div>
-                    <p className="text-sm font-semibold text-white/90">{t('dashboard.popularService')}</p>
+                    <p className="text-sm font-semibold text-white/90">
+                      {t("dashboard.popularService")}
+                    </p>
                   </div>
-                  <p className="text-xl font-bold text-white truncate">{mostPopularService}</p>
+                  <p className="text-xl font-bold text-white truncate">
+                    {mostPopularService}
+                  </p>
                 </div>
               </div>
             </div>
@@ -330,7 +366,7 @@ export default function Dashboard() {
                   <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
                     <BarChart3 className="w-5 h-5" />
                   </div>
-                  {t('dashboard.appointmentsTrend')}
+                  {t("dashboard.appointmentsTrend")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6 bg-gradient-to-br from-white to-blue-50/30">
@@ -338,7 +374,7 @@ export default function Dashboard() {
                   <AppointmentsChart data={appointmentsOverTime} />
                 ) : (
                   <div className="h-[250px] flex items-center justify-center text-muted-foreground">
-                    {t('dashboard.noData', 'No data available')}
+                    {t("dashboard.noData", "No data available")}
                   </div>
                 )}
               </CardContent>
@@ -352,7 +388,7 @@ export default function Dashboard() {
                   <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
                     <PieChart className="w-5 h-5" />
                   </div>
-                  {t('dashboard.statusDistribution')}
+                  {t("dashboard.statusDistribution")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6 bg-gradient-to-br from-white to-purple-50/30">
@@ -360,7 +396,7 @@ export default function Dashboard() {
                   <StatusDistributionChart data={statusDistribution} />
                 ) : (
                   <div className="h-[250px] flex items-center justify-center text-muted-foreground">
-                    {t('dashboard.noData', 'No data available')}
+                    {t("dashboard.noData", "No data available")}
                   </div>
                 )}
               </CardContent>
@@ -376,7 +412,7 @@ export default function Dashboard() {
                 <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
                   <CalendarIcon className="w-5 h-5" />
                 </div>
-                {t('dashboard.monthlyCalendar')}
+                {t("dashboard.monthlyCalendar")}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6 bg-gradient-to-br from-white to-emerald-50/30">
@@ -386,8 +422,8 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Booking Dialog */}
-        <QuickBookingDialog 
-          open={showQuickBooking} 
+        <QuickBookingDialog
+          open={showQuickBooking}
           onOpenChange={setShowQuickBooking}
         />
       </div>

@@ -1,4 +1,5 @@
 # 📊 Stylora - تقرير تحليل الأداء الشامل
+
 # Comprehensive Performance Analysis Report
 
 **تاريخ التحليل / Analysis Date:** 7 ديسمبر 2025 / December 7, 2025  
@@ -20,39 +21,39 @@ A comprehensive performance analysis of the Stylora website has been conducted, 
 
 ### الإحصائيات الإجمالية / Total Statistics
 
-| المقياس / Metric | القيمة / Value |
-|-----------------|---------------|
-| **إجمالي ملفات العميل / Total Client Files** | 138 |
-| **حجم الكود المصدري / Total Source Size** | 1,218 KB (~1.2 MB) |
-| **مكونات الصفحات / Page Components** | 45 |
-| **المكونات القابلة لإعادة الاستخدام / Reusable Components** | 74 |
-| **التبعيات الإنتاجية / Production Dependencies** | 75 |
-| **تبعيات التطوير / Dev Dependencies** | 25 |
+| المقياس / Metric                                            | القيمة / Value     |
+| ----------------------------------------------------------- | ------------------ |
+| **إجمالي ملفات العميل / Total Client Files**                | 138                |
+| **حجم الكود المصدري / Total Source Size**                   | 1,218 KB (~1.2 MB) |
+| **مكونات الصفحات / Page Components**                        | 45                 |
+| **المكونات القابلة لإعادة الاستخدام / Reusable Components** | 74                 |
+| **التبعيات الإنتاجية / Production Dependencies**            | 75                 |
+| **تبعيات التطوير / Dev Dependencies**                       | 25                 |
 
 ### أكبر 10 ملفات مصدرية / Top 10 Largest Source Files
 
-| الترتيب / Rank | الملف / File | الحجم / Size | التقييم / Rating |
-|---------------|-------------|-------------|-----------------|
-| 1 | Home.tsx | 63.31 KB | ⚠️ كبير / Large |
-| 2 | ComponentShowcase.tsx | 56.95 KB | ⚠️ كبير / Large |
-| 3 | PublicBooking.tsx | 41.92 KB | ✅ مقبول / Acceptable |
-| 4 | POS.tsx | 34.97 KB | ✅ مقبول / Acceptable |
-| 5 | SaasAdminTenantOnboarding.tsx | 28.41 KB | ✅ جيد / Good |
-| 6 | SetupWizard.tsx | 26.64 KB | ✅ جيد / Good |
-| 7 | Calendar.tsx | 26.21 KB | ✅ جيد / Good |
-| 8 | Communications.tsx | 26.03 KB | ✅ جيد / Good |
-| 9 | PrintSettingsTab.tsx | 25.85 KB | ✅ جيد / Good |
-| 10 | DashboardLayout.tsx | 23.44 KB | ✅ جيد / Good |
+| الترتيب / Rank | الملف / File                  | الحجم / Size | التقييم / Rating      |
+| -------------- | ----------------------------- | ------------ | --------------------- |
+| 1              | Home.tsx                      | 63.31 KB     | ⚠️ كبير / Large       |
+| 2              | ComponentShowcase.tsx         | 56.95 KB     | ⚠️ كبير / Large       |
+| 3              | PublicBooking.tsx             | 41.92 KB     | ✅ مقبول / Acceptable |
+| 4              | POS.tsx                       | 34.97 KB     | ✅ مقبول / Acceptable |
+| 5              | SaasAdminTenantOnboarding.tsx | 28.41 KB     | ✅ جيد / Good         |
+| 6              | SetupWizard.tsx               | 26.64 KB     | ✅ جيد / Good         |
+| 7              | Calendar.tsx                  | 26.21 KB     | ✅ جيد / Good         |
+| 8              | Communications.tsx            | 26.03 KB     | ✅ جيد / Good         |
+| 9              | PrintSettingsTab.tsx          | 25.85 KB     | ✅ جيد / Good         |
+| 10             | DashboardLayout.tsx           | 23.44 KB     | ✅ جيد / Good         |
 
 ### تحليل الصفحات الحرجة / Critical Pages Analysis
 
-| الصفحة / Page | الحجم / Size | الحالة / Status | التوصية / Recommendation |
-|--------------|-------------|----------------|-------------------------|
-| **الصفحة الرئيسية / Home** | 63.31 KB | ⚠️ كبير | تقسيم الكود / Code splitting |
-| **الحجز العام / Public Booking** | 41.92 KB | ✅ مقبول | لا حاجة للتحسين / No optimization needed |
-| **لوحة التحكم / Dashboard** | 10.35 KB | ✅ ممتاز | مثالي / Optimal |
-| **العملاء / Customers** | 13.24 KB | ✅ جيد | مثالي / Optimal |
-| **المواعيد / Appointments** | 19.42 KB | ✅ جيد | مثالي / Optimal |
+| الصفحة / Page                    | الحجم / Size | الحالة / Status | التوصية / Recommendation                 |
+| -------------------------------- | ------------ | --------------- | ---------------------------------------- |
+| **الصفحة الرئيسية / Home**       | 63.31 KB     | ⚠️ كبير         | تقسيم الكود / Code splitting             |
+| **الحجز العام / Public Booking** | 41.92 KB     | ✅ مقبول        | لا حاجة للتحسين / No optimization needed |
+| **لوحة التحكم / Dashboard**      | 10.35 KB     | ✅ ممتاز        | مثالي / Optimal                          |
+| **العملاء / Customers**          | 13.24 KB     | ✅ جيد          | مثالي / Optimal                          |
+| **المواعيد / Appointments**      | 19.42 KB     | ✅ جيد          | مثالي / Optimal                          |
 
 ---
 
@@ -62,13 +63,13 @@ A comprehensive performance analysis of the Stylora website has been conducted, 
 
 تم قياس الأداء باستخدام curl (TTFB = الوقت حتى البايت الأول / Time To First Byte):
 
-| الصفحة / Page | TTFB | الوقت الإجمالي / Total Time | الحجم / Size | التقييم / Rating |
-|--------------|------|----------------------------|-------------|-----------------|
-| **الرئيسية / Home (/)** | 0.160s | 0.196s | 370 KB | ⭐⭐⭐⭐⭐ |
-| **من نحن / About** | 0.138s | 0.184s | 370 KB | ⭐⭐⭐⭐⭐ |
-| **الاتصال / Contact** | 0.219s | 0.228s | 370 KB | ⭐⭐⭐⭐⭐ |
-| **الحجز / Booking** | 0.074s | 0.082s | 370 KB | ⭐⭐⭐⭐⭐ |
-| **التسجيل / Signup** | 0.073s | 0.081s | 370 KB | ⭐⭐⭐⭐⭐ |
+| الصفحة / Page           | TTFB   | الوقت الإجمالي / Total Time | الحجم / Size | التقييم / Rating |
+| ----------------------- | ------ | --------------------------- | ------------ | ---------------- |
+| **الرئيسية / Home (/)** | 0.160s | 0.196s                      | 370 KB       | ⭐⭐⭐⭐⭐       |
+| **من نحن / About**      | 0.138s | 0.184s                      | 370 KB       | ⭐⭐⭐⭐⭐       |
+| **الاتصال / Contact**   | 0.219s | 0.228s                      | 370 KB       | ⭐⭐⭐⭐⭐       |
+| **الحجز / Booking**     | 0.074s | 0.082s                      | 370 KB       | ⭐⭐⭐⭐⭐       |
+| **التسجيل / Signup**    | 0.073s | 0.081s                      | 370 KB       | ⭐⭐⭐⭐⭐       |
 
 ### النتائج / Results
 
@@ -79,11 +80,11 @@ A comprehensive performance analysis of the Stylora website has been conducted, 
 
 ### المقارنة مع المعايير الصناعية / Industry Benchmark Comparison
 
-| المعيار / Benchmark | القيمة المثالية / Ideal | Stylora | الحالة / Status |
-|-------------------|----------------------|---------|----------------|
-| TTFB | < 200ms | 154ms | ✅ ممتاز / Excellent |
-| First Contentful Paint | < 1.5s | ~0.8s | ✅ ممتاز / Excellent |
-| Time to Interactive | < 3s | ~1.5s | ✅ جيد جداً / Very Good |
+| المعيار / Benchmark    | القيمة المثالية / Ideal | Stylora | الحالة / Status         |
+| ---------------------- | ----------------------- | ------- | ----------------------- |
+| TTFB                   | < 200ms                 | 154ms   | ✅ ممتاز / Excellent    |
+| First Contentful Paint | < 1.5s                  | ~0.8s   | ✅ ممتاز / Excellent    |
+| Time to Interactive    | < 3s                    | ~1.5s   | ✅ جيد جداً / Very Good |
 
 ---
 
@@ -94,19 +95,19 @@ A comprehensive performance analysis of the Stylora website has been conducted, 
 **إجمالي حجم الصور / Total Image Size:** ~12.8 MB ⚠️  
 **الحجم الموصى به / Recommended Size:** < 3 MB
 
-| الصورة / Image | الحجم الحالي / Current | الموصى به / Recommended | التوفير / Savings |
-|---------------|---------------------|---------------------|------------------|
-| salon-interior-1.jpg | 1,456 KB | 200 KB | 86% |
-| salon-interior-2.jpg | 1,492 KB | 200 KB | 87% |
-| testimonial-hassan.jpg | 1,503 KB | 100 KB | 93% |
-| testimonial-linda.jpg | 1,242 KB | 100 KB | 92% |
-| testimonial-maria.jpg | 1,255 KB | 100 KB | 92% |
-| video-thumbnail.jpg | 1,198 KB | 150 KB | 87% |
-| stylora-logo.png | 932 KB | 50 KB | 95% |
-| screenshot-analytics.png | 929 KB | 300 KB | 68% |
-| screenshot-booking.png | 1,132 KB | 300 KB | 73% |
-| screenshot-calendar.png | 849 KB | 300 KB | 65% |
-| screenshot-customers.png | 1,021 KB | 300 KB | 71% |
+| الصورة / Image           | الحجم الحالي / Current | الموصى به / Recommended | التوفير / Savings |
+| ------------------------ | ---------------------- | ----------------------- | ----------------- |
+| salon-interior-1.jpg     | 1,456 KB               | 200 KB                  | 86%               |
+| salon-interior-2.jpg     | 1,492 KB               | 200 KB                  | 87%               |
+| testimonial-hassan.jpg   | 1,503 KB               | 100 KB                  | 93%               |
+| testimonial-linda.jpg    | 1,242 KB               | 100 KB                  | 92%               |
+| testimonial-maria.jpg    | 1,255 KB               | 100 KB                  | 92%               |
+| video-thumbnail.jpg      | 1,198 KB               | 150 KB                  | 87%               |
+| stylora-logo.png         | 932 KB                 | 50 KB                   | 95%               |
+| screenshot-analytics.png | 929 KB                 | 300 KB                  | 68%               |
+| screenshot-booking.png   | 1,132 KB               | 300 KB                  | 73%               |
+| screenshot-calendar.png  | 849 KB                 | 300 KB                  | 65%               |
+| screenshot-customers.png | 1,021 KB               | 300 KB                  | 71%               |
 
 ### التأثير على الأداء / Performance Impact
 
@@ -119,6 +120,7 @@ A comprehensive performance analysis of the Stylora website has been conducted, 
 ## 4. تقييمات الأداء التفصيلية / Detailed Performance Scores
 
 ### 1. وقت استجابة الخادم / Server Response Time
+
 **التقييم / Rating:** ⭐⭐⭐⭐⭐ (5/5) - **ممتاز / Excellent**
 
 - متوسط TTFB: 0.154 ثانية (أقل من 200ms) ✅
@@ -126,28 +128,34 @@ A comprehensive performance analysis of the Stylora website has been conducted, 
 - استجابة سريعة جداً للطلبات ✅
 
 ### 2. تنظيم الكود / Code Organization
+
 **التقييم / Rating:** ⭐⭐⭐⭐ (4/5) - **جيد جداً / Very Good**
 
 **النقاط الإيجابية / Strengths:**
+
 - ✅ مكونات منظمة بشكل جيد / Well-structured components
 - ✅ فصل واضح للمسؤوليات / Good separation of concerns
 - ✅ استخدام TypeScript للأمان / TypeScript for type safety
 - ✅ استخدام tRPC للاتصال الآمن / tRPC for type-safe communication
 
 **نقاط التحسين / Areas for Improvement:**
+
 - ⚠️ بعض الملفات الكبيرة يمكن تقسيمها / Some large files could be split
 - ⚠️ الصفحة الرئيسية (63 KB) تحتاج تقسيم / Home page needs code splitting
 
 ### 3. تحسين الصور / Image Optimization
+
 **التقييم / Rating:** ⭐⭐ (2/5) - **يحتاج تحسين / Needs Improvement**
 
 **المشاكل / Issues:**
+
 - ❌ جميع الصور غير محسّنة / All images are unoptimized
 - ❌ الحجم الإجمالي 10 أضعاف الموصى به / Total size is 10x recommended
 - ❌ لا يوجد استخدام لصيغة WebP / No WebP format usage
 - ❌ لا يوجد lazy loading / No lazy loading implemented
 
 ### 4. حجم الحزمة / Bundle Size
+
 **التقييم / Rating:** ⭐⭐⭐⭐ (4/5) - **جيد جداً / Very Good**
 
 - حجم الكود المصدري معقول (~1.2 MB) ✅
@@ -161,9 +169,11 @@ A comprehensive performance analysis of the Stylora website has been conducted, 
 ### 🔴 الأولوية العالية / High Priority (التأثير: عالي / Impact: High)
 
 #### 1. ⚠️ تحسين الصور / Image Optimization
+
 **الهدف / Goal:** تقليل 12.8 MB إلى < 3 MB
 
 **الإجراءات / Actions:**
+
 - ✅ تحويل إلى صيغة WebP (تقليل 70-80%)
 - ✅ ضغط JPG بجودة 80%
 - ✅ استخدام الصور المتجاوبة (srcset)
@@ -173,9 +183,11 @@ A comprehensive performance analysis of the Stylora website has been conducted, 
 **التأثير المتوقع / Expected Impact:** تحسين 75-80% في سرعة التحميل
 
 #### 2. ⚠️ تقسيم كود الصفحة الرئيسية / Code Splitting for Home Page
+
 **الهدف / Goal:** تقسيم ملف 63 KB
 
 **الإجراءات / Actions:**
+
 - ✅ استخدام React.lazy() للأقسام
 - ✅ تحميل FAQ، الشهادات، الأسعار عند الطلب
 - ✅ تقليل الحزمة الأولية بـ ~40 KB
@@ -186,9 +198,11 @@ A comprehensive performance analysis of the Stylora website has been conducted, 
 ### 🟡 الأولوية المتوسطة / Medium Priority (التأثير: متوسط / Impact: Medium)
 
 #### 3. 📦 Lazy Loading للصور / Lazy Load Images
+
 **الهدف / Goal:** تأجيل تحميل الصور خارج الشاشة
 
 **الإجراءات / Actions:**
+
 - ✅ استخدام السمة loading="lazy"
 - ✅ إعطاء الأولوية للمحتوى في الأعلى
 - ✅ توفير ~10 MB من التحميل الأولي
@@ -196,7 +210,9 @@ A comprehensive performance analysis of the Stylora website has been conducted, 
 **الوقت المقدر / Estimated Time:** 2-3 ساعات / 2-3 hours
 
 #### 4. 📦 تقسيم المكونات / Component Code Splitting
+
 **الإجراءات / Actions:**
+
 - تقسيم ComponentShowcase.tsx (57 KB)
 - تقسيم صفحات الإدارة الكبيرة على مستوى المسار
 
@@ -205,11 +221,13 @@ A comprehensive performance analysis of the Stylora website has been conducted, 
 ### 🟢 الأولوية المنخفضة / Low Priority (التأثير: منخفض / Impact: Low)
 
 #### 5. 🔧 تحسين الخطوط / Font Optimization
+
 - استخدام font-display: swap
 - تحميل مسبق للخطوط الحرجة
 - استخدام مجموعة فرعية من الأحرف المطلوبة
 
 #### 6. 🔧 تحسين CSS
+
 - إزالة فئات Tailwind غير المستخدمة
 - تحسين CSS الحرج
 
@@ -219,20 +237,20 @@ A comprehensive performance analysis of the Stylora website has been conducted, 
 
 ### بعد تحسين الصور / After Image Optimization
 
-| المقياس / Metric | قبل / Before | بعد / After | التحسين / Improvement |
-|-----------------|-------------|------------|---------------------|
-| حجم التحميل الأولي / Initial Load | 12.8 MB | 2.5 MB | 80% ⬇️ |
-| وقت تحميل الصفحة الرئيسية / Home Load Time | 3-5s | 0.8-1.2s | 75% ⬇️ |
-| وقت التحميل على الموبايل / Mobile Load Time | 8-12s | 1.5-2.5s | 80% ⬇️ |
-| نقاط Lighthouse / Lighthouse Score | 60-70 | 85-95 | +25 points |
+| المقياس / Metric                            | قبل / Before | بعد / After | التحسين / Improvement |
+| ------------------------------------------- | ------------ | ----------- | --------------------- |
+| حجم التحميل الأولي / Initial Load           | 12.8 MB      | 2.5 MB      | 80% ⬇️                |
+| وقت تحميل الصفحة الرئيسية / Home Load Time  | 3-5s         | 0.8-1.2s    | 75% ⬇️                |
+| وقت التحميل على الموبايل / Mobile Load Time | 8-12s        | 1.5-2.5s    | 80% ⬇️                |
+| نقاط Lighthouse / Lighthouse Score          | 60-70        | 85-95       | +25 points            |
 
 ### بعد تقسيم الكود / After Code Splitting
 
-| المقياس / Metric | قبل / Before | بعد / After | التحسين / Improvement |
-|-----------------|-------------|------------|---------------------|
-| حزمة JS الأولية / Initial JS Bundle | 370 KB | 250 KB | 32% ⬇️ |
-| Time to Interactive | 2-3s | 1-1.5s | 50% ⬇️ |
-| First Contentful Paint | 1.5s | 0.8s | 47% ⬇️ |
+| المقياس / Metric                    | قبل / Before | بعد / After | التحسين / Improvement |
+| ----------------------------------- | ------------ | ----------- | --------------------- |
+| حزمة JS الأولية / Initial JS Bundle | 370 KB       | 250 KB      | 32% ⬇️                |
+| Time to Interactive                 | 2-3s         | 1-1.5s      | 50% ⬇️                |
+| First Contentful Paint              | 1.5s         | 0.8s        | 47% ⬇️                |
 
 ---
 
@@ -280,16 +298,20 @@ A comprehensive performance analysis of the Stylora website has been conducted, 
    - **الأولوية: 🔴 عالية جداً / Very High**
 
 2. **إضافة Lazy Loading للصور / Add Lazy Loading**
+
    ```html
    <img src="image.jpg" loading="lazy" alt="..." />
    ```
+
    - **الأولوية: 🔴 عالية / High**
 
 3. **تطبيق React.lazy() للصفحة الرئيسية / Implement React.lazy() for Home**
+
    ```typescript
-   const FAQ = lazy(() => import('./components/FAQ'));
-   const Testimonials = lazy(() => import('./components/Testimonials'));
+   const FAQ = lazy(() => import("./components/FAQ"));
+   const Testimonials = lazy(() => import("./components/Testimonials"));
    ```
+
    - **الأولوية: 🔴 عالية / High**
 
 ### الإجراءات قصيرة المدى / Short-term Actions (هذا الشهر / This Month)
@@ -335,14 +357,14 @@ A comprehensive performance analysis of the Stylora website has been conducted, 
 
 ### المقاييس المطلوب تتبعها / Metrics to Track
 
-| المقياس / Metric | الهدف / Target | الحالي / Current |
-|-----------------|---------------|-----------------|
-| **Lighthouse Performance Score** | > 90 | ~75 |
-| **First Contentful Paint (FCP)** | < 1.5s | ~0.8s ✅ |
-| **Time to Interactive (TTI)** | < 3s | ~1.5s ✅ |
-| **Total Blocking Time (TBT)** | < 300ms | ~200ms ✅ |
-| **Cumulative Layout Shift (CLS)** | < 0.1 | ~0.05 ✅ |
-| **Largest Contentful Paint (LCP)** | < 2.5s | ~3.5s ⚠️ |
+| المقياس / Metric                   | الهدف / Target | الحالي / Current |
+| ---------------------------------- | -------------- | ---------------- |
+| **Lighthouse Performance Score**   | > 90           | ~75              |
+| **First Contentful Paint (FCP)**   | < 1.5s         | ~0.8s ✅         |
+| **Time to Interactive (TTI)**      | < 3s           | ~1.5s ✅         |
+| **Total Blocking Time (TBT)**      | < 300ms        | ~200ms ✅        |
+| **Cumulative Layout Shift (CLS)**  | < 0.1          | ~0.05 ✅         |
+| **Largest Contentful Paint (LCP)** | < 2.5s         | ~3.5s ⚠️         |
 
 ### الأدوات الموصى بها / Recommended Tools
 
@@ -355,7 +377,7 @@ A comprehensive performance analysis of the Stylora website has been conducted, 
 
 ```javascript
 // مثال: تتبع Core Web Vitals
-import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals';
+import { getCLS, getFID, getFCP, getLCP, getTTFB } from "web-vitals";
 
 function sendToAnalytics(metric) {
   // إرسال إلى خدمة التحليلات
@@ -380,12 +402,12 @@ getTTFB(sendToAnalytics);
 
 ### ملخص النقاط الرئيسية / Key Points Summary
 
-| الجانب / Aspect | الحالة / Status | الأولوية / Priority |
-|----------------|----------------|---------------------|
-| **أداء الخادم / Server Performance** | ✅ ممتاز / Excellent | - |
-| **تنظيم الكود / Code Organization** | ✅ جيد جداً / Very Good | 🟡 متوسطة |
-| **تحسين الصور / Image Optimization** | ❌ حرج / Critical | 🔴 عالية جداً |
-| **حجم الحزمة / Bundle Size** | ✅ مقبول / Acceptable | 🟡 متوسطة |
+| الجانب / Aspect                      | الحالة / Status         | الأولوية / Priority |
+| ------------------------------------ | ----------------------- | ------------------- |
+| **أداء الخادم / Server Performance** | ✅ ممتاز / Excellent    | -                   |
+| **تنظيم الكود / Code Organization**  | ✅ جيد جداً / Very Good | 🟡 متوسطة           |
+| **تحسين الصور / Image Optimization** | ❌ حرج / Critical       | 🔴 عالية جداً       |
+| **حجم الحزمة / Bundle Size**         | ✅ مقبول / Acceptable   | 🟡 متوسطة           |
 
 ### التركيز الأساسي / Primary Focus
 
@@ -397,12 +419,12 @@ getTTFB(sendToAnalytics);
 
 ### الجدول الزمني المتوقع / Expected Timeline
 
-| المرحلة / Phase | المدة / Duration | التأثير / Impact |
-|----------------|-----------------|------------------|
-| **تحسين الصور / Image Optimization** | 2-4 ساعات / hours | 🔴 عالي جداً / Very High |
-| **تقسيم الكود / Code Splitting** | 4-6 ساعات / hours | 🟡 متوسط / Medium |
-| **Lazy Loading** | 2-3 ساعات / hours | 🟡 متوسط / Medium |
-| **إجمالي الجهد / Total Effort** | **1-2 يوم / days** | **تحسين 300-400%** |
+| المرحلة / Phase                      | المدة / Duration   | التأثير / Impact         |
+| ------------------------------------ | ------------------ | ------------------------ |
+| **تحسين الصور / Image Optimization** | 2-4 ساعات / hours  | 🔴 عالي جداً / Very High |
+| **تقسيم الكود / Code Splitting**     | 4-6 ساعات / hours  | 🟡 متوسط / Medium        |
+| **Lazy Loading**                     | 2-3 ساعات / hours  | 🟡 متوسط / Medium        |
+| **إجمالي الجهد / Total Effort**      | **1-2 يوم / days** | **تحسين 300-400%**       |
 
 ### العائد على الاستثمار / Return on Investment (ROI)
 

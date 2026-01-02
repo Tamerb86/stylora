@@ -14,7 +14,7 @@
  *       mimeType: "image/jpeg"
  *     }]
  *   });
- * 
+ *
  * Note: Image editing requires DALL-E 2 and a valid mask image.
  * For simple generation, DALL-E 3 is used by default.
  */
@@ -43,16 +43,18 @@ export async function generateImage(
   options: GenerateImageOptions
 ): Promise<GenerateImageResponse> {
   const apiKey = process.env.OPENAI_API_KEY;
-  
+
   if (!apiKey) {
-    throw new Error("OPENAI_API_KEY is not configured. Image generation is disabled.");
+    throw new Error(
+      "OPENAI_API_KEY is not configured. Image generation is disabled."
+    );
   }
 
   const response = await fetch("https://api.openai.com/v1/images/generations", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       model: "dall-e-3",

@@ -229,9 +229,9 @@ describe("Branding Settings", () => {
       showSummaryCard: true,
     };
 
-    await expect(
-      caller.salonSettings.updateBranding(branding)
-    ).rejects.toThrow("Admin access required");
+    await expect(caller.salonSettings.updateBranding(branding)).rejects.toThrow(
+      "Admin access required"
+    );
   });
 
   it("should allow employees to read branding", async () => {

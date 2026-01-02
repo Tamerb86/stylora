@@ -4,7 +4,7 @@ import { sql } from "drizzle-orm";
 
 /**
  * Admin Time Clock Management - Integration Tests
- * 
+ *
  * Tests the admin endpoints for managing employee time clock:
  * - adminGetAllActiveShifts: Get all active shifts
  * - adminClockOut: Manually clock out a specific employee
@@ -39,21 +39,23 @@ describe("Admin Time Clock Management - Integration Tests", () => {
       sql`INSERT INTO users (tenantId, openId, name, role, pin, phone, isActive) 
           VALUES (${testTenantId}, 'test-emp2', 'Employee Two', 'employee', '2222', '87654321', 1)`
     );
-    
+
     // Retrieve employee IDs
     const [emp1Rows] = await dbInstance.execute(
       sql`SELECT id FROM users WHERE tenantId = ${testTenantId} AND openId = 'test-emp1' LIMIT 1`
     );
     testEmployeeId1 = (emp1Rows as any[])[0].id;
-    
+
     const [emp2Rows] = await dbInstance.execute(
       sql`SELECT id FROM users WHERE tenantId = ${testTenantId} AND openId = 'test-emp2' LIMIT 1`
     );
     testEmployeeId2 = (emp2Rows as any[])[0].id;
 
     // Create active shifts for both employees
-    const workDate = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Oslo' });
-    
+    const workDate = new Date().toLocaleDateString("sv-SE", {
+      timeZone: "Europe/Oslo",
+    });
+
     await dbInstance.execute(
       sql`INSERT INTO timesheets (tenantId, employeeId, clockIn, workDate) 
           VALUES (${testTenantId}, ${testEmployeeId1}, NOW(), ${workDate})`
@@ -63,13 +65,13 @@ describe("Admin Time Clock Management - Integration Tests", () => {
       sql`INSERT INTO timesheets (tenantId, employeeId, clockIn, workDate) 
           VALUES (${testTenantId}, ${testEmployeeId2}, NOW(), ${workDate})`
     );
-    
+
     // Retrieve timesheet IDs
     const [ts1Rows] = await dbInstance.execute(
       sql`SELECT id FROM timesheets WHERE tenantId = ${testTenantId} AND employeeId = ${testEmployeeId1} AND clockOut IS NULL LIMIT 1`
     );
     testTimesheetId1 = (ts1Rows as any[])[0].id;
-    
+
     const [ts2Rows] = await dbInstance.execute(
       sql`SELECT id FROM timesheets WHERE tenantId = ${testTenantId} AND employeeId = ${testEmployeeId2} AND clockOut IS NULL LIMIT 1`
     );
@@ -81,9 +83,15 @@ describe("Admin Time Clock Management - Integration Tests", () => {
     if (!dbInstance) return;
 
     // Cleanup test data
-    await dbInstance.execute(sql`DELETE FROM timesheets WHERE tenantId = ${testTenantId}`);
-    await dbInstance.execute(sql`DELETE FROM users WHERE tenantId = ${testTenantId}`);
-    await dbInstance.execute(sql`DELETE FROM tenants WHERE id = ${testTenantId}`);
+    await dbInstance.execute(
+      sql`DELETE FROM timesheets WHERE tenantId = ${testTenantId}`
+    );
+    await dbInstance.execute(
+      sql`DELETE FROM users WHERE tenantId = ${testTenantId}`
+    );
+    await dbInstance.execute(
+      sql`DELETE FROM tenants WHERE id = ${testTenantId}`
+    );
   });
 
   describe("adminGetAllActiveShifts", () => {
@@ -150,7 +158,7 @@ describe("Admin Time Clock Management - Integration Tests", () => {
 
       expect(timesheet.clockOut).toBeDefined();
       expect(timesheet.totalHours).toBeGreaterThan(0);
-      expect(timesheet.notes).toContain('Manuelt utstemplet av admin');
+      expect(timesheet.notes).toContain("Manuelt utstemplet av admin");
     });
 
     it("should add admin note to timesheet", async () => {
@@ -162,8 +170,8 @@ describe("Admin Time Clock Management - Integration Tests", () => {
       );
       const timesheet = (result as any[])[0];
 
-      expect(timesheet.notes).toContain('Manuelt utstemplet av admin');
-      expect(timesheet.notes).toContain('Test');
+      expect(timesheet.notes).toContain("Manuelt utstemplet av admin");
+      expect(timesheet.notes).toContain("Test");
     });
 
     it("should calculate totalHours with 2 decimal precision", async () => {
@@ -177,9 +185,9 @@ describe("Admin Time Clock Management - Integration Tests", () => {
 
       const totalHours = parseFloat(timesheet.totalHours);
       expect(totalHours).toBeGreaterThan(0);
-      
+
       // Check precision (should have max 2 decimal places)
-      const decimalPlaces = (totalHours.toString().split('.')[1] || '').length;
+      const decimalPlaces = (totalHours.toString().split(".")[1] || "").length;
       expect(decimalPlaces).toBeLessThanOrEqual(2);
     });
   });
@@ -223,7 +231,7 @@ describe("Admin Time Clock Management - Integration Tests", () => {
       const timesheets = result as any[];
 
       timesheets.forEach((ts: any) => {
-        expect(ts.notes).toContain('Manuelt utstemplet av admin');
+        expect(ts.notes).toContain("Manuelt utstemplet av admin");
       });
     });
   });
@@ -236,11 +244,13 @@ describe("Admin Time Clock Management - Integration Tests", () => {
       // Create a shift 13 hours ago
       const thirteenHoursAgo = new Date();
       thirteenHoursAgo.setHours(thirteenHoursAgo.getHours() - 13);
-      const workDate = thirteenHoursAgo.toLocaleDateString('sv-SE', { timeZone: 'Europe/Oslo' });
+      const workDate = thirteenHoursAgo.toLocaleDateString("sv-SE", {
+        timeZone: "Europe/Oslo",
+      });
 
       const result = await dbInstance.execute(
         sql`INSERT INTO timesheets (tenantId, employeeId, clockIn, workDate) 
-            VALUES (${testTenantId}, ${testEmployeeId1}, ${thirteenHoursAgo.toISOString().slice(0, 19).replace('T', ' ')}, ${workDate})`
+            VALUES (${testTenantId}, ${testEmployeeId1}, ${thirteenHoursAgo.toISOString().slice(0, 19).replace("T", " ")}, ${workDate})`
       );
       // Retrieve the timesheet ID
       const [longShiftRows] = await dbInstance.execute(
@@ -256,12 +266,15 @@ describe("Admin Time Clock Management - Integration Tests", () => {
 
       const clockInTime = new Date(shift.clockIn);
       const now = new Date();
-      const shiftHours = (now.getTime() - clockInTime.getTime()) / (1000 * 60 * 60);
+      const shiftHours =
+        (now.getTime() - clockInTime.getTime()) / (1000 * 60 * 60);
 
       expect(shiftHours).toBeGreaterThan(12);
 
       // Cleanup
-      await dbInstance.execute(sql`DELETE FROM timesheets WHERE id = ${longShiftId}`);
+      await dbInstance.execute(
+        sql`DELETE FROM timesheets WHERE id = ${longShiftId}`
+      );
     });
   });
 
@@ -296,7 +309,9 @@ describe("Admin Time Clock Management - Integration Tests", () => {
       expect(otherCount).toBe(0);
 
       // Cleanup
-      await dbInstance.execute(sql`DELETE FROM tenants WHERE id = ${otherTenantId}`);
+      await dbInstance.execute(
+        sql`DELETE FROM tenants WHERE id = ${otherTenantId}`
+      );
     });
   });
 });

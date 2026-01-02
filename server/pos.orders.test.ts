@@ -9,12 +9,12 @@ describe("POS Order History", () => {
   it("order history dashboard implemented and tested", () => {
     // This test documents that order history dashboard has been fully implemented
     // and verified via comprehensive browser UI testing:
-    // 
+    //
     // Backend:
     // - getOrdersWithDetails() function in db.ts with filter support
     // - pos.getOrders tRPC query with optional filters (startDate, endDate, paymentMethod, status)
     // - pos.getOrderDetails tRPC query for detailed order view
-    // 
+    //
     // Frontend (/orders page):
     // - Table displays all orders with: ID, date, time, customer, total, payment method, status
     // - Date range filter (Fra dato / Til dato)
@@ -25,7 +25,7 @@ describe("POS Order History", () => {
     // - Download receipt button (generates PDF) - VERIFIED WORKING
     // - Email receipt button for customers with email addresses
     // - Proper handling of walk-in customers (no customer record)
-    // 
+    //
     // Navigation:
     // - Added to DashboardLayout sidebar as "Ordrehistorikk" with Receipt icon
     // - Route registered at /orders in App.tsx

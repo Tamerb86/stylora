@@ -1,6 +1,6 @@
 /**
  * Test script for email verification template
- * 
+ *
  * This script generates a preview HTML file of the verification email
  * so we can visually inspect the design before sending real emails.
  */
@@ -155,4 +155,6 @@ writeFileSync(outputPath, testEmail.html);
 console.log("✅ Email template preview generated!");
 console.log(`📧 Subject: ${testEmail.subject}`);
 console.log(`📄 Preview file: ${outputPath}`);
-console.log("\nOpen the HTML file in your browser to preview the email design.");
+console.log(
+  "\nOpen the HTML file in your browser to preview the email design."
+);

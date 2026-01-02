@@ -1,16 +1,16 @@
 /**
  * Performance Monitoring Service
- * 
+ *
  * Tracks performance metrics for:
  * - Email delivery (AWS SES + SMTP)
  * - SMS delivery (PSWinCom, LinkMobility, Twilio)
  * - Integration API endpoints (response times, error rates)
  */
 
-import { getDb } from '../db';
-import { logDb, logPayment } from '../_core/logger';
-import { eq, and, gte, desc, sql } from 'drizzle-orm';
-import { notifications } from '../../drizzle/schema';
+import { getDb } from "../db";
+import { logDb, logPayment } from "../_core/logger";
+import { eq, and, gte, desc, sql } from "drizzle-orm";
+import { notifications } from "../../drizzle/schema";
 
 export interface DeliveryMetrics {
   totalSent: number;
@@ -42,7 +42,7 @@ export async function getEmailDeliveryMetrics(
 ): Promise<DeliveryMetrics> {
   try {
     const dbInstance = await getDb();
-    if (!dbInstance) throw new Error('Database not available');
+    if (!dbInstance) throw new Error("Database not available");
     const cutoffTime = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
 
     const emailNotifications = await dbInstance
@@ -51,7 +51,7 @@ export async function getEmailDeliveryMetrics(
       .where(
         and(
           eq(notifications.tenantId, tenantId),
-          eq(notifications.notificationType, 'email'),
+          eq(notifications.notificationType, "email"),
           gte(notifications.createdAt, cutoffTime)
         )
       )
@@ -69,13 +69,17 @@ export async function getEmailDeliveryMetrics(
       };
     }
 
-    const successful = emailNotifications.filter(n => n.status === 'sent').length;
-    const failed = emailNotifications.filter(n => n.status === 'failed').length;
-    const pending = emailNotifications.filter(n => n.status === 'pending').length;
+    const successful = emailNotifications.filter(
+      n => n.status === "sent"
+    ).length;
+    const failed = emailNotifications.filter(n => n.status === "failed").length;
+    const pending = emailNotifications.filter(
+      n => n.status === "pending"
+    ).length;
 
     // Calculate average delivery time (from created to sent)
     const deliveredEmails = emailNotifications.filter(
-      n => n.status === 'sent' && n.sentAt && n.createdAt
+      n => n.status === "sent" && n.sentAt && n.createdAt
     );
     const totalDeliveryTime = deliveredEmails.reduce((sum, n) => {
       if (n.sentAt && n.createdAt) {
@@ -83,9 +87,10 @@ export async function getEmailDeliveryMetrics(
       }
       return sum;
     }, 0);
-    const averageDeliveryTime = deliveredEmails.length > 0
-      ? totalDeliveryTime / deliveredEmails.length / 1000 // Convert to seconds
-      : 0;
+    const averageDeliveryTime =
+      deliveredEmails.length > 0
+        ? totalDeliveryTime / deliveredEmails.length / 1000 // Convert to seconds
+        : 0;
 
     const lastDelivery = emailNotifications.find(n => n.sentAt);
 
@@ -94,12 +99,19 @@ export async function getEmailDeliveryMetrics(
       successful,
       failed,
       pending,
-      successRate: emailNotifications.length > 0 ? (successful / emailNotifications.length) * 100 : 0,
+      successRate:
+        emailNotifications.length > 0
+          ? (successful / emailNotifications.length) * 100
+          : 0,
       averageDeliveryTime: Math.round(averageDeliveryTime * 100) / 100,
       lastDeliveryTime: lastDelivery?.sentAt || null,
     };
   } catch (error) {
-    logDb.error('Failed to get email delivery metrics', { error, tenantId, hoursAgo });
+    logDb.error("Failed to get email delivery metrics", {
+      error,
+      tenantId,
+      hoursAgo,
+    });
     throw error;
   }
 }
@@ -113,7 +125,7 @@ export async function getSMSDeliveryMetrics(
 ): Promise<DeliveryMetrics> {
   try {
     const dbInstance = await getDb();
-    if (!dbInstance) throw new Error('Database not available');
+    if (!dbInstance) throw new Error("Database not available");
     const cutoffTime = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
 
     const smsNotifications = await dbInstance
@@ -122,7 +134,7 @@ export async function getSMSDeliveryMetrics(
       .where(
         and(
           eq(notifications.tenantId, tenantId),
-          eq(notifications.notificationType, 'sms'),
+          eq(notifications.notificationType, "sms"),
           gte(notifications.createdAt, cutoffTime)
         )
       )
@@ -140,13 +152,13 @@ export async function getSMSDeliveryMetrics(
       };
     }
 
-    const successful = smsNotifications.filter(n => n.status === 'sent').length;
-    const failed = smsNotifications.filter(n => n.status === 'failed').length;
-    const pending = smsNotifications.filter(n => n.status === 'pending').length;
+    const successful = smsNotifications.filter(n => n.status === "sent").length;
+    const failed = smsNotifications.filter(n => n.status === "failed").length;
+    const pending = smsNotifications.filter(n => n.status === "pending").length;
 
     // Calculate average delivery time
     const deliveredSMS = smsNotifications.filter(
-      n => n.status === 'sent' && n.sentAt && n.createdAt
+      n => n.status === "sent" && n.sentAt && n.createdAt
     );
     const totalDeliveryTime = deliveredSMS.reduce((sum, n) => {
       if (n.sentAt && n.createdAt) {
@@ -154,9 +166,10 @@ export async function getSMSDeliveryMetrics(
       }
       return sum;
     }, 0);
-    const averageDeliveryTime = deliveredSMS.length > 0
-      ? totalDeliveryTime / deliveredSMS.length / 1000
-      : 0;
+    const averageDeliveryTime =
+      deliveredSMS.length > 0
+        ? totalDeliveryTime / deliveredSMS.length / 1000
+        : 0;
 
     const lastDelivery = smsNotifications.find(n => n.sentAt);
 
@@ -165,19 +178,26 @@ export async function getSMSDeliveryMetrics(
       successful,
       failed,
       pending,
-      successRate: smsNotifications.length > 0 ? (successful / smsNotifications.length) * 100 : 0,
+      successRate:
+        smsNotifications.length > 0
+          ? (successful / smsNotifications.length) * 100
+          : 0,
       averageDeliveryTime: Math.round(averageDeliveryTime * 100) / 100,
       lastDeliveryTime: lastDelivery?.sentAt || null,
     };
   } catch (error) {
-    logDb.error('Failed to get SMS delivery metrics', { error, tenantId, hoursAgo });
+    logDb.error("Failed to get SMS delivery metrics", {
+      error,
+      tenantId,
+      hoursAgo,
+    });
     throw error;
   }
 }
 
 /**
  * Get integration endpoint performance metrics
- * 
+ *
  * Note: This requires implementing request logging middleware
  * For now, we'll return mock data structure
  */
@@ -191,8 +211,11 @@ export async function getIntegrationEndpointMetrics(
     // 1. Request logging middleware
     // 2. Performance tracking table
     // 3. Response time measurement
-    
-    logDb.info('Getting endpoint metrics (placeholder)', { tenantId, hoursAgo });
+
+    logDb.info("Getting endpoint metrics (placeholder)", {
+      tenantId,
+      hoursAgo,
+    });
 
     // Return placeholder metrics for now
     return {
@@ -206,7 +229,11 @@ export async function getIntegrationEndpointMetrics(
       slowestEndpoint: null,
     };
   } catch (error) {
-    logDb.error('Failed to get endpoint metrics', { error, tenantId, hoursAgo });
+    logDb.error("Failed to get endpoint metrics", {
+      error,
+      tenantId,
+      hoursAgo,
+    });
     throw error;
   }
 }
@@ -220,7 +247,7 @@ export async function getSMSMetricsByProvider(
 ): Promise<Record<string, DeliveryMetrics>> {
   try {
     const dbInstance = await getDb();
-    if (!dbInstance) throw new Error('Database not available');
+    if (!dbInstance) throw new Error("Database not available");
     const cutoffTime = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
 
     const smsNotifications = await dbInstance
@@ -229,7 +256,7 @@ export async function getSMSMetricsByProvider(
       .where(
         and(
           eq(notifications.tenantId, tenantId),
-          eq(notifications.notificationType, 'sms'),
+          eq(notifications.notificationType, "sms"),
           gte(notifications.createdAt, cutoffTime)
         )
       );
@@ -238,7 +265,7 @@ export async function getSMSMetricsByProvider(
     const byProvider: Record<string, any[]> = {};
     smsNotifications.forEach(notification => {
       // Assuming provider is stored in metadata
-      const provider = (notification.metadata as any)?.provider || 'unknown';
+      const provider = (notification.metadata as any)?.provider || "unknown";
       if (!byProvider[provider]) {
         byProvider[provider] = [];
       }
@@ -248,12 +275,12 @@ export async function getSMSMetricsByProvider(
     // Calculate metrics for each provider
     const result: Record<string, DeliveryMetrics> = {};
     for (const [provider, notifications] of Object.entries(byProvider)) {
-      const successful = notifications.filter(n => n.status === 'sent').length;
-      const failed = notifications.filter(n => n.status === 'failed').length;
-      const pending = notifications.filter(n => n.status === 'pending').length;
+      const successful = notifications.filter(n => n.status === "sent").length;
+      const failed = notifications.filter(n => n.status === "failed").length;
+      const pending = notifications.filter(n => n.status === "pending").length;
 
       const deliveredSMS = notifications.filter(
-        n => n.status === 'sent' && n.sentAt && n.createdAt
+        n => n.status === "sent" && n.sentAt && n.createdAt
       );
       const totalDeliveryTime = deliveredSMS.reduce((sum, n) => {
         if (n.sentAt && n.createdAt) {
@@ -261,20 +288,26 @@ export async function getSMSMetricsByProvider(
         }
         return sum;
       }, 0);
-      const averageDeliveryTime = deliveredSMS.length > 0
-        ? totalDeliveryTime / deliveredSMS.length / 1000
-        : 0;
+      const averageDeliveryTime =
+        deliveredSMS.length > 0
+          ? totalDeliveryTime / deliveredSMS.length / 1000
+          : 0;
 
       const lastDelivery = notifications
         .filter(n => n.sentAt)
-        .sort((a, b) => (b.sentAt?.getTime() || 0) - (a.sentAt?.getTime() || 0))[0];
+        .sort(
+          (a, b) => (b.sentAt?.getTime() || 0) - (a.sentAt?.getTime() || 0)
+        )[0];
 
       result[provider] = {
         totalSent: notifications.length,
         successful,
         failed,
         pending,
-        successRate: notifications.length > 0 ? (successful / notifications.length) * 100 : 0,
+        successRate:
+          notifications.length > 0
+            ? (successful / notifications.length) * 100
+            : 0,
         averageDeliveryTime: Math.round(averageDeliveryTime * 100) / 100,
         lastDeliveryTime: lastDelivery?.sentAt || null,
       };
@@ -282,7 +315,11 @@ export async function getSMSMetricsByProvider(
 
     return result;
   } catch (error) {
-    logDb.error('Failed to get SMS metrics by provider', { error, tenantId, hoursAgo });
+    logDb.error("Failed to get SMS metrics by provider", {
+      error,
+      tenantId,
+      hoursAgo,
+    });
     throw error;
   }
 }
@@ -302,33 +339,35 @@ export function isDeliveryHealthy(metrics: DeliveryMetrics): boolean {
  * Get delivery health status
  */
 export function getDeliveryHealthStatus(metrics: DeliveryMetrics): {
-  status: 'healthy' | 'warning' | 'critical';
+  status: "healthy" | "warning" | "critical";
   message: string;
 } {
   if (metrics.successRate >= 95 && metrics.averageDeliveryTime < 10) {
     return {
-      status: 'healthy',
-      message: 'Delivery performance is excellent',
+      status: "healthy",
+      message: "Delivery performance is excellent",
     };
   }
 
   if (metrics.successRate >= 85 && metrics.averageDeliveryTime < 30) {
     return {
-      status: 'warning',
-      message: 'Delivery performance is degraded',
+      status: "warning",
+      message: "Delivery performance is degraded",
     };
   }
 
   return {
-    status: 'critical',
-    message: 'Delivery performance is critical',
+    status: "critical",
+    message: "Delivery performance is critical",
   };
 }
 
 /**
  * Monitor all delivery systems and log warnings
  */
-export async function monitorDeliveryPerformance(tenantId: string): Promise<void> {
+export async function monitorDeliveryPerformance(
+  tenantId: string
+): Promise<void> {
   try {
     const [emailMetrics, smsMetrics] = await Promise.all([
       getEmailDeliveryMetrics(tenantId, 24),
@@ -339,7 +378,7 @@ export async function monitorDeliveryPerformance(tenantId: string): Promise<void
     const smsHealth = getDeliveryHealthStatus(smsMetrics);
 
     // Log performance summary
-    logDb.info('Delivery performance summary', {
+    logDb.info("Delivery performance summary", {
       tenantId,
       email: {
         metrics: emailMetrics,
@@ -352,20 +391,20 @@ export async function monitorDeliveryPerformance(tenantId: string): Promise<void
     });
 
     // Log warnings for critical issues
-    if (emailHealth.status === 'critical') {
-      logDb.error('Critical email delivery issues', {
+    if (emailHealth.status === "critical") {
+      logDb.error("Critical email delivery issues", {
         tenantId,
         metrics: emailMetrics,
       });
     }
 
-    if (smsHealth.status === 'critical') {
-      logDb.error('Critical SMS delivery issues', {
+    if (smsHealth.status === "critical") {
+      logDb.error("Critical SMS delivery issues", {
         tenantId,
         metrics: smsMetrics,
       });
     }
   } catch (error) {
-    logDb.error('Failed to monitor delivery performance', { error, tenantId });
+    logDb.error("Failed to monitor delivery performance", { error, tenantId });
   }
 }

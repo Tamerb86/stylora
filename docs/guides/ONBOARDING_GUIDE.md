@@ -9,12 +9,14 @@ The Stylora onboarding system provides a comprehensive, step-by-step wizard for 
 ## Features Implemented
 
 ### ✅ Multi-Step Wizard UI
+
 - **Step 1:** Salon Information (name, subdomain, address, city, phone, email)
 - **Step 2:** Owner Account Setup (name, email, password)
 - **Step 3:** Business Hours Configuration (weekly schedule)
 - **Steps 4-7:** Placeholder for employees, services, payment settings, and review (can be completed later)
 
 ### ✅ Backend API (tRPC)
+
 - **Subdomain Validation:** Check if subdomain is available before registration
 - **Tenant Creation:** Automatically create tenant record with 14-day trial
 - **Owner Account:** Create owner user with hashed password
@@ -23,6 +25,7 @@ The Stylora onboarding system provides a comprehensive, step-by-step wizard for 
 - **Default Settings:** Currency (NOK), timezone (Europe/Oslo), language (Norwegian)
 
 ### ✅ Welcome Email System
+
 - **Beautiful HTML Template:** Professional RTL (right-to-left) design for Arabic
 - **Quick Start Guide:** Step-by-step instructions for new users
 - **Feature Highlights:** Visual cards showcasing key features
@@ -31,6 +34,7 @@ The Stylora onboarding system provides a comprehensive, step-by-step wizard for 
 - **Support Contact:** Email support link
 
 ### ✅ QR Code Generation
+
 - **Employee QR Codes:** Unique QR code generated for each employee
 - **Check-in Data:** QR code contains employee ID, tenant ID, and type
 - **Automatic Generation:** QR codes created during onboarding
@@ -43,10 +47,11 @@ The Stylora onboarding system provides a comprehensive, step-by-step wizard for 
 ### 1. Check Subdomain Availability
 
 ```typescript
-trpc.onboarding.checkSubdomain.useQuery({ subdomain: "my-salon" })
+trpc.onboarding.checkSubdomain.useQuery({ subdomain: "my-salon" });
 ```
 
 **Response:**
+
 ```json
 {
   "available": true
@@ -63,38 +68,39 @@ trpc.onboarding.complete.useMutation({
     address: "123 Main St",
     city: "Oslo",
     phone: "+47 123 45 678",
-    email: "info@royal-salon.no"
+    email: "info@royal-salon.no",
   },
   ownerAccount: {
     ownerName: "Ahmed Mohammed",
     ownerEmail: "ahmed@example.com",
     password: "securepassword123",
-    confirmPassword: "securepassword123"
+    confirmPassword: "securepassword123",
   },
   businessHours: {
     mondayOpen: "09:00",
     mondayClose: "18:00",
     // ... other days
-    sundayClosed: true
+    sundayClosed: true,
   },
   employees: [
     {
       name: "John Doe",
       email: "john@example.com",
-      phone: "+47 987 65 432"
-    }
+      phone: "+47 987 65 432",
+    },
   ],
   services: [
     {
       name: "Haircut",
       duration: 30,
-      price: 250
-    }
-  ]
-})
+      price: 250,
+    },
+  ],
+});
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -110,11 +116,12 @@ trpc.onboarding.complete.useMutation({
 ```typescript
 trpc.onboarding.generateEmployeeQR.useMutation({
   employeeId: "emp123",
-  tenantId: "tenant123"
-})
+  tenantId: "tenant123",
+});
 ```
 
 **Response:**
+
 ```json
 {
   "qrCode": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
@@ -126,6 +133,7 @@ trpc.onboarding.generateEmployeeQR.useMutation({
 ## Database Schema
 
 ### Tenants Table
+
 ```typescript
 {
   id: string (nanoid)
@@ -145,6 +153,7 @@ trpc.onboarding.generateEmployeeQR.useMutation({
 ```
 
 ### Users Table (Owners & Employees)
+
 ```typescript
 {
   id: string (nanoid)
@@ -164,6 +173,7 @@ trpc.onboarding.generateEmployeeQR.useMutation({
 ```
 
 ### Settings Table
+
 ```typescript
 {
   id: string (nanoid)
@@ -176,6 +186,7 @@ trpc.onboarding.generateEmployeeQR.useMutation({
 ```
 
 **Example Settings:**
+
 - `business_hours`: `{"monday": {"open": "09:00", "close": "18:00"}, ...}`
 - `booking_enabled`: `"true"`
 - `booking_advance_days`: `"30"`
@@ -234,7 +245,10 @@ Using `react-hook-form` with `zod` schemas:
 ```typescript
 const salonInfoSchema = z.object({
   salonName: z.string().min(2, "اسم الصالون مطلوب"),
-  subdomain: z.string().min(3).regex(/^[a-z0-9-]+$/),
+  subdomain: z
+    .string()
+    .min(3)
+    .regex(/^[a-z0-9-]+$/),
   address: z.string().min(5),
   city: z.string().min(2),
   phone: z.string().min(8),
@@ -254,8 +268,8 @@ const progress = (currentStep / steps.length) * 100;
 ```typescript
 const handleNext = () => {
   if (currentStep === 1) {
-    salonInfoForm.handleSubmit((data) => {
-      setOnboardingData((prev) => ({ ...prev, salonInfo: data }));
+    salonInfoForm.handleSubmit(data => {
+      setOnboardingData(prev => ({ ...prev, salonInfo: data }));
       setCurrentStep(2);
     })();
   }
@@ -302,7 +316,7 @@ const scanner = new Html5Qrcode("reader");
 scanner.start(
   { facingMode: "environment" },
   { fps: 10, qrbox: 250 },
-  (decodedText) => {
+  decodedText => {
     const data = JSON.parse(decodedText);
     // Handle check-in with data.employeeId and data.tenantId
   }
@@ -345,15 +359,23 @@ scanner.start(
 // server/__tests__/onboarding.test.ts
 describe("Onboarding API", () => {
   it("should check subdomain availability", async () => {
-    const result = await caller.onboarding.checkSubdomain({ subdomain: "test-salon" });
+    const result = await caller.onboarding.checkSubdomain({
+      subdomain: "test-salon",
+    });
     expect(result.available).toBe(true);
   });
 
   it("should create tenant and owner", async () => {
     const result = await caller.onboarding.complete({
-      salonInfo: { /* ... */ },
-      ownerAccount: { /* ... */ },
-      businessHours: { /* ... */ },
+      salonInfo: {
+        /* ... */
+      },
+      ownerAccount: {
+        /* ... */
+      },
+      businessHours: {
+        /* ... */
+      },
     });
     expect(result.success).toBe(true);
     expect(result.tenantId).toBeDefined();
@@ -370,6 +392,7 @@ describe("Onboarding API", () => {
 **Problem:** Welcome email not received
 
 **Solutions:**
+
 1. Check SMTP credentials in environment variables
 2. Verify SMTP_HOST and SMTP_PORT are correct
 3. Check spam/junk folder
@@ -381,6 +404,7 @@ describe("Onboarding API", () => {
 **Problem:** "النطاق الفرعي غير متاح" error
 
 **Solution:**
+
 - Choose a different subdomain
 - Check database for existing tenant with same subdomain
 - Use `checkSubdomain` endpoint before submitting
@@ -390,6 +414,7 @@ describe("Onboarding API", () => {
 **Problem:** QR code field is null in database
 
 **Solution:**
+
 1. Verify `qrcode` package is installed: `pnpm list qrcode`
 2. Check server logs for QR generation errors
 3. Ensure employee data is valid before QR generation

@@ -1,20 +1,32 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Send, 
-  Users, 
+import {
+  Send,
+  Users,
   Filter,
   Calendar,
   MessageSquare,
-  Mail
+  Mail,
 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
@@ -26,7 +38,9 @@ export function BulkMessaging() {
   const [subject, setSubject] = useState("");
   const [content, setContent] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
-  const [filterType, setFilterType] = useState<"all" | "recent" | "high_value" | "inactive">("all");
+  const [filterType, setFilterType] = useState<
+    "all" | "recent" | "high_value" | "inactive"
+  >("all");
   const [lastVisitDays, setLastVisitDays] = useState(30);
   const [minTotalSpent, setMinTotalSpent] = useState(1000);
   const [selectedCustomers, setSelectedCustomers] = useState<number[]>([]);
@@ -34,18 +48,25 @@ export function BulkMessaging() {
   const [scheduleTime, setScheduleTime] = useState("");
 
   // Fetch customers based on filter
-  const { data: customers = [], refetch: refetchCustomers } = trpc.communications.getCustomersForBulk.useQuery({
-    filter: filterType,
-    lastVisitDays: filterType === "recent" || filterType === "inactive" ? lastVisitDays : undefined,
-    minTotalSpent: filterType === "high_value" ? minTotalSpent : undefined,
-  });
+  const { data: customers = [], refetch: refetchCustomers } =
+    trpc.communications.getCustomersForBulk.useQuery({
+      filter: filterType,
+      lastVisitDays:
+        filterType === "recent" || filterType === "inactive"
+          ? lastVisitDays
+          : undefined,
+      minTotalSpent: filterType === "high_value" ? minTotalSpent : undefined,
+    });
 
   // Fetch templates
-  const { data: smsTemplates = [] } = trpc.communications.listTemplates.useQuery({ type: "sms" });
-  const { data: emailTemplates = [] } = trpc.communications.listTemplates.useQuery({ type: "email" });
+  const { data: smsTemplates = [] } =
+    trpc.communications.listTemplates.useQuery({ type: "sms" });
+  const { data: emailTemplates = [] } =
+    trpc.communications.listTemplates.useQuery({ type: "email" });
 
   // Mutation
-  const createCampaignMutation = trpc.communications.createBulkCampaign.useMutation();
+  const createCampaignMutation =
+    trpc.communications.createBulkCampaign.useMutation();
 
   const templates = messageType === "sms" ? smsTemplates : emailTemplates;
 
@@ -66,9 +87,9 @@ export function BulkMessaging() {
   };
 
   const handleToggleCustomer = (customerId: number) => {
-    setSelectedCustomers((prev) =>
+    setSelectedCustomers(prev =>
       prev.includes(customerId)
-        ? prev.filter((id) => id !== customerId)
+        ? prev.filter(id => id !== customerId)
         : [...prev, customerId]
     );
   };
@@ -171,12 +192,15 @@ export function BulkMessaging() {
                   <Input
                     id="campaignName"
                     value={campaignName}
-                    onChange={(e) => setCampaignName(e.target.value)}
+                    onChange={e => setCampaignName(e.target.value)}
                     placeholder="F.eks. Sommertilbud 2024"
                   />
                 </div>
 
-                <Tabs value={messageType} onValueChange={(v) => setMessageType(v as any)}>
+                <Tabs
+                  value={messageType}
+                  onValueChange={v => setMessageType(v as any)}
+                >
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="sms">
                       <MessageSquare className="h-4 w-4 mr-2" />
@@ -191,14 +215,22 @@ export function BulkMessaging() {
                   <TabsContent value="sms" className="space-y-4 mt-4">
                     {smsTemplates.length > 0 && (
                       <div className="space-y-2">
-                        <Label htmlFor="smsTemplate">Velg mal (valgfritt)</Label>
-                        <Select value={selectedTemplate} onValueChange={handleTemplateSelect}>
+                        <Label htmlFor="smsTemplate">
+                          Velg mal (valgfritt)
+                        </Label>
+                        <Select
+                          value={selectedTemplate}
+                          onValueChange={handleTemplateSelect}
+                        >
                           <SelectTrigger id="smsTemplate">
                             <SelectValue placeholder="Velg en mal" />
                           </SelectTrigger>
                           <SelectContent>
                             {smsTemplates.map((template: any) => (
-                              <SelectItem key={template.id} value={template.id.toString()}>
+                              <SelectItem
+                                key={template.id}
+                                value={template.id.toString()}
+                              >
                                 {template.name}
                               </SelectItem>
                             ))}
@@ -212,7 +244,7 @@ export function BulkMessaging() {
                       <Textarea
                         id="smsContent"
                         value={content}
-                        onChange={(e) => setContent(e.target.value)}
+                        onChange={e => setContent(e.target.value)}
                         placeholder="Skriv inn SMS-melding..."
                         rows={5}
                       />
@@ -225,14 +257,22 @@ export function BulkMessaging() {
                   <TabsContent value="email" className="space-y-4 mt-4">
                     {emailTemplates.length > 0 && (
                       <div className="space-y-2">
-                        <Label htmlFor="emailTemplate">Velg mal (valgfritt)</Label>
-                        <Select value={selectedTemplate} onValueChange={handleTemplateSelect}>
+                        <Label htmlFor="emailTemplate">
+                          Velg mal (valgfritt)
+                        </Label>
+                        <Select
+                          value={selectedTemplate}
+                          onValueChange={handleTemplateSelect}
+                        >
                           <SelectTrigger id="emailTemplate">
                             <SelectValue placeholder="Velg en mal" />
                           </SelectTrigger>
                           <SelectContent>
                             {emailTemplates.map((template: any) => (
-                              <SelectItem key={template.id} value={template.id.toString()}>
+                              <SelectItem
+                                key={template.id}
+                                value={template.id.toString()}
+                              >
                                 {template.name}
                               </SelectItem>
                             ))}
@@ -246,7 +286,7 @@ export function BulkMessaging() {
                       <Input
                         id="emailSubject"
                         value={subject}
-                        onChange={(e) => setSubject(e.target.value)}
+                        onChange={e => setSubject(e.target.value)}
                         placeholder="F.eks. Spesialtilbud bare for deg!"
                       />
                     </div>
@@ -256,7 +296,7 @@ export function BulkMessaging() {
                       <Textarea
                         id="emailContent"
                         value={content}
-                        onChange={(e) => setContent(e.target.value)}
+                        onChange={e => setContent(e.target.value)}
                         placeholder="Skriv inn e-postmelding..."
                         rows={10}
                       />
@@ -265,7 +305,9 @@ export function BulkMessaging() {
                 </Tabs>
 
                 <div className="border-t pt-4 space-y-4">
-                  <h3 className="font-semibold">Planlegg sending (valgfritt)</h3>
+                  <h3 className="font-semibold">
+                    Planlegg sending (valgfritt)
+                  </h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="scheduleDate">Dato</Label>
@@ -273,7 +315,7 @@ export function BulkMessaging() {
                         id="scheduleDate"
                         type="date"
                         value={scheduleDate}
-                        onChange={(e) => setScheduleDate(e.target.value)}
+                        onChange={e => setScheduleDate(e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
@@ -282,13 +324,16 @@ export function BulkMessaging() {
                         id="scheduleTime"
                         type="time"
                         value={scheduleTime}
-                        onChange={(e) => setScheduleTime(e.target.value)}
+                        onChange={e => setScheduleTime(e.target.value)}
                       />
                     </div>
                   </div>
                   {scheduleDate && scheduleTime && (
                     <p className="text-sm text-muted-foreground">
-                      Meldinger vil sendes: {new Date(`${scheduleDate}T${scheduleTime}`).toLocaleString("no-NO")}
+                      Meldinger vil sendes:{" "}
+                      {new Date(
+                        `${scheduleDate}T${scheduleTime}`
+                      ).toLocaleString("no-NO")}
                     </p>
                   )}
                 </div>
@@ -328,7 +373,7 @@ export function BulkMessaging() {
                       id="lastVisitDays"
                       type="number"
                       value={lastVisitDays}
-                      onChange={(e) => setLastVisitDays(parseInt(e.target.value))}
+                      onChange={e => setLastVisitDays(parseInt(e.target.value))}
                       min={1}
                     />
                   </div>
@@ -336,12 +381,14 @@ export function BulkMessaging() {
 
                 {filterType === "high_value" && (
                   <div className="space-y-2">
-                    <Label htmlFor="minTotalSpent">Min. totalforbruk (NOK)</Label>
+                    <Label htmlFor="minTotalSpent">
+                      Min. totalforbruk (NOK)
+                    </Label>
                     <Input
                       id="minTotalSpent"
                       type="number"
                       value={minTotalSpent}
-                      onChange={(e) => setMinTotalSpent(parseInt(e.target.value))}
+                      onChange={e => setMinTotalSpent(parseInt(e.target.value))}
                       min={0}
                     />
                   </div>
@@ -349,7 +396,8 @@ export function BulkMessaging() {
 
                 <div className="flex items-center justify-between pt-2">
                   <span className="text-sm font-medium">
-                    {selectedCustomers.length} av {filteredCustomers.length} valgt
+                    {selectedCustomers.length} av {filteredCustomers.length}{" "}
+                    valgt
                   </span>
                   <Button variant="outline" size="sm" onClick={handleSelectAll}>
                     {selectedCustomers.length === filteredCustomers.length
@@ -373,12 +421,18 @@ export function BulkMessaging() {
                         >
                           <Checkbox
                             checked={selectedCustomers.includes(customer.id)}
-                            onCheckedChange={() => handleToggleCustomer(customer.id)}
+                            onCheckedChange={() =>
+                              handleToggleCustomer(customer.id)
+                            }
                           />
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{customer.firstName} {customer.lastName || ''}</p>
+                            <p className="font-medium truncate">
+                              {customer.firstName} {customer.lastName || ""}
+                            </p>
                             <p className="text-xs text-muted-foreground truncate">
-                              {messageType === "sms" ? customer.phone : customer.email}
+                              {messageType === "sms"
+                                ? customer.phone
+                                : customer.email}
                             </p>
                           </div>
                         </div>
@@ -390,7 +444,11 @@ export function BulkMessaging() {
                 <Button
                   onClick={handleSendCampaign}
                   className="w-full"
-                  disabled={selectedCustomers.length === 0 || !content || createCampaignMutation.isPending}
+                  disabled={
+                    selectedCustomers.length === 0 ||
+                    !content ||
+                    createCampaignMutation.isPending
+                  }
                 >
                   {createCampaignMutation.isPending ? (
                     "Oppretter..."

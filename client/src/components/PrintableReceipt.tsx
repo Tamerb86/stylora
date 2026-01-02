@@ -123,7 +123,9 @@ export default function PrintableReceipt({
         <div className="mb-4 pb-4 border-b border-gray-300 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-600">Ordre-ID:</span>
-            <span className="font-medium">#{order.id.toString().padStart(6, "0")}</span>
+            <span className="font-medium">
+              #{order.id.toString().padStart(6, "0")}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">Dato:</span>
@@ -131,12 +133,16 @@ export default function PrintableReceipt({
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600">Betalingsmåte:</span>
-            <span className="font-medium capitalize">{order.paymentMethod === "cash" ? "Kontant" : "Kort"}</span>
+            <span className="font-medium capitalize">
+              {order.paymentMethod === "cash" ? "Kontant" : "Kort"}
+            </span>
           </div>
           {customer && (
             <div className="flex justify-between">
               <span className="text-gray-600">Kunde:</span>
-              <span className="font-medium">{customer.firstName} {customer.lastName}</span>
+              <span className="font-medium">
+                {customer.firstName} {customer.lastName}
+              </span>
             </div>
           )}
         </div>
@@ -157,8 +163,12 @@ export default function PrintableReceipt({
                 <tr key={index} className="border-b border-gray-200">
                   <td className="py-2">{item.name}</td>
                   <td className="text-center py-2">{item.quantity}</td>
-                  <td className="text-right py-2">{item.price.toFixed(2)} kr</td>
-                  <td className="text-right py-2 font-medium">{item.total.toFixed(2)} kr</td>
+                  <td className="text-right py-2">
+                    {item.price.toFixed(2)} kr
+                  </td>
+                  <td className="text-right py-2 font-medium">
+                    {item.total.toFixed(2)} kr
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -184,7 +194,9 @@ export default function PrintableReceipt({
         {/* Footer */}
         <div className="text-center text-sm text-gray-600">
           <p className="mb-2">Takk for besøket!</p>
-          <p className="text-xs">Vi setter pris på ditt besøk! Ha en fin dag!</p>
+          <p className="text-xs">
+            Vi setter pris på ditt besøk! Ha en fin dag!
+          </p>
         </div>
       </div>
     </>

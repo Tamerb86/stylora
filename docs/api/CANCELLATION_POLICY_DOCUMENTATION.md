@@ -13,6 +13,7 @@ Stylora now includes a configurable cancellation and no-show policy system that 
 3. **Enforce prepayment policies** - Know when a customer has reached the no-show threshold
 
 **Key Features:**
+
 - Per-tenant policy configuration (each salon sets their own rules)
 - Automatic late cancellation detection based on cancellation window
 - No-show count tracking per customer
@@ -109,7 +110,7 @@ Each salon can configure their own policy via the `tenants` table:
 **Default Settings:**
 
 ```sql
-UPDATE tenants 
+UPDATE tenants
 SET cancellationWindowHours = 24,
     noShowThresholdForPrepayment = 2
 WHERE id = 'your-tenant-id';
@@ -119,13 +120,13 @@ WHERE id = 'your-tenant-id';
 
 ```sql
 -- Strict policy: 48-hour cancellation window, 1 no-show threshold
-UPDATE tenants 
+UPDATE tenants
 SET cancellationWindowHours = 48,
     noShowThresholdForPrepayment = 1
 WHERE id = 'strict-salon';
 
 -- Lenient policy: 12-hour cancellation window, 3 no-show threshold
-UPDATE tenants 
+UPDATE tenants
 SET cancellationWindowHours = 12,
     noShowThresholdForPrepayment = 3
 WHERE id = 'lenient-salon';
@@ -192,9 +193,9 @@ console.log(appointment.isLateCancellation); // true or false
 ```typescript
 {
   customerId: number;
-  noShowCount: number;                     // Total no-shows for this customer
-  noShowThresholdForPrepayment: number;    // Tenant's threshold setting
-  hasReachedThreshold: boolean;            // true if noShowCount >= threshold
+  noShowCount: number; // Total no-shows for this customer
+  noShowThresholdForPrepayment: number; // Tenant's threshold setting
+  hasReachedThreshold: boolean; // true if noShowCount >= threshold
 }
 ```
 
@@ -206,7 +207,9 @@ const info = await trpc.customers.getNoShowInfo.query({
 });
 
 if (info.hasReachedThreshold) {
-  console.log(`Customer has ${info.noShowCount} no-shows - prepayment recommended`);
+  console.log(
+    `Customer has ${info.noShowCount} no-shows - prepayment recommended`
+  );
 }
 ```
 
@@ -220,18 +223,21 @@ if (info.hasReachedThreshold) {
 import { trpc } from "@/lib/trpc";
 
 function AppointmentDetails({ appointmentId }: { appointmentId: number }) {
-  const { data: appointment } = trpc.appointments.getById.useQuery({ id: appointmentId });
+  const { data: appointment } = trpc.appointments.getById.useQuery({
+    id: appointmentId,
+  });
 
   return (
     <div>
       <h2>Appointment Details</h2>
       <p>Status: {appointment?.status}</p>
-      
-      {appointment?.status === "canceled" && appointment?.isLateCancellation && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          ⚠️ Late Cancellation - Canceled inside cancellation window
-        </div>
-      )}
+
+      {appointment?.status === "canceled" &&
+        appointment?.isLateCancellation && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            ⚠️ Late Cancellation - Canceled inside cancellation window
+          </div>
+        )}
     </div>
   );
 }
@@ -243,13 +249,19 @@ function AppointmentDetails({ appointmentId }: { appointmentId: number }) {
 import { trpc } from "@/lib/trpc";
 
 function CustomerCard({ customerId }: { customerId: number }) {
-  const { data: customer } = trpc.customers.getById.useQuery({ id: customerId });
-  const { data: noShowInfo } = trpc.customers.getNoShowInfo.useQuery({ customerId });
+  const { data: customer } = trpc.customers.getById.useQuery({
+    id: customerId,
+  });
+  const { data: noShowInfo } = trpc.customers.getNoShowInfo.useQuery({
+    customerId,
+  });
 
   return (
     <div>
-      <h3>{customer?.firstName} {customer?.lastName}</h3>
-      
+      <h3>
+        {customer?.firstName} {customer?.lastName}
+      </h3>
+
       {noShowInfo?.hasReachedThreshold && (
         <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
           ⚠️ {noShowInfo.noShowCount} no-shows - Consider requiring prepayment
@@ -266,7 +278,9 @@ function CustomerCard({ customerId }: { customerId: number }) {
 import { trpc } from "@/lib/trpc";
 
 function BookingForm({ customerId }: { customerId: number }) {
-  const { data: noShowInfo } = trpc.customers.getNoShowInfo.useQuery({ customerId });
+  const { data: noShowInfo } = trpc.customers.getNoShowInfo.useQuery({
+    customerId,
+  });
   const [requirePrepayment, setRequirePrepayment] = useState(false);
 
   useEffect(() => {
@@ -278,7 +292,7 @@ function BookingForm({ customerId }: { customerId: number }) {
   return (
     <div>
       <h2>Book Appointment</h2>
-      
+
       {requirePrepayment && (
         <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4">
           ℹ️ Prepayment required due to previous no-shows
@@ -286,15 +300,13 @@ function BookingForm({ customerId }: { customerId: number }) {
       )}
 
       {/* Booking form fields */}
-      
+
       {requirePrepayment ? (
         <button onClick={() => createBookingWithPayment()}>
           Book & Pay Now
         </button>
       ) : (
-        <button onClick={() => createBooking()}>
-          Book Appointment
-        </button>
+        <button onClick={() => createBooking()}>Book Appointment</button>
       )}
     </div>
   );
@@ -314,7 +326,7 @@ const appointment = await trpc.appointments.getById.query({ id: 456 });
 if (appointment.isLateCancellation) {
   // Option A: Manual fee (staff notes it)
   console.log("Late cancellation - charge 50% fee");
-  
+
   // Option B: Automatic fee (future enhancement)
   // await trpc.payments.chargeCancellationFee.mutate({
   //   appointmentId: 456,
@@ -337,7 +349,7 @@ if (noShowInfo.hasReachedThreshold) {
     appointmentId: 789,
     amount: "100.00", // Full amount or deposit
   });
-  
+
   // Redirect to Stripe Checkout
   window.location.href = checkoutSession.url;
 } else {

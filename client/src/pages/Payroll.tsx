@@ -1,25 +1,50 @@
 import { useState, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { trpc } from "@/lib/trpc";
-import { 
-  FileText, 
-  Download, 
-  Calendar, 
-  DollarSign, 
-  Users, 
+import {
+  FileText,
+  Download,
+  Calendar,
+  DollarSign,
+  Users,
   TrendingUp,
   Briefcase,
   Plane,
   AlertCircle,
   CheckCircle2,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -92,30 +117,40 @@ interface PayslipData {
 export default function Payroll() {
   const [selectedMonth] = useState(String(new Date().getMonth() + 1));
   const [selectedYear] = useState(String(currentYear));
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(null);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | null>(
+    null
+  );
   const [showPayslipDialog, setShowPayslipDialog] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   // Fetch monthly payroll data
-  const { data: payrollData, isLoading: isLoadingPayroll } = trpc.payroll.getMonthlyPayroll.useQuery({
-    month: parseInt(selectedMonth),
-    year: parseInt(selectedYear),
-  });
-
-  // Fetch individual payslip when employee is selected
-  const { data: payslipData, isLoading: isLoadingPayslip } = trpc.payroll.getEmployeePayslip.useQuery(
-    {
-      employeeId: selectedEmployeeId!,
+  const { data: payrollData, isLoading: isLoadingPayroll } =
+    trpc.payroll.getMonthlyPayroll.useQuery({
       month: parseInt(selectedMonth),
       year: parseInt(selectedYear),
-    },
-    { enabled: !!selectedEmployeeId }
-  );
+    });
+
+  // Fetch individual payslip when employee is selected
+  const { data: payslipData, isLoading: isLoadingPayslip } =
+    trpc.payroll.getEmployeePayslip.useQuery(
+      {
+        employeeId: selectedEmployeeId!,
+        month: parseInt(selectedMonth),
+        year: parseInt(selectedYear),
+      },
+      { enabled: !!selectedEmployeeId }
+    );
 
   // Calculate totals
   const totals = useMemo(() => {
-    if (!payrollData) return { totalEarnings: 0, totalDeductions: 0, totalNet: 0, employeeCount: 0 };
-    
+    if (!payrollData)
+      return {
+        totalEarnings: 0,
+        totalDeductions: 0,
+        totalNet: 0,
+        employeeCount: 0,
+      };
+
     return payrollData.reduce(
       (acc, emp) => ({
         totalEarnings: acc.totalEarnings + emp.totalEarnings,
@@ -142,26 +177,26 @@ export default function Payroll() {
 
   const generatePayslipPdf = async () => {
     if (!payslipData) return;
-    
+
     setIsGeneratingPdf(true);
-    
+
     try {
       // Generate PDF content
       const pdfContent = generatePayslipHtml(payslipData);
-      
+
       // Create a new window for printing
       const printWindow = window.open("", "_blank");
       if (printWindow) {
         printWindow.document.write(pdfContent);
         printWindow.document.close();
         printWindow.focus();
-        
+
         // Wait for content to load then print
         setTimeout(() => {
           printWindow.print();
         }, 500);
       }
-      
+
       toast.success("Lønnsslipp generert for utskrift");
     } catch (error) {
       toast.error("Kunne ikke generere lønnsslipp");
@@ -171,8 +206,9 @@ export default function Payroll() {
   };
 
   const generatePayslipHtml = (data: PayslipData) => {
-    const monthName = MONTHS.find(m => m.value === String(data.period.month))?.label || "";
-    
+    const monthName =
+      MONTHS.find(m => m.value === String(data.period.month))?.label || "";
+
     return `
       <!DOCTYPE html>
       <html lang="no">
@@ -475,32 +511,34 @@ export default function Payroll() {
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Lønnsadministrasjon</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Lønnsadministrasjon
+            </h1>
             <p className="text-muted-foreground">
               Administrer lønn, provisjoner og generer lønnsslipp for ansatte
             </p>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <Select value={selectedMonth} disabled>
               <SelectTrigger className="w-[140px]">
                 <SelectValue placeholder="Måned" />
               </SelectTrigger>
               <SelectContent>
-                {MONTHS.map((month) => (
+                {MONTHS.map(month => (
                   <SelectItem key={month.value} value={month.value}>
                     {month.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            
+
             <Select value={selectedYear} disabled>
               <SelectTrigger className="w-[100px]">
                 <SelectValue placeholder="År" />
               </SelectTrigger>
               <SelectContent>
-                {YEARS.map((year) => (
+                {YEARS.map(year => (
                   <SelectItem key={year.value} value={year.value}>
                     {year.label}
                   </SelectItem>
@@ -514,43 +552,55 @@ export default function Payroll() {
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Totale inntekter</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Totale inntekter
+              </CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(totals.totalEarnings)}</div>
+              <div className="text-2xl font-bold">
+                {formatCurrency(totals.totalEarnings)}
+              </div>
               <p className="text-xs text-muted-foreground">
                 For {totals.employeeCount} ansatte
               </p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Totale fradrag</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Totale fradrag
+              </CardTitle>
               <AlertCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{formatCurrency(totals.totalDeductions)}</div>
+              <div className="text-2xl font-bold text-orange-600">
+                {formatCurrency(totals.totalDeductions)}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Skatt, forsikring, pensjon
               </p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Netto utbetaling</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Netto utbetaling
+              </CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{formatCurrency(totals.totalNet)}</div>
+              <div className="text-2xl font-bold text-green-600">
+                {formatCurrency(totals.totalNet)}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Total til utbetaling
               </p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Ansatte</CardTitle>
@@ -570,7 +620,9 @@ export default function Payroll() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Briefcase className="h-5 w-5" />
-              Lønnsoversikt - {MONTHS.find(m => m.value === selectedMonth)?.label} {selectedYear}
+              Lønnsoversikt -{" "}
+              {MONTHS.find(m => m.value === selectedMonth)?.label}{" "}
+              {selectedYear}
             </CardTitle>
             <CardDescription>
               Klikk på en ansatt for å se detaljert lønnsslipp og generere PDF
@@ -596,17 +648,32 @@ export default function Payroll() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {payrollData.map((employee) => (
-                    <TableRow key={employee.employeeId} className="cursor-pointer hover:bg-muted/50">
-                      <TableCell className="font-medium">{employee.employeeName}</TableCell>
+                  {payrollData.map(employee => (
+                    <TableRow
+                      key={employee.employeeId}
+                      className="cursor-pointer hover:bg-muted/50"
+                    >
+                      <TableCell className="font-medium">
+                        {employee.employeeName}
+                      </TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {employee.role === "employee" ? "Ansatt" : employee.role === "admin" ? "Admin" : "Eier"}
+                          {employee.role === "employee"
+                            ? "Ansatt"
+                            : employee.role === "admin"
+                              ? "Admin"
+                              : "Eier"}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right">{employee.appointmentsCompleted}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(employee.totalEarnings)}</TableCell>
-                      <TableCell className="text-right text-orange-600">{formatCurrency(employee.totalDeductions)}</TableCell>
+                      <TableCell className="text-right">
+                        {employee.appointmentsCompleted}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {formatCurrency(employee.totalEarnings)}
+                      </TableCell>
+                      <TableCell className="text-right text-orange-600">
+                        {formatCurrency(employee.totalDeductions)}
+                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           <Plane className="h-3 w-3 text-muted-foreground" />
@@ -653,7 +720,13 @@ export default function Payroll() {
               <DialogDescription>
                 {payslipData && (
                   <>
-                    {payslipData.employee.name} - {MONTHS.find(m => m.value === String(payslipData.period.month))?.label} {payslipData.period.year}
+                    {payslipData.employee.name} -{" "}
+                    {
+                      MONTHS.find(
+                        m => m.value === String(payslipData.period.month)
+                      )?.label
+                    }{" "}
+                    {payslipData.period.year}
                   </>
                 )}
               </DialogDescription>
@@ -673,17 +746,25 @@ export default function Payroll() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">E-post</p>
-                    <p className="font-medium">{payslipData.employee.email || "-"}</p>
+                    <p className="font-medium">
+                      {payslipData.employee.email || "-"}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Stilling</p>
                     <p className="font-medium">
-                      {payslipData.employee.role === "employee" ? "Ansatt" : payslipData.employee.role === "admin" ? "Administrator" : "Eier"}
+                      {payslipData.employee.role === "employee"
+                        ? "Ansatt"
+                        : payslipData.employee.role === "admin"
+                          ? "Administrator"
+                          : "Eier"}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Provisjon</p>
-                    <p className="font-medium">{payslipData.employee.commissionRate || 0}%</p>
+                    <p className="font-medium">
+                      {payslipData.employee.commissionRate || 0}%
+                    </p>
                   </div>
                 </div>
 
@@ -695,15 +776,25 @@ export default function Payroll() {
                   </h4>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg text-center">
-                      <p className="text-2xl font-bold text-green-600">{payslipData.leaves.paidLeaveDays}</p>
-                      <p className="text-xs text-muted-foreground">Betalte dager</p>
+                      <p className="text-2xl font-bold text-green-600">
+                        {payslipData.leaves.paidLeaveDays}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Betalte dager
+                      </p>
                     </div>
                     <div className="p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg text-center">
-                      <p className="text-2xl font-bold text-orange-600">{payslipData.leaves.unpaidLeaveDays}</p>
-                      <p className="text-xs text-muted-foreground">Ubetalte dager</p>
+                      <p className="text-2xl font-bold text-orange-600">
+                        {payslipData.leaves.unpaidLeaveDays}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Ubetalte dager
+                      </p>
                     </div>
                     <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg text-center">
-                      <p className="text-2xl font-bold text-blue-600">{payslipData.leaves.sickLeaveDays}</p>
+                      <p className="text-2xl font-bold text-blue-600">
+                        {payslipData.leaves.sickLeaveDays}
+                      </p>
                       <p className="text-xs text-muted-foreground">Sykedager</p>
                     </div>
                   </div>
@@ -720,15 +811,25 @@ export default function Payroll() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Grunnlønn</span>
-                      <span>{formatCurrency(payslipData.earnings.baseSalary)}</span>
+                      <span>
+                        {formatCurrency(payslipData.earnings.baseSalary)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Tjenesteprovisjon</span>
-                      <span>{formatCurrency(payslipData.earnings.serviceCommission)}</span>
+                      <span className="text-muted-foreground">
+                        Tjenesteprovisjon
+                      </span>
+                      <span>
+                        {formatCurrency(payslipData.earnings.serviceCommission)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Produktprovisjon</span>
-                      <span>{formatCurrency(payslipData.earnings.productCommission)}</span>
+                      <span className="text-muted-foreground">
+                        Produktprovisjon
+                      </span>
+                      <span>
+                        {formatCurrency(payslipData.earnings.productCommission)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Tips</span>
@@ -741,7 +842,9 @@ export default function Payroll() {
                     <Separator />
                     <div className="flex justify-between font-semibold">
                       <span>Totale inntekter</span>
-                      <span>{formatCurrency(payslipData.earnings.totalEarnings)}</span>
+                      <span>
+                        {formatCurrency(payslipData.earnings.totalEarnings)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -757,24 +860,38 @@ export default function Payroll() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Skatt (30%)</span>
-                      <span className="text-orange-600">{formatCurrency(payslipData.deductions.tax)}</span>
+                      <span className="text-orange-600">
+                        {formatCurrency(payslipData.deductions.tax)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Forsikring</span>
-                      <span className="text-orange-600">{formatCurrency(payslipData.deductions.insurance)}</span>
+                      <span className="text-orange-600">
+                        {formatCurrency(payslipData.deductions.insurance)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Pensjon (2%)</span>
-                      <span className="text-orange-600">{formatCurrency(payslipData.deductions.pension)}</span>
+                      <span className="text-muted-foreground">
+                        Pensjon (2%)
+                      </span>
+                      <span className="text-orange-600">
+                        {formatCurrency(payslipData.deductions.pension)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Ubetalt ferie</span>
-                      <span className="text-orange-600">{formatCurrency(payslipData.deductions.unpaidLeave)}</span>
+                      <span className="text-muted-foreground">
+                        Ubetalt ferie
+                      </span>
+                      <span className="text-orange-600">
+                        {formatCurrency(payslipData.deductions.unpaidLeave)}
+                      </span>
                     </div>
                     <Separator />
                     <div className="flex justify-between font-semibold">
                       <span>Totale fradrag</span>
-                      <span className="text-orange-600">{formatCurrency(payslipData.deductions.totalDeductions)}</span>
+                      <span className="text-orange-600">
+                        {formatCurrency(payslipData.deductions.totalDeductions)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -788,16 +905,24 @@ export default function Payroll() {
                       <CheckCircle2 className="h-5 w-5" />
                       <span className="font-semibold">Netto lønn</span>
                     </div>
-                    <span className="text-2xl font-bold">{formatCurrency(payslipData.netSalary)}</span>
+                    <span className="text-2xl font-bold">
+                      {formatCurrency(payslipData.netSalary)}
+                    </span>
                   </div>
                 </div>
 
                 {/* Actions */}
                 <div className="flex justify-end gap-3">
-                  <Button variant="outline" onClick={() => setShowPayslipDialog(false)}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowPayslipDialog(false)}
+                  >
                     Lukk
                   </Button>
-                  <Button onClick={generatePayslipPdf} disabled={isGeneratingPdf}>
+                  <Button
+                    onClick={generatePayslipPdf}
+                    disabled={isGeneratingPdf}
+                  >
                     {isGeneratingPdf ? (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     ) : (

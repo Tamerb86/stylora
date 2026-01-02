@@ -5,7 +5,11 @@
 
 import type { Request, Response, Express } from "express";
 import { parse as parseCookieHeader } from "cookie";
-import { COOKIE_NAME, THIRTY_DAYS_MS, REFRESH_TOKEN_COOKIE_NAME } from "@shared/const";
+import {
+  COOKIE_NAME,
+  THIRTY_DAYS_MS,
+  REFRESH_TOKEN_COOKIE_NAME,
+} from "@shared/const";
 import { getSessionCookieOptions } from "./cookies";
 import { authService } from "./auth-simple";
 import { getUserFromRefreshToken } from "./refresh-tokens";
@@ -43,18 +47,24 @@ export function registerRefreshEndpoint(app: Express) {
       }
 
       // Create new access token (30 days)
-      const sessionToken = await authService.createSessionToken({
-        openId: user.openId,
-        appId: ENV.appId,
-        name: user.name || user.email || "User",
-        email: user.email || undefined,
-      }, {
-        expiresInMs: THIRTY_DAYS_MS,
-      });
+      const sessionToken = await authService.createSessionToken(
+        {
+          openId: user.openId,
+          appId: ENV.appId,
+          name: user.name || user.email || "User",
+          email: user.email || undefined,
+        },
+        {
+          expiresInMs: THIRTY_DAYS_MS,
+        }
+      );
 
       // Set new access token cookie
       const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: THIRTY_DAYS_MS });
+      res.cookie(COOKIE_NAME, sessionToken, {
+        ...cookieOptions,
+        maxAge: THIRTY_DAYS_MS,
+      });
 
       logAuth.loginSuccess(user.email || user.openId, req.ip);
       logger.info("Access token refreshed", {
@@ -63,7 +73,7 @@ export function registerRefreshEndpoint(app: Express) {
         ipAddress: req.ip,
       });
 
-      res.json({ 
+      res.json({
         success: true,
         user: {
           id: user.id,
@@ -71,7 +81,7 @@ export function registerRefreshEndpoint(app: Express) {
           email: user.email,
           role: user.role,
           tenantId: user.tenantId,
-        }
+        },
       });
     } catch (error) {
       console.error("[Auth] Token refresh failed", error);
@@ -94,19 +104,25 @@ export function registerRefreshEndpoint(app: Express) {
 
       // Revoke all refresh tokens for this user
       const { revokeAllUserTokens } = await import("./refresh-tokens");
-      const count = await revokeAllUserTokens(result.user.id, "Logout from all devices");
+      const count = await revokeAllUserTokens(
+        result.user.id,
+        "Logout from all devices"
+      );
 
       // Clear cookies
       const cookieOptions = getSessionCookieOptions(req);
       res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
+        ...cookieOptions,
+        maxAge: -1,
+      });
 
       logger.info("User logged out from all devices", {
         userId: result.user.id,
         revokedTokens: count,
       });
 
-      res.json({ 
+      res.json({
         success: true,
         revokedCount: count,
       });

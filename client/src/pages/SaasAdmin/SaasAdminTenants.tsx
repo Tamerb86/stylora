@@ -28,13 +28,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Search, ArrowLeft, LogIn, Eye, CheckCircle, XCircle, Loader2, LogOut } from "lucide-react";
+import {
+  Search,
+  ArrowLeft,
+  LogIn,
+  Eye,
+  CheckCircle,
+  XCircle,
+  Loader2,
+  LogOut,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export default function SaasAdminTenants() {
   const [, setLocation] = useLocation();
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState<"all" | "trial" | "active" | "suspended" | "canceled">("all");
+  const [status, setStatus] = useState<
+    "all" | "trial" | "active" | "suspended" | "canceled"
+  >("all");
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
@@ -56,21 +67,30 @@ export default function SaasAdminTenants() {
   const { data: plans } = trpc.saasAdmin.getSubscriptionPlans.useQuery();
 
   const impersonateMutation = trpc.saasAdmin.impersonateTenant.useMutation({
-    onSuccess: (result) => {
+    onSuccess: result => {
       setLocation(result.redirectUrl);
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Feil: ${error.message}`);
     },
   });
 
   const updateMutation = trpc.saasAdmin.updateTenantPlanAndStatus.useMutation({
     onSuccess: () => {
-      toast.success(activationDialog.action === "activate" ? "Salong aktivert!" : "Salong suspendert!");
-      setActivationDialog({ open: false, tenantId: "", tenantName: "", action: "activate" });
+      toast.success(
+        activationDialog.action === "activate"
+          ? "Salong aktivert!"
+          : "Salong suspendert!"
+      );
+      setActivationDialog({
+        open: false,
+        tenantId: "",
+        tenantName: "",
+        action: "activate",
+      });
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Feil: ${error.message}`);
     },
   });
@@ -80,17 +100,27 @@ export default function SaasAdminTenants() {
   };
 
   const handleQuickActivate = (tenantId: string, tenantName: string) => {
-    setActivationDialog({ open: true, tenantId, tenantName, action: "activate" });
+    setActivationDialog({
+      open: true,
+      tenantId,
+      tenantName,
+      action: "activate",
+    });
   };
 
   const handleQuickSuspend = (tenantId: string, tenantName: string) => {
-    setActivationDialog({ open: true, tenantId, tenantName, action: "suspend" });
+    setActivationDialog({
+      open: true,
+      tenantId,
+      tenantName,
+      action: "suspend",
+    });
   };
 
   const confirmActivation = () => {
     // Get the first available plan (Basic) for activation
     const basicPlan = plans?.find((p: any) => p.name === "basic") || plans?.[0];
-    
+
     updateMutation.mutate({
       tenantId: activationDialog.tenantId,
       status: activationDialog.action === "activate" ? "active" : "suspended",
@@ -119,9 +149,7 @@ export default function SaasAdminTenants() {
         </div>
         <div className="flex gap-2">
           <Link href="/saas-admin/subscriptions">
-            <Button variant="outline">
-              Abonnementer
-            </Button>
+            <Button variant="outline">Abonnementer</Button>
           </Link>
           <Link href="/saas-admin/tenants/new">
             <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
@@ -150,7 +178,7 @@ export default function SaasAdminTenants() {
             <Input
               placeholder="Søk etter navn, subdomene eller org.nr..."
               value={search}
-              onChange={(e) => {
+              onChange={e => {
                 setSearch(e.target.value);
                 setPage(1);
               }}
@@ -207,9 +235,11 @@ export default function SaasAdminTenants() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.items.map((tenant) => (
+                  {data.items.map(tenant => (
                     <TableRow key={tenant.id}>
-                      <TableCell className="font-medium">{tenant.name}</TableCell>
+                      <TableCell className="font-medium">
+                        {tenant.name}
+                      </TableCell>
                       <TableCell>
                         <code className="text-xs bg-muted px-2 py-1 rounded">
                           {tenant.subdomain}
@@ -221,17 +251,17 @@ export default function SaasAdminTenants() {
                             tenant.status === "active"
                               ? "default"
                               : tenant.status === "trial"
-                              ? "secondary"
-                              : "destructive"
+                                ? "secondary"
+                                : "destructive"
                           }
                         >
                           {tenant.status === "active"
                             ? "Aktiv"
                             : tenant.status === "trial"
-                            ? "Prøve"
-                            : tenant.status === "suspended"
-                            ? "Suspendert"
-                            : "Kansellert"}
+                              ? "Prøve"
+                              : tenant.status === "suspended"
+                                ? "Suspendert"
+                                : "Kansellert"}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -272,11 +302,14 @@ export default function SaasAdminTenants() {
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
                           {/* Quick Activate/Suspend Button */}
-                          {tenant.status === "trial" || tenant.status === "suspended" ? (
+                          {tenant.status === "trial" ||
+                          tenant.status === "suspended" ? (
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleQuickActivate(tenant.id, tenant.name)}
+                              onClick={() =>
+                                handleQuickActivate(tenant.id, tenant.name)
+                              }
                               className="text-green-600 hover:text-green-700 hover:bg-green-50"
                             >
                               <CheckCircle className="h-4 w-4 mr-1" />
@@ -286,14 +319,16 @@ export default function SaasAdminTenants() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleQuickSuspend(tenant.id, tenant.name)}
+                              onClick={() =>
+                                handleQuickSuspend(tenant.id, tenant.name)
+                              }
                               className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
                             >
                               <XCircle className="h-4 w-4 mr-1" />
                               Suspender
                             </Button>
                           ) : null}
-                          
+
                           <Link href={`/saas-admin/tenants/${tenant.id}`}>
                             <Button variant="outline" size="sm">
                               <Eye className="h-4 w-4 mr-1" />
@@ -329,7 +364,7 @@ export default function SaasAdminTenants() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      onClick={() => setPage(p => Math.max(1, p - 1))}
                       disabled={page === 1}
                     >
                       Forrige
@@ -340,7 +375,9 @@ export default function SaasAdminTenants() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
+                      onClick={() =>
+                        setPage(p => Math.min(data.totalPages, p + 1))
+                      }
                       disabled={page === data.totalPages}
                     >
                       Neste
@@ -354,24 +391,35 @@ export default function SaasAdminTenants() {
       </Card>
 
       {/* Activation Confirmation Dialog */}
-      <Dialog open={activationDialog.open} onOpenChange={(open) => setActivationDialog(prev => ({ ...prev, open }))}>
+      <Dialog
+        open={activationDialog.open}
+        onOpenChange={open => setActivationDialog(prev => ({ ...prev, open }))}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {activationDialog.action === "activate" ? "Aktiver salong" : "Suspender salong"}
+              {activationDialog.action === "activate"
+                ? "Aktiver salong"
+                : "Suspender salong"}
             </DialogTitle>
             <DialogDescription>
               {activationDialog.action === "activate" ? (
                 <>
-                  Er du sikker på at du vil aktivere <strong>{activationDialog.tenantName}</strong>?
-                  <br /><br />
-                  Salongen vil få tilgang til alle funksjoner og vil bli satt til "Basic" plan.
+                  Er du sikker på at du vil aktivere{" "}
+                  <strong>{activationDialog.tenantName}</strong>?
+                  <br />
+                  <br />
+                  Salongen vil få tilgang til alle funksjoner og vil bli satt
+                  til "Basic" plan.
                 </>
               ) : (
                 <>
-                  Er du sikker på at du vil suspendere <strong>{activationDialog.tenantName}</strong>?
-                  <br /><br />
-                  Salongen vil miste tilgang til systemet inntil den aktiveres igjen.
+                  Er du sikker på at du vil suspendere{" "}
+                  <strong>{activationDialog.tenantName}</strong>?
+                  <br />
+                  <br />
+                  Salongen vil miste tilgang til systemet inntil den aktiveres
+                  igjen.
                 </>
               )}
             </DialogDescription>
@@ -379,16 +427,19 @@ export default function SaasAdminTenants() {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setActivationDialog(prev => ({ ...prev, open: false }))}
+              onClick={() =>
+                setActivationDialog(prev => ({ ...prev, open: false }))
+              }
             >
               Avbryt
             </Button>
             <Button
               onClick={confirmActivation}
               disabled={updateMutation.isPending}
-              className={activationDialog.action === "activate" 
-                ? "bg-green-600 hover:bg-green-700" 
-                : "bg-orange-600 hover:bg-orange-700"
+              className={
+                activationDialog.action === "activate"
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-orange-600 hover:bg-orange-700"
               }
             >
               {updateMutation.isPending ? (

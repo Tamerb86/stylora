@@ -58,7 +58,7 @@ export default function Gallery() {
   const filteredImages =
     selectedCategory === "Alle"
       ? galleryImages
-      : galleryImages.filter((img) => img.category === selectedCategory);
+      : galleryImages.filter(img => img.category === selectedCategory);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20">
@@ -71,14 +71,14 @@ export default function Gallery() {
             </span>
           </h1>
           <p className="text-lg md:text-xl text-slate-600 leading-relaxed">
-            Se eksempler på våre tidligere arbeider. Vi er stolte av kvaliteten og
-            kreativiteten i hver eneste styling vi leverer.
+            Se eksempler på våre tidligere arbeider. Vi er stolte av kvaliteten
+            og kreativiteten i hver eneste styling vi leverer.
           </p>
         </div>
 
         {/* Category Filter */}
         <div className="flex flex-wrap justify-center gap-3 mb-12">
-          {categories.map((category) => (
+          {categories.map(category => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
@@ -95,7 +95,7 @@ export default function Gallery() {
 
         {/* Gallery Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredImages.map((image) => (
+          {filteredImages.map(image => (
             <div
               key={image.id}
               className="group relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
@@ -113,7 +113,7 @@ export default function Gallery() {
                     {image.category}
                   </p>
                   <p className="text-lg font-semibold mb-4">{image.alt}</p>
-                  
+
                   {/* Booking CTA Button */}
                   <Button
                     asChild
@@ -149,7 +149,8 @@ export default function Gallery() {
               Klar for din transformasjon?
             </h2>
             <p className="text-lg text-white/90 mb-8">
-              Book en time i dag og opplev den samme kvaliteten du ser i galleriet vårt.
+              Book en time i dag og opplev den samme kvaliteten du ser i
+              galleriet vårt.
             </p>
             <Button
               asChild
@@ -179,7 +180,7 @@ export default function Gallery() {
           </button>
           <div
             className="relative max-w-5xl max-h-[90vh] animate-in zoom-in-95 duration-300"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             <img
               src={selectedImage.src}
@@ -193,7 +194,7 @@ export default function Gallery() {
               <p className="text-2xl font-semibold text-white mb-6">
                 {selectedImage.alt}
               </p>
-              
+
               {/* Booking CTA in Lightbox */}
               <Button
                 asChild

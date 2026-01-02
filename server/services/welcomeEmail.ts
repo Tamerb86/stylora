@@ -300,12 +300,16 @@ function generateWelcomeEmailHTML(data: WelcomeEmailData): string {
 /**
  * Send welcome email to new tenant
  */
-export async function sendWelcomeEmail(data: WelcomeEmailData): Promise<boolean> {
+export async function sendWelcomeEmail(
+  data: WelcomeEmailData
+): Promise<boolean> {
   try {
     const transporter = createTransporter();
 
     if (!transporter) {
-      console.warn("⚠️ Email transporter not configured. Skipping welcome email.");
+      console.warn(
+        "⚠️ Email transporter not configured. Skipping welcome email."
+      );
       return false;
     }
 
@@ -322,7 +326,7 @@ export async function sendWelcomeEmail(data: WelcomeEmailData): Promise<boolean>
     return true;
   } catch (error) {
     console.error("❌ Failed to send welcome email:", error);
-    
+
     // Send error to Sentry
     Sentry.captureException(error, {
       tags: {
@@ -351,7 +355,9 @@ export async function sendOnboardingReminderEmail(
     const transporter = createTransporter();
 
     if (!transporter) {
-      console.warn("⚠️ Email transporter not configured. Skipping reminder email.");
+      console.warn(
+        "⚠️ Email transporter not configured. Skipping reminder email."
+      );
       return false;
     }
 

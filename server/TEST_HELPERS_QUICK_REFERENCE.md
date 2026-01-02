@@ -42,6 +42,7 @@ describe("My Feature", () => {
 Creates a complete test environment with verified tenant and admin user.
 
 **Defaults:**
+
 - `emailVerified: true`
 - `status: "active"`
 - `role: "admin"`
@@ -115,9 +116,9 @@ const env = await createTestEnvironment(
 ## Timeouts
 
 ```typescript
-TEST_TIMEOUTS.SHORT   // 5 seconds
-TEST_TIMEOUTS.MEDIUM  // 10 seconds
-TEST_TIMEOUTS.LONG    // 30 seconds
+TEST_TIMEOUTS.SHORT; // 5 seconds
+TEST_TIMEOUTS.MEDIUM; // 10 seconds
+TEST_TIMEOUTS.LONG; // 30 seconds
 ```
 
 ## Key Benefits
@@ -172,6 +173,7 @@ const caller = appRouter.createCaller(mockContext);
 ## Need More Details?
 
 See [TESTING_STRATEGY.md](../TESTING_STRATEGY.md) for:
+
 - Complete function documentation
 - Migration guide
 - Best practices

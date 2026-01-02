@@ -49,7 +49,7 @@ describe("Wizard Auto-Save", () => {
         name: "Test Salon AutoSave",
         subdomain: "test-autosave-wizard",
         onboardingCompleted: false,
-        onboardingStep: "welcome",,
+        onboardingStep: "welcome",
 
         emailVerified: true,
 

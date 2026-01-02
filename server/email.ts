@@ -4,7 +4,7 @@ import { sendEmailViaSES, isAWSSESConfigured } from "./_core/aws-ses";
 
 /**
  * Email sending helper using nodemailer with SMTP
- * 
+ *
  * Configured via environment variables:
  * - SMTP_HOST: SMTP server hostname
  * - SMTP_PORT: SMTP server port (default: 587)
@@ -26,10 +26,10 @@ const transporter = nodemailer.createTransport({
 
 /**
  * Send an email
- * 
+ *
  * @param options Email options (to, subject, html)
  * @returns Promise that resolves when email is sent
- * 
+ *
  * Note: Errors are logged but not thrown to prevent breaking main logic
  */
 export async function sendEmail(options: {
@@ -61,7 +61,10 @@ export async function sendEmail(options: {
 
   // Fallback to SMTP if AWS SES not configured or failed
   if (!ENV.smtpHost || !ENV.smtpUser || !ENV.smtpPass) {
-    console.warn("[Email] Neither AWS SES nor SMTP configured, skipping email to:", options.to);
+    console.warn(
+      "[Email] Neither AWS SES nor SMTP configured, skipping email to:",
+      options.to
+    );
     return;
   }
 
@@ -86,7 +89,7 @@ export async function sendEmail(options: {
 
 /**
  * Render booking confirmation email
- * 
+ *
  * Sent when an appointment is confirmed (either manually or via payment)
  */
 export function renderBookingConfirmationEmail(params: {
@@ -181,7 +184,7 @@ export function renderBookingConfirmationEmail(params: {
 
 /**
  * Render booking cancellation email
- * 
+ *
  * Sent when an appointment is canceled (by staff or system)
  */
 export function renderBookingRescheduleEmail(params: {
@@ -338,7 +341,7 @@ export function renderBookingCancellationEmail(params: {
 
 /**
  * Send receipt email with PDF attachment
- * 
+ *
  * @param options Email options with PDF attachment
  * @returns Promise that resolves when email is sent
  */
@@ -367,9 +370,12 @@ export async function sendReceiptEmail(options: {
   // Note: AWS SES doesn't support attachments directly via SendEmailCommand
   // For attachments, we must use SMTP or SES with SendRawEmailCommand
   // For now, we'll use SMTP for receipt emails with attachments
-  
+
   if (!ENV.smtpHost || !ENV.smtpUser || !ENV.smtpPass) {
-    console.warn("[Email] SMTP not configured, cannot send receipt with attachment to:", options.to);
+    console.warn(
+      "[Email] SMTP not configured, cannot send receipt with attachment to:",
+      options.to
+    );
     return;
   }
 
@@ -397,7 +403,7 @@ export async function sendReceiptEmail(options: {
 
 /**
  * Render receipt email template
- * 
+ *
  * Sent when a customer requests a receipt via email
  */
 export function renderReceiptEmail(params: {

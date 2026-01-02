@@ -7,7 +7,9 @@ The user reported a login failure with the message "Innlogging feilet" (Login fa
 ## Root Causes Identified
 
 ### 1. **Case-Sensitive Email Lookup**
+
 The original implementation used exact email matching:
+
 ```typescript
 .where(eq(users.email, email))
 ```
@@ -15,22 +17,28 @@ The original implementation used exact email matching:
 This meant that if a user registered with `User@Example.com` but tried to log in with `user@example.com`, the login would fail even though both emails are effectively the same.
 
 ### 2. **Generic Error Messages**
+
 All authentication failures returned the same message: "Innlogging feilet" (Login failed), which doesn't help users understand:
+
 - Whether the email exists in the system
 - Whether it's a password issue
 - Whether their account is deactivated
 - What steps they can take to resolve the issue
 
 ### 3. **No Email Validation or Trimming**
+
 The system didn't:
+
 - Trim whitespace from email addresses
 - Validate email format before querying the database
 - Provide feedback for invalid email formats
 
 ### 4. **Insufficient Error Logging**
+
 Backend logging was minimal, making it difficult to debug login failures in production.
 
 ### 5. **Missing Tenant Status Validation**
+
 The system didn't check if the user's tenant (salon) was suspended or canceled, which could lead to confusing error messages.
 
 ## Solutions Implemented
@@ -52,11 +60,13 @@ const [user] = await dbInstance
 ```
 
 This change ensures that:
+
 - `user@example.com` and `User@Example.com` are treated as the same
 - `USER@EXAMPLE.COM` will match any case variation
 - The comparison is done at the database level for efficiency
 
 **Applied to:**
+
 - Login endpoint (`/api/auth/login`)
 - Registration endpoint (`/api/auth/register`) - to prevent duplicate accounts with different case
 - Forgot password endpoint (`/api/auth/forgot-password`)
@@ -67,21 +77,21 @@ This change ensures that:
 
 ```typescript
 // Invalid credentials
-res.status(401).json({ 
+res.status(401).json({
   error: "Ugyldig e-post eller passord",
-  hint: "Hvis du har glemt passordet, klikk på 'Glemt passord?' for å tilbakestille det."
+  hint: "Hvis du har glemt passordet, klikk på 'Glemt passord?' for å tilbakestille det.",
 });
 
 // Account deactivated
-res.status(403).json({ 
+res.status(403).json({
   error: "Kontoen er deaktivert",
-  hint: "Kontoen din har blitt deaktivert. Kontakt support for å reaktivere den."
+  hint: "Kontoen din har blitt deaktivert. Kontakt support for å reaktivere den.",
 });
 
 // Tenant suspended
-res.status(403).json({ 
+res.status(403).json({
   error: "Abonnementet er suspendert",
-  hint: "Kontakt support for å reaktivere abonnementet."
+  hint: "Kontakt support for å reaktivere abonnementet.",
 });
 ```
 
@@ -118,14 +128,15 @@ const trimmedEmail = email.trim();
 // Validate email format
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 if (!emailRegex.test(trimmedEmail)) {
-  res.status(400).json({ 
-    error: "Vennligst oppgi en gyldig e-postadresse" 
+  res.status(400).json({
+    error: "Vennligst oppgi en gyldig e-postadresse",
   });
   return;
 }
 ```
 
 This ensures:
+
 - Leading/trailing spaces are removed
 - Basic email format is validated before database query
 - Clear error message for invalid formats
@@ -148,6 +159,7 @@ console.error("[Auth] Login failed with error:", error);
 ```
 
 Benefits:
+
 - Easier debugging in production
 - Security audit trail
 - Performance monitoring
@@ -158,9 +170,9 @@ Benefits:
 
 ```typescript
 if (!user.passwordHash) {
-  res.status(401).json({ 
+  res.status(401).json({
     error: "Kontoen din bruker en annen innloggingsmetode",
-    hint: "Denne kontoen ble opprettet med en annen innloggingsmetode. Kontakt support for hjelp."
+    hint: "Denne kontoen ble opprettet med en annen innloggingsmetode. Kontakt support for hjelp.",
   });
   return;
 }
@@ -170,12 +182,13 @@ if (!user.passwordHash) {
 
 ```typescript
 const tenant = await db.getTenantById(user.tenantId);
-if (tenant.status === 'suspended' || tenant.status === 'canceled') {
-  res.status(403).json({ 
-    error: tenant.status === 'suspended' 
-      ? "Abonnementet er suspendert"
-      : "Abonnementet er avsluttet",
-    hint: "Kontakt support for å reaktivere abonnementet."
+if (tenant.status === "suspended" || tenant.status === "canceled") {
+  res.status(403).json({
+    error:
+      tenant.status === "suspended"
+        ? "Abonnementet er suspendert"
+        : "Abonnementet er avsluttet",
+    hint: "Kontakt support for å reaktivere abonnementet.",
   });
   return;
 }
@@ -184,6 +197,7 @@ if (tenant.status === 'suspended' || tenant.status === 'canceled') {
 ## Testing
 
 Created comprehensive test file (`server/auth.login.test.ts`) that validates:
+
 - Case-insensitive email matching
 - Email trimming
 - Email format validation
@@ -193,12 +207,15 @@ Created comprehensive test file (`server/auth.login.test.ts`) that validates:
 ## User Experience Improvements
 
 ### Before:
+
 ```
 ❌ Error: "Innlogging feilet"
 ```
+
 No information about what went wrong or how to fix it.
 
 ### After:
+
 ```
 ❌ Error: "Ugyldig e-post eller passord"
 💡 Hint: "Hvis du har glemt passordet, klikk på 'Glemt passord?' for å tilbakestille det."
@@ -223,16 +240,16 @@ For the reported email `app.riyalmind@gmail.com`, the improved system will:
 
 All error messages are in Norwegian to match the application's locale:
 
-| Scenario | Error Message | Hint |
-|----------|--------------|------|
-| Missing credentials | E-post og passord er påkrevd | - |
-| Invalid email format | Vennligst oppgi en gyldig e-postadresse | - |
-| Wrong credentials | Ugyldig e-post eller passord | Hvis du har glemt passordet... |
-| Account deactivated | Kontoen er deaktivert | Kontakt support for å reaktivere |
-| No password set | Kontoen din bruker en annen innloggingsmetode | Kontakt support for hjelp |
-| Tenant suspended | Abonnementet er suspendert | Kontakt support... |
-| Database unavailable | Tjenesten er midlertidig utilgjengelig | Prøv igjen senere |
-| Unexpected error | En uventet feil oppstod | Prøv igjen. Hvis problemet vedvarer... |
+| Scenario             | Error Message                                 | Hint                                   |
+| -------------------- | --------------------------------------------- | -------------------------------------- |
+| Missing credentials  | E-post og passord er påkrevd                  | -                                      |
+| Invalid email format | Vennligst oppgi en gyldig e-postadresse       | -                                      |
+| Wrong credentials    | Ugyldig e-post eller passord                  | Hvis du har glemt passordet...         |
+| Account deactivated  | Kontoen er deaktivert                         | Kontakt support for å reaktivere       |
+| No password set      | Kontoen din bruker en annen innloggingsmetode | Kontakt support for hjelp              |
+| Tenant suspended     | Abonnementet er suspendert                    | Kontakt support...                     |
+| Database unavailable | Tjenesten er midlertidig utilgjengelig        | Prøv igjen senere                      |
+| Unexpected error     | En uventet feil oppstod                       | Prøv igjen. Hvis problemet vedvarer... |
 
 ## Security Considerations
 
@@ -247,6 +264,7 @@ All error messages are in Norwegian to match the application's locale:
 ## Migration Notes
 
 No database migrations required. The changes are backward compatible:
+
 - Existing users can still log in
 - Case-insensitive matching only affects the lookup, not the stored data
 - Email addresses are still stored with their original casing
@@ -266,14 +284,15 @@ No database migrations required. The changes are backward compatible:
    - Token expiration (e.g., 1 hour)
 
 2. **Rate Limiting**: Add rate limiting to prevent brute force attacks:
+
    ```typescript
    import rateLimit from 'express-rate-limit';
-   
+
    const loginLimiter = rateLimit({
      windowMs: 15 * 60 * 1000, // 15 minutes
      max: 5 // limit each IP to 5 login requests per windowMs
    });
-   
+
    app.post("/api/auth/login", loginLimiter, async (req, res) => { ... });
    ```
 
@@ -288,6 +307,7 @@ No database migrations required. The changes are backward compatible:
 ## Conclusion
 
 These changes significantly improve the login experience by:
+
 - Making email matching more robust with case-insensitive lookup
 - Providing clear, actionable error messages
 - Validating input before processing

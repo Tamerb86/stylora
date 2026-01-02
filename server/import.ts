@@ -1,5 +1,12 @@
 import { getDb } from "./db";
-import { dataImports, customers, services, products, serviceCategories, productCategories } from "../drizzle/schema";
+import {
+  dataImports,
+  customers,
+  services,
+  products,
+  serviceCategories,
+  productCategories,
+} from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import * as XLSX from "xlsx";
 
@@ -25,7 +32,9 @@ export async function importCustomersFromFile(
     importedBy: userId,
   });
 
-  const importId = Array.isArray(importResult) ? importResult[0]?.insertId : (importResult as any).insertId;
+  const importId = Array.isArray(importResult)
+    ? importResult[0]?.insertId
+    : (importResult as any).insertId;
 
   try {
     // Parse Excel/CSV file
@@ -80,7 +89,8 @@ export async function importCustomersFromFile(
     }
 
     // Update import record
-    await db.update(dataImports)
+    await db
+      .update(dataImports)
       .set({
         status: failed === 0 ? "completed" : "completed",
         recordsTotal: data.length,
@@ -101,7 +111,8 @@ export async function importCustomersFromFile(
     };
   } catch (error: any) {
     // Mark import as failed
-    await db.update(dataImports)
+    await db
+      .update(dataImports)
       .set({
         status: "failed",
         errorMessage: error.message || "Unknown error",
@@ -135,7 +146,9 @@ export async function importServicesFromFile(
     importedBy: userId,
   });
 
-  const importId = Array.isArray(importResult) ? importResult[0]?.insertId : (importResult as any).insertId;
+  const importId = Array.isArray(importResult)
+    ? importResult[0]?.insertId
+    : (importResult as any).insertId;
 
   try {
     // Parse Excel/CSV file
@@ -161,7 +174,9 @@ export async function importServicesFromFile(
         tenantId,
         name: "Imported Services",
       });
-      categoryId = Array.isArray(catResult) ? catResult[0]?.insertId : (catResult as any).insertId;
+      categoryId = Array.isArray(catResult)
+        ? catResult[0]?.insertId
+        : (catResult as any).insertId;
     } else {
       categoryId = defaultCategory[0].id;
     }
@@ -197,7 +212,8 @@ export async function importServicesFromFile(
     }
 
     // Update import record
-    await db.update(dataImports)
+    await db
+      .update(dataImports)
       .set({
         status: failed === 0 ? "completed" : "completed",
         recordsTotal: data.length,
@@ -218,7 +234,8 @@ export async function importServicesFromFile(
     };
   } catch (error: any) {
     // Mark import as failed
-    await db.update(dataImports)
+    await db
+      .update(dataImports)
       .set({
         status: "failed",
         errorMessage: error.message || "Unknown error",
@@ -252,7 +269,9 @@ export async function importProductsFromFile(
     importedBy: userId,
   });
 
-  const importId = Array.isArray(importResult) ? importResult[0]?.insertId : (importResult as any).insertId;
+  const importId = Array.isArray(importResult)
+    ? importResult[0]?.insertId
+    : (importResult as any).insertId;
 
   try {
     // Parse Excel/CSV file
@@ -278,7 +297,9 @@ export async function importProductsFromFile(
         tenantId,
         name: "Imported Products",
       });
-      categoryId = Array.isArray(catResult) ? catResult[0]?.insertId : (catResult as any).insertId;
+      categoryId = Array.isArray(catResult)
+        ? catResult[0]?.insertId
+        : (catResult as any).insertId;
     } else {
       categoryId = defaultCategory[0].id;
     }
@@ -300,7 +321,9 @@ export async function importProductsFromFile(
           retailPrice: String(row.price),
           costPrice: row.costPrice ? String(row.costPrice) : "0.00",
           stockQuantity: row.stock ? Number(row.stock) : 0,
-          reorderPoint: row.lowStockThreshold ? Number(row.lowStockThreshold) : 5,
+          reorderPoint: row.lowStockThreshold
+            ? Number(row.lowStockThreshold)
+            : 5,
           sku: row.sku || `IMPORT-${Date.now()}-${i}`,
           barcode: row.barcode || "",
           isActive: true,
@@ -318,7 +341,8 @@ export async function importProductsFromFile(
     }
 
     // Update import record
-    await db.update(dataImports)
+    await db
+      .update(dataImports)
       .set({
         status: failed === 0 ? "completed" : "completed",
         recordsTotal: data.length,
@@ -339,7 +363,8 @@ export async function importProductsFromFile(
     };
   } catch (error: any) {
     // Mark import as failed
-    await db.update(dataImports)
+    await db
+      .update(dataImports)
       .set({
         status: "failed",
         errorMessage: error.message || "Unknown error",
@@ -411,12 +436,14 @@ export async function restoreFromSQL(
     importedBy: userId,
   });
 
-  const importId = Array.isArray(importResult) ? importResult[0]?.insertId : (importResult as any).insertId;
+  const importId = Array.isArray(importResult)
+    ? importResult[0]?.insertId
+    : (importResult as any).insertId;
 
   try {
     // Parse SQL file
     const sqlContent = fileBuffer.toString("utf-8");
-    
+
     // Split SQL into individual statements
     const statements = sqlContent
       .split(";")
@@ -448,7 +475,8 @@ export async function restoreFromSQL(
     }
 
     // Update import record
-    await db.update(dataImports)
+    await db
+      .update(dataImports)
       .set({
         status: errors.length === 0 ? "completed" : "completed",
         recordsTotal: statements.length,
@@ -469,7 +497,8 @@ export async function restoreFromSQL(
     };
   } catch (error: any) {
     // Mark import as failed
-    await db.update(dataImports)
+    await db
+      .update(dataImports)
       .set({
         status: "failed",
         errorMessage: error.message || "Unknown error",

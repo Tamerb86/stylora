@@ -1,12 +1,31 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Banknote, CreditCard, Smartphone, AlertCircle, CheckCircle2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Banknote,
+  CreditCard,
+  Smartphone,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { safeToFixed } from "@/lib/utils";
 
@@ -40,7 +59,9 @@ export function SplitPaymentDialog({
   const [cardLast4, setCardLast4] = useState("");
   const [cardBrand, setCardBrand] = useState("");
   const [cardTransactionId, setCardTransactionId] = useState("");
-  const [selectedProviderId, setSelectedProviderId] = useState<number | undefined>();
+  const [selectedProviderId, setSelectedProviderId] = useState<
+    number | undefined
+  >();
   const [vippsAmount, setVippsAmount] = useState("");
   const [vippsTransactionId, setVippsTransactionId] = useState("");
   const [stripeAmount, setStripeAmount] = useState("");
@@ -74,14 +95,14 @@ export function SplitPaymentDialog({
     if (!isValid) return;
 
     const newSplits: PaymentSplit[] = [];
-    
+
     if (cashAmt > 0) {
       newSplits.push({
         method: "cash",
         amount: cashAmt,
       });
     }
-    
+
     if (cardAmt > 0) {
       newSplits.push({
         method: "card",
@@ -92,7 +113,7 @@ export function SplitPaymentDialog({
         providerId: selectedProviderId,
       });
     }
-    
+
     if (vippsAmt > 0) {
       newSplits.push({
         method: "vipps",
@@ -100,7 +121,7 @@ export function SplitPaymentDialog({
         transactionId: vippsTransactionId || undefined,
       });
     }
-    
+
     if (stripeAmt > 0) {
       newSplits.push({
         method: "stripe",
@@ -123,26 +144,41 @@ export function SplitPaymentDialog({
         <DialogHeader>
           <DialogTitle>Delt betaling</DialogTitle>
           <DialogDescription>
-            Del betalingen på flere betalingsmetoder. Totalt: {safeToFixed(totalAmount, 2)} NOK
+            Del betalingen på flere betalingsmetoder. Totalt:{" "}
+            {safeToFixed(totalAmount, 2)} NOK
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Summary Card */}
-          <Card className={remaining === 0 ? "border-green-500" : remaining < 0 ? "border-red-500" : "border-yellow-500"}>
+          <Card
+            className={
+              remaining === 0
+                ? "border-green-500"
+                : remaining < 0
+                  ? "border-red-500"
+                  : "border-yellow-500"
+            }
+          >
             <CardContent className="pt-6">
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
                   <div className="text-sm text-muted-foreground">Totalt</div>
-                  <div className="text-2xl font-bold">{safeToFixed(totalAmount, 2)}</div>
+                  <div className="text-2xl font-bold">
+                    {safeToFixed(totalAmount, 2)}
+                  </div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Betalt</div>
-                  <div className="text-2xl font-bold">{safeToFixed(currentTotal, 2)}</div>
+                  <div className="text-2xl font-bold">
+                    {safeToFixed(currentTotal, 2)}
+                  </div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Gjenstår</div>
-                  <div className={`text-2xl font-bold ${remaining === 0 ? "text-green-600" : remaining < 0 ? "text-red-600" : "text-yellow-600"}`}>
+                  <div
+                    className={`text-2xl font-bold ${remaining === 0 ? "text-green-600" : remaining < 0 ? "text-red-600" : "text-yellow-600"}`}
+                  >
                     {safeToFixed(remaining, 2)}
                   </div>
                 </div>
@@ -180,7 +216,7 @@ export function SplitPaymentDialog({
                   step="0.01"
                   placeholder="0.00"
                   value={cashAmount}
-                  onChange={(e) => setCashAmount(e.target.value)}
+                  onChange={e => setCashAmount(e.target.value)}
                 />
               </div>
             </TabsContent>
@@ -194,19 +230,22 @@ export function SplitPaymentDialog({
                   step="0.01"
                   placeholder="0.00"
                   value={cardAmount}
-                  onChange={(e) => setCardAmount(e.target.value)}
+                  onChange={e => setCardAmount(e.target.value)}
                 />
               </div>
-              
+
               {providers.length > 0 && (
                 <div>
                   <Label htmlFor="provider">Kortterminal</Label>
-                  <Select value={selectedProviderId?.toString()} onValueChange={(v) => setSelectedProviderId(parseInt(v))}>
+                  <Select
+                    value={selectedProviderId?.toString()}
+                    onValueChange={v => setSelectedProviderId(parseInt(v))}
+                  >
                     <SelectTrigger id="provider">
                       <SelectValue placeholder="Velg terminal" />
                     </SelectTrigger>
                     <SelectContent>
-                      {providers.map((p) => (
+                      {providers.map(p => (
                         <SelectItem key={p.id} value={p.id.toString()}>
                           {p.name} ({p.type})
                         </SelectItem>
@@ -224,7 +263,9 @@ export function SplitPaymentDialog({
                     maxLength={4}
                     placeholder="1234"
                     value={cardLast4}
-                    onChange={(e) => setCardLast4(e.target.value.replace(/\D/g, ""))}
+                    onChange={e =>
+                      setCardLast4(e.target.value.replace(/\D/g, ""))
+                    }
                   />
                 </div>
                 <div>
@@ -233,18 +274,20 @@ export function SplitPaymentDialog({
                     id="cardBrand"
                     placeholder="Visa, Mastercard..."
                     value={cardBrand}
-                    onChange={(e) => setCardBrand(e.target.value)}
+                    onChange={e => setCardBrand(e.target.value)}
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="cardTransactionId">Transaksjons-ID (valgfritt)</Label>
+                <Label htmlFor="cardTransactionId">
+                  Transaksjons-ID (valgfritt)
+                </Label>
                 <Input
                   id="cardTransactionId"
                   placeholder="TXN-12345"
                   value={cardTransactionId}
-                  onChange={(e) => setCardTransactionId(e.target.value)}
+                  onChange={e => setCardTransactionId(e.target.value)}
                 />
               </div>
             </TabsContent>
@@ -258,16 +301,18 @@ export function SplitPaymentDialog({
                   step="0.01"
                   placeholder="0.00"
                   value={vippsAmount}
-                  onChange={(e) => setVippsAmount(e.target.value)}
+                  onChange={e => setVippsAmount(e.target.value)}
                 />
               </div>
               <div>
-                <Label htmlFor="vippsTransactionId">Transaksjons-ID (valgfritt)</Label>
+                <Label htmlFor="vippsTransactionId">
+                  Transaksjons-ID (valgfritt)
+                </Label>
                 <Input
                   id="vippsTransactionId"
                   placeholder="VPS-12345"
                   value={vippsTransactionId}
-                  onChange={(e) => setVippsTransactionId(e.target.value)}
+                  onChange={e => setVippsTransactionId(e.target.value)}
                 />
               </div>
             </TabsContent>
@@ -281,12 +326,13 @@ export function SplitPaymentDialog({
                   step="0.01"
                   placeholder="0.00"
                   value={stripeAmount}
-                  onChange={(e) => setStripeAmount(e.target.value)}
+                  onChange={e => setStripeAmount(e.target.value)}
                 />
               </div>
               <Alert>
                 <AlertDescription>
-                  Stripe-betaling vil bli behandlet automatisk via tilkoblet kortleser.
+                  Stripe-betaling vil bli behandlet automatisk via tilkoblet
+                  kortleser.
                 </AlertDescription>
               </Alert>
             </TabsContent>
@@ -297,10 +343,9 @@ export function SplitPaymentDialog({
             <Alert variant={remaining < 0 ? "destructive" : "default"}>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                {remaining < 0 
+                {remaining < 0
                   ? `Beløpet overstiger totalen med ${safeToFixed(Math.abs(remaining), 2)} NOK`
-                  : `Det gjenstår ${safeToFixed(remaining, 2)} NOK å fordele`
-                }
+                  : `Det gjenstår ${safeToFixed(remaining, 2)} NOK å fordele`}
               </AlertDescription>
             </Alert>
           )}
@@ -316,7 +361,11 @@ export function SplitPaymentDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isProcessing}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isProcessing}
+          >
             Avbryt
           </Button>
           <Button onClick={handleConfirm} disabled={!isValid || isProcessing}>

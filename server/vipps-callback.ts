@@ -1,11 +1,11 @@
 /**
  * Vipps Callback Handler
- * 
+ *
  * This module handles callbacks from Vipps when payment status changes.
  * Vipps sends POST requests to the callback URL with payment status updates.
- * 
+ *
  * Documentation: https://developer.vippsmobilepay.com/docs/APIs/ecom-api/vipps-ecom-api/#callbacks
- * 
+ *
  * Callback payload example:
  * {
  *   "merchantSerialNumber": "123456",
@@ -17,7 +17,7 @@
  *     "transactionId": "5001420062"
  *   }
  * }
- * 
+ *
  * Status values:
  * - INITIATE: Payment initiated
  * - REGISTER: User opened payment in Vipps app
@@ -38,7 +38,14 @@ interface VippsCallbackPayload {
   orderId: string;
   transactionInfo: {
     amount: number; // Amount in øre
-    status: "INITIATE" | "REGISTER" | "RESERVE" | "SALE" | "CANCEL" | "VOID" | "REFUND";
+    status:
+      | "INITIATE"
+      | "REGISTER"
+      | "RESERVE"
+      | "SALE"
+      | "CANCEL"
+      | "VOID"
+      | "REFUND";
     timeStamp: string;
     transactionId: string;
   };
@@ -46,22 +53,30 @@ interface VippsCallbackPayload {
 
 /**
  * Handle Vipps callback
- * 
+ *
  * This function is called by Express when Vipps sends a callback.
  * It updates the payment status in the database and triggers confirmation emails.
- * 
+ *
  * @param req - Express request object
  * @param res - Express response object
  */
-export async function handleVippsCallback(req: Request, res: Response): Promise<void> {
+export async function handleVippsCallback(
+  req: Request,
+  res: Response
+): Promise<void> {
   try {
     const payload: VippsCallbackPayload = req.body;
 
-    console.log("[Vipps Callback] Received callback:", JSON.stringify(payload, null, 2));
+    console.log(
+      "[Vipps Callback] Received callback:",
+      JSON.stringify(payload, null, 2)
+    );
 
     // Validate payload
     if (!payload.orderId || !payload.transactionInfo) {
-      console.error("[Vipps Callback] Invalid payload: missing orderId or transactionInfo");
+      console.error(
+        "[Vipps Callback] Invalid payload: missing orderId or transactionInfo"
+      );
       res.status(400).json({ error: "Invalid callback payload" });
       return;
     }
@@ -73,7 +88,10 @@ export async function handleVippsCallback(req: Request, res: Response): Promise<
     let paymentDetails;
     try {
       paymentDetails = await getVippsPaymentDetails(orderId);
-      console.log("[Vipps Callback] Payment details:", JSON.stringify(paymentDetails, null, 2));
+      console.log(
+        "[Vipps Callback] Payment details:",
+        JSON.stringify(paymentDetails, null, 2)
+      );
     } catch (error) {
       console.error("[Vipps Callback] Failed to get payment details:", error);
       // Continue anyway, use callback data
@@ -96,15 +114,20 @@ export async function handleVippsCallback(req: Request, res: Response): Promise<
       .where(eq(payments.gatewaySessionId, orderId));
 
     if (!payment) {
-      console.error(`[Vipps Callback] Payment not found for orderId: ${orderId}`);
+      console.error(
+        `[Vipps Callback] Payment not found for orderId: ${orderId}`
+      );
       res.status(404).json({ error: "Payment not found" });
       return;
     }
 
-    console.log(`[Vipps Callback] Found payment ID: ${payment.id}, current status: ${payment.status}`);
+    console.log(
+      `[Vipps Callback] Found payment ID: ${payment.id}, current status: ${payment.status}`
+    );
 
     // Determine new payment status based on Vipps status
-    let newPaymentStatus: "pending" | "completed" | "failed" | "refunded" = payment.status as any;
+    let newPaymentStatus: "pending" | "completed" | "failed" | "refunded" =
+      payment.status as any;
     let shouldConfirmAppointment = false;
 
     switch (status) {
@@ -158,7 +181,9 @@ export async function handleVippsCallback(req: Request, res: Response): Promise<
         })
         .where(eq(payments.id, payment.id));
 
-      console.log(`[Vipps Callback] Updated payment ${payment.id} status to: ${newPaymentStatus}`);
+      console.log(
+        `[Vipps Callback] Updated payment ${payment.id} status to: ${newPaymentStatus}`
+      );
     }
 
     // Update appointment status if payment successful
@@ -175,14 +200,24 @@ export async function handleVippsCallback(req: Request, res: Response): Promise<
           .set({ status: "confirmed" })
           .where(eq(appointments.id, appointment.id));
 
-        console.log(`[Vipps Callback] Updated appointment ${appointment.id} status to: confirmed`);
+        console.log(
+          `[Vipps Callback] Updated appointment ${appointment.id} status to: confirmed`
+        );
 
         // Send confirmation email
         try {
-          await sendAppointmentConfirmationIfPossible(appointment.id, payment.tenantId);
-          console.log(`[Vipps Callback] Sent confirmation email for appointment ${appointment.id}`);
+          await sendAppointmentConfirmationIfPossible(
+            appointment.id,
+            payment.tenantId
+          );
+          console.log(
+            `[Vipps Callback] Sent confirmation email for appointment ${appointment.id}`
+          );
         } catch (emailError) {
-          console.error(`[Vipps Callback] Failed to send confirmation email:`, emailError);
+          console.error(
+            `[Vipps Callback] Failed to send confirmation email:`,
+            emailError
+          );
           // Don't fail the callback if email fails
         }
       }
@@ -190,7 +225,9 @@ export async function handleVippsCallback(req: Request, res: Response): Promise<
 
     // Respond to Vipps with 200 OK
     res.status(200).json({ success: true });
-    console.log(`[Vipps Callback] Callback processed successfully for orderId: ${orderId}`);
+    console.log(
+      `[Vipps Callback] Callback processed successfully for orderId: ${orderId}`
+    );
   } catch (error) {
     console.error("[Vipps Callback] Error processing callback:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -199,10 +236,10 @@ export async function handleVippsCallback(req: Request, res: Response): Promise<
 
 /**
  * Verify Vipps callback authenticity (optional but recommended)
- * 
+ *
  * Vipps includes an Authorization header with the callback request.
  * You can verify this matches your access token to ensure the callback is genuine.
- * 
+ *
  * Note: This is optional as Vipps callbacks come from known IP ranges.
  * For production, consider implementing IP whitelisting or token verification.
  */

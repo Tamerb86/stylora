@@ -7,10 +7,12 @@
 ### ✅ الحالة الحالية:
 
 **تم إضافة:**
+
 - ✅ Tenant (ks-frisor-tenant)
 - ✅ Services (5 خدمات)
 
 **لم يتم إضافة:**
+
 - ❌ Users (Owner + Employee)
 - ❌ Working Hours (أوقات العمل)
 
@@ -55,13 +57,14 @@ SELECT id, name, email, role FROM users WHERE tenantId = 'ks-frisor-tenant' AND 
 ```
 
 **النتيجة المتوقعة:**
+
 ```
 id    | name   | email                        | role
 ------|--------|------------------------------|----------
 12345 | Khaled | khaled.employee@ksfrisor.no  | employee
 ```
 
-**📝 اكتب رقم الـ ID هنا:** ___________
+**📝 اكتب رقم الـ ID هنا:** \***\*\_\_\_\*\***
 
 ---
 
@@ -74,30 +77,35 @@ id    | name   | email                        | role
 ---
 
 #### Monday (الاثنين):
+
 ```sql
 INSERT INTO timesheets (employeeId, tenantId, dayOfWeek, startTime, endTime, isActive, createdAt, updatedAt)
 VALUES ({EMPLOYEE_ID}, 'ks-frisor-tenant', 1, '09:00:00', '17:00:00', 1, NOW(), NOW());
 ```
 
 #### Tuesday (الثلاثاء):
+
 ```sql
 INSERT INTO timesheets (employeeId, tenantId, dayOfWeek, startTime, endTime, isActive, createdAt, updatedAt)
 VALUES ({EMPLOYEE_ID}, 'ks-frisor-tenant', 2, '09:00:00', '17:00:00', 1, NOW(), NOW());
 ```
 
 #### Wednesday (الأربعاء):
+
 ```sql
 INSERT INTO timesheets (employeeId, tenantId, dayOfWeek, startTime, endTime, isActive, createdAt, updatedAt)
 VALUES ({EMPLOYEE_ID}, 'ks-frisor-tenant', 3, '09:00:00', '17:00:00', 1, NOW(), NOW());
 ```
 
 #### Thursday (الخميس):
+
 ```sql
 INSERT INTO timesheets (employeeId, tenantId, dayOfWeek, startTime, endTime, isActive, createdAt, updatedAt)
 VALUES ({EMPLOYEE_ID}, 'ks-frisor-tenant', 4, '09:00:00', '17:00:00', 1, NOW(), NOW());
 ```
 
 #### Friday (الجمعة):
+
 ```sql
 INSERT INTO timesheets (employeeId, tenantId, dayOfWeek, startTime, endTime, isActive, createdAt, updatedAt)
 VALUES ({EMPLOYEE_ID}, 'ks-frisor-tenant', 5, '09:00:00', '17:00:00', 1, NOW(), NOW());
@@ -110,20 +118,24 @@ VALUES ({EMPLOYEE_ID}, 'ks-frisor-tenant', 5, '09:00:00', '17:00:00', 1, NOW(), 
 **نفذ هذه الـ queries للتحقق:**
 
 #### تحقق من Users:
+
 ```sql
 SELECT id, name, email, role FROM users WHERE tenantId = 'ks-frisor-tenant';
 ```
 
 **يجب أن ترى 2 users:**
+
 - admin: khaled@ksfrisor.no
 - employee: khaled.employee@ksfrisor.no
 
 #### تحقق من Working Hours:
+
 ```sql
 SELECT * FROM timesheets WHERE tenantId = 'ks-frisor-tenant';
 ```
 
 **يجب أن ترى 5 صفوف (Mon-Fri):**
+
 - dayOfWeek: 1, 2, 3, 4, 5
 - startTime: 09:00:00
 - endTime: 17:00:00
@@ -133,11 +145,13 @@ SELECT * FROM timesheets WHERE tenantId = 'ks-frisor-tenant';
 ### 6️⃣ اختبار صفحة الحجز
 
 **افتح:**
+
 ```
 https://www.stylora.no/book?tenantId=ks-frisor-tenant
 ```
 
 **يجب أن ترى:**
+
 - ✅ معلومات K S Frisør في الهيدر
 - ✅ 5 خدمات في Step 1
 - ✅ موظف واحد (Khaled) في Step 2
@@ -154,6 +168,7 @@ https://www.stylora.no/book?tenantId=ks-frisor-tenant
 ## 🔧 استكشاف الأخطاء
 
 ### خطأ: Duplicate Entry
+
 ```
 ERROR 1062: Duplicate entry
 ```
@@ -161,6 +176,7 @@ ERROR 1062: Duplicate entry
 **الحل:** البيانات موجودة مسبقاً. تحقق من البيانات الحالية.
 
 ### خطأ: Unknown Column
+
 ```
 ERROR 1054: Unknown column
 ```
@@ -168,6 +184,7 @@ ERROR 1054: Unknown column
 **الحل:** اسم الحقل خاطئ. تحقق من `DESCRIBE table_name;`
 
 ### خطأ: Incorrect Integer Value
+
 ```
 ERROR 1366: Incorrect integer value
 ```
@@ -179,6 +196,7 @@ ERROR 1366: Incorrect integer value
 ## 📞 الدعم
 
 إذا واجهت مشاكل، تواصل معي وأرسل:
+
 1. Screenshot من الخطأ
 2. الـ query الذي نفذته
 3. نتيجة `DESCRIBE table_name;`

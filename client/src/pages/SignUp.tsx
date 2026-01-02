@@ -4,9 +4,25 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Loader2, CheckCircle2, Sparkles, ArrowRight, ArrowLeft, Building2, User, CreditCard, Check } from "lucide-react";
+import {
+  Loader2,
+  CheckCircle2,
+  Sparkles,
+  ArrowRight,
+  ArrowLeft,
+  Building2,
+  User,
+  CreditCard,
+  Check,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 
@@ -21,30 +37,30 @@ export default function SignUp() {
     address: "",
     orgNumber: "",
     salonType: "hair", // hair, beauty, barbershop, spa
-    
+
     // Step 2: Owner Details
     ownerName: "",
     ownerEmail: "",
     ownerPhone: "",
     password: "",
     confirmPassword: "",
-    
+
     // Step 3: Plan Selection
     selectedPlan: "pro", // start, pro, enterprise
   });
 
   const createTenant = trpc.signup.createTenant.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success("Velkommen til Stylora! 🎉", {
         description: `Kontoen din er opprettet!`,
       });
-      
+
       // Redirect to setup wizard after short delay
       setTimeout(() => {
         setLocation("/setup-wizard");
       }, 1500);
     },
-    onError: (error) => {
+    onError: error => {
       toast.error("Kunne ikke opprette konto", {
         description: error.message,
       });
@@ -104,17 +120,17 @@ export default function SignUp() {
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(4, prev + 1) as Step);
+      setCurrentStep(prev => Math.min(4, prev + 1) as Step);
     }
   };
 
   const handleBack = () => {
-    setCurrentStep((prev) => Math.max(1, prev - 1) as Step);
+    setCurrentStep(prev => Math.max(1, prev - 1) as Step);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateStep(currentStep)) {
       return;
     }
@@ -136,14 +152,24 @@ export default function SignUp() {
       name: "Start",
       price: "299",
       description: "Perfekt for enkeltpersonforetak",
-      features: ["1 behandler", "100 SMS/mnd", "Online booking", "Grunnleggende rapporter"],
+      features: [
+        "1 behandler",
+        "100 SMS/mnd",
+        "Online booking",
+        "Grunnleggende rapporter",
+      ],
     },
     {
       id: "pro",
       name: "Pro",
       price: "699",
       description: "For voksende salonger",
-      features: ["Opptil 5 behandlere", "500 SMS/mnd", "Alle funksjoner", "Avanserte rapporter"],
+      features: [
+        "Opptil 5 behandlere",
+        "500 SMS/mnd",
+        "Alle funksjoner",
+        "Avanserte rapporter",
+      ],
       highlighted: true,
     },
     {
@@ -151,7 +177,12 @@ export default function SignUp() {
       name: "Enterprise",
       price: "1499",
       description: "For kjeder og store salonger",
-      features: ["Ubegrenset behandlere", "2000 SMS/mnd", "Flerlokalitetsstyring", "API-tilgang"],
+      features: [
+        "Ubegrenset behandlere",
+        "2000 SMS/mnd",
+        "Flerlokalitetsstyring",
+        "API-tilgang",
+      ],
     },
   ];
 
@@ -204,14 +235,18 @@ export default function SignUp() {
                       <step.icon className="w-6 h-6" />
                     )}
                   </div>
-                  <span className={`text-xs mt-2 font-medium hidden md:block ${currentStep >= step.number ? "text-primary" : "text-muted-foreground"}`}>
+                  <span
+                    className={`text-xs mt-2 font-medium hidden md:block ${currentStep >= step.number ? "text-primary" : "text-muted-foreground"}`}
+                  >
                     {step.title}
                   </span>
                 </div>
                 {index < steps.length - 1 && (
                   <div
                     className={`h-1 flex-1 mx-2 transition-all duration-300 ${
-                      currentStep > step.number ? "bg-gradient-to-r from-blue-600 to-orange-500" : "bg-gray-200"
+                      currentStep > step.number
+                        ? "bg-gradient-to-r from-blue-600 to-orange-500"
+                        : "bg-gray-200"
                     }`}
                   />
                 )}
@@ -232,7 +267,8 @@ export default function SignUp() {
               {currentStep === 1 && "Grunnleggende informasjon om salongen din"}
               {currentStep === 2 && "Slik at vi kan kontakte deg"}
               {currentStep === 3 && "Du kan endre plan når som helst"}
-              {currentStep === 4 && "Gjennomgå informasjonen før du oppretter kontoen"}
+              {currentStep === 4 &&
+                "Gjennomgå informasjonen før du oppretter kontoen"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -248,7 +284,7 @@ export default function SignUp() {
                       id="salonName"
                       placeholder="Min Frisørsalong"
                       value={formData.salonName}
-                      onChange={(e) => handleChange("salonName", e.target.value)}
+                      onChange={e => handleChange("salonName", e.target.value)}
                       required
                     />
                   </div>
@@ -257,10 +293,10 @@ export default function SignUp() {
                     <Label>Type virksomhet</Label>
                     <RadioGroup
                       value={formData.salonType}
-                      onValueChange={(value) => handleChange("salonType", value)}
+                      onValueChange={value => handleChange("salonType", value)}
                       className="grid grid-cols-2 gap-4"
                     >
-                      {salonTypes.map((type) => (
+                      {salonTypes.map(type => (
                         <Label
                           key={type.id}
                           htmlFor={type.id}
@@ -270,7 +306,11 @@ export default function SignUp() {
                               : "border-border hover:border-primary/50"
                           }`}
                         >
-                          <RadioGroupItem value={type.id} id={type.id} className="sr-only" />
+                          <RadioGroupItem
+                            value={type.id}
+                            id={type.id}
+                            className="sr-only"
+                          />
                           <span className="text-2xl">{type.icon}</span>
                           <span className="font-medium">{type.label}</span>
                         </Label>
@@ -286,18 +326,20 @@ export default function SignUp() {
                       id="address"
                       placeholder="Storgata 1, 0123 Oslo"
                       value={formData.address}
-                      onChange={(e) => handleChange("address", e.target.value)}
+                      onChange={e => handleChange("address", e.target.value)}
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="orgNumber">Organisasjonsnummer (valgfritt)</Label>
+                    <Label htmlFor="orgNumber">
+                      Organisasjonsnummer (valgfritt)
+                    </Label>
                     <Input
                       id="orgNumber"
                       placeholder="123 456 789"
                       value={formData.orgNumber}
-                      onChange={(e) => handleChange("orgNumber", e.target.value)}
+                      onChange={e => handleChange("orgNumber", e.target.value)}
                     />
                   </div>
                 </div>
@@ -314,7 +356,7 @@ export default function SignUp() {
                       id="ownerName"
                       placeholder="Ola Nordmann"
                       value={formData.ownerName}
-                      onChange={(e) => handleChange("ownerName", e.target.value)}
+                      onChange={e => handleChange("ownerName", e.target.value)}
                       required
                     />
                   </div>
@@ -328,11 +370,12 @@ export default function SignUp() {
                       type="email"
                       placeholder="ola@example.com"
                       value={formData.ownerEmail}
-                      onChange={(e) => handleChange("ownerEmail", e.target.value)}
+                      onChange={e => handleChange("ownerEmail", e.target.value)}
                       required
                     />
                     <p className="text-xs text-muted-foreground">
-                      Vi sender bekreftelse og påloggingsinformasjon til denne adressen
+                      Vi sender bekreftelse og påloggingsinformasjon til denne
+                      adressen
                     </p>
                   </div>
 
@@ -345,7 +388,7 @@ export default function SignUp() {
                       type="tel"
                       placeholder="+47 123 45 678"
                       value={formData.ownerPhone}
-                      onChange={(e) => handleChange("ownerPhone", e.target.value)}
+                      onChange={e => handleChange("ownerPhone", e.target.value)}
                       required
                     />
                   </div>
@@ -359,7 +402,7 @@ export default function SignUp() {
                       type="password"
                       placeholder="Minst 6 tegn"
                       value={formData.password}
-                      onChange={(e) => handleChange("password", e.target.value)}
+                      onChange={e => handleChange("password", e.target.value)}
                       required
                     />
                   </div>
@@ -373,7 +416,9 @@ export default function SignUp() {
                       type="password"
                       placeholder="Skriv passordet på nytt"
                       value={formData.confirmPassword}
-                      onChange={(e) => handleChange("confirmPassword", e.target.value)}
+                      onChange={e =>
+                        handleChange("confirmPassword", e.target.value)
+                      }
                       required
                     />
                   </div>
@@ -385,10 +430,10 @@ export default function SignUp() {
                 <div className="space-y-4 animate-in fade-in duration-300">
                   <RadioGroup
                     value={formData.selectedPlan}
-                    onValueChange={(value) => handleChange("selectedPlan", value)}
+                    onValueChange={value => handleChange("selectedPlan", value)}
                     className="grid md:grid-cols-3 gap-4"
                   >
-                    {plans.map((plan) => (
+                    {plans.map(plan => (
                       <Label
                         key={plan.id}
                         htmlFor={plan.id}
@@ -403,14 +448,27 @@ export default function SignUp() {
                             Mest populær
                           </Badge>
                         )}
-                        <RadioGroupItem value={plan.id} id={plan.id} className="sr-only" />
+                        <RadioGroupItem
+                          value={plan.id}
+                          id={plan.id}
+                          className="sr-only"
+                        />
                         <div className="text-center mb-4">
-                          <h3 className="font-bold text-xl mb-2">{plan.name}</h3>
+                          <h3 className="font-bold text-xl mb-2">
+                            {plan.name}
+                          </h3>
                           <div className="mb-2">
-                            <span className="text-4xl font-bold">{plan.price}</span>
-                            <span className="text-muted-foreground"> kr/mnd</span>
+                            <span className="text-4xl font-bold">
+                              {plan.price}
+                            </span>
+                            <span className="text-muted-foreground">
+                              {" "}
+                              kr/mnd
+                            </span>
                           </div>
-                          <p className="text-sm text-muted-foreground">{plan.description}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {plan.description}
+                          </p>
                         </div>
                         <ul className="space-y-2 text-sm">
                           {plan.features.map((feature, index) => (
@@ -439,11 +497,32 @@ export default function SignUp() {
                         Bedriftsinformasjon
                       </h4>
                       <div className="pl-7 space-y-1 text-sm">
-                        <p><span className="text-muted-foreground">Salongnavn:</span> {formData.salonName}</p>
-                        <p><span className="text-muted-foreground">Type:</span> {salonTypes.find(t => t.id === formData.salonType)?.label}</p>
-                        <p><span className="text-muted-foreground">Adresse:</span> {formData.address}</p>
+                        <p>
+                          <span className="text-muted-foreground">
+                            Salongnavn:
+                          </span>{" "}
+                          {formData.salonName}
+                        </p>
+                        <p>
+                          <span className="text-muted-foreground">Type:</span>{" "}
+                          {
+                            salonTypes.find(t => t.id === formData.salonType)
+                              ?.label
+                          }
+                        </p>
+                        <p>
+                          <span className="text-muted-foreground">
+                            Adresse:
+                          </span>{" "}
+                          {formData.address}
+                        </p>
                         {formData.orgNumber && (
-                          <p><span className="text-muted-foreground">Org.nr:</span> {formData.orgNumber}</p>
+                          <p>
+                            <span className="text-muted-foreground">
+                              Org.nr:
+                            </span>{" "}
+                            {formData.orgNumber}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -454,9 +533,20 @@ export default function SignUp() {
                         Kontaktperson
                       </h4>
                       <div className="pl-7 space-y-1 text-sm">
-                        <p><span className="text-muted-foreground">Navn:</span> {formData.ownerName}</p>
-                        <p><span className="text-muted-foreground">E-post:</span> {formData.ownerEmail}</p>
-                        <p><span className="text-muted-foreground">Telefon:</span> {formData.ownerPhone}</p>
+                        <p>
+                          <span className="text-muted-foreground">Navn:</span>{" "}
+                          {formData.ownerName}
+                        </p>
+                        <p>
+                          <span className="text-muted-foreground">E-post:</span>{" "}
+                          {formData.ownerEmail}
+                        </p>
+                        <p>
+                          <span className="text-muted-foreground">
+                            Telefon:
+                          </span>{" "}
+                          {formData.ownerPhone}
+                        </p>
                       </div>
                     </div>
 
@@ -467,10 +557,19 @@ export default function SignUp() {
                       </h4>
                       <div className="pl-7 text-sm">
                         <p>
-                          <span className="font-semibold">{plans.find(p => p.id === formData.selectedPlan)?.name}</span>
+                          <span className="font-semibold">
+                            {
+                              plans.find(p => p.id === formData.selectedPlan)
+                                ?.name
+                            }
+                          </span>
                           {" - "}
                           <span className="text-muted-foreground">
-                            {plans.find(p => p.id === formData.selectedPlan)?.price} kr/mnd
+                            {
+                              plans.find(p => p.id === formData.selectedPlan)
+                                ?.price
+                            }{" "}
+                            kr/mnd
                           </span>
                         </p>
                       </div>
@@ -485,7 +584,8 @@ export default function SignUp() {
                           14 dagers gratis prøveperiode
                         </p>
                         <p className="text-blue-700 dark:text-blue-300">
-                          Du vil ikke bli belastet før prøveperioden er over. Du kan avslutte når som helst.
+                          Du vil ikke bli belastet før prøveperioden er over. Du
+                          kan avslutte når som helst.
                         </p>
                       </div>
                     </div>
@@ -507,7 +607,7 @@ export default function SignUp() {
                     Tilbake
                   </Button>
                 )}
-                
+
                 {currentStep < 4 ? (
                   <Button
                     type="button"
@@ -546,8 +646,8 @@ export default function SignUp() {
           Ved å opprette en konto godtar du våre{" "}
           <a href="#" className="text-primary hover:underline">
             vilkår og betingelser
-          </a>
-          {" "}og{" "}
+          </a>{" "}
+          og{" "}
           <a href="#" className="text-primary hover:underline">
             personvernregler
           </a>

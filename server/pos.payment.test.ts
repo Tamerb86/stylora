@@ -46,7 +46,7 @@ describe("POS Cash Payment", () => {
     expect(orderResult.order).toBeDefined();
     expect(orderResult.order.id).toBeTypeOf("number");
     expect(orderResult.order.status).toBe("pending");
-    
+
     const testOrderId = orderResult.order.id;
     const orderTotal = Number(orderResult.order.total);
 
@@ -57,8 +57,13 @@ describe("POS Cash Payment", () => {
     });
 
     // Step 2: Process cash payment
-    console.log("💵 Processing cash payment for order:", testOrderId, "amount:", orderTotal);
-    
+    console.log(
+      "💵 Processing cash payment for order:",
+      testOrderId,
+      "amount:",
+      orderTotal
+    );
+
     const paymentResult = await caller.pos.recordCashPayment({
       orderId: testOrderId,
       amount: orderTotal,

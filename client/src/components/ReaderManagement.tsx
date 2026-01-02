@@ -25,11 +25,15 @@ export function ReaderManagement() {
     try {
       const readers = await discoverReaders();
       setDiscoveredReaders(readers);
-      
+
       if (readers.length === 0) {
-        toast.info("Ingen lesere funnet. Sjekk at leseren er påslått og i nærheten.");
+        toast.info(
+          "Ingen lesere funnet. Sjekk at leseren er påslått og i nærheten."
+        );
       } else {
-        toast.success(`Fant ${readers.length} leser${readers.length > 1 ? 'e' : ''}`);
+        toast.success(
+          `Fant ${readers.length} leser${readers.length > 1 ? "e" : ""}`
+        );
       }
     } finally {
       setIsDiscovering(false);
@@ -118,10 +122,11 @@ export function ReaderManagement() {
             {discoveredReaders.length > 0 && (
               <div className="space-y-2 pt-4 border-t">
                 <p className="text-sm font-medium">
-                  Funnet {discoveredReaders.length} leser{discoveredReaders.length > 1 ? 'e' : ''}:
+                  Funnet {discoveredReaders.length} leser
+                  {discoveredReaders.length > 1 ? "e" : ""}:
                 </p>
                 <div className="space-y-2">
-                  {discoveredReaders.map((reader) => (
+                  {discoveredReaders.map(reader => (
                     <div
                       key={reader.id}
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors"
@@ -131,7 +136,9 @@ export function ReaderManagement() {
                           <Wifi className="h-4 w-4 text-blue-600" />
                         </div>
                         <div>
-                          <p className="font-medium">{reader.label || "Kortleser"}</p>
+                          <p className="font-medium">
+                            {reader.label || "Kortleser"}
+                          </p>
                           <p className="text-sm text-muted-foreground">
                             {reader.serial_number}
                           </p>
@@ -163,8 +170,8 @@ export function ReaderManagement() {
             {/* Help Text */}
             <div className="pt-4 border-t">
               <p className="text-sm text-muted-foreground">
-                <strong>Tips:</strong> Sørg for at kortleseren er påslått og i nærheten. 
-                I testmodus vil du se simulerte lesere.
+                <strong>Tips:</strong> Sørg for at kortleseren er påslått og i
+                nærheten. I testmodus vil du se simulerte lesere.
               </p>
             </div>
           </div>

@@ -2,7 +2,7 @@ import { google } from "googleapis";
 
 /**
  * Google Calendar Integration Service
- * 
+ *
  * Syncs appointments with Google Calendar for customers and employees
  * Requires OAuth2 credentials configured in environment variables
  */
@@ -10,7 +10,9 @@ import { google } from "googleapis";
 // Google Calendar credentials from environment
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || "http://localhost:3000/auth/google/callback";
+const GOOGLE_REDIRECT_URI =
+  process.env.GOOGLE_REDIRECT_URI ||
+  "http://localhost:3000/auth/google/callback";
 
 let oauth2Client: any = null;
 
@@ -24,10 +26,15 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
     );
     console.log("[Google Calendar] OAuth2 client initialized successfully");
   } catch (error) {
-    console.error("[Google Calendar] Failed to initialize OAuth2 client:", error);
+    console.error(
+      "[Google Calendar] Failed to initialize OAuth2 client:",
+      error
+    );
   }
 } else {
-  console.warn("[Google Calendar] Credentials not configured. Calendar sync will be skipped.");
+  console.warn(
+    "[Google Calendar] Credentials not configured. Calendar sync will be skipped."
+  );
 }
 
 /**
@@ -38,9 +45,7 @@ export function getAuthorizationUrl(): string {
     throw new Error("Google OAuth2 client not configured");
   }
 
-  const scopes = [
-    "https://www.googleapis.com/auth/calendar.events",
-  ];
+  const scopes = ["https://www.googleapis.com/auth/calendar.events"];
 
   return oauth2Client.generateAuthUrl({
     access_type: "offline",
@@ -90,7 +95,9 @@ export async function createCalendarEvent(
   }
 ): Promise<{ success: boolean; eventId?: string; error?: string }> {
   if (!oauth2Client) {
-    console.warn("[Google Calendar] OAuth2 client not configured, skipping event creation");
+    console.warn(
+      "[Google Calendar] OAuth2 client not configured, skipping event creation"
+    );
     return { success: false, error: "Google Calendar not configured" };
   }
 
@@ -119,7 +126,7 @@ export async function createCalendarEvent(
           dateTime: event.end.toISOString(),
           timeZone: "Europe/Oslo",
         },
-        attendees: event.attendees?.map((email) => ({ email })),
+        attendees: event.attendees?.map(email => ({ email })),
         reminders: {
           useDefault: false,
           overrides: [
@@ -130,7 +137,9 @@ export async function createCalendarEvent(
       },
     });
 
-    console.log(`[Google Calendar] Event created successfully: ${response.data.id}`);
+    console.log(
+      `[Google Calendar] Event created successfully: ${response.data.id}`
+    );
     return {
       success: true,
       eventId: response.data.id || undefined,
@@ -163,7 +172,9 @@ export async function updateCalendarEvent(
   }
 ): Promise<{ success: boolean; error?: string }> {
   if (!oauth2Client) {
-    console.warn("[Google Calendar] OAuth2 client not configured, skipping event update");
+    console.warn(
+      "[Google Calendar] OAuth2 client not configured, skipping event update"
+    );
     return { success: false, error: "Google Calendar not configured" };
   }
 
@@ -194,7 +205,7 @@ export async function updateCalendarEvent(
       };
     }
     if (event.attendees) {
-      updateData.attendees = event.attendees.map((email) => ({ email }));
+      updateData.attendees = event.attendees.map(email => ({ email }));
     }
 
     await calendar.events.patch({
@@ -224,7 +235,9 @@ export async function deleteCalendarEvent(
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
   if (!oauth2Client) {
-    console.warn("[Google Calendar] OAuth2 client not configured, skipping event deletion");
+    console.warn(
+      "[Google Calendar] OAuth2 client not configured, skipping event deletion"
+    );
     return { success: false, error: "Google Calendar not configured" };
   }
 
@@ -284,7 +297,9 @@ export async function syncAppointmentToCalendar(
 
   try {
     const startDateTime = new Date(appointment.appointmentDate);
-    const [startHours, startMinutes] = appointment.startTime.split(":").map(Number);
+    const [startHours, startMinutes] = appointment.startTime
+      .split(":")
+      .map(Number);
     startDateTime.setHours(startHours, startMinutes, 0, 0);
 
     const endDateTime = new Date(appointment.appointmentDate);

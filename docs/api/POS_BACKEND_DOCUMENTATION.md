@@ -96,13 +96,13 @@ All tests pass successfully.
     employeeId: number;
     orderDate: Date;
     orderTime: string;
-    subtotal: string;             // Decimal string
-    vatAmount: string;            // Decimal string
-    totalAmount: string;          // Decimal string
-    status: "pending";            // Always "pending" initially
+    subtotal: string; // Decimal string
+    vatAmount: string; // Decimal string
+    totalAmount: string; // Decimal string
+    status: "pending"; // Always "pending" initially
     createdAt: Date;
     updatedAt: Date;
-  };
+  }
   items: Array<{
     id: number;
     orderId: number;
@@ -129,14 +129,14 @@ const result = await createOrder.mutateAsync({
   items: [
     {
       itemType: "service",
-      itemId: 5,              // Haircut service
+      itemId: 5, // Haircut service
       quantity: 1,
       unitPrice: 400,
       vatRate: 25,
     },
     {
       itemType: "product",
-      itemId: 12,             // Hair gel product
+      itemId: 12, // Hair gel product
       quantity: 2,
       unitPrice: 150,
       vatRate: 25,
@@ -158,8 +158,8 @@ const result = await createOrder.mutateAsync({
 
 ```typescript
 {
-  orderId: number;              // Required: order to pay
-  amount: number;               // Required: payment amount
+  orderId: number; // Required: order to pay
+  amount: number; // Required: payment amount
 }
 ```
 
@@ -177,20 +177,21 @@ const result = await createOrder.mutateAsync({
     amount: string;
     currency: "NOK";
     status: "completed";
-    processedBy: number;        // Employee who processed payment
+    processedBy: number; // Employee who processed payment
     processedAt: Date;
     // Card fields are null for cash
     lastFour: null;
     cardBrand: null;
-  };
+  }
   order: {
     // ... order fields
-    status: "completed";        // Updated to completed
-  };
+    status: "completed"; // Updated to completed
+  }
 }
 ```
 
 **Validation:**
+
 - Order must exist and belong to tenant
 - Amount must match order total (within 0.01 tolerance)
 
@@ -201,7 +202,7 @@ const recordCash = trpc.pos.recordCashPayment.useMutation();
 
 const result = await recordCash.mutateAsync({
   orderId: 123,
-  amount: 875.00,
+  amount: 875.0,
 });
 
 // Order status changed to "completed"
@@ -235,7 +236,7 @@ const result = await recordCash.mutateAsync({
     orderId: number;
     appointmentId: number | null;
     paymentMethod: "card";
-    paymentGateway: null;       // POS terminal, not Stripe
+    paymentGateway: null; // POS terminal, not Stripe
     amount: string;
     currency: "NOK";
     status: "completed";
@@ -243,11 +244,11 @@ const result = await recordCash.mutateAsync({
     processedAt: Date;
     lastFour: string | null;
     cardBrand: string | null;
-  };
+  }
   order: {
     // ... order fields
     status: "completed";
-  };
+  }
 }
 ```
 
@@ -258,7 +259,7 @@ const recordCard = trpc.pos.recordCardPayment.useMutation();
 
 const result = await recordCard.mutateAsync({
   orderId: 123,
-  amount: 875.00,
+  amount: 875.0,
   cardBrand: "Visa",
   lastFour: "4242",
 });
@@ -519,6 +520,7 @@ All POS operations enforce multi-tenant isolation:
 3. **Database queries** - Filter by `tenantId`
 
 **Cross-tenant attacks are impossible** because:
+
 - Orders are filtered by `tenantId` in payment procedures
 - Database helpers include tenant boundaries
 - tRPC context provides authenticated `tenantId`
@@ -530,6 +532,7 @@ All POS operations enforce multi-tenant isolation:
 ### Common Errors
 
 **Order not found**
+
 ```typescript
 {
   code: "NOT_FOUND",
@@ -538,6 +541,7 @@ All POS operations enforce multi-tenant isolation:
 ```
 
 **Payment amount mismatch**
+
 ```typescript
 {
   code: "PRECONDITION_FAILED",
@@ -546,6 +550,7 @@ All POS operations enforce multi-tenant isolation:
 ```
 
 **No items in order**
+
 ```typescript
 {
   code: "BAD_REQUEST",
@@ -557,7 +562,7 @@ All POS operations enforce multi-tenant isolation:
 
 ```typescript
 const createOrder = trpc.pos.createOrder.useMutation({
-  onError: (error) => {
+  onError: error => {
     if (error.data?.code === "NOT_FOUND") {
       toast.error("Order not found");
     } else if (error.data?.code === "PRECONDITION_FAILED") {
@@ -576,6 +581,7 @@ const createOrder = trpc.pos.createOrder.useMutation({
 The system calculates VAT automatically:
 
 **Formula:**
+
 ```
 subtotal = sum(item.unitPrice * item.quantity)
 vatAmount = sum(item.unitPrice * item.quantity * (item.vatRate / 100))
@@ -583,6 +589,7 @@ totalAmount = subtotal + vatAmount
 ```
 
 **Example:**
+
 ```
 Service: 400 NOK × 1 = 400 NOK
 Product: 150 NOK × 2 = 300 NOK
@@ -613,18 +620,26 @@ pnpm test server/pos.test.ts
 ### Manual Testing
 
 1. **Create an order:**
+
    ```typescript
    const result = await trpc.pos.createOrder.mutateAsync({
      employeeId: 1,
      orderDate: "2025-12-01",
      orderTime: "14:30",
      items: [
-       { itemType: "service", itemId: 1, quantity: 1, unitPrice: 400, vatRate: 25 },
+       {
+         itemType: "service",
+         itemId: 1,
+         quantity: 1,
+         unitPrice: 400,
+         vatRate: 25,
+       },
      ],
    });
    ```
 
 2. **Record payment:**
+
    ```typescript
    await trpc.pos.recordCashPayment.mutateAsync({
      orderId: result.order.id,
@@ -643,27 +658,27 @@ pnpm test server/pos.test.ts
 
 ## Comparison: POS vs Stripe Checkout
 
-| Feature | POS (Manual) | Stripe Checkout |
-|---------|--------------|-----------------|
-| **Use case** | In-salon sales | Online prepayment |
-| **Payment method** | Cash, card terminal | Stripe (card/wallet) |
-| **Order creation** | `pos.createOrder` | `publicBooking.createBookingAndStartPayment` |
-| **Payment recording** | Manual (cash/card) | Automatic (webhook) |
-| **Payment status** | Immediately "completed" | "pending" → "completed" |
-| **Gateway** | None (POS terminal) | Stripe |
-| **Appointment link** | Optional | Required |
-| **Customer link** | Optional | Required |
+| Feature               | POS (Manual)            | Stripe Checkout                              |
+| --------------------- | ----------------------- | -------------------------------------------- |
+| **Use case**          | In-salon sales          | Online prepayment                            |
+| **Payment method**    | Cash, card terminal     | Stripe (card/wallet)                         |
+| **Order creation**    | `pos.createOrder`       | `publicBooking.createBookingAndStartPayment` |
+| **Payment recording** | Manual (cash/card)      | Automatic (webhook)                          |
+| **Payment status**    | Immediately "completed" | "pending" → "completed"                      |
+| **Gateway**           | None (POS terminal)     | Stripe                                       |
+| **Appointment link**  | Optional                | Required                                     |
+| **Customer link**     | Optional                | Required                                     |
 
 ---
 
 ## Files Created/Modified
 
-| File | Status | Purpose |
-|------|--------|---------|
-| `server/db.ts` | MODIFIED | Added order helpers (createOrderWithItems, updateOrderStatus, etc.) |
-| `server/routers.ts` | MODIFIED | Added `pos` router with 3 mutations |
-| `server/pos.test.ts` | NEW | Comprehensive test suite (10 tests) |
-| `POS_BACKEND_DOCUMENTATION.md` | NEW | This documentation |
+| File                           | Status   | Purpose                                                             |
+| ------------------------------ | -------- | ------------------------------------------------------------------- |
+| `server/db.ts`                 | MODIFIED | Added order helpers (createOrderWithItems, updateOrderStatus, etc.) |
+| `server/routers.ts`            | MODIFIED | Added `pos` router with 3 mutations                                 |
+| `server/pos.test.ts`           | NEW      | Comprehensive test suite (10 tests)                                 |
+| `POS_BACKEND_DOCUMENTATION.md` | NEW      | This documentation                                                  |
 
 ---
 
@@ -690,11 +705,13 @@ pnpm test server/pos.test.ts
 ## Support
 
 **Run tests:**
+
 ```bash
 pnpm test server/pos.test.ts
 ```
 
 **Check order status:**
+
 ```sql
 SELECT o.*, p.status as payment_status
 FROM orders o
@@ -704,6 +721,7 @@ ORDER BY o.createdAt DESC;
 ```
 
 **Common issues:**
+
 - Payment amount mismatch → Verify cart total calculation
 - Order not found → Check tenantId and orderId
 - Multi-tenant errors → Verify user context has correct tenantId

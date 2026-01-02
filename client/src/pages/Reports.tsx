@@ -1,9 +1,32 @@
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
-import { BarChart3, Calendar, Download, TrendingUp, Users, DollarSign, FileDown, FileSpreadsheet, Filter, X } from "lucide-react";
+import {
+  BarChart3,
+  Calendar,
+  Download,
+  TrendingUp,
+  Users,
+  DollarSign,
+  FileDown,
+  FileSpreadsheet,
+  Filter,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import { exportToPDF, exportToExcel } from "@/lib/exportUtils";
 
@@ -13,15 +36,17 @@ export default function Reports() {
   const [selectedEmployee, setSelectedEmployee] = useState<string>("all");
   const [selectedService, setSelectedService] = useState<string>("all");
   const [selectedMonth, setSelectedMonth] = useState<string>("");
-  const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+  const [selectedYear, setSelectedYear] = useState<string>(
+    new Date().getFullYear().toString()
+  );
   const [customStartDate, setCustomStartDate] = useState<string>("");
   const [customEndDate, setCustomEndDate] = useState<string>("");
-  
+
   // Calculate date range based on period
   const getDateRange = () => {
     const end = new Date();
     const start = new Date();
-    
+
     // Priority 1: Custom date range
     if (customStartDate && customEndDate) {
       return {
@@ -29,7 +54,7 @@ export default function Reports() {
         endDate: customEndDate,
       };
     }
-    
+
     // Priority 2: Selected month
     if (selectedMonth && selectedYear) {
       const year = parseInt(selectedYear);
@@ -37,11 +62,11 @@ export default function Reports() {
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
       return {
-        startDate: firstDay.toISOString().split('T')[0],
-        endDate: lastDay.toISOString().split('T')[0],
+        startDate: firstDay.toISOString().split("T")[0],
+        endDate: lastDay.toISOString().split("T")[0],
       };
     }
-    
+
     // Priority 3: Period selector
     switch (period) {
       case "today":
@@ -59,10 +84,10 @@ export default function Reports() {
       default:
         start.setDate(end.getDate() - 7);
     }
-    
+
     return {
-      startDate: start.toISOString().split('T')[0],
-      endDate: end.toISOString().split('T')[0],
+      startDate: start.toISOString().split("T")[0],
+      endDate: end.toISOString().split("T")[0],
     };
   };
 
@@ -73,19 +98,23 @@ export default function Reports() {
   const { data: services = [] } = trpc.services.list.useQuery();
 
   // Fetch employee sales data
-  const { data: salesByEmployee = [], isLoading: employeeSalesLoading } = trpc.financialReports.salesByEmployee.useQuery({
-    startDate: dateRange.startDate,
-    endDate: dateRange.endDate,
-    paymentMethod: "all",
-  });
+  const { data: salesByEmployee = [], isLoading: employeeSalesLoading } =
+    trpc.financialReports.salesByEmployee.useQuery({
+      startDate: dateRange.startDate,
+      endDate: dateRange.endDate,
+      paymentMethod: "all",
+    });
 
   // Fetch detailed orders for export
-  const { data: ordersData = [] } = trpc.financialReports.detailedOrdersList.useQuery({
-    startDate: dateRange.startDate,
-    endDate: dateRange.endDate,
-    employeeId: selectedEmployee !== "all" ? parseInt(selectedEmployee) : undefined,
-    serviceId: selectedService !== "all" ? parseInt(selectedService) : undefined,
-  });
+  const { data: ordersData = [] } =
+    trpc.financialReports.detailedOrdersList.useQuery({
+      startDate: dateRange.startDate,
+      endDate: dateRange.endDate,
+      employeeId:
+        selectedEmployee !== "all" ? parseInt(selectedEmployee) : undefined,
+      serviceId:
+        selectedService !== "all" ? parseInt(selectedService) : undefined,
+    });
 
   const filteredCount = ordersData.length;
   const totalCount = ordersData.length;
@@ -99,19 +128,21 @@ export default function Reports() {
     setCustomEndDate("");
   };
 
-  const totalRevenue = ordersData.reduce((sum, order) => sum + parseFloat(order.total || "0"), 0);
+  const totalRevenue = ordersData.reduce(
+    (sum, order) => sum + parseFloat(order.total || "0"),
+    0
+  );
   const completedOrders = ordersData.length;
 
   const handleExportPDF = () => {
-    const exportData = ordersData
-      .map((order: any) => ({
-        date: new Date(order.orderDate),
-        customer: order.customerName || "Ukjent",
-        service: order.serviceName || "Diverse",
-        employee: order.employeeName || "Ansatt",
-        amount: parseFloat(order.total || "0"),
-        status: "Fullført",
-      }));
+    const exportData = ordersData.map((order: any) => ({
+      date: new Date(order.orderDate),
+      customer: order.customerName || "Ukjent",
+      service: order.serviceName || "Diverse",
+      employee: order.employeeName || "Ansatt",
+      amount: parseFloat(order.total || "0"),
+      status: "Fullført",
+    }));
 
     const columns = [
       { header: "Dato", key: "date" },
@@ -121,26 +152,28 @@ export default function Reports() {
       { header: "Beløp (kr)", key: "amount" },
       { header: "Status", key: "status" },
     ];
-    
-    const filename = selectedMonth && selectedYear 
-      ? `salgsrapport_${selectedYear}_${selectedMonth}`
-      : customStartDate && customEndDate
-      ? `salgsrapport_${customStartDate}_til_${customEndDate}`
-      : `salgsrapport_${period}`;
-    
-    exportToPDF(exportData, columns, "Salgsrapport", filename, { filters: { period } });
+
+    const filename =
+      selectedMonth && selectedYear
+        ? `salgsrapport_${selectedYear}_${selectedMonth}`
+        : customStartDate && customEndDate
+          ? `salgsrapport_${customStartDate}_til_${customEndDate}`
+          : `salgsrapport_${period}`;
+
+    exportToPDF(exportData, columns, "Salgsrapport", filename, {
+      filters: { period },
+    });
   };
 
   const handleExportExcel = () => {
-    const exportData = ordersData
-      .map((order: any) => ({
-        date: new Date(order.orderDate),
-        customer: order.customerName || "Ukjent",
-        service: order.serviceName || "Diverse",
-        employee: order.employeeName || "Ansatt",
-        amount: parseFloat(order.total || "0"),
-        status: "Fullført",
-      }));
+    const exportData = ordersData.map((order: any) => ({
+      date: new Date(order.orderDate),
+      customer: order.customerName || "Ukjent",
+      service: order.serviceName || "Diverse",
+      employee: order.employeeName || "Ansatt",
+      amount: parseFloat(order.total || "0"),
+      status: "Fullført",
+    }));
 
     const columns = [
       { header: "Dato", key: "date" },
@@ -151,12 +184,13 @@ export default function Reports() {
       { header: "Status", key: "status" },
     ];
 
-    const filename = selectedMonth && selectedYear 
-      ? `salgsrapport_${selectedYear}_${selectedMonth}`
-      : customStartDate && customEndDate
-      ? `salgsrapport_${customStartDate}_til_${customEndDate}`
-      : `salgsrapport_${period}`;
-    
+    const filename =
+      selectedMonth && selectedYear
+        ? `salgsrapport_${selectedYear}_${selectedMonth}`
+        : customStartDate && customEndDate
+          ? `salgsrapport_${customStartDate}_til_${customEndDate}`
+          : `salgsrapport_${period}`;
+
     exportToExcel(exportData, columns, "Salgsrapport", filename);
   };
 
@@ -165,8 +199,12 @@ export default function Reports() {
       <div className="p-6 max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">Rapporter</h1>
-            <p className="text-muted-foreground">Oversikt over salg og statistikk</p>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
+              Rapporter
+            </h1>
+            <p className="text-muted-foreground">
+              Oversikt over salg og statistikk
+            </p>
           </div>
           <div className="flex gap-3">
             <Select value={period} onValueChange={setPeriod}>
@@ -180,11 +218,18 @@ export default function Reports() {
                 <SelectItem value="year">Siste år</SelectItem>
               </SelectContent>
             </Select>
-            <Button onClick={() => handleExportPDF()} variant="outline" className="border-blue-500 text-blue-600 hover:bg-blue-50">
+            <Button
+              onClick={() => handleExportPDF()}
+              variant="outline"
+              className="border-blue-500 text-blue-600 hover:bg-blue-50"
+            >
               <FileDown className="h-4 w-4 mr-2" />
               PDF
             </Button>
-            <Button onClick={() => handleExportExcel()} className="bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600">
+            <Button
+              onClick={() => handleExportExcel()}
+              className="bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600"
+            >
               <FileSpreadsheet className="h-4 w-4 mr-2" />
               Eksporter
             </Button>
@@ -204,7 +249,11 @@ export default function Reports() {
                 Avanserte filtre
               </Button>
               <div className="text-sm text-muted-foreground">
-                <span className="font-semibold text-orange-600">{filteredCount}</span> av <span className="font-semibold">{totalCount}</span> oppføringer vil bli eksportert
+                <span className="font-semibold text-orange-600">
+                  {filteredCount}
+                </span>{" "}
+                av <span className="font-semibold">{totalCount}</span>{" "}
+                oppføringer vil bli eksportert
               </div>
             </div>
           </CardHeader>
@@ -213,8 +262,13 @@ export default function Reports() {
               {/* Row 1: Month, Year, Employee, Service */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Måned (MM)</label>
-                  <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                  <label className="text-sm font-medium mb-2 block">
+                    Måned (MM)
+                  </label>
+                  <Select
+                    value={selectedMonth}
+                    onValueChange={setSelectedMonth}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Velg måned" />
                     </SelectTrigger>
@@ -235,7 +289,7 @@ export default function Reports() {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium mb-2 block">År</label>
                   <Select value={selectedYear} onValueChange={setSelectedYear}>
@@ -249,10 +303,15 @@ export default function Reports() {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Ansatt</label>
-                  <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
+                  <label className="text-sm font-medium mb-2 block">
+                    Ansatt
+                  </label>
+                  <Select
+                    value={selectedEmployee}
+                    onValueChange={setSelectedEmployee}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Velg ansatt" />
                     </SelectTrigger>
@@ -268,8 +327,13 @@ export default function Reports() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Tjeneste</label>
-                  <Select value={selectedService} onValueChange={setSelectedService}>
+                  <label className="text-sm font-medium mb-2 block">
+                    Tjeneste
+                  </label>
+                  <Select
+                    value={selectedService}
+                    onValueChange={setSelectedService}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Velg tjeneste" />
                     </SelectTrigger>
@@ -284,44 +348,50 @@ export default function Reports() {
                   </Select>
                 </div>
               </div>
-              
+
               {/* Row 2: Custom Date Range */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Fra dato</label>
+                  <label className="text-sm font-medium mb-2 block">
+                    Fra dato
+                  </label>
                   <input
                     type="date"
                     value={customStartDate}
-                    onChange={(e) => setCustomStartDate(e.target.value)}
+                    onChange={e => setCustomStartDate(e.target.value)}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Til dato</label>
+                  <label className="text-sm font-medium mb-2 block">
+                    Til dato
+                  </label>
                   <input
                     type="date"
                     value={customEndDate}
-                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    onChange={e => setCustomEndDate(e.target.value)}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   />
                 </div>
               </div>
-              
+
               <div className="hidden">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Egendefinert periode (OLD)</label>
+                  <label className="text-sm font-medium mb-2 block">
+                    Egendefinert periode (OLD)
+                  </label>
                   <div className="flex gap-2">
                     <input
                       type="date"
                       value={customStartDate}
-                      onChange={(e) => setCustomStartDate(e.target.value)}
+                      onChange={e => setCustomStartDate(e.target.value)}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                       placeholder="Fra dato"
                     />
                     <input
                       type="date"
                       value={customEndDate}
-                      onChange={(e) => setCustomEndDate(e.target.value)}
+                      onChange={e => setCustomEndDate(e.target.value)}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                       placeholder="Til dato"
                     />
@@ -347,11 +417,15 @@ export default function Reports() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total omsetning</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total omsetning
+              </CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalRevenue.toLocaleString()} NOK</div>
+              <div className="text-2xl font-bold">
+                {totalRevenue.toLocaleString()} NOK
+              </div>
               <p className="text-xs text-muted-foreground">
                 +12.5% fra forrige periode
               </p>
@@ -360,24 +434,28 @@ export default function Reports() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Fullførte avtaler</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Fullførte avtaler
+              </CardTitle>
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{completedOrders}</div>
-              <p className="text-xs text-muted-foreground">
-                0 avbrutt
-              </p>
+              <p className="text-xs text-muted-foreground">0 avbrutt</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Fullføringsrate</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Fullføringsrate
+              </CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{completedOrders > 0 ? "100" : "0"}%</div>
+              <div className="text-2xl font-bold">
+                {completedOrders > 0 ? "100" : "0"}%
+              </div>
               <p className="text-xs text-muted-foreground">
                 Av totalt {completedOrders} avtaler
               </p>
@@ -386,7 +464,9 @@ export default function Reports() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Aktive kunder</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Aktive kunder
+              </CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -437,11 +517,15 @@ export default function Reports() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Salg per ansatt</CardTitle>
-            <CardDescription>Oversikt over hver ansatts omsetning</CardDescription>
+            <CardDescription>
+              Oversikt over hver ansatts omsetning
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {employeeSalesLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Laster...</div>
+              <div className="text-center py-8 text-muted-foreground">
+                Laster...
+              </div>
             ) : salesByEmployee.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -450,20 +534,38 @@ export default function Reports() {
             ) : (
               <div className="space-y-4">
                 {salesByEmployee.map((emp: any, index: number) => (
-                  <div key={index} className="flex items-center justify-between border-b pb-3 last:border-0">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between border-b pb-3 last:border-0"
+                  >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-orange-500 flex items-center justify-center text-white font-bold">
-                        {emp.employeeName?.charAt(0) || 'A'}
+                        {emp.employeeName?.charAt(0) || "A"}
                       </div>
                       <div>
-                        <p className="font-medium">{emp.employeeName || 'Ukjent ansatt'}</p>
-                        <p className="text-sm text-muted-foreground">{emp.orderCount || 0} ordre</p>
+                        <p className="font-medium">
+                          {emp.employeeName || "Ukjent ansatt"}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {emp.orderCount || 0} ordre
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-bold">{parseFloat(emp.totalRevenue || 0).toLocaleString('nb-NO')} kr</p>
+                      <p className="text-xl font-bold">
+                        {parseFloat(emp.totalRevenue || 0).toLocaleString(
+                          "nb-NO"
+                        )}{" "}
+                        kr
+                      </p>
                       <p className="text-sm text-muted-foreground">
-                        Snitt: {emp.orderCount > 0 ? (parseFloat(emp.totalRevenue) / emp.orderCount).toFixed(0) : 0} kr
+                        Snitt:{" "}
+                        {emp.orderCount > 0
+                          ? (
+                              parseFloat(emp.totalRevenue) / emp.orderCount
+                            ).toFixed(0)
+                          : 0}{" "}
+                        kr
                       </p>
                     </div>
                   </div>
@@ -477,14 +579,18 @@ export default function Reports() {
         <Card>
           <CardHeader>
             <CardTitle>Detaljert statistikk</CardTitle>
-            <CardDescription>Ytterligere innsikt i virksomheten</CardDescription>
+            <CardDescription>
+              Ytterligere innsikt i virksomheten
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between border-b pb-3">
                 <div>
                   <p className="font-medium">Gjennomsnittlig avtaleverdi</p>
-                  <p className="text-sm text-muted-foreground">Per fullført avtale</p>
+                  <p className="text-sm text-muted-foreground">
+                    Per fullført avtale
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold">500 NOK</p>
@@ -504,7 +610,9 @@ export default function Reports() {
               <div className="flex items-center justify-between border-b pb-3">
                 <div>
                   <p className="font-medium">Kundelojalitet</p>
-                  <p className="text-sm text-muted-foreground">Gjentakende kunder</p>
+                  <p className="text-sm text-muted-foreground">
+                    Gjentakende kunder
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold">68%</p>
@@ -514,7 +622,9 @@ export default function Reports() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Beste dag</p>
-                  <p className="text-sm text-muted-foreground">Mest bookede dag</p>
+                  <p className="text-sm text-muted-foreground">
+                    Mest bookede dag
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold">Lørdag</p>

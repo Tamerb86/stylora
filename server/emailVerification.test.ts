@@ -41,9 +41,13 @@ describe("Email Verification System", () => {
       loginMethod: "email",
       isActive: true,
     });
-    
+
     // Get the created user ID
-    const [user] = await db.select().from(users).where(eq(users.openId, testUserOpenId)).limit(1);
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.openId, testUserOpenId))
+      .limit(1);
     testUserId = user.id.toString();
   });
 
@@ -76,9 +80,9 @@ describe("Email Verification System", () => {
     // Mark tenant as verified
     await db
       .update(tenants)
-      .set({ 
+      .set({
         emailVerified: true,
-        emailVerifiedAt: new Date()
+        emailVerifiedAt: new Date(),
       })
       .where(eq(tenants.id, testTenantId));
 
@@ -134,7 +138,7 @@ describe("Email Verification System", () => {
     });
 
     const uniqueEmail = `verify-test-${Date.now()}@example.com`;
-    
+
     const result = await caller.signup.createTenant({
       salonName: "Verification Test Salon",
       ownerEmail: uniqueEmail,

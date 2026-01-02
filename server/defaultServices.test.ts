@@ -7,7 +7,7 @@ describe("Default Barber Services", () => {
   });
 
   it("should have valid structure for all services", () => {
-    DEFAULT_BARBER_SERVICES.forEach((service) => {
+    DEFAULT_BARBER_SERVICES.forEach(service => {
       expect(service).toHaveProperty("name");
       expect(service).toHaveProperty("durationMinutes");
       expect(service).toHaveProperty("priceNok");
@@ -34,13 +34,13 @@ describe("Default Barber Services", () => {
   });
 
   it("should be sorted by displayOrder", () => {
-    const orders = DEFAULT_BARBER_SERVICES.map((s) => s.displayOrder);
+    const orders = DEFAULT_BARBER_SERVICES.map(s => s.displayOrder);
     const sortedOrders = [...orders].sort((a, b) => a - b);
     expect(orders).toEqual(sortedOrders);
   });
 
   it("should have unique displayOrder values", () => {
-    const orders = DEFAULT_BARBER_SERVICES.map((s) => s.displayOrder);
+    const orders = DEFAULT_BARBER_SERVICES.map(s => s.displayOrder);
     const uniqueOrders = new Set(orders);
     expect(uniqueOrders.size).toBe(orders.length);
   });
@@ -59,12 +59,12 @@ describe("Default Barber Services", () => {
       "Vask & Styling",
     ];
 
-    const actualNames = DEFAULT_BARBER_SERVICES.map((s) => s.name);
+    const actualNames = DEFAULT_BARBER_SERVICES.map(s => s.name);
     expect(actualNames).toEqual(expectedNames);
   });
 
   it("should have realistic Norwegian prices", () => {
-    DEFAULT_BARBER_SERVICES.forEach((service) => {
+    DEFAULT_BARBER_SERVICES.forEach(service => {
       // Prices should be between 100 and 1000 NOK
       expect(service.priceNok).toBeGreaterThanOrEqual(100);
       expect(service.priceNok).toBeLessThanOrEqual(1000);
@@ -72,7 +72,7 @@ describe("Default Barber Services", () => {
   });
 
   it("should have realistic durations", () => {
-    DEFAULT_BARBER_SERVICES.forEach((service) => {
+    DEFAULT_BARBER_SERVICES.forEach(service => {
       // Durations should be between 15 and 90 minutes
       expect(service.durationMinutes).toBeGreaterThanOrEqual(15);
       expect(service.durationMinutes).toBeLessThanOrEqual(90);
@@ -80,7 +80,7 @@ describe("Default Barber Services", () => {
   });
 
   it("should have Norwegian descriptions", () => {
-    DEFAULT_BARBER_SERVICES.forEach((service) => {
+    DEFAULT_BARBER_SERVICES.forEach(service => {
       // Check for Norwegian characters or common Norwegian words
       const norwegianPattern = /[æøåÆØÅ]|og|med|for|til/;
       expect(service.description).toMatch(norwegianPattern);
@@ -88,8 +88,15 @@ describe("Default Barber Services", () => {
   });
 
   it("should have appropriate categories", () => {
-    const validCategories = ["Klipp", "Barn", "Skjegg", "Barbering", "Pakke", "Tillegg"];
-    DEFAULT_BARBER_SERVICES.forEach((service) => {
+    const validCategories = [
+      "Klipp",
+      "Barn",
+      "Skjegg",
+      "Barbering",
+      "Pakke",
+      "Tillegg",
+    ];
+    DEFAULT_BARBER_SERVICES.forEach(service => {
       expect(validCategories).toContain(service.category);
     });
   });

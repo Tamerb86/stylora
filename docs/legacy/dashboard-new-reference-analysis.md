@@ -5,10 +5,12 @@
 ### Layout Structure:
 
 **Top Banners:**
+
 1. Orange impersonation mode banner (system feature - keep as is)
 2. Yellow email verification banner (system feature - keep as is)
 
 **Main Content:**
+
 - Simple 2×2 grid of stat cards
 - No welcome card
 - No performance metrics card
@@ -20,19 +22,19 @@
 **Grid Structure:** 2 rows × 2 columns
 
 **Row 1:**
+
 - Card 1 (Top-Left): Light blue background
   - Number: 0 (large, blue text)
   - Label: "Dagens avtaler" (blue text)
-  
 - Card 2 (Top-Right): Light pink background
   - Number: 0 (large, pink/magenta text)
   - Label: "Ventende" (pink/magenta text)
 
 **Row 2:**
+
 - Card 3 (Bottom-Left): Light green background
   - Number: 0 (large, green text)
   - Label: "Fullførte avtaler" (green text)
-  
 - Card 4 (Bottom-Right): Light purple background
   - Number: 1 (large, purple text)
   - Label: "Totalt kunder" (purple text)

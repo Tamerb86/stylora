@@ -13,7 +13,9 @@ describe("POS Refund System", () => {
     dbInstance = await getDb();
     if (!dbInstance) throw new Error("Database not available");
 
-    const { tenants, users, orders, payments } = await import("../drizzle/schema");
+    const { tenants, users, orders, payments } = await import(
+      "../drizzle/schema"
+    );
 
     // Get existing tenant
     const existingTenants = await dbInstance.select().from(tenants).limit(1);
@@ -151,7 +153,7 @@ describe("POS Refund System", () => {
     const refunds = await getRefundsByOrder(testOrderId, testTenantId);
 
     expect(refunds.length).toBeGreaterThan(0);
-    refunds.forEach((refund) => {
+    refunds.forEach(refund => {
       expect(refund.orderId).toBe(testOrderId);
       expect(refund.tenantId).toBe(testTenantId);
     });
@@ -165,7 +167,7 @@ describe("POS Refund System", () => {
     const refunds = await getRefundsByPayment(testPaymentId, testTenantId);
 
     expect(refunds.length).toBeGreaterThan(0);
-    refunds.forEach((refund) => {
+    refunds.forEach(refund => {
       expect(refund.paymentId).toBe(testPaymentId);
     });
   });
@@ -226,7 +228,11 @@ describe("POS Refund System", () => {
     const refundId = result.insertId;
 
     // Update to failed with error message
-    await updateRefundStatus(refundId, "failed", "Stripe API error: insufficient funds");
+    await updateRefundStatus(
+      refundId,
+      "failed",
+      "Stripe API error: insufficient funds"
+    );
 
     // Verify status and error message
     const { refunds } = await import("../drizzle/schema");
@@ -239,7 +245,9 @@ describe("POS Refund System", () => {
       .limit(1);
 
     expect(updatedRefund.status).toBe("failed");
-    expect(updatedRefund.errorMessage).toBe("Stripe API error: insufficient funds");
+    expect(updatedRefund.errorMessage).toBe(
+      "Stripe API error: insufficient funds"
+    );
   });
 
   it("should calculate total refunded amount for payment", async () => {
@@ -254,7 +262,7 @@ describe("POS Refund System", () => {
       .where(eq(refunds.paymentId, testPaymentId));
 
     const totalRefunded = paymentRefunds
-      .filter((r) => r.status === "completed" || r.status === "pending")
+      .filter(r => r.status === "completed" || r.status === "pending")
       .reduce((sum, r) => sum + parseFloat(r.amount), 0);
 
     expect(totalRefunded).toBeGreaterThan(0);
@@ -271,7 +279,7 @@ describe("POS Refund System", () => {
       .from(refunds)
       .where(eq(refunds.orderId, testOrderId));
 
-    tenantRefunds.forEach((refund) => {
+    tenantRefunds.forEach(refund => {
       expect(refund.tenantId).toBe(testTenantId);
     });
   });
@@ -287,7 +295,7 @@ describe("POS Refund System", () => {
       .from(refunds)
       .where(eq(refunds.orderId, testOrderId));
 
-    orderRefunds.forEach((refund) => {
+    orderRefunds.forEach(refund => {
       expect(refund.processedBy).toBe(testEmployeeId);
       expect(refund.createdAt).toBeDefined();
     });
@@ -332,7 +340,7 @@ describe("POS Refund System", () => {
       .where(eq(refunds.paymentId, testPaymentId));
 
     const partialRefunds = allRefunds.filter(
-      (r) => r.id === refund1.insertId || r.id === refund2.insertId
+      r => r.id === refund1.insertId || r.id === refund2.insertId
     );
 
     expect(partialRefunds).toHaveLength(2);

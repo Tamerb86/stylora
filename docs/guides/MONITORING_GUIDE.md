@@ -8,6 +8,7 @@
 ## 🎯 Overview
 
 The Stylora monitoring system provides comprehensive real-time tracking of:
+
 - **Unimicro Sync Performance** - Track invoice/customer sync success rates
 - **Email Delivery** - Monitor AWS SES and SMTP fallback performance
 - **SMS Delivery** - Track PSWinCom/LinkMobility/Twilio delivery rates
@@ -21,11 +22,13 @@ The Stylora monitoring system provides comprehensive real-time tracking of:
 ### Accessing the Monitoring Dashboard
 
 1. **Login to Admin Panel**
+
    ```
    https://your-salon.stylora.app/dashboard
    ```
 
 2. **Navigate to Monitoring**
+
    ```
    Menu → Monitoring (or visit /monitoring)
    ```
@@ -40,11 +43,13 @@ The Stylora monitoring system provides comprehensive real-time tracking of:
 ## 📈 Key Metrics
 
 ### System Health Score
+
 - **90-100:** 🟢 Healthy
 - **70-89:** 🟡 Warning
 - **0-69:** 🔴 Critical
 
 ### Success Rate Targets
+
 - **Unimicro Sync:** > 95%
 - **Email Delivery:** > 95%
 - **SMS Delivery:** > 95%
@@ -56,6 +61,7 @@ The Stylora monitoring system provides comprehensive real-time tracking of:
 ### What to Monitor
 
 **Every 4 Hours (First 24 Hours):**
+
 - ✅ Check sync success rate (should be > 95%)
 - ✅ Review any failed syncs
 - ✅ Verify average sync duration < 60s
@@ -65,7 +71,7 @@ The Stylora monitoring system provides comprehensive real-time tracking of:
 
 ```sql
 -- Check sync status (last 24 hours)
-SELECT 
+SELECT
   DATE(syncStartedAt) as date,
   COUNT(*) as total_syncs,
   SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as successful,
@@ -76,7 +82,7 @@ WHERE syncStartedAt >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
 GROUP BY DATE(syncStartedAt);
 
 -- Get recent failures
-SELECT 
+SELECT
   id,
   syncType,
   syncStartedAt,
@@ -92,11 +98,13 @@ LIMIT 10;
 ### Alert Thresholds
 
 **Critical (Immediate Action):**
+
 - 3+ consecutive sync failures
 - Success rate < 70%
 - No syncs in 6+ hours
 
 **Warning (Monitor Closely):**
+
 - 2 consecutive failures
 - Success rate 70-90%
 - Average duration > 90s
@@ -109,7 +117,7 @@ LIMIT 10;
 
 ```sql
 -- Email delivery rates (last 24 hours)
-SELECT 
+SELECT
   notificationType,
   COUNT(*) as total,
   SUM(CASE WHEN status = 'sent' THEN 1 ELSE 0 END) as sent,
@@ -120,7 +128,7 @@ WHERE createdAt >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
 GROUP BY notificationType;
 
 -- Failed notifications (last 24 hours)
-SELECT 
+SELECT
   notificationType,
   recipient,
   errorMessage,
@@ -134,6 +142,7 @@ LIMIT 20;
 ```
 
 ### Success Rate Targets
+
 - **> 95%:** Excellent ✅
 - **90-95%:** Good ⚠️
 - **< 90%:** Needs Investigation 🚨
@@ -145,10 +154,12 @@ LIMIT 20;
 ### Issue: Unimicro Sync Failing
 
 **Symptoms:**
+
 - Multiple consecutive failures
 - Error: "Authentication failed"
 
 **Solution:**
+
 1. Go to Settings → Integrations → Unimicro
 2. Verify Client ID and Client Secret
 3. Test connection
@@ -157,10 +168,12 @@ LIMIT 20;
 ### Issue: Low Email Delivery Rate
 
 **Symptoms:**
+
 - Success rate < 90%
 - Error: "Invalid credentials"
 
 **Solution:**
+
 1. Check AWS SES credentials in environment
 2. Verify sender email is verified in AWS SES
 3. Check SMTP fallback configuration
@@ -168,10 +181,12 @@ LIMIT 20;
 ### Issue: Low SMS Delivery Rate
 
 **Symptoms:**
+
 - Success rate < 90%
 - Error: "Invalid phone number format"
 
 **Solution:**
+
 1. Verify phone numbers use +47 format
 2. Check SMS provider credentials
 3. Verify provider balance
@@ -183,16 +198,19 @@ LIMIT 20;
 ### Expected Performance (Healthy System)
 
 **Unimicro Sync:**
+
 - Success Rate: > 95%
 - Average Duration: < 30 seconds
 - Failures: < 1 per day
 
 **Email Delivery:**
+
 - Success Rate: > 95%
 - Average Delivery Time: < 10 seconds
 - Failed: < 5% of total
 
 **SMS Delivery:**
+
 - Success Rate: > 95%
 - Average Delivery Time: < 30 seconds
 - Failed: < 5% of total

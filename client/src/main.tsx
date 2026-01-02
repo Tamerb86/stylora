@@ -1,5 +1,5 @@
 import { trpc } from "@/lib/trpc";
-import { UNAUTHED_ERR_MSG } from '@shared/const';
+import { UNAUTHED_ERR_MSG } from "@shared/const";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
@@ -26,14 +26,14 @@ if (import.meta.env.VITE_SENTRY_DSN) {
       }),
     ],
     // Performance Monitoring
-    tracesSampleRate: import.meta.env.MODE === 'production' ? 0.1 : 1.0,
+    tracesSampleRate: import.meta.env.MODE === "production" ? 0.1 : 1.0,
     // Session Replay
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
     // Ignore known errors
     ignoreErrors: [
-      'ResizeObserver loop limit exceeded',
-      'Non-Error promise rejection captured',
+      "ResizeObserver loop limit exceeded",
+      "Non-Error promise rejection captured",
       UNAUTHED_ERR_MSG,
     ],
   });

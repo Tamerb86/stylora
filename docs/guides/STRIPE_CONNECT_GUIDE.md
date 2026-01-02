@@ -9,6 +9,7 @@
 ## 🎯 Benefits
 
 ### For Salons:
+
 - ✅ **One-click setup** - No API keys to copy/paste
 - ✅ **Secure OAuth** - Industry-standard authentication
 - ✅ **Direct payments** - Money goes straight to salon's bank account
@@ -16,6 +17,7 @@
 - ✅ **Easy disconnect** - Can revoke access anytime
 
 ### For Platform (Stylora):
+
 - ✅ **Better UX** - Simplified onboarding
 - ✅ **Scalable** - Easy to onboard 100+ salons
 - ✅ **Secure** - No need to store salon API keys
@@ -67,7 +69,7 @@
 New columns added to `paymentSettings` table:
 
 ```sql
-ALTER TABLE paymentSettings 
+ALTER TABLE paymentSettings
 ADD COLUMN stripeConnectedAccountId VARCHAR(255) NULL,
 ADD COLUMN stripeAccessToken TEXT NULL,
 ADD COLUMN stripeRefreshToken TEXT NULL,
@@ -106,6 +108,7 @@ STRIPE_SECRET_KEY=sk_live_xxxxxxxxxxxxx  # Platform secret key
 
 1. In Stripe Dashboard → **Settings** → **Connect** → **Settings**
 2. Add **Redirect URIs**:
+
    ```
    https://yourdomain.com/stripe/callback
    http://localhost:3000/stripe/callback  # For testing
@@ -136,6 +139,7 @@ STRIPE_SECRET_KEY=sk_live_xxxxxxxxxxxxx  # Platform secret key
 #### 2.2 What Happens Behind the Scenes
 
 1. **Authorization URL generated**:
+
    ```
    https://connect.stripe.com/oauth/authorize?
      response_type=code&
@@ -148,6 +152,7 @@ STRIPE_SECRET_KEY=sk_live_xxxxxxxxxxxxx  # Platform secret key
 2. **User authorizes** on Stripe
 
 3. **Callback received**:
+
    ```
    https://stylora.no/stripe/callback?
      code=ac_xxxxx&
@@ -155,6 +160,7 @@ STRIPE_SECRET_KEY=sk_live_xxxxxxxxxxxxx  # Platform secret key
    ```
 
 4. **Token exchange**:
+
    ```bash
    POST https://connect.stripe.com/oauth/token
    {
@@ -165,6 +171,7 @@ STRIPE_SECRET_KEY=sk_live_xxxxxxxxxxxxx  # Platform secret key
    ```
 
 5. **Response**:
+
    ```json
    {
      "access_token": "sk_test_xxxxx",
@@ -192,13 +199,13 @@ STRIPE_SECRET_KEY=sk_live_xxxxxxxxxxxxx  # Platform secret key
 ```typescript
 // Backend automatically uses Connected Account
 const stripe = new Stripe(PLATFORM_SECRET_KEY, {
-  stripeAccount: connectedAccountId  // Salon's account
+  stripeAccount: connectedAccountId, // Salon's account
 });
 
 const paymentIntent = await stripe.paymentIntents.create({
-  amount: 50000,  // 500 NOK
-  currency: 'nok',
-  payment_method_types: ['card_present'],
+  amount: 50000, // 500 NOK
+  currency: "nok",
+  payment_method_types: ["card_present"],
 });
 ```
 
@@ -209,16 +216,17 @@ const paymentIntent = await stripe.paymentIntents.create({
 ```typescript
 const paymentIntent = await stripe.paymentIntents.create({
   amount: 50000,
-  currency: 'nok',
-  payment_method_types: ['card_present'],
-  application_fee_amount: 1000,  // 10 NOK platform fee (2%)
+  currency: "nok",
+  payment_method_types: ["card_present"],
+  application_fee_amount: 1000, // 10 NOK platform fee (2%)
   transfer_data: {
     destination: connectedAccountId,
   },
 });
 ```
 
-**Result**: 
+**Result**:
+
 - Platform receives: 10 NOK
 - Salon receives: 490 NOK
 
@@ -229,12 +237,14 @@ const paymentIntent = await stripe.paymentIntents.create({
 ### Frontend (tRPC)
 
 #### Get Authorization URL
+
 ```typescript
 const { data } = trpc.stripeConnect.getAuthUrl.useQuery();
 // Returns: { authUrl: "https://connect.stripe.com/oauth/..." }
 ```
 
 #### Handle Callback
+
 ```typescript
 const mutation = trpc.stripeConnect.handleCallback.useMutation();
 await mutation.mutateAsync({
@@ -244,18 +254,21 @@ await mutation.mutateAsync({
 ```
 
 #### Get Connection Status
+
 ```typescript
 const { data } = trpc.stripeConnect.getStatus.useQuery();
 // Returns: { connected: true, accountId: "acct_xxxxx", status: "connected" }
 ```
 
 #### Get Account Details
+
 ```typescript
 const { data } = trpc.stripeConnect.getAccountDetails.useQuery();
 // Returns: { id, email, displayName, country, currency, chargesEnabled, payoutsEnabled }
 ```
 
 #### Disconnect
+
 ```typescript
 const mutation = trpc.stripeConnect.disconnect.useMutation();
 await mutation.mutateAsync();
@@ -269,6 +282,7 @@ await mutation.mutateAsync();
 
 1. Use **test mode** Client ID from Stripe Dashboard
 2. Set environment variables:
+
    ```bash
    STRIPE_CONNECT_CLIENT_ID=ca_test_xxxxx
    STRIPE_SECRET_KEY=sk_test_xxxxx
@@ -280,6 +294,7 @@ await mutation.mutateAsync();
 ### Test Scenarios
 
 #### ✅ Successful Connection
+
 1. Click "Koble til Stripe"
 2. Log in with test Stripe account
 3. Click "Authorize"
@@ -288,18 +303,21 @@ await mutation.mutateAsync();
 6. Verify account shown in Settings
 
 #### ❌ Connection Cancelled
+
 1. Click "Koble til Stripe"
 2. Click "Cancel" on Stripe OAuth page
 3. Verify error message shown
 4. Verify can retry connection
 
 #### 🔌 Disconnect
+
 1. Click "Koble fra" in Settings
 2. Confirm dialog
 3. Verify account disconnected
 4. Verify can reconnect
 
 #### 💳 Payment with Connected Account
+
 1. Connect Stripe account
 2. Go to POS
 3. Add items to cart
@@ -323,11 +341,11 @@ await mutation.mutateAsync();
 
 ```typescript
 // ❌ Bad: Store in localStorage
-localStorage.setItem('stripe_token', token);
+localStorage.setItem("stripe_token", token);
 
 // ✅ Good: Store in database (encrypted)
 await db.update(paymentSettings).set({
-  stripeAccessToken: encrypt(token),  // Encrypted
+  stripeAccessToken: encrypt(token), // Encrypted
   stripeRefreshToken: encrypt(refreshToken),
 });
 ```
@@ -346,6 +364,7 @@ await db.update(paymentSettings).set({
 ### Stripe Dashboard
 
 Monitor in **Stripe Dashboard** → **Connect** → **Accounts**:
+
 - Connected accounts list
 - Account status (active/inactive)
 - Payment volume per account
@@ -358,19 +377,25 @@ Monitor in **Stripe Dashboard** → **Connect** → **Accounts**:
 ### Common Issues
 
 #### Issue: "Stripe Connect is not configured"
+
 **Solution**: Add `STRIPE_CONNECT_CLIENT_ID` to environment variables
 
 #### Issue: "Invalid redirect_uri"
+
 **Solution**: Add redirect URI to Stripe Dashboard → Settings → Connect → Settings
 
 #### Issue: "Failed to connect to Stripe"
-**Solution**: 
+
+**Solution**:
+
 - Check `STRIPE_SECRET_KEY` is correct
 - Verify network connectivity
 - Check Stripe API status
 
 #### Issue: Payments not going to salon account
+
 **Solution**:
+
 - Verify `stripeConnectedAccountId` is set
 - Check `stripeAccountStatus` is "connected"
 - Verify platform secret key has Connect permissions
@@ -394,7 +419,10 @@ If salons already have manual API keys configured:
 
 3. **Code logic**:
    ```typescript
-   if (settings.stripeConnectedAccountId && settings.stripeAccountStatus === 'connected') {
+   if (
+     settings.stripeConnectedAccountId &&
+     settings.stripeAccountStatus === "connected"
+   ) {
      // Use Stripe Connect
      apiKey = PLATFORM_SECRET_KEY;
      connectedAccountId = settings.stripeConnectedAccountId;
@@ -409,11 +437,13 @@ If salons already have manual API keys configured:
 ## 📚 Resources
 
 ### Documentation
+
 - [Stripe Connect Docs](https://stripe.com/docs/connect)
 - [OAuth for Connect](https://stripe.com/docs/connect/oauth-reference)
 - [Connected Accounts](https://stripe.com/docs/connect/accounts)
 
 ### Support
+
 - [Stripe Support](https://support.stripe.com)
 - [Stripe Community](https://stripe.com/community)
 
@@ -422,18 +452,21 @@ If salons already have manual API keys configured:
 ## 🎯 Next Steps
 
 ### Phase 1: Launch (Current)
+
 - ✅ OAuth flow implemented
 - ✅ Direct charges working
 - ✅ UI for connection/disconnection
 - ✅ Documentation complete
 
 ### Phase 2: Enhancement (Future)
+
 - [ ] Add application fees (platform revenue)
 - [ ] Implement onboarding flow for new Stripe users
 - [ ] Add webhook handling for account updates
 - [ ] Build admin dashboard for monitoring connections
 
 ### Phase 3: Scale (Future)
+
 - [ ] Multi-currency support
 - [ ] Regional payment methods
 - [ ] Advanced reporting
@@ -444,6 +477,7 @@ If salons already have manual API keys configured:
 ## 💡 Tips for Salons
 
 ### Getting Started
+
 1. **Create Stripe account** (if you don't have one):
    - Go to https://stripe.com/no
    - Click "Start now"
@@ -466,6 +500,7 @@ If salons already have manual API keys configured:
    - Start processing!
 
 ### Best Practices
+
 - ✅ Enable two-factor authentication on Stripe account
 - ✅ Review transactions regularly in Stripe Dashboard
 - ✅ Set up automatic payouts to bank account
@@ -477,6 +512,7 @@ If salons already have manual API keys configured:
 ## 📞 Support
 
 For questions or issues:
+
 - **Stylora Support**: support@stylora.no
 - **Stripe Support**: https://support.stripe.com
 - **Documentation**: This guide + Stripe docs
