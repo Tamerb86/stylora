@@ -221,7 +221,8 @@ export function registerAuthRoutes(app: Express) {
       }
 
       // Case-insensitive email lookup using parameterized SQL
-      // Note: Drizzle ORM properly sanitizes the sql`` template literal parameters
+      // Security note: Drizzle ORM automatically sanitizes ${} parameters in sql`` templates
+      // to prevent SQL injection. The trimmedEmail is safely parameterized.
       const [user] = await dbInstance
         .select()
         .from(users)
@@ -269,6 +270,10 @@ export function registerAuthRoutes(app: Express) {
       }
 
       // Check if tenant exists and is active
+      // Note: This adds one additional DB query per login. For optimization, consider:
+      // - Caching tenant status (requires invalidation strategy)
+      // - Including tenant data in user query with JOIN
+      // - Moving this check to middleware for all authenticated routes
       const tenant = await db.getTenantById(user.tenantId);
       if (!tenant) {
         console.error("[Auth] User's tenant not found:", user.tenantId);
