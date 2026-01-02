@@ -80,6 +80,7 @@ import POSFinancialReports from "./pages/POSFinancialReports";
 import Login from "./pages/Login";
 import Demo from "./pages/Demo";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Onboarding from "./pages/Onboarding";
@@ -91,6 +92,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
       <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
       <Route path="/demo" component={Demo} />
       <Route path="/signup" component={SignUp} />
       <Route path="/onboard" component={Onboarding} />

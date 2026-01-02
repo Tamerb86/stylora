@@ -588,6 +588,90 @@ export function registerAuthRoutes(app: Express) {
     }
   });
 
+  // Reset password endpoint
+  app.post("/api/auth/reset-password", async (req: Request, res: Response) => {
+    try {
+      const { token, newPassword } = req.body;
+      const clientIp = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+
+      if (!token || !newPassword) {
+        res.status(400).json({ error: "Token og nytt passord er påkrevd" });
+        return;
+      }
+
+      // Validate password strength
+      if (newPassword.length < 6) {
+        res.status(400).json({ error: "Passordet må være minst 6 tegn" });
+        return;
+      }
+
+      if (!/[A-Z]/.test(newPassword)) {
+        res.status(400).json({ error: "Passordet må inneholde minst én stor bokstav" });
+        return;
+      }
+
+      if (!/[a-z]/.test(newPassword)) {
+        res.status(400).json({ error: "Passordet må inneholde minst én liten bokstav" });
+        return;
+      }
+
+      if (!/[0-9]/.test(newPassword)) {
+        res.status(400).json({ error: "Passordet må inneholde minst ett tall" });
+        return;
+      }
+
+      // Verify the reset token (it's a JWT)
+      const session = await authService.verifySession(token);
+      if (!session || !session.email) {
+        logAuth.loginFailed(session?.email || 'unknown', 'Invalid reset token', clientIp);
+        res.status(401).json({ error: "Ugyldig eller utløpt tilbakestillingslenke" });
+        return;
+      }
+
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        logDb.error('reset-password', new Error('Database not available'));
+        res.status(500).json({ error: "Database ikke tilgjengelig" });
+        return;
+      }
+
+      // Get user by email
+      const [user] = await dbInstance
+        .select()
+        .from(users)
+        .where(eq(users.email, session.email))
+        .limit(1);
+
+      if (!user) {
+        logAuth.loginFailed(session.email, 'User not found for reset', clientIp);
+        res.status(401).json({ error: "Bruker ikke funnet" });
+        return;
+      }
+
+      // Hash the new password
+      const newPasswordHash = await authService.hashPassword(newPassword);
+
+      // Update the user's password
+      await dbInstance
+        .update(users)
+        .set({ 
+          passwordHash: newPasswordHash,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, user.id));
+
+      logInfo(`[Auth] Password reset successful for ${session.email}`, { ip: clientIp });
+
+      res.json({ 
+        success: true,
+        message: "Passordet er tilbakestilt. Du kan nå logge inn med det nye passordet." 
+      });
+    } catch (error) {
+      logError("[Auth] Reset password error", error as Error);
+      res.status(500).json({ error: "Kunne ikke tilbakestille passord. Vennligst prøv igjen." });
+    }
+  });
+
   // Logout endpoint
   app.post("/api/auth/logout", async (req: Request, res: Response) => {
     try {

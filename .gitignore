@@ -101,6 +101,9 @@ jspm_packages/
 tmp/
 temp/
 
+# Test documentation
+test-*.md
+
 # Database
 *.db
 *.sqlite
