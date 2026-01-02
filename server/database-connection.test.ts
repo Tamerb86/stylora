@@ -30,10 +30,8 @@ describe("Database Connection", () => {
     }
 
     // Check if table exists
-    const result = await db.execute(
-      "SHOW TABLES LIKE 'paymentProviders'"
-    );
-    
+    const result = await db.execute("SHOW TABLES LIKE 'paymentProviders'");
+
     expect(result).toBeDefined();
     // If table doesn't exist, this test will help identify the issue
   });
@@ -45,10 +43,10 @@ describe("Database Connection", () => {
     }
 
     const { paymentProviders } = await import("../drizzle/schema");
-    
+
     // Try to query the table (should not throw even if empty)
     const result = await db.select().from(paymentProviders).limit(1);
-    
+
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);
   });
@@ -56,18 +54,18 @@ describe("Database Connection", () => {
   it("should handle connection errors gracefully", async () => {
     // Save original DATABASE_URL
     const originalUrl = process.env.DATABASE_URL;
-    
+
     // Set invalid URL
     process.env.DATABASE_URL = "mysql://invalid:invalid@localhost:9999/invalid";
-    
+
     // Force reconnection by clearing cache
     await closeDb();
-    
+
     const db = await getDb();
-    
+
     // Should return null on connection failure
     expect(db).toBeNull();
-    
+
     // Restore original URL
     process.env.DATABASE_URL = originalUrl;
   });

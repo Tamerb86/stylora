@@ -25,7 +25,7 @@ describe("POS Split Payment System", () => {
     const existingEmployees = await dbInstance
       .select()
       .from(users)
-      .where((users) => {
+      .where(users => {
         const { eq } = require("drizzle-orm");
         return eq(users.tenantId, testTenantId);
       })
@@ -52,11 +52,15 @@ describe("POS Split Payment System", () => {
 
   afterAll(async () => {
     if (!dbInstance) return;
-    const { orders, payments, paymentSplits } = await import("../drizzle/schema");
+    const { orders, payments, paymentSplits } = await import(
+      "../drizzle/schema"
+    );
     const { eq } = await import("drizzle-orm");
 
     // Clean up test data
-    await dbInstance.delete(paymentSplits).where(eq(paymentSplits.orderId, testOrderId));
+    await dbInstance
+      .delete(paymentSplits)
+      .where(eq(paymentSplits.orderId, testOrderId));
     await dbInstance.delete(payments).where(eq(payments.orderId, testOrderId));
     await dbInstance.delete(orders).where(eq(orders.id, testOrderId));
   });
@@ -128,8 +132,8 @@ describe("POS Split Payment System", () => {
 
     expect(splits).toHaveLength(2);
 
-    const cashSplit = splits.find((s) => s.paymentMethod === "cash");
-    const cardSplit = splits.find((s) => s.paymentMethod === "card");
+    const cashSplit = splits.find(s => s.paymentMethod === "cash");
+    const cardSplit = splits.find(s => s.paymentMethod === "card");
 
     expect(cashSplit).toBeDefined();
     expect(parseFloat(cashSplit!.amount)).toBe(cashAmount);
@@ -231,7 +235,7 @@ describe("POS Split Payment System", () => {
     const splits = await getSplitsByOrder(testOrderId, testTenantId);
 
     expect(splits.length).toBeGreaterThan(0);
-    splits.forEach((split) => {
+    splits.forEach(split => {
       expect(split.orderId).toBe(testOrderId);
       expect(split.tenantId).toBe(testTenantId);
     });
@@ -258,7 +262,7 @@ describe("POS Split Payment System", () => {
     const splits = await getSplitsByPayment(paymentId, testTenantId);
 
     expect(splits.length).toBeGreaterThan(0);
-    splits.forEach((split) => {
+    splits.forEach(split => {
       expect(split.paymentId).toBe(paymentId);
     });
   });
@@ -318,7 +322,7 @@ describe("POS Split Payment System", () => {
       .from(paymentSplits)
       .where(eq(paymentSplits.orderId, testOrderId));
 
-    splits.forEach((split) => {
+    splits.forEach(split => {
       expect(split.tenantId).toBe(testTenantId);
     });
   });
@@ -334,7 +338,7 @@ describe("POS Split Payment System", () => {
       .from(paymentSplits)
       .where(eq(paymentSplits.orderId, testOrderId));
 
-    splits.forEach((split) => {
+    splits.forEach(split => {
       expect(split.processedBy).toBe(testEmployeeId);
       expect(split.createdAt).toBeDefined();
     });

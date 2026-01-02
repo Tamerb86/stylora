@@ -2,7 +2,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Mail, ArrowLeft, CheckCircle } from "lucide-react";
 import { Link } from "wouter";
@@ -51,14 +57,18 @@ export default function ForgotPassword() {
                   <CheckCircle className="w-8 h-8 text-green-600" />
                 </div>
               </div>
-              <CardTitle className="text-2xl text-center">Sjekk e-posten din</CardTitle>
+              <CardTitle className="text-2xl text-center">
+                Sjekk e-posten din
+              </CardTitle>
               <CardDescription className="text-center">
-                Vi har sendt instruksjoner for å tilbakestille passordet til <strong>{email}</strong>
+                Vi har sendt instruksjoner for å tilbakestille passordet til{" "}
+                <strong>{email}</strong>
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-slate-600 text-center">
-                Hvis du ikke mottar e-posten innen noen minutter, sjekk søppelpost-mappen din.
+                Hvis du ikke mottar e-posten innen noen minutter, sjekk
+                søppelpost-mappen din.
               </p>
               <Link href="/login">
                 <Button variant="outline" className="w-full">
@@ -77,7 +87,10 @@ export default function ForgotPassword() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <Link href="/login" className="inline-flex items-center text-sm text-slate-600 hover:text-slate-900 mb-6">
+          <Link
+            href="/login"
+            className="inline-flex items-center text-sm text-slate-600 hover:text-slate-900 mb-6"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Tilbake til innlogging
           </Link>
@@ -87,9 +100,12 @@ export default function ForgotPassword() {
 
         <Card className="shadow-lg border-0">
           <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-2xl text-center">Tilbakestill passord</CardTitle>
+            <CardTitle className="text-2xl text-center">
+              Tilbakestill passord
+            </CardTitle>
             <CardDescription className="text-center">
-              Skriv inn e-postadressen din, så sender vi deg en lenke for å tilbakestille passordet
+              Skriv inn e-postadressen din, så sender vi deg en lenke for å
+              tilbakestille passordet
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -107,17 +123,13 @@ export default function ForgotPassword() {
                   type="email"
                   placeholder="din@epost.no"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   required
                   autoComplete="email"
                 />
               </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -135,7 +147,10 @@ export default function ForgotPassword() {
             <div className="mt-6 text-center text-sm">
               <p className="text-slate-600">
                 Husker du passordet?{" "}
-                <Link href="/login" className="text-primary font-medium hover:underline">
+                <Link
+                  href="/login"
+                  className="text-primary font-medium hover:underline"
+                >
                   Logg inn
                 </Link>
               </p>

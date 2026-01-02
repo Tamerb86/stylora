@@ -1,7 +1,7 @@
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
-import { safeToFixed } from './utils';
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
+import { safeToFixed } from "./utils";
 
 interface ExportColumn {
   header: string;
@@ -36,17 +36,17 @@ export function exportToPDF(
   metadata?: ExportMetadata
 ) {
   const doc = new jsPDF();
-  
+
   // Add title
   doc.setFontSize(16);
   doc.text(title, 14, 15);
-  
+
   // Add generation date
   doc.setFontSize(10);
   let currentY = 22;
-  doc.text(`Generert: ${new Date().toLocaleDateString('no-NO')}`, 14, currentY);
+  doc.text(`Generert: ${new Date().toLocaleDateString("no-NO")}`, 14, currentY);
   currentY += 7;
-  
+
   // Add filters if provided
   if (metadata?.filters) {
     doc.setFontSize(9);
@@ -66,41 +66,41 @@ export function exportToPDF(
     doc.setTextColor(0);
     currentY += 3;
   }
-  
+
   // Add employee totals if provided
   if (metadata?.totals && metadata.totals.length > 0) {
     doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Total timer per ansatt:', 14, currentY);
+    doc.setFont("helvetica", "bold");
+    doc.text("Total timer per ansatt:", 14, currentY);
     currentY += 6;
-    
+
     doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    metadata.totals.forEach((total) => {
+    doc.setFont("helvetica", "normal");
+    metadata.totals.forEach(total => {
       const text = `${total.employeeName}: ${safeToFixed(total.totalHours, 2)} timer (${total.totalShifts} skift)`;
       doc.text(text, 20, currentY);
       currentY += 5;
     });
     currentY += 3;
   }
-  
+
   // Prepare table data
   const tableHeaders = columns.map(col => col.header);
-  const tableData = data.map(row => 
+  const tableData = data.map(row =>
     columns.map(col => {
       const value = row[col.key];
       // Format dates
       if (value instanceof Date) {
-        return value.toLocaleDateString('no-NO');
+        return value.toLocaleDateString("no-NO");
       }
       // Format numbers
-      if (typeof value === 'number') {
+      if (typeof value === "number") {
         return safeToFixed(value, 2);
       }
-      return value?.toString() || '';
+      return value?.toString() || "";
     })
   );
-  
+
   // Generate table
   autoTable(doc, {
     head: [tableHeaders],
@@ -113,13 +113,13 @@ export function exportToPDF(
     headStyles: {
       fillColor: [59, 130, 246], // Blue
       textColor: 255,
-      fontStyle: 'bold',
+      fontStyle: "bold",
     },
     alternateRowStyles: {
       fillColor: [245, 247, 250],
     },
   });
-  
+
   // Save PDF
   doc.save(`${filename}.pdf`);
 }
@@ -140,36 +140,35 @@ export function exportToExcel(
       const value = row[col.key];
       // Format dates
       if (value instanceof Date) {
-        formattedRow[col.header] = value.toLocaleDateString('no-NO');
+        formattedRow[col.header] = value.toLocaleDateString("no-NO");
       }
       // Format numbers
-      else if (typeof value === 'number') {
+      else if (typeof value === "number") {
         formattedRow[col.header] = parseFloat(safeToFixed(value, 2));
-      }
-      else {
-        formattedRow[col.header] = value?.toString() || '';
+      } else {
+        formattedRow[col.header] = value?.toString() || "";
       }
     });
     return formattedRow;
   });
-  
+
   // Create workbook and worksheet
   const worksheet = XLSX.utils.json_to_sheet(worksheetData);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, title);
-  
+
   // Auto-size columns
   const maxWidths: number[] = [];
   columns.forEach((col, i) => {
     const headerLength = col.header.length;
-    const dataLengths = worksheetData.map(row => 
-      (row[col.header]?.toString() || '').length
+    const dataLengths = worksheetData.map(
+      row => (row[col.header]?.toString() || "").length
     );
     maxWidths[i] = Math.max(headerLength, ...dataLengths) + 2;
   });
-  
-  worksheet['!cols'] = maxWidths.map(w => ({ wch: Math.min(w, 50) }));
-  
+
+  worksheet["!cols"] = maxWidths.map(w => ({ wch: Math.min(w, 50) }));
+
   // Save Excel file
   XLSX.writeFile(workbook, `${filename}.xlsx`);
 }
@@ -178,7 +177,7 @@ export function exportToExcel(
  * Format hours for display (ensure positive)
  */
 export function formatHours(hours: number | string): string {
-  const numHours = typeof hours === 'string' ? parseFloat(hours) : hours;
+  const numHours = typeof hours === "string" ? parseFloat(hours) : hours;
   return safeToFixed(Math.abs(numHours), 2);
 }
 
@@ -186,23 +185,23 @@ export function formatHours(hours: number | string): string {
  * Format hours as "X timer Y minutter" for better readability
  */
 export function formatDuration(hours: number | string): string {
-  const numHours = typeof hours === 'string' ? parseFloat(hours) : hours;
+  const numHours = typeof hours === "string" ? parseFloat(hours) : hours;
   const absHours = Math.abs(numHours);
-  
+
   const wholeHours = Math.floor(absHours);
   const minutes = Math.round((absHours - wholeHours) * 60);
-  
+
   if (wholeHours === 0 && minutes === 0) {
     return "0 minutter";
   }
-  
+
   if (wholeHours === 0) {
-    return `${minutes} minutt${minutes !== 1 ? 'er' : ''}`;
+    return `${minutes} minutt${minutes !== 1 ? "er" : ""}`;
   }
-  
+
   if (minutes === 0) {
-    return `${wholeHours} time${wholeHours !== 1 ? 'r' : ''}`;
+    return `${wholeHours} time${wholeHours !== 1 ? "r" : ""}`;
   }
-  
-  return `${wholeHours} time${wholeHours !== 1 ? 'r' : ''} ${minutes} minutt${minutes !== 1 ? 'er' : ''}`;
+
+  return `${wholeHours} time${wholeHours !== 1 ? "r" : ""} ${minutes} minutt${minutes !== 1 ? "er" : ""}`;
 }

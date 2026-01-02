@@ -4,7 +4,12 @@
  */
 
 import { SignJWT, jwtVerify } from "jose";
-import { COOKIE_NAME, THIRTY_DAYS_MS, REFRESH_TOKEN_COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+import {
+  COOKIE_NAME,
+  THIRTY_DAYS_MS,
+  REFRESH_TOKEN_COOKIE_NAME,
+  ONE_YEAR_MS,
+} from "@shared/const";
 import type { Request, Response, Express } from "express";
 import { parse as parseCookieHeader } from "cookie";
 import * as db from "../db";
@@ -106,7 +111,8 @@ class AuthService {
       const { payload } = await jwtVerify(cookieValue, secretKey, {
         algorithms: ["HS256"],
       });
-      const { openId, appId, name, email, impersonatedTenantId } = payload as Record<string, unknown>;
+      const { openId, appId, name, email, impersonatedTenantId } =
+        payload as Record<string, unknown>;
 
       if (
         !isNonEmptyString(openId) ||
@@ -120,8 +126,11 @@ class AuthService {
         openId,
         appId,
         name,
-        email: typeof email === 'string' ? email : undefined,
-        impersonatedTenantId: typeof impersonatedTenantId === 'string' ? impersonatedTenantId : null,
+        email: typeof email === "string" ? email : undefined,
+        impersonatedTenantId:
+          typeof impersonatedTenantId === "string"
+            ? impersonatedTenantId
+            : null,
       };
     } catch (error) {
       console.warn("[Auth] Session verification failed", String(error));
@@ -176,9 +185,9 @@ class AuthService {
       lastSignedIn: signedInAt,
     });
 
-    return { 
-      user, 
-      impersonatedTenantId: session.impersonatedTenantId ?? null 
+    return {
+      user,
+      impersonatedTenantId: session.impersonatedTenantId ?? null,
     };
   }
 }
@@ -186,7 +195,8 @@ class AuthService {
 export const authService = new AuthService();
 
 // Export authenticateRequest for backward compatibility
-export const authenticateRequest = (req: Request) => authService.authenticateRequest(req);
+export const authenticateRequest = (req: Request) =>
+  authService.authenticateRequest(req);
 
 /**
  * Register authentication routes
@@ -208,7 +218,9 @@ export function registerAuthRoutes(app: Express) {
       const trimmedEmail = validateEmail(email);
       if (!trimmedEmail) {
         console.warn("[Auth] Login attempt with invalid email format:", email);
-        res.status(400).json({ error: "Vennligst oppgi en gyldig e-postadresse" });
+        res
+          .status(400)
+          .json({ error: "Vennligst oppgi en gyldig e-postadresse" });
         return;
       }
 
@@ -216,7 +228,9 @@ export function registerAuthRoutes(app: Express) {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
         console.error("[Auth] Database not available for login");
-        res.status(500).json({ error: "Tjenesten er midlertidig utilgjengelig. Prøv igjen senere." });
+        res.status(500).json({
+          error: "Tjenesten er midlertidig utilgjengelig. Prøv igjen senere.",
+        });
         return;
       }
 
@@ -230,31 +244,40 @@ export function registerAuthRoutes(app: Express) {
         .limit(1);
 
       if (!user) {
-        console.warn("[Auth] Login attempt for non-existent user:", trimmedEmail);
-        res.status(401).json({ 
+        console.warn(
+          "[Auth] Login attempt for non-existent user:",
+          trimmedEmail
+        );
+        res.status(401).json({
           error: "Ugyldig e-post eller passord",
-          hint: "Hvis du har glemt passordet, klikk på 'Glemt passord?' for å tilbakestille det."
+          hint: "Hvis du har glemt passordet, klikk på 'Glemt passord?' for å tilbakestille det.",
         });
         return;
       }
 
       // Check if user has a password set
       if (!user.passwordHash) {
-        console.warn("[Auth] Login attempt for user without password:", user.id);
-        res.status(401).json({ 
+        console.warn(
+          "[Auth] Login attempt for user without password:",
+          user.id
+        );
+        res.status(401).json({
           error: "Kontoen din bruker en annen innloggingsmetode",
-          hint: "Denne kontoen ble opprettet med en annen innloggingsmetode. Kontakt support for hjelp."
+          hint: "Denne kontoen ble opprettet med en annen innloggingsmetode. Kontakt support for hjelp.",
         });
         return;
       }
 
       // Verify password
-      const isValidPassword = await authService.verifyPassword(password, user.passwordHash);
+      const isValidPassword = await authService.verifyPassword(
+        password,
+        user.passwordHash
+      );
       if (!isValidPassword) {
         console.warn("[Auth] Invalid password for user:", user.id);
-        res.status(401).json({ 
+        res.status(401).json({
           error: "Ugyldig e-post eller passord",
-          hint: "Hvis du har glemt passordet, klikk på 'Glemt passord?' for å tilbakestille det."
+          hint: "Hvis du har glemt passordet, klikk på 'Glemt passord?' for å tilbakestille det.",
         });
         return;
       }
@@ -262,9 +285,9 @@ export function registerAuthRoutes(app: Express) {
       // Check if user is active
       if (!user.isActive) {
         console.warn("[Auth] Login attempt for deactivated user:", user.id);
-        res.status(403).json({ 
+        res.status(403).json({
           error: "Kontoen er deaktivert",
-          hint: "Kontoen din har blitt deaktivert. Kontakt support for å reaktivere den."
+          hint: "Kontoen din har blitt deaktivert. Kontakt support for å reaktivere den.",
         });
         return;
       }
@@ -277,33 +300,42 @@ export function registerAuthRoutes(app: Express) {
       const tenant = await db.getTenantById(user.tenantId);
       if (!tenant) {
         console.error("[Auth] User's tenant not found:", user.tenantId);
-        res.status(500).json({ 
+        res.status(500).json({
           error: "Kontokonfigurasjonsfeil",
-          hint: "Det er et problem med kontoen din. Kontakt support for hjelp."
+          hint: "Det er et problem med kontoen din. Kontakt support for hjelp.",
         });
         return;
       }
 
-      if (tenant.status === 'suspended' || tenant.status === 'canceled') {
-        console.warn("[Auth] Login attempt for suspended/canceled tenant:", tenant.id, "status:", tenant.status);
-        res.status(403).json({ 
-          error: tenant.status === 'suspended' 
-            ? "Abonnementet er suspendert"
-            : "Abonnementet er avsluttet",
-          hint: "Kontakt support for å reaktivere abonnementet."
+      if (tenant.status === "suspended" || tenant.status === "canceled") {
+        console.warn(
+          "[Auth] Login attempt for suspended/canceled tenant:",
+          tenant.id,
+          "status:",
+          tenant.status
+        );
+        res.status(403).json({
+          error:
+            tenant.status === "suspended"
+              ? "Abonnementet er suspendert"
+              : "Abonnementet er avsluttet",
+          hint: "Kontakt support for å reaktivere abonnementet.",
         });
         return;
       }
 
       // Create session token (30 days)
-      const sessionToken = await authService.createSessionToken({
-        openId: user.openId,
-        appId: ENV.appId,
-        name: user.name || trimmedEmail,
-        email: user.email || undefined,
-      }, {
-        expiresInMs: THIRTY_DAYS_MS,
-      });
+      const sessionToken = await authService.createSessionToken(
+        {
+          openId: user.openId,
+          appId: ENV.appId,
+          name: user.name || trimmedEmail,
+          email: user.email || undefined,
+        },
+        {
+          expiresInMs: THIRTY_DAYS_MS,
+        }
+      );
 
       // Create refresh token (90 days)
       const { createRefreshToken } = await import("./refresh-tokens");
@@ -316,11 +348,22 @@ export function registerAuthRoutes(app: Express) {
 
       // Set cookies
       const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: THIRTY_DAYS_MS });
-      res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { ...cookieOptions, maxAge: 90 * 24 * 60 * 60 * 1000 }); // 90 days
+      res.cookie(COOKIE_NAME, sessionToken, {
+        ...cookieOptions,
+        maxAge: THIRTY_DAYS_MS,
+      });
+      res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, {
+        ...cookieOptions,
+        maxAge: 90 * 24 * 60 * 60 * 1000,
+      }); // 90 days
 
-      console.log("[Auth] Successful login for user:", user.id, "email:", user.email);
-      res.json({ 
+      console.log(
+        "[Auth] Successful login for user:",
+        user.id,
+        "email:",
+        user.email
+      );
+      res.json({
         success: true,
         user: {
           id: user.id,
@@ -328,13 +371,13 @@ export function registerAuthRoutes(app: Express) {
           email: user.email,
           role: user.role,
           tenantId: user.tenantId,
-        }
+        },
       });
     } catch (error) {
       console.error("[Auth] Login failed with error:", error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: "En uventet feil oppstod",
-        hint: "Vennligst prøv igjen. Hvis problemet vedvarer, kontakt support."
+        hint: "Vennligst prøv igjen. Hvis problemet vedvarer, kontakt support.",
       });
     }
   });
@@ -343,7 +386,7 @@ export function registerAuthRoutes(app: Express) {
   app.post("/api/auth/demo-login", async (req: Request, res: Response) => {
     try {
       const DEMO_EMAIL = "demo@stylora.no";
-      
+
       // Get demo user from database
       const dbInstance = await db.getDb();
       if (!dbInstance) {
@@ -363,20 +406,26 @@ export function registerAuthRoutes(app: Express) {
       }
 
       // Create session token
-      const sessionToken = await authService.createSessionToken({
-        openId: user.openId,
-        appId: ENV.appId,
-        name: user.name || "Demo User",
-        email: user.email || undefined,
-      }, {
-        expiresInMs: ONE_YEAR_MS,
-      });
+      const sessionToken = await authService.createSessionToken(
+        {
+          openId: user.openId,
+          appId: ENV.appId,
+          name: user.name || "Demo User",
+          email: user.email || undefined,
+        },
+        {
+          expiresInMs: ONE_YEAR_MS,
+        }
+      );
 
       // Set cookie
       const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      res.cookie(COOKIE_NAME, sessionToken, {
+        ...cookieOptions,
+        maxAge: ONE_YEAR_MS,
+      });
 
-      res.json({ 
+      res.json({
         success: true,
         user: {
           id: user.id,
@@ -384,7 +433,7 @@ export function registerAuthRoutes(app: Express) {
           email: user.email,
           role: user.role,
           tenantId: user.tenantId,
-        }
+        },
       });
     } catch (error) {
       console.error("[Auth] Demo login failed", error);
@@ -405,7 +454,9 @@ export function registerAuthRoutes(app: Express) {
       // Validate and normalize email
       const trimmedEmail = validateEmail(email);
       if (!trimmedEmail) {
-        res.status(400).json({ error: "Vennligst oppgi en gyldig e-postadresse" });
+        res
+          .status(400)
+          .json({ error: "Vennligst oppgi en gyldig e-postadresse" });
         return;
       }
 
@@ -417,7 +468,9 @@ export function registerAuthRoutes(app: Express) {
       const dbInstance = await db.getDb();
       if (!dbInstance) {
         console.error("[Auth] Database not available for registration");
-        res.status(500).json({ error: "Tjenesten er midlertidig utilgjengelig. Prøv igjen senere." });
+        res.status(500).json({
+          error: "Tjenesten er midlertidig utilgjengelig. Prøv igjen senere.",
+        });
         return;
       }
 
@@ -429,30 +482,39 @@ export function registerAuthRoutes(app: Express) {
         .limit(1);
 
       if (existingUser) {
-        console.warn("[Auth] Registration attempt with existing email:", trimmedEmail);
-        res.status(400).json({ 
+        console.warn(
+          "[Auth] Registration attempt with existing email:",
+          trimmedEmail
+        );
+        res.status(400).json({
           error: "E-postadressen er allerede registrert",
-          hint: "Hvis dette er din konto, kan du logge inn eller bruke 'Glemt passord?' for å tilbakestille passordet."
+          hint: "Hvis dette er din konto, kan du logge inn eller bruke 'Glemt passord?' for å tilbakestille passordet.",
         });
         return;
       }
 
       // Create tenant
       const tenantId = `tenant-${nanoid(12)}`;
-      const subdomain = trimmedEmail.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') + '-' + nanoid(6);
-      
+      const subdomain =
+        trimmedEmail
+          .split("@")[0]
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "") +
+        "-" +
+        nanoid(6);
+
       await dbInstance.insert(tenants).values({
         id: tenantId,
-        name: salonName || `${name || trimmedEmail.split('@')[0]}'s Salong`,
+        name: salonName || `${name || trimmedEmail.split("@")[0]}'s Salong`,
         subdomain,
         email: trimmedEmail,
         phone: phone || null,
-        status: 'trial',
+        status: "trial",
         trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days trial
         emailVerified: true, // Auto-verify for simplicity
         emailVerifiedAt: new Date(),
         onboardingCompleted: false,
-        onboardingStep: 'welcome',
+        onboardingStep: "welcome",
       });
 
       // Hash password and create user
@@ -463,15 +525,15 @@ export function registerAuthRoutes(app: Express) {
         tenantId,
         openId,
         email: trimmedEmail,
-        name: name || trimmedEmail.split('@')[0],
+        name: name || trimmedEmail.split("@")[0],
         phone: phone || null,
         passwordHash,
-        role: 'owner',
-        loginMethod: 'email',
+        role: "owner",
+        loginMethod: "email",
         isActive: true,
-        commissionType: 'percentage',
-        commissionRate: '50.00',
-        uiMode: 'advanced',
+        commissionType: "percentage",
+        commissionRate: "50.00",
+        uiMode: "advanced",
         onboardingCompleted: false,
       });
 
@@ -483,20 +545,26 @@ export function registerAuthRoutes(app: Express) {
         .limit(1);
 
       // Create session token
-      const sessionToken = await authService.createSessionToken({
-        openId,
-        appId: ENV.appId,
-        name: name || trimmedEmail.split('@')[0],
-        email: trimmedEmail,
-      }, {
-        expiresInMs: ONE_YEAR_MS,
-      });
+      const sessionToken = await authService.createSessionToken(
+        {
+          openId,
+          appId: ENV.appId,
+          name: name || trimmedEmail.split("@")[0],
+          email: trimmedEmail,
+        },
+        {
+          expiresInMs: ONE_YEAR_MS,
+        }
+      );
 
       // Set cookie
       const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      res.cookie(COOKIE_NAME, sessionToken, {
+        ...cookieOptions,
+        maxAge: ONE_YEAR_MS,
+      });
 
-      res.json({ 
+      res.json({
         success: true,
         message: "Registrering vellykket!",
         user: {
@@ -505,13 +573,13 @@ export function registerAuthRoutes(app: Express) {
           email: newUser?.email,
           role: newUser?.role,
           tenantId: newUser?.tenantId,
-        }
+        },
       });
     } catch (error) {
       console.error("[Auth] Registration failed with error:", error);
-      res.status(500).json({ 
+      res.status(500).json({
         error: "Registrering feilet",
-        hint: "Vennligst prøv igjen. Hvis problemet vedvarer, kontakt support."
+        hint: "Vennligst prøv igjen. Hvis problemet vedvarer, kontakt support.",
       });
     }
   });
@@ -520,7 +588,7 @@ export function registerAuthRoutes(app: Express) {
   app.post("/api/auth/forgot-password", async (req: Request, res: Response) => {
     try {
       const { email } = req.body;
-      
+
       if (!email) {
         res.status(400).json({ error: "E-post er påkrevd" });
         return;
@@ -529,38 +597,49 @@ export function registerAuthRoutes(app: Express) {
       // Validate and normalize email
       const trimmedEmail = validateEmail(email);
       if (!trimmedEmail) {
-        res.status(400).json({ error: "Vennligst oppgi en gyldig e-postadresse" });
+        res
+          .status(400)
+          .json({ error: "Vennligst oppgi en gyldig e-postadresse" });
         return;
       }
-      
+
       const dbInstance = await db.getDb();
       if (!dbInstance) {
         console.error("[Auth] Database not available for forgot password");
-        res.status(500).json({ error: "Tjenesten er midlertidig utilgjengelig. Prøv igjen senere." });
+        res.status(500).json({
+          error: "Tjenesten er midlertidig utilgjengelig. Prøv igjen senere.",
+        });
         return;
       }
-      
+
       // Check if user exists (case-insensitive)
       const [user] = await dbInstance
         .select()
         .from(users)
         .where(sql`LOWER(${users.email}) = LOWER(${trimmedEmail})`)
         .limit(1);
-      
+
       // Always return success to prevent email enumeration
       // In production, you would send an email here
       if (user) {
-        console.log(`[Auth] Password reset requested for user ${user.id}, email: ${trimmedEmail}`);
+        console.log(
+          `[Auth] Password reset requested for user ${user.id}, email: ${trimmedEmail}`
+        );
         // TODO: Send password reset email with reset token
         // For now, log that the feature needs implementation
-        console.warn("[Auth] Password reset email not implemented yet - user should contact support");
+        console.warn(
+          "[Auth] Password reset email not implemented yet - user should contact support"
+        );
       } else {
-        console.log(`[Auth] Password reset requested for non-existent email: ${trimmedEmail}`);
+        console.log(
+          `[Auth] Password reset requested for non-existent email: ${trimmedEmail}`
+        );
       }
-      
-      res.json({ 
-        success: true, 
-        message: "Hvis e-postadressen finnes i systemet, vil du motta en e-post med instruksjoner." 
+
+      res.json({
+        success: true,
+        message:
+          "Hvis e-postadressen finnes i systemet, vil du motta en e-post med instruksjoner.",
       });
     } catch (error) {
       console.error("[Auth] Forgot password error:", error);
@@ -574,7 +653,7 @@ export function registerAuthRoutes(app: Express) {
       // Revoke refresh token if present
       const cookies = parseCookieHeader(req.headers.cookie || "");
       const refreshToken = cookies[REFRESH_TOKEN_COOKIE_NAME];
-      
+
       if (refreshToken) {
         const { revokeRefreshToken } = await import("./refresh-tokens");
         await revokeRefreshToken(refreshToken, "User logout");
@@ -583,15 +662,21 @@ export function registerAuthRoutes(app: Express) {
       // Clear cookies
       const cookieOptions = getSessionCookieOptions(req);
       res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      
+      res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
+        ...cookieOptions,
+        maxAge: -1,
+      });
+
       res.json({ success: true });
     } catch (error) {
       console.error("[Auth] Logout failed", error);
       // Still clear cookies even if revocation fails
       const cookieOptions = getSessionCookieOptions(req);
       res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
+        ...cookieOptions,
+        maxAge: -1,
+      });
       res.json({ success: true });
     }
   });
@@ -600,7 +685,7 @@ export function registerAuthRoutes(app: Express) {
   app.get("/api/auth/me", async (req: Request, res: Response) => {
     try {
       const result = await authService.authenticateRequest(req);
-      
+
       if (!result) {
         res.status(401).json({ error: "Ikke autentisert" });
         return;
@@ -614,7 +699,7 @@ export function registerAuthRoutes(app: Express) {
           email: result.user.email,
           role: result.user.role,
           tenantId: result.user.tenantId,
-        }
+        },
       });
     } catch (error) {
       console.error("[Auth] Get user failed", error);

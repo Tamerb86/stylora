@@ -9,7 +9,7 @@ import { eq, desc } from "drizzle-orm";
 export async function createDatabaseBackup(tenantId: string, userId?: number) {
   const db = await getDb();
   if (!db) throw new Error("Database connection failed");
-  
+
   const backupId = await db.insert(databaseBackups).values({
     tenantId,
     backupType: userId ? "manual" : "full",
@@ -18,19 +18,22 @@ export async function createDatabaseBackup(tenantId: string, userId?: number) {
     createdBy: userId,
   });
 
-  const insertedId = Array.isArray(backupId) ? backupId[0]?.insertId : (backupId as any).insertId;
+  const insertedId = Array.isArray(backupId)
+    ? backupId[0]?.insertId
+    : (backupId as any).insertId;
 
   try {
     // Generate SQL dump
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const fileName = `backup-${tenantId}-${timestamp}.sql`;
-    
+
     // Export database structure and data
     const sqlDump = await exportDatabaseToSQL(tenantId);
     const fileSize = Buffer.byteLength(sqlDump, "utf-8");
 
     // Update backup record with success
-    await db.update(databaseBackups)
+    await db
+      .update(databaseBackups)
       .set({
         fileKey: fileName, // Store filename for reference
         fileSize,
@@ -48,7 +51,8 @@ export async function createDatabaseBackup(tenantId: string, userId?: number) {
     };
   } catch (error: any) {
     // Mark backup as failed
-    await db.update(databaseBackups)
+    await db
+      .update(databaseBackups)
       .set({
         status: "failed",
         errorMessage: error.message || "Unknown error",
@@ -67,7 +71,7 @@ export async function createDatabaseBackup(tenantId: string, userId?: number) {
 async function exportDatabaseToSQL(tenantId: string): Promise<string> {
   const db = await getDb();
   if (!db) throw new Error("Database connection failed");
-  
+
   let sql = `-- Stylora Database Backup\n`;
   sql += `-- Tenant: ${tenantId}\n`;
   sql += `-- Date: ${new Date().toISOString()}\n\n`;
@@ -106,9 +110,11 @@ async function exportDatabaseToSQL(tenantId: string): Promise<string> {
   for (const tableName of tables) {
     try {
       // Get table data
-      const result: any = await db.execute(`SELECT * FROM ${tableName} WHERE tenantId = '${tenantId}'`);
+      const result: any = await db.execute(
+        `SELECT * FROM ${tableName} WHERE tenantId = '${tenantId}'`
+      );
       const rows = Array.isArray(result) ? result : [];
-      
+
       if (rows.length === 0) continue;
 
       sql += `-- Table: ${tableName}\n`;
@@ -145,7 +151,7 @@ async function exportDatabaseToSQL(tenantId: string): Promise<string> {
 export async function listBackups(tenantId: string) {
   const db = await getDb();
   if (!db) throw new Error("Database connection failed");
-  
+
   const backups = await db
     .select()
     .from(databaseBackups)
@@ -160,10 +166,13 @@ export async function listBackups(tenantId: string) {
  * Delete old backups (retention policy)
  * Keeps only the last N backups
  */
-export async function deleteOldBackups(tenantId: string, keepCount: number = 30) {
+export async function deleteOldBackups(
+  tenantId: string,
+  keepCount: number = 30
+) {
   const db = await getDb();
   if (!db) throw new Error("Database connection failed");
-  
+
   const allBackups = await db
     .select()
     .from(databaseBackups)
@@ -195,7 +204,7 @@ export async function deleteOldBackups(tenantId: string, keepCount: number = 30)
 export async function getBackupById(backupId: number, tenantId: string) {
   const db = await getDb();
   if (!db) throw new Error("Database connection failed");
-  
+
   const backup = await db
     .select()
     .from(databaseBackups)
@@ -215,14 +224,14 @@ export async function getBackupById(backupId: number, tenantId: string) {
 export async function deleteBackup(backupId: number, tenantId: string) {
   const db = await getDb();
   if (!db) throw new Error("Database connection failed");
-  
+
   const backup = await getBackupById(backupId, tenantId);
   if (!backup) {
     throw new Error("Backup not found");
   }
 
   await db.delete(databaseBackups).where(eq(databaseBackups.id, backupId));
-  
+
   return { success: true };
 }
 
@@ -230,7 +239,10 @@ export async function deleteBackup(backupId: number, tenantId: string) {
  * Re-generate SQL content for an existing backup
  * Used when user wants to download an old backup
  */
-export async function regenerateBackupSQL(backupId: number, tenantId: string): Promise<string> {
+export async function regenerateBackupSQL(
+  backupId: number,
+  tenantId: string
+): Promise<string> {
   const backup = await getBackupById(backupId, tenantId);
   if (!backup) {
     throw new Error("Backup not found");

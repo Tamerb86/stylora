@@ -36,7 +36,9 @@ describe("Tenant Onboarding", () => {
   describe("getServiceTemplates", () => {
     it("should return frisør templates", async () => {
       const caller = appRouter.createCaller(mockOwnerContext);
-      const result = await caller.saasAdmin.getServiceTemplates({ salonType: "frisør" });
+      const result = await caller.saasAdmin.getServiceTemplates({
+        salonType: "frisør",
+      });
 
       expect(result).toBeDefined();
       expect(Array.isArray(result)).toBe(true);
@@ -44,7 +46,7 @@ describe("Tenant Onboarding", () => {
       expect(result[0]).toHaveProperty("name");
       expect(result[0]).toHaveProperty("duration");
       expect(result[0]).toHaveProperty("price");
-      
+
       // Check specific frisør services
       const serviceNames = result.map(s => s.name);
       expect(serviceNames).toContain("Klipp dame");
@@ -54,12 +56,14 @@ describe("Tenant Onboarding", () => {
 
     it("should return barber templates", async () => {
       const caller = appRouter.createCaller(mockOwnerContext);
-      const result = await caller.saasAdmin.getServiceTemplates({ salonType: "barber" });
+      const result = await caller.saasAdmin.getServiceTemplates({
+        salonType: "barber",
+      });
 
       expect(result).toBeDefined();
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
-      
+
       // Check specific barber services
       const serviceNames = result.map(s => s.name);
       expect(serviceNames).toContain("Klipp");
@@ -69,12 +73,14 @@ describe("Tenant Onboarding", () => {
 
     it("should return skjønnhet templates", async () => {
       const caller = appRouter.createCaller(mockOwnerContext);
-      const result = await caller.saasAdmin.getServiceTemplates({ salonType: "skjønnhet" });
+      const result = await caller.saasAdmin.getServiceTemplates({
+        salonType: "skjønnhet",
+      });
 
       expect(result).toBeDefined();
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
-      
+
       // Check specific skjønnhet services
       const serviceNames = result.map(s => s.name);
       expect(serviceNames).toContain("Ansiktsbehandling");
@@ -84,7 +90,7 @@ describe("Tenant Onboarding", () => {
 
     it("should reject non-owner users", async () => {
       const caller = appRouter.createCaller(mockUserContext);
-      
+
       await expect(
         caller.saasAdmin.getServiceTemplates({ salonType: "frisør" })
       ).rejects.toThrow();
@@ -95,9 +101,9 @@ describe("Tenant Onboarding", () => {
     it("should return available for non-existent subdomain", async () => {
       const caller = appRouter.createCaller(mockOwnerContext);
       const uniqueSubdomain = `test-salon-${Date.now()}`;
-      
-      const result = await caller.saasAdmin.checkSubdomainAvailability({ 
-        subdomain: uniqueSubdomain 
+
+      const result = await caller.saasAdmin.checkSubdomainAvailability({
+        subdomain: uniqueSubdomain,
       });
 
       expect(result).toEqual({ available: true });
@@ -105,10 +111,10 @@ describe("Tenant Onboarding", () => {
 
     it("should return unavailable for existing subdomain", async () => {
       const caller = appRouter.createCaller(mockOwnerContext);
-      
+
       // Use the default tenant subdomain
-      const result = await caller.saasAdmin.checkSubdomainAvailability({ 
-        subdomain: "default-tenant" 
+      const result = await caller.saasAdmin.checkSubdomainAvailability({
+        subdomain: "default-tenant",
       });
 
       expect(result).toEqual({ available: false });
@@ -116,11 +122,11 @@ describe("Tenant Onboarding", () => {
 
     it("should be case-insensitive", async () => {
       const caller = appRouter.createCaller(mockOwnerContext);
-      
+
       // Check uppercase version of existing subdomain
       // Note: The check converts to lowercase, so uppercase should also be unavailable
-      const result = await caller.saasAdmin.checkSubdomainAvailability({ 
-        subdomain: "DEFAULT-TENANT" 
+      const result = await caller.saasAdmin.checkSubdomainAvailability({
+        subdomain: "DEFAULT-TENANT",
       });
 
       // If default-tenant exists, this should be unavailable
@@ -134,9 +140,9 @@ describe("Tenant Onboarding", () => {
     it("should return available for non-existent org number", async () => {
       const caller = appRouter.createCaller(mockOwnerContext);
       const uniqueOrgNumber = `${Date.now()}`.slice(0, 9);
-      
-      const result = await caller.saasAdmin.checkOrgNumberAvailability({ 
-        orgNumber: uniqueOrgNumber 
+
+      const result = await caller.saasAdmin.checkOrgNumberAvailability({
+        orgNumber: uniqueOrgNumber,
       });
 
       expect(result).toEqual({ available: true });
@@ -144,21 +150,18 @@ describe("Tenant Onboarding", () => {
 
     it("should return unavailable for existing org number", async () => {
       const caller = appRouter.createCaller(mockOwnerContext);
-      
+
       // First, get an existing org number from the database
       const { getDb } = await import("../db");
       const dbInstance = await getDb();
       if (!dbInstance) throw new Error("Database not available");
-      
+
       const { tenants } = await import("../../drizzle/schema");
-      const [existingTenant] = await dbInstance
-        .select()
-        .from(tenants)
-        .limit(1);
+      const [existingTenant] = await dbInstance.select().from(tenants).limit(1);
 
       if (existingTenant?.orgNumber) {
-        const result = await caller.saasAdmin.checkOrgNumberAvailability({ 
-          orgNumber: existingTenant.orgNumber 
+        const result = await caller.saasAdmin.checkOrgNumberAvailability({
+          orgNumber: existingTenant.orgNumber,
         });
 
         expect(result).toEqual({ available: false });
@@ -173,8 +176,10 @@ describe("Tenant Onboarding", () => {
     it("should create tenant with all components", async () => {
       const caller = appRouter.createCaller(mockOwnerContext);
       const timestamp = Date.now();
-      
-      const input: inferProcedureInput<AppRouter["saasAdmin"]["createTenantWithOnboarding"]> = {
+
+      const input: inferProcedureInput<
+        AppRouter["saasAdmin"]["createTenantWithOnboarding"]
+      > = {
         name: `Test Salon ${timestamp}`,
         subdomain: `test-salon-${timestamp}`,
         orgNumber: `9${timestamp}`.slice(0, 9),
@@ -205,8 +210,9 @@ describe("Tenant Onboarding", () => {
       const { getDb } = await import("../db");
       const dbInstance = await getDb();
       if (!dbInstance) throw new Error("Database not available");
-      
-      const { tenants, users, services, tenantSubscriptions, settings } = await import("../../drizzle/schema");
+
+      const { tenants, users, services, tenantSubscriptions, settings } =
+        await import("../../drizzle/schema");
       const { eq } = await import("drizzle-orm");
 
       // Check tenant
@@ -214,7 +220,7 @@ describe("Tenant Onboarding", () => {
         .select()
         .from(tenants)
         .where(eq(tenants.id, result.tenantId));
-      
+
       expect(tenant).toBeDefined();
       expect(tenant.name).toBe(input.name);
       expect(tenant.subdomain).toBe(input.subdomain);
@@ -225,7 +231,7 @@ describe("Tenant Onboarding", () => {
         .select()
         .from(users)
         .where(eq(users.tenantId, result.tenantId));
-      
+
       expect(admin).toBeDefined();
       expect(admin.email).toBe(input.adminEmail);
       expect(admin.role).toBe("admin");
@@ -235,7 +241,7 @@ describe("Tenant Onboarding", () => {
         .select()
         .from(services)
         .where(eq(services.tenantId, result.tenantId));
-      
+
       expect(createdServices.length).toBe(2);
 
       // Check subscription
@@ -243,7 +249,7 @@ describe("Tenant Onboarding", () => {
         .select()
         .from(tenantSubscriptions)
         .where(eq(tenantSubscriptions.tenantId, result.tenantId));
-      
+
       expect(subscription).toBeDefined();
       expect(subscription.planId).toBe(input.planId);
       expect(subscription.status).toBe("active");
@@ -253,21 +259,25 @@ describe("Tenant Onboarding", () => {
         .select()
         .from(settings)
         .where(eq(settings.tenantId, result.tenantId));
-      
+
       expect(createdSettings.length).toBeGreaterThan(0);
-      
+
       // Verify specific settings
-      const salonNameSetting = createdSettings.find(s => s.settingKey === "salonName");
+      const salonNameSetting = createdSettings.find(
+        s => s.settingKey === "salonName"
+      );
       expect(salonNameSetting?.settingValue).toBe(input.name);
     });
 
     it("should reject duplicate subdomain", async () => {
       const caller = appRouter.createCaller(mockOwnerContext);
       const timestamp = Date.now();
-      
+
       // Create a tenant first to ensure we have a duplicate subdomain
       const firstTimestamp = Date.now();
-      const firstInput: inferProcedureInput<AppRouter["saasAdmin"]["createTenantWithOnboarding"]> = {
+      const firstInput: inferProcedureInput<
+        AppRouter["saasAdmin"]["createTenantWithOnboarding"]
+      > = {
         name: `First Salon ${firstTimestamp}`,
         subdomain: `duplicate-test-${firstTimestamp}`,
         orgNumber: `1${firstTimestamp}`.slice(0, 9),
@@ -279,9 +289,7 @@ describe("Tenant Onboarding", () => {
         adminEmail: `firstadmin${firstTimestamp}@example.com`,
         adminPhone: "+4787654321",
         salonType: "frisør" as const,
-        services: [
-          { name: "Klipp dame", duration: 60, price: 550 },
-        ],
+        services: [{ name: "Klipp dame", duration: 60, price: 550 }],
       };
 
       await caller.saasAdmin.createTenantWithOnboarding(firstInput);
@@ -290,7 +298,9 @@ describe("Tenant Onboarding", () => {
       await new Promise(resolve => setTimeout(resolve, 10));
 
       // Now try to create another with same subdomain
-      const input: inferProcedureInput<AppRouter["saasAdmin"]["createTenantWithOnboarding"]> = {
+      const input: inferProcedureInput<
+        AppRouter["saasAdmin"]["createTenantWithOnboarding"]
+      > = {
         name: `Test Salon ${timestamp}`,
         subdomain: `duplicate-test-${firstTimestamp}`, // Same subdomain
         orgNumber: `2${timestamp}`.slice(0, 9),
@@ -302,9 +312,7 @@ describe("Tenant Onboarding", () => {
         adminEmail: `admin${timestamp}@example.com`,
         adminPhone: "+4787654321",
         salonType: "frisør",
-        services: [
-          { name: "Klipp dame", duration: 60, price: 550 },
-        ],
+        services: [{ name: "Klipp dame", duration: 60, price: 550 }],
       };
 
       await expect(
@@ -315,12 +323,14 @@ describe("Tenant Onboarding", () => {
     it("should reject duplicate organization number", async () => {
       const caller = appRouter.createCaller(mockOwnerContext);
       const timestamp = Date.now();
-      
+
       // Create a tenant first to ensure we have a duplicate org number
       const firstTimestamp = Date.now();
       const duplicateOrgNumber = `3${firstTimestamp}`.slice(0, 9);
-      
-      const firstInput: inferProcedureInput<AppRouter["saasAdmin"]["createTenantWithOnboarding"]> = {
+
+      const firstInput: inferProcedureInput<
+        AppRouter["saasAdmin"]["createTenantWithOnboarding"]
+      > = {
         name: `First Salon ${firstTimestamp}`,
         subdomain: `org-test-1-${firstTimestamp}`,
         orgNumber: duplicateOrgNumber,
@@ -332,9 +342,7 @@ describe("Tenant Onboarding", () => {
         adminEmail: `firstadmin${firstTimestamp}@example.com`,
         adminPhone: "+4787654321",
         salonType: "frisør" as const,
-        services: [
-          { name: "Klipp dame", duration: 60, price: 550 },
-        ],
+        services: [{ name: "Klipp dame", duration: 60, price: 550 }],
       };
 
       await caller.saasAdmin.createTenantWithOnboarding(firstInput);
@@ -343,7 +351,9 @@ describe("Tenant Onboarding", () => {
       await new Promise(resolve => setTimeout(resolve, 10));
 
       // Now try to create another with same org number
-      const input: inferProcedureInput<AppRouter["saasAdmin"]["createTenantWithOnboarding"]> = {
+      const input: inferProcedureInput<
+        AppRouter["saasAdmin"]["createTenantWithOnboarding"]
+      > = {
         name: `Test Salon ${timestamp}`,
         subdomain: `org-test-2-${timestamp}`,
         orgNumber: duplicateOrgNumber, // Same org number
@@ -355,9 +365,7 @@ describe("Tenant Onboarding", () => {
         adminEmail: `admin${timestamp}@example.com`,
         adminPhone: "+4787654321",
         salonType: "frisør",
-        services: [
-          { name: "Klipp dame", duration: 60, price: 550 },
-        ],
+        services: [{ name: "Klipp dame", duration: 60, price: 550 }],
       };
 
       await expect(
@@ -368,8 +376,10 @@ describe("Tenant Onboarding", () => {
     it("should reject non-owner users", async () => {
       const caller = appRouter.createCaller(mockUserContext);
       const timestamp = Date.now();
-      
-      const input: inferProcedureInput<AppRouter["saasAdmin"]["createTenantWithOnboarding"]> = {
+
+      const input: inferProcedureInput<
+        AppRouter["saasAdmin"]["createTenantWithOnboarding"]
+      > = {
         name: `Test Salon ${timestamp}`,
         subdomain: `test-salon-${timestamp}`,
         orgNumber: `${timestamp}`.slice(0, 9),
@@ -381,9 +391,7 @@ describe("Tenant Onboarding", () => {
         adminEmail: `admin${timestamp}@example.com`,
         adminPhone: "+4787654321",
         salonType: "frisør",
-        services: [
-          { name: "Klipp dame", duration: 60, price: 550 },
-        ],
+        services: [{ name: "Klipp dame", duration: 60, price: 550 }],
       };
 
       await expect(

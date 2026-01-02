@@ -4,8 +4,26 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, CheckCircle2, Sparkles, ArrowRight, ArrowLeft, Scissors, Users, Clock, PartyPopper, Check, Cloud } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Loader2,
+  CheckCircle2,
+  Sparkles,
+  ArrowRight,
+  ArrowLeft,
+  Scissors,
+  Users,
+  Clock,
+  PartyPopper,
+  Check,
+  Cloud,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -24,22 +42,24 @@ const WORK_DAYS = [
 export default function SetupWizard() {
   const [, setLocation] = useLocation();
   const [currentStep, setCurrentStep] = useState<WizardStep>("welcome");
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
+    "idle"
+  );
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  
+
   // Service form state
   const [serviceName, setServiceName] = useState("");
   const [serviceDuration, setServiceDuration] = useState("30");
   const [servicePrice, setServicePrice] = useState("");
   const [serviceDescription, setServiceDescription] = useState("");
-  
+
   // Employee form state
   const [employeeName, setEmployeeName] = useState("");
   const [employeeEmail, setEmployeeEmail] = useState("");
   const [employeePhone, setEmployeePhone] = useState("");
   const [employeeCommission, setEmployeeCommission] = useState("40");
   const [skipEmployee, setSkipEmployee] = useState(false);
-  
+
   // Business hours state
   const [openTime, setOpenTime] = useState("09:00");
   const [closeTime, setCloseTime] = useState("17:00");
@@ -69,11 +89,13 @@ export default function SetupWizard() {
       if (draft.serviceName) setServiceName(draft.serviceName);
       if (draft.serviceDuration) setServiceDuration(draft.serviceDuration);
       if (draft.servicePrice) setServicePrice(draft.servicePrice);
-      if (draft.serviceDescription) setServiceDescription(draft.serviceDescription);
+      if (draft.serviceDescription)
+        setServiceDescription(draft.serviceDescription);
       if (draft.employeeName) setEmployeeName(draft.employeeName);
       if (draft.employeeEmail) setEmployeeEmail(draft.employeeEmail);
       if (draft.employeePhone) setEmployeePhone(draft.employeePhone);
-      if (draft.employeeCommission) setEmployeeCommission(draft.employeeCommission);
+      if (draft.employeeCommission)
+        setEmployeeCommission(draft.employeeCommission);
       if (draft.skipEmployee !== undefined) setSkipEmployee(draft.skipEmployee);
       if (draft.openTime) setOpenTime(draft.openTime);
       if (draft.closeTime) setCloseTime(draft.closeTime);
@@ -107,13 +129,13 @@ export default function SetupWizard() {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges && currentStep !== "complete") {
         e.preventDefault();
-        e.returnValue = '';
-        return '';
+        e.returnValue = "";
+        return "";
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [hasUnsavedChanges, currentStep]);
 
   // Auto-save draft data with debouncing
@@ -141,12 +163,12 @@ export default function SetupWizard() {
           workDays,
         },
         {
-        onSuccess: () => {
-          setSaveStatus("saved");
-          setHasUnsavedChanges(false);
-          // Reset to idle after 2 seconds
-          setTimeout(() => setSaveStatus("idle"), 2000);
-        },
+          onSuccess: () => {
+            setSaveStatus("saved");
+            setHasUnsavedChanges(false);
+            // Reset to idle after 2 seconds
+            setTimeout(() => setSaveStatus("idle"), 2000);
+          },
           onError: () => {
             setSaveStatus("idle");
           },
@@ -256,7 +278,7 @@ export default function SetupWizard() {
           return;
         }
       }
-      
+
       await updateStep.mutateAsync({ step: "hours" });
       setCurrentStep("hours");
     } else if (currentStep === "hours") {
@@ -310,10 +332,8 @@ export default function SetupWizard() {
   };
 
   const toggleWorkDay = (day: number) => {
-    setWorkDays(prev => 
-      prev.includes(day) 
-        ? prev.filter(d => d !== day)
-        : [...prev, day]
+    setWorkDays(prev =>
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
     );
   };
 
@@ -322,7 +342,12 @@ export default function SetupWizard() {
     return steps.indexOf(currentStep) + 1;
   };
 
-  const isLoading = updateStep.isPending || addService.isPending || addEmployee.isPending || setBusinessHours.isPending || completeWizard.isPending;
+  const isLoading =
+    updateStep.isPending ||
+    addService.isPending ||
+    addEmployee.isPending ||
+    setBusinessHours.isPending ||
+    completeWizard.isPending;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 flex items-center justify-center p-4">
@@ -352,7 +377,7 @@ export default function SetupWizard() {
               </span>
             </div>
             <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-gradient-to-r from-blue-600 to-orange-500 transition-all duration-500"
                 style={{ width: `${(getStepNumber() / 5) * 100}%` }}
               />
@@ -370,13 +395,17 @@ export default function SetupWizard() {
                   {saveStatus === "saving" && (
                     <>
                       <Cloud className="w-4 h-4 text-blue-500 animate-pulse" />
-                      <span className="text-blue-600 font-medium">جاري الحفظ...</span>
+                      <span className="text-blue-600 font-medium">
+                        جاري الحفظ...
+                      </span>
                     </>
                   )}
                   {saveStatus === "saved" && (
                     <>
                       <Check className="w-4 h-4 text-green-500" />
-                      <span className="text-green-600 font-medium">تم الحفظ</span>
+                      <span className="text-green-600 font-medium">
+                        تم الحفظ
+                      </span>
                     </>
                   )}
                 </div>
@@ -397,12 +426,22 @@ export default function SetupWizard() {
           )}
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              {currentStep === "welcome" && <Sparkles className="w-5 h-5 text-blue-600" />}
-              {currentStep === "service" && <Scissors className="w-5 h-5 text-blue-600" />}
-              {currentStep === "employee" && <Users className="w-5 h-5 text-blue-600" />}
-              {currentStep === "hours" && <Clock className="w-5 h-5 text-blue-600" />}
-              {currentStep === "complete" && <PartyPopper className="w-5 h-5 text-blue-600" />}
-              
+              {currentStep === "welcome" && (
+                <Sparkles className="w-5 h-5 text-blue-600" />
+              )}
+              {currentStep === "service" && (
+                <Scissors className="w-5 h-5 text-blue-600" />
+              )}
+              {currentStep === "employee" && (
+                <Users className="w-5 h-5 text-blue-600" />
+              )}
+              {currentStep === "hours" && (
+                <Clock className="w-5 h-5 text-blue-600" />
+              )}
+              {currentStep === "complete" && (
+                <PartyPopper className="w-5 h-5 text-blue-600" />
+              )}
+
               {currentStep === "welcome" && "Velkommen!"}
               {currentStep === "service" && "Legg til din første tjeneste"}
               {currentStep === "employee" && "Legg til en ansatt (valgfritt)"}
@@ -410,7 +449,8 @@ export default function SetupWizard() {
               {currentStep === "complete" && "Alt klart!"}
             </CardTitle>
             <CardDescription>
-              {currentStep === "welcome" && "Vi hjelper deg å komme i gang raskt"}
+              {currentStep === "welcome" &&
+                "Vi hjelper deg å komme i gang raskt"}
               {currentStep === "service" && "Hva slags tjenester tilbyr du?"}
               {currentStep === "employee" && "Hvem jobber i salongen din?"}
               {currentStep === "hours" && "Når er dere åpne?"}
@@ -422,15 +462,21 @@ export default function SetupWizard() {
             {currentStep === "welcome" && (
               <div className="space-y-6">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                  <h3 className="font-semibold text-blue-900 mb-3">Hva skjer nå?</h3>
+                  <h3 className="font-semibold text-blue-900 mb-3">
+                    Hva skjer nå?
+                  </h3>
                   <ul className="space-y-2 text-sm text-blue-800">
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                      <span>Legg til din første tjeneste (f.eks. "Herreklipp")</span>
+                      <span>
+                        Legg til din første tjeneste (f.eks. "Herreklipp")
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                      <span>Legg til ansatte (eller hopp over hvis du jobber alene)</span>
+                      <span>
+                        Legg til ansatte (eller hopp over hvis du jobber alene)
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -459,7 +505,7 @@ export default function SetupWizard() {
                     id="serviceName"
                     placeholder="F.eks. Herreklipp, Dameklipp, Skjeggstuss"
                     value={serviceName}
-                    onChange={(e) => setServiceName(e.target.value)}
+                    onChange={e => setServiceName(e.target.value)}
                     disabled={isLoading}
                   />
                 </div>
@@ -467,14 +513,15 @@ export default function SetupWizard() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="serviceDuration">
-                      Varighet (minutter) <span className="text-red-500">*</span>
+                      Varighet (minutter){" "}
+                      <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="serviceDuration"
                       type="number"
                       placeholder="30"
                       value={serviceDuration}
-                      onChange={(e) => setServiceDuration(e.target.value)}
+                      onChange={e => setServiceDuration(e.target.value)}
                       disabled={isLoading}
                     />
                   </div>
@@ -488,19 +535,21 @@ export default function SetupWizard() {
                       type="number"
                       placeholder="350"
                       value={servicePrice}
-                      onChange={(e) => setServicePrice(e.target.value)}
+                      onChange={e => setServicePrice(e.target.value)}
                       disabled={isLoading}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="serviceDescription">Beskrivelse (valgfritt)</Label>
+                  <Label htmlFor="serviceDescription">
+                    Beskrivelse (valgfritt)
+                  </Label>
                   <Input
                     id="serviceDescription"
                     placeholder="Kort beskrivelse av tjenesten"
                     value={serviceDescription}
-                    onChange={(e) => setServiceDescription(e.target.value)}
+                    onChange={e => setServiceDescription(e.target.value)}
                     disabled={isLoading}
                   />
                 </div>
@@ -514,7 +563,9 @@ export default function SetupWizard() {
                   <Checkbox
                     id="skipEmployee"
                     checked={skipEmployee}
-                    onCheckedChange={(checked) => setSkipEmployee(checked as boolean)}
+                    onCheckedChange={checked =>
+                      setSkipEmployee(checked as boolean)
+                    }
                   />
                   <label
                     htmlFor="skipEmployee"
@@ -534,7 +585,7 @@ export default function SetupWizard() {
                         id="employeeName"
                         placeholder="F.eks. Ole Hansen"
                         value={employeeName}
-                        onChange={(e) => setEmployeeName(e.target.value)}
+                        onChange={e => setEmployeeName(e.target.value)}
                         disabled={isLoading}
                       />
                     </div>
@@ -546,7 +597,7 @@ export default function SetupWizard() {
                         type="email"
                         placeholder="ole@example.com"
                         value={employeeEmail}
-                        onChange={(e) => setEmployeeEmail(e.target.value)}
+                        onChange={e => setEmployeeEmail(e.target.value)}
                         disabled={isLoading}
                       />
                     </div>
@@ -558,7 +609,7 @@ export default function SetupWizard() {
                         type="tel"
                         placeholder="+47 123 45 678"
                         value={employeePhone}
-                        onChange={(e) => setEmployeePhone(e.target.value)}
+                        onChange={e => setEmployeePhone(e.target.value)}
                         disabled={isLoading}
                       />
                     </div>
@@ -570,7 +621,7 @@ export default function SetupWizard() {
                         type="number"
                         placeholder="40"
                         value={employeeCommission}
-                        onChange={(e) => setEmployeeCommission(e.target.value)}
+                        onChange={e => setEmployeeCommission(e.target.value)}
                         disabled={isLoading}
                       />
                       <p className="text-xs text-muted-foreground">
@@ -592,7 +643,7 @@ export default function SetupWizard() {
                       id="openTime"
                       type="time"
                       value={openTime}
-                      onChange={(e) => setOpenTime(e.target.value)}
+                      onChange={e => setOpenTime(e.target.value)}
                       disabled={isLoading}
                     />
                   </div>
@@ -603,7 +654,7 @@ export default function SetupWizard() {
                       id="closeTime"
                       type="time"
                       value={closeTime}
-                      onChange={(e) => setCloseTime(e.target.value)}
+                      onChange={e => setCloseTime(e.target.value)}
                       disabled={isLoading}
                     />
                   </div>
@@ -612,8 +663,11 @@ export default function SetupWizard() {
                 <div className="space-y-2">
                   <Label>Arbeidsdager</Label>
                   <div className="grid grid-cols-2 gap-2">
-                    {WORK_DAYS.map((day) => (
-                      <div key={day.value} className="flex items-center space-x-2">
+                    {WORK_DAYS.map(day => (
+                      <div
+                        key={day.value}
+                        className="flex items-center space-x-2"
+                      >
                         <Checkbox
                           id={`day-${day.value}`}
                           checked={workDays.includes(day.value)}
@@ -646,11 +700,15 @@ export default function SetupWizard() {
                 <div>
                   <h3 className="text-2xl font-bold mb-2">Gratulerer! 🎉</h3>
                   <p className="text-muted-foreground">
-                    Din salong er nå klar til å ta imot bookinger. Du kan begynne å legge til flere tjenester, ansatte og kunder fra dashbordet.
+                    Din salong er nå klar til å ta imot bookinger. Du kan
+                    begynne å legge til flere tjenester, ansatte og kunder fra
+                    dashbordet.
                   </p>
                 </div>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="font-semibold text-blue-900 mb-2">Neste steg:</h4>
+                  <h4 className="font-semibold text-blue-900 mb-2">
+                    Neste steg:
+                  </h4>
                   <ul className="text-sm text-blue-800 space-y-1 text-left">
                     <li>• Legg til flere tjenester og priser</li>
                     <li>• Inviter flere ansatte til systemet</li>
@@ -686,7 +744,7 @@ export default function SetupWizard() {
                     Hopp over
                   </Button>
                 )}
-                
+
                 <Button
                   onClick={handleNext}
                   disabled={isLoading}

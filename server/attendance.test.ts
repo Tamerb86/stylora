@@ -17,9 +17,15 @@ describe("Attendance Report API", () => {
 
     // Clean up
     await dbInstance.delete(timesheets);
-    await dbInstance.delete(users).where(eq(users.openId, "test-admin-attendance"));
-    await dbInstance.delete(users).where(eq(users.openId, "test-employee1-attendance"));
-    await dbInstance.delete(users).where(eq(users.openId, "test-employee2-attendance"));
+    await dbInstance
+      .delete(users)
+      .where(eq(users.openId, "test-admin-attendance"));
+    await dbInstance
+      .delete(users)
+      .where(eq(users.openId, "test-employee1-attendance"));
+    await dbInstance
+      .delete(users)
+      .where(eq(users.openId, "test-employee2-attendance"));
 
     // Create admin user with tenantId
     await dbInstance.insert(users).values({
@@ -29,9 +35,13 @@ describe("Attendance Report API", () => {
       loginMethod: "oauth",
       tenantId: 1, // Use a test tenant ID
     });
-    
+
     // Retrieve admin ID
-    const [adminUser] = await dbInstance.select().from(users).where(eq(users.openId, "test-admin-attendance")).limit(1);
+    const [adminUser] = await dbInstance
+      .select()
+      .from(users)
+      .where(eq(users.openId, "test-admin-attendance"))
+      .limit(1);
     const adminId = adminUser.id;
     tenantId = 1; // Use the same tenantId we set above
 
@@ -44,9 +54,13 @@ describe("Attendance Report API", () => {
       tenantId,
       pin: "1111",
     });
-    
+
     // Retrieve employee 1 ID
-    const [emp1] = await dbInstance.select().from(users).where(eq(users.openId, "test-employee1-attendance")).limit(1);
+    const [emp1] = await dbInstance
+      .select()
+      .from(users)
+      .where(eq(users.openId, "test-employee1-attendance"))
+      .limit(1);
     employeeId1 = emp1.id;
 
     await dbInstance.insert(users).values({
@@ -57,9 +71,13 @@ describe("Attendance Report API", () => {
       tenantId,
       pin: "2222",
     });
-    
+
     // Retrieve employee 2 ID
-    const [emp2] = await dbInstance.select().from(users).where(eq(users.openId, "test-employee2-attendance")).limit(1);
+    const [emp2] = await dbInstance
+      .select()
+      .from(users)
+      .where(eq(users.openId, "test-employee2-attendance"))
+      .limit(1);
     employeeId2 = emp2.id;
 
     adminContext = {
@@ -133,7 +151,7 @@ describe("Attendance Report API", () => {
     if (!dbInstance) throw new Error("Database not available");
 
     const today = new Date().toISOString().split("T")[0];
-    
+
     // Add multiple shifts for employee 1
     await dbInstance.insert(timesheets).values({
       tenantId,

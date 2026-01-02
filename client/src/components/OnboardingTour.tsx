@@ -15,7 +15,8 @@ const tourSteps: Step[] = [
           Dette tar bare 2-3 minutter.
         </p>
         <p className="text-sm text-muted-foreground">
-          Du kan hoppe over denne omvisningen når som helst ved å trykke "Hopp over".
+          Du kan hoppe over denne omvisningen når som helst ved å trykke "Hopp
+          over".
         </p>
       </div>
     ),
@@ -27,12 +28,16 @@ const tourSteps: Step[] = [
     content: (
       <div className="space-y-3">
         <h3 className="text-lg font-semibold">Enkel vs Avansert modus</h3>
-        <p>
-          Stylora har to visningsmoduser:
-        </p>
+        <p>Stylora har to visningsmoduser:</p>
         <ul className="list-disc list-inside space-y-1 text-sm">
-          <li><strong>Enkel modus</strong>: Viser kun de viktigste funksjonene for daglig bruk</li>
-          <li><strong>Avansert modus</strong>: Gir tilgang til alle funksjoner og rapporter</li>
+          <li>
+            <strong>Enkel modus</strong>: Viser kun de viktigste funksjonene for
+            daglig bruk
+          </li>
+          <li>
+            <strong>Avansert modus</strong>: Gir tilgang til alle funksjoner og
+            rapporter
+          </li>
         </ul>
         <p className="text-sm text-muted-foreground">
           Du starter i Enkel modus, men kan bytte når som helst her.
@@ -47,7 +52,8 @@ const tourSteps: Step[] = [
       <div className="space-y-3">
         <h3 className="text-lg font-semibold">Innstillinger</h3>
         <p>
-          Her finner du alle systeminnstillingene. La oss starte med å sette opp salonginformasjonen din.
+          Her finner du alle systeminnstillingene. La oss starte med å sette opp
+          salonginformasjonen din.
         </p>
       </div>
     ),
@@ -59,7 +65,8 @@ const tourSteps: Step[] = [
       <div className="space-y-3">
         <h3 className="text-lg font-semibold">Tjenester</h3>
         <p>
-          Legg til tjenestene salonen din tilbyr (klipp, farge, skjegg, etc.) med priser og varighet.
+          Legg til tjenestene salonen din tilbyr (klipp, farge, skjegg, etc.)
+          med priser og varighet.
         </p>
         <p className="text-sm text-muted-foreground">
           Tjenester er nødvendige for å ta imot bestillinger.
@@ -74,7 +81,8 @@ const tourSteps: Step[] = [
       <div className="space-y-3">
         <h3 className="text-lg font-semibold">Ansatte</h3>
         <p>
-          Legg til frisører og andre ansatte som skal kunne ta imot bestillinger.
+          Legg til frisører og andre ansatte som skal kunne ta imot
+          bestillinger.
         </p>
         <p className="text-sm text-muted-foreground">
           Hver ansatt kan ha sin egen timebok og provisjonsmodell.
@@ -89,7 +97,8 @@ const tourSteps: Step[] = [
       <div className="space-y-3">
         <h3 className="text-lg font-semibold">Timebok</h3>
         <p>
-          Her ser du alle avtaler i en kalendervisning. Du kan opprette, redigere og administrere alle timeavtaler herfra.
+          Her ser du alle avtaler i en kalendervisning. Du kan opprette,
+          redigere og administrere alle timeavtaler herfra.
         </p>
         <p className="text-sm text-muted-foreground">
           Kunder kan også booke timer direkte via online booking-siden din.
@@ -104,7 +113,8 @@ const tourSteps: Step[] = [
       <div className="space-y-3">
         <h3 className="text-lg font-semibold">Dashboard</h3>
         <p>
-          Dashboard gir deg en rask oversikt over dagens avtaler, inntekter og viktige nøkkeltall.
+          Dashboard gir deg en rask oversikt over dagens avtaler, inntekter og
+          viktige nøkkeltall.
         </p>
       </div>
     ),
@@ -115,9 +125,7 @@ const tourSteps: Step[] = [
     content: (
       <div className="space-y-3">
         <h2 className="text-xl font-bold">Du er klar! 🚀</h2>
-        <p>
-          Du har nå fått en grunnleggende oversikt over Stylora.
-        </p>
+        <p>Du har nå fått en grunnleggende oversikt over Stylora.</p>
         <div className="bg-accent/50 p-3 rounded-lg space-y-2">
           <p className="font-semibold text-sm">Neste steg:</p>
           <ol className="list-decimal list-inside space-y-1 text-sm">

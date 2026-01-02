@@ -4,19 +4,54 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Undo2, Search, Filter, Plus, Calendar, AlertCircle } from "lucide-react";
+import {
+  Undo2,
+  Search,
+  Filter,
+  Plus,
+  Calendar,
+  AlertCircle,
+} from "lucide-react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
 export default function RefundManagement() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "completed" | "failed">("all");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "pending" | "completed" | "failed"
+  >("all");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -28,8 +63,11 @@ export default function RefundManagement() {
   const [createAmount, setCreateAmount] = useState("");
   const [createReason, setCreateReason] = useState("");
 
-
-  const { data: refunds, isLoading, refetch } = trpc.posRefunds.listRefunds.useQuery({
+  const {
+    data: refunds,
+    isLoading,
+    refetch,
+  } = trpc.posRefunds.listRefunds.useQuery({
     status: statusFilter === "all" ? undefined : statusFilter,
     startDate: dateFrom || undefined,
     endDate: dateTo || undefined,
@@ -65,7 +103,6 @@ export default function RefundManagement() {
       orderId: parseInt(createOrderId),
       amount: parseFloat(createAmount),
       reason: createReason || "Kundeforespørsel",
-
     });
   };
 
@@ -125,9 +162,7 @@ export default function RefundManagement() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {stats?.totalCount || 0}
-              </div>
+              <div className="text-2xl font-bold">{stats?.totalCount || 0}</div>
             </CardContent>
           </Card>
 
@@ -176,7 +211,7 @@ export default function RefundManagement() {
                     id="search"
                     placeholder="Søk..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={e => setSearchTerm(e.target.value)}
                     className="pl-9"
                   />
                 </div>
@@ -184,7 +219,10 @@ export default function RefundManagement() {
 
               <div>
                 <Label htmlFor="status">Status</Label>
-                <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
+                <Select
+                  value={statusFilter}
+                  onValueChange={(v: any) => setStatusFilter(v)}
+                >
                   <SelectTrigger id="status">
                     <SelectValue />
                   </SelectTrigger>
@@ -203,7 +241,7 @@ export default function RefundManagement() {
                   id="dateFrom"
                   type="date"
                   value={dateFrom}
-                  onChange={(e) => setDateFrom(e.target.value)}
+                  onChange={e => setDateFrom(e.target.value)}
                 />
               </div>
 
@@ -213,7 +251,7 @@ export default function RefundManagement() {
                   id="dateTo"
                   type="date"
                   value={dateTo}
-                  onChange={(e) => setDateTo(e.target.value)}
+                  onChange={e => setDateTo(e.target.value)}
                 />
               </div>
             </div>
@@ -237,7 +275,9 @@ export default function RefundManagement() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Laster...</div>
+              <div className="text-center py-8 text-muted-foreground">
+                Laster...
+              </div>
             ) : !filteredRefunds || filteredRefunds.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -260,9 +300,15 @@ export default function RefundManagement() {
                   <TableBody>
                     {filteredRefunds.map((refund: any) => (
                       <TableRow key={refund.id}>
-                        <TableCell className="font-medium">#{refund.orderId}</TableCell>
+                        <TableCell className="font-medium">
+                          #{refund.orderId}
+                        </TableCell>
                         <TableCell>
-                          {format(new Date(refund.createdAt), "dd.MM.yyyy HH:mm", { locale: nb })}
+                          {format(
+                            new Date(refund.createdAt),
+                            "dd.MM.yyyy HH:mm",
+                            { locale: nb }
+                          )}
                         </TableCell>
                         <TableCell className="font-semibold">
                           {parseFloat(refund.amount).toFixed(2)} NOK
@@ -309,7 +355,7 @@ export default function RefundManagement() {
                   type="number"
                   placeholder="123"
                   value={createOrderId}
-                  onChange={(e) => setCreateOrderId(e.target.value)}
+                  onChange={e => setCreateOrderId(e.target.value)}
                 />
               </div>
 
@@ -321,7 +367,7 @@ export default function RefundManagement() {
                   step="0.01"
                   placeholder="0.00"
                   value={createAmount}
-                  onChange={(e) => setCreateAmount(e.target.value)}
+                  onChange={e => setCreateAmount(e.target.value)}
                 />
               </div>
 
@@ -332,24 +378,34 @@ export default function RefundManagement() {
                     <SelectValue placeholder="Velg årsak" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Kundeforespørsel">Kundeforespørsel</SelectItem>
-                    <SelectItem value="Skadet produkt">Skadet produkt</SelectItem>
+                    <SelectItem value="Kundeforespørsel">
+                      Kundeforespørsel
+                    </SelectItem>
+                    <SelectItem value="Skadet produkt">
+                      Skadet produkt
+                    </SelectItem>
                     <SelectItem value="Feil vare">Feil vare</SelectItem>
-                    <SelectItem value="Kanselleringspolicy">Kanselleringspolicy</SelectItem>
+                    <SelectItem value="Kanselleringspolicy">
+                      Kanselleringspolicy
+                    </SelectItem>
                     <SelectItem value="Teknisk feil">Teknisk feil</SelectItem>
                     <SelectItem value="Annet">Annet</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-
-
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowCreateDialog(false)}
+              >
                 Avbryt
               </Button>
-              <Button onClick={handleCreateRefund} disabled={createRefund.isPending}>
+              <Button
+                onClick={handleCreateRefund}
+                disabled={createRefund.isPending}
+              >
                 {createRefund.isPending ? "Oppretter..." : "Opprett refusjon"}
               </Button>
             </DialogFooter>
@@ -368,7 +424,9 @@ export default function RefundManagement() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="text-muted-foreground">Ordre-ID</Label>
-                    <div className="font-semibold">#{selectedRefund.orderId}</div>
+                    <div className="font-semibold">
+                      #{selectedRefund.orderId}
+                    </div>
                   </div>
                   <div>
                     <Label className="text-muted-foreground">Status</Label>
@@ -386,7 +444,11 @@ export default function RefundManagement() {
                   <div>
                     <Label className="text-muted-foreground">Dato</Label>
                     <div>
-                      {format(new Date(selectedRefund.createdAt), "dd.MM.yyyy HH:mm", { locale: nb })}
+                      {format(
+                        new Date(selectedRefund.createdAt),
+                        "dd.MM.yyyy HH:mm",
+                        { locale: nb }
+                      )}
                     </div>
                   </div>
                 </div>
@@ -395,8 +457,6 @@ export default function RefundManagement() {
                   <Label className="text-muted-foreground">Årsak</Label>
                   <div>{selectedRefund.reason}</div>
                 </div>
-
-
 
                 <div>
                   <Label className="text-muted-foreground">Behandlet av</Label>
@@ -407,7 +467,11 @@ export default function RefundManagement() {
                   <div>
                     <Label className="text-muted-foreground">Fullført</Label>
                     <div>
-                      {format(new Date(selectedRefund.completedAt), "dd.MM.yyyy HH:mm", { locale: nb })}
+                      {format(
+                        new Date(selectedRefund.completedAt),
+                        "dd.MM.yyyy HH:mm",
+                        { locale: nb }
+                      )}
                     </div>
                   </div>
                 )}

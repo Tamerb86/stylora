@@ -3,8 +3,8 @@
  * Production-ready authentication system
  */
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { ENV } from './env';
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { ENV } from "./env";
 
 let supabaseClient: SupabaseClient | null = null;
 
@@ -20,7 +20,9 @@ export function getSupabaseClient(): SupabaseClient {
   const supabaseKey = ENV.supabaseAnonKey;
 
   if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Supabase URL and Anon Key must be configured in environment variables');
+    throw new Error(
+      "Supabase URL and Anon Key must be configured in environment variables"
+    );
   }
 
   supabaseClient = createClient(supabaseUrl, supabaseKey, {
@@ -42,7 +44,9 @@ export function getSupabaseAdmin(): SupabaseClient {
   const supabaseServiceKey = ENV.supabaseServiceKey;
 
   if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Supabase URL and Service Key must be configured for admin operations');
+    throw new Error(
+      "Supabase URL and Service Key must be configured for admin operations"
+    );
   }
 
   return createClient(supabaseUrl, supabaseServiceKey, {

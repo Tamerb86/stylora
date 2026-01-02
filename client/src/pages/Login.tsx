@@ -3,7 +3,13 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, LogIn, ArrowLeft, Shield } from "lucide-react";
 import { Link } from "wouter";
@@ -52,7 +58,10 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <Link href="/" className="inline-flex items-center text-sm text-slate-600 hover:text-slate-900 mb-6">
+          <Link
+            href="/"
+            className="inline-flex items-center text-sm text-slate-600 hover:text-slate-900 mb-6"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Tilbake til forsiden
           </Link>
@@ -87,7 +96,7 @@ export default function Login() {
                   type="email"
                   placeholder="din@epost.no"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   required
                   autoComplete="email"
                 />
@@ -96,7 +105,10 @@ export default function Login() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Passord</Label>
-                  <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm text-primary hover:underline"
+                  >
                     Glemt passord?
                   </Link>
                 </div>
@@ -105,17 +117,13 @@ export default function Login() {
                   type="password"
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   required
                   autoComplete="current-password"
                 />
               </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -133,7 +141,10 @@ export default function Login() {
             <div className="mt-6 text-center text-sm">
               <p className="text-slate-600">
                 Har du ikke konto?{" "}
-                <Link href="/signup" className="text-primary font-medium hover:underline">
+                <Link
+                  href="/signup"
+                  className="text-primary font-medium hover:underline"
+                >
                   Registrer deg gratis
                 </Link>
               </p>
@@ -165,7 +176,10 @@ export default function Login() {
             </div>
 
             <Link href="/saas-admin">
-              <Button variant="ghost" className="w-full text-slate-500 hover:text-slate-700 hover:bg-slate-100">
+              <Button
+                variant="ghost"
+                className="w-full text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+              >
                 <Shield className="w-4 h-4 mr-2" />
                 SaaS Admin Panel
               </Button>
@@ -175,9 +189,13 @@ export default function Login() {
 
         <p className="text-center text-xs text-slate-500 mt-6">
           Ved å logge inn godtar du våre{" "}
-          <a href="#" className="underline hover:text-slate-700">vilkår</a>
-          {" "}og{" "}
-          <a href="#" className="underline hover:text-slate-700">personvernregler</a>
+          <a href="#" className="underline hover:text-slate-700">
+            vilkår
+          </a>{" "}
+          og{" "}
+          <a href="#" className="underline hover:text-slate-700">
+            personvernregler
+          </a>
         </p>
       </div>
     </div>

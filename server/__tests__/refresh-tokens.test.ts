@@ -57,7 +57,9 @@ describe("Refresh Tokens", () => {
     if (!dbInstance) return;
 
     // Cleanup test data
-    await dbInstance.delete(refreshTokens).where(eq(refreshTokens.tenantId, testTenantId));
+    await dbInstance
+      .delete(refreshTokens)
+      .where(eq(refreshTokens.tenantId, testTenantId));
     await dbInstance.delete(users).where(eq(users.tenantId, testTenantId));
     await dbInstance.delete(tenants).where(eq(tenants.id, testTenantId));
   });
@@ -66,7 +68,12 @@ describe("Refresh Tokens", () => {
 
   describe("Token Creation", () => {
     it("should create a valid refresh token", async () => {
-      const token = await createRefreshToken(testUserId, testTenantId, "127.0.0.1", "Test Agent");
+      const token = await createRefreshToken(
+        testUserId,
+        testTenantId,
+        "127.0.0.1",
+        "Test Agent"
+      );
 
       expect(token).toBeDefined();
       expect(token).toHaveLength(64); // nanoid(64)
@@ -172,7 +179,7 @@ describe("Refresh Tokens", () => {
       const token = await createRefreshToken(testUserId, testTenantId);
 
       // Wait a bit
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       await validateRefreshToken(token);
 
@@ -219,7 +226,10 @@ describe("Refresh Tokens", () => {
       await createRefreshToken(testUserId, testTenantId);
       await createRefreshToken(testUserId, testTenantId);
 
-      const count = await revokeAllUserTokens(testUserId, "Logout from all devices");
+      const count = await revokeAllUserTokens(
+        testUserId,
+        "Logout from all devices"
+      );
 
       expect(count).toBeGreaterThanOrEqual(3);
 
@@ -232,7 +242,7 @@ describe("Refresh Tokens", () => {
         .from(refreshTokens)
         .where(eq(refreshTokens.userId, testUserId));
 
-      expect(tokens.every((t) => t.revoked)).toBe(true);
+      expect(tokens.every(t => t.revoked)).toBe(true);
     });
   });
 

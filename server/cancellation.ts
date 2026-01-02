@@ -24,7 +24,9 @@ const DEFAULT_POLICY: CancellationPolicy = {
 /**
  * Get cancellation policy for a tenant
  */
-export async function getCancellationPolicy(tenantId: string): Promise<CancellationPolicy> {
+export async function getCancellationPolicy(
+  tenantId: string
+): Promise<CancellationPolicy> {
   const dbInstance = await getDb();
   if (!dbInstance) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
 
@@ -39,7 +41,8 @@ export async function getCancellationPolicy(tenantId: string): Promise<Cancellat
 
   // Return policy from tenant settings or defaults
   return {
-    freeCancellationHours: tenant.cancellationWindowHours || DEFAULT_POLICY.freeCancellationHours,
+    freeCancellationHours:
+      tenant.cancellationWindowHours || DEFAULT_POLICY.freeCancellationHours,
     lateCancellationFeePercent: DEFAULT_POLICY.lateCancellationFeePercent,
     noShowFeePercent: DEFAULT_POLICY.noShowFeePercent,
   };
@@ -72,7 +75,10 @@ export async function calculateRefundAmount(
     .limit(1);
 
   if (!appointment) {
-    throw new TRPCError({ code: "NOT_FOUND", message: "Appointment not found" });
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Appointment not found",
+    });
   }
 
   // Get payment for this appointment
@@ -189,8 +195,12 @@ export async function processVippsRefund(
 ): Promise<{ success: boolean; refundId?: string; error?: string }> {
   // TODO: Implement Vipps refund API integration
   // This requires Vipps merchant account and API credentials
-  console.log("[Vipps Refund] Not implemented yet", { orderId, refundAmount, reason });
-  
+  console.log("[Vipps Refund] Not implemented yet", {
+    orderId,
+    refundAmount,
+    reason,
+  });
+
   return {
     success: false,
     error: "Vipps refunds not yet implemented. Please process manually.",
@@ -219,7 +229,11 @@ export async function cancelAppointmentWithRefund(
 
   try {
     // Calculate refund amount
-    const refundCalc = await calculateRefundAmount(appointmentId, tenantId, cancellationType);
+    const refundCalc = await calculateRefundAmount(
+      appointmentId,
+      tenantId,
+      cancellationType
+    );
 
     // Update appointment status
     const status = cancellationType === "no_show" ? "no_show" : "canceled";
@@ -337,7 +351,9 @@ export async function getRefundHistory(
   const dbInstance = await getDb();
   if (!dbInstance) return [];
 
-  const { refunds, payments, appointments, customers } = await import("../drizzle/schema");
+  const { refunds, payments, appointments, customers } = await import(
+    "../drizzle/schema"
+  );
 
   const baseQuery = dbInstance
     .select({

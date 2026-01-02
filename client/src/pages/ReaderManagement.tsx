@@ -1,10 +1,22 @@
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, CreditCard, CheckCircle2, XCircle, RefreshCw } from "lucide-react";
+import {
+  Loader2,
+  CreditCard,
+  CheckCircle2,
+  XCircle,
+  RefreshCw,
+} from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 
 export default function ReaderManagement() {
@@ -14,11 +26,15 @@ export default function ReaderManagement() {
   const [connectedReader, setConnectedReader] = useState<any>(null);
 
   // Get connection token from backend
-  const connectionTokenMutation = trpc.stripeTerminal.createConnectionToken.useMutation();
+  const connectionTokenMutation =
+    trpc.stripeTerminal.createConnectionToken.useMutation();
 
   // List registered readers from Stripe account
-  const { data: registeredReaders, isLoading: loadingReaders, refetch: refetchReaders } = 
-    trpc.stripeTerminal.listReaders.useQuery({});
+  const {
+    data: registeredReaders,
+    isLoading: loadingReaders,
+    refetch: refetchReaders,
+  } = trpc.stripeTerminal.listReaders.useQuery({});
 
   // Initialize Stripe Terminal SDK
   useEffect(() => {
@@ -89,7 +105,9 @@ export default function ReaderManagement() {
             description: "Sørg for at leseren er på og koblet til nettverket",
           });
         } else {
-          toast.success(`Fant ${discoverResult.discoveredReaders.length} leser(e)`);
+          toast.success(
+            `Fant ${discoverResult.discoveredReaders.length} leser(e)`
+          );
         }
       }
     } catch (error: any) {
@@ -186,10 +204,7 @@ export default function ReaderManagement() {
                     </p>
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={disconnectReader}
-                >
+                <Button variant="outline" onClick={disconnectReader}>
                   Koble fra
                 </Button>
               </div>
@@ -239,7 +254,7 @@ export default function ReaderManagement() {
                 <p className="text-sm font-medium">
                   Oppdagede lesere ({discoveredReaders.length}):
                 </p>
-                {discoveredReaders.map((reader) => (
+                {discoveredReaders.map(reader => (
                   <Card key={reader.id}>
                     <CardContent className="pt-6">
                       <div className="flex items-center justify-between">
@@ -251,7 +266,11 @@ export default function ReaderManagement() {
                             {reader.device_type} - {reader.id}
                           </p>
                           <Badge
-                            variant={reader.status === "online" ? "default" : "secondary"}
+                            variant={
+                              reader.status === "online"
+                                ? "default"
+                                : "secondary"
+                            }
                             className="mt-2"
                           >
                             {reader.status}
@@ -259,9 +278,13 @@ export default function ReaderManagement() {
                         </div>
                         <Button
                           onClick={() => connectToReader(reader)}
-                          disabled={isConnecting || connectedReader?.id === reader.id}
+                          disabled={
+                            isConnecting || connectedReader?.id === reader.id
+                          }
                         >
-                          {connectedReader?.id === reader.id ? "Tilkoblet" : "Koble til"}
+                          {connectedReader?.id === reader.id
+                            ? "Tilkoblet"
+                            : "Koble til"}
                         </Button>
                       </div>
                     </CardContent>
@@ -310,7 +333,8 @@ export default function ReaderManagement() {
                             {reader.label || "Leser uten navn"}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {reader.device_type} - {reader.serial_number || reader.id}
+                            {reader.device_type} -{" "}
+                            {reader.serial_number || reader.id}
                           </p>
                           {reader.ip_address && (
                             <p className="text-xs text-muted-foreground mt-1">
@@ -318,7 +342,11 @@ export default function ReaderManagement() {
                             </p>
                           )}
                           <Badge
-                            variant={reader.status === "online" ? "default" : "secondary"}
+                            variant={
+                              reader.status === "online"
+                                ? "default"
+                                : "secondary"
+                            }
                             className="mt-2"
                           >
                             {reader.status}

@@ -51,7 +51,8 @@ export async function getLeaveBalance(employeeId: number, tenantId: string) {
   for (const leave of approvedLeaves) {
     const start = new Date(leave.startDate);
     const end = new Date(leave.endDate);
-    const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const days =
+      Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
     if (leave.leaveType === "annual") {
       annualDaysUsed += days;
@@ -118,7 +119,10 @@ export async function isEmployeeOnLeave(
 /**
  * Check if a date is a salon holiday
  */
-export async function isSalonHoliday(tenantId: string, date: Date): Promise<boolean> {
+export async function isSalonHoliday(
+  tenantId: string,
+  date: Date
+): Promise<boolean> {
   const dbInstance = await getDb();
   if (!dbInstance) return false;
 
@@ -129,10 +133,7 @@ export async function isSalonHoliday(tenantId: string, date: Date): Promise<bool
     .select()
     .from(salonHolidays)
     .where(
-      and(
-        eq(salonHolidays.tenantId, tenantId),
-        eq(salonHolidays.date, date)
-      )
+      and(eq(salonHolidays.tenantId, tenantId), eq(salonHolidays.date, date))
     )
     .limit(1);
 
@@ -307,15 +308,15 @@ export async function approveLeaveRequest(
     .select()
     .from(employeeLeaves)
     .where(
-      and(
-        eq(employeeLeaves.id, leaveId),
-        eq(employeeLeaves.tenantId, tenantId)
-      )
+      and(eq(employeeLeaves.id, leaveId), eq(employeeLeaves.tenantId, tenantId))
     )
     .limit(1);
 
   if (!leave) {
-    throw new TRPCError({ code: "NOT_FOUND", message: "Leave request not found" });
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Leave request not found",
+    });
   }
 
   if (leave.status !== "pending") {
@@ -332,7 +333,7 @@ export async function approveLeaveRequest(
       status: approved ? "approved" : "rejected",
       approvedBy,
       approvedAt: new Date(),
-      rejectionReason: approved ? null : (rejectionReason || null),
+      rejectionReason: approved ? null : rejectionReason || null,
     })
     .where(eq(employeeLeaves.id, leaveId));
 
@@ -340,7 +341,8 @@ export async function approveLeaveRequest(
   if (approved && leave.leaveType === "annual") {
     const start = new Date(leave.startDate);
     const end = new Date(leave.endDate);
-    const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const days =
+      Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
     await dbInstance
       .update(users)
@@ -407,15 +409,11 @@ export async function deleteSalonHoliday(holidayId: number, tenantId: string) {
   await dbInstance
     .delete(salonHolidays)
     .where(
-      and(
-        eq(salonHolidays.id, holidayId),
-        eq(salonHolidays.tenantId, tenantId)
-      )
+      and(eq(salonHolidays.id, holidayId), eq(salonHolidays.tenantId, tenantId))
     );
 
   return { success: true };
 }
-
 
 /**
  * Calculate leave deductions for payroll
@@ -459,17 +457,18 @@ export async function calculateLeaveDeductionsForPayroll(
   for (const leave of leaves) {
     const leaveStart = new Date(leave.startDate);
     const leaveEnd = new Date(leave.endDate);
-    
+
     // Calculate effective dates within the month
     const effectiveStart = leaveStart < startDate ? startDate : leaveStart;
     const effectiveEnd = leaveEnd > endDate ? endDate : leaveEnd;
-    
+
     // Calculate working days (excluding weekends)
     let days = 0;
     const current = new Date(effectiveStart);
     while (current <= effectiveEnd) {
       const dayOfWeek = current.getDay();
-      if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Not Sunday or Saturday
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        // Not Sunday or Saturday
         days++;
       }
       current.setDate(current.getDate() + 1);
@@ -499,7 +498,8 @@ export async function calculateLeaveDeductionsForPayroll(
     unpaidLeaveDays,
     sickLeaveDays,
     emergencyLeaveDays,
-    totalLeaveDays: paidLeaveDays + unpaidLeaveDays + sickLeaveDays + emergencyLeaveDays,
+    totalLeaveDays:
+      paidLeaveDays + unpaidLeaveDays + sickLeaveDays + emergencyLeaveDays,
     unpaidLeaveDeduction,
     dailyRate,
   };
@@ -544,7 +544,11 @@ export async function getEmployeeLeaveSummary(
     const leaveEnd = new Date(leave.endDate);
     const effectiveStart = leaveStart < startDate ? startDate : leaveStart;
     const effectiveEnd = leaveEnd > endDate ? endDate : leaveEnd;
-    const days = Math.ceil((effectiveEnd.getTime() - effectiveStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    const days =
+      Math.ceil(
+        (effectiveEnd.getTime() - effectiveStart.getTime()) /
+          (1000 * 60 * 60 * 24)
+      ) + 1;
 
     if (leave.leaveType in summary) {
       summary[leave.leaveType as keyof typeof summary].days += days;

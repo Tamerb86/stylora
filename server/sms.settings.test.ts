@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest";
 import { sendSMS, formatAppointmentReminder } from "./sms";
 
 describe("SMS Settings (Per-Tenant)", () => {
-  
   it("should send SMS with mock provider (no tenantId)", async () => {
     const result = await sendSMS({
       to: "+4798765432",

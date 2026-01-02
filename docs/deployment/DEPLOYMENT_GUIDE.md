@@ -9,19 +9,22 @@
 ## ✅ التعديلات المنجزة - Completed Modifications
 
 ### 1. إزالة Development Plugins
+
 - ✅ حذف `vite-plugin-manus-runtime` من package.json
 - ✅ تنظيف vite.config.ts من development hosts
 - ✅ إزالة HMR configuration الخاصة بـ Stylora
 
 ### 2. استبدال نظام OAuth
+
 - ✅ إنشاء نظام مصادقة بسيط مبني على JWT
-- ✅ تحديث server/_core/context.ts
-- ✅ تحديث server/_core/index.ts
+- ✅ تحديث server/\_core/context.ts
+- ✅ تحديث server/\_core/index.ts
 - ✅ ملف جديد: `server/_core/auth-simple.ts`
 
 ### 3. تعطيل ميزات Stylora الاختيارية
-- ✅ تعطيل AI integration (server/_core/llm.ts)
-- ✅ تعطيل notification system (server/_core/notification.ts)
+
+- ✅ تعطيل AI integration (server/\_core/llm.ts)
+- ✅ تعطيل notification system (server/\_core/notification.ts)
 
 ---
 
@@ -30,6 +33,7 @@
 ### الخيار 1: Vercel + PlanetScale (موصى به للمبتدئين)
 
 #### المميزات:
+
 - نشر سريع وسهل
 - قاعدة بيانات MySQL مُدارة
 - CDN عالمي
@@ -71,6 +75,7 @@ git push -u origin main
 ### الخيار 2: Railway (الأسهل - كل شيء في مكان واحد)
 
 #### المميزات:
+
 - قاعدة بيانات + استضافة معاً
 - إعداد سريع جداً
 - دعم Docker
@@ -92,6 +97,7 @@ git push -u origin main
 ### الخيار 3: DigitalOcean App Platform
 
 #### المميزات:
+
 - تحكم كامل
 - أسعار ثابتة
 - سهل الاستخدام
@@ -209,6 +215,7 @@ aws s3api put-bucket-cors --bucket your-stylora-bucket --cors-configuration file
 ```
 
 cors.json:
+
 ```json
 {
   "CORSRules": [
@@ -238,16 +245,19 @@ cors.json:
 ### خيارات للإنتاج:
 
 #### الخيار 1: Supabase Auth (موصى به)
+
 ```bash
 npm install @supabase/supabase-js
 ```
 
 #### الخيار 2: Auth0
+
 ```bash
 npm install @auth0/auth0-react
 ```
 
 #### الخيار 3: NextAuth.js
+
 ```bash
 npm install next-auth
 ```
@@ -259,6 +269,7 @@ npm install next-auth
 ### المشكلة: "Missing STRIPE_SECRET_KEY in environment"
 
 **الحل**: أضف متغيرات Stripe في لوحة التحكم:
+
 ```env
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_PUBLISHABLE_KEY=pk_test_...
@@ -267,6 +278,7 @@ STRIPE_PUBLISHABLE_KEY=pk_test_...
 ### المشكلة: Database connection failed
 
 **الحل**: تأكد من صحة DATABASE_URL:
+
 ```env
 DATABASE_URL=mysql://user:password@host:3306/database?ssl={"rejectUnauthorized":true}
 ```
@@ -274,6 +286,7 @@ DATABASE_URL=mysql://user:password@host:3306/database?ssl={"rejectUnauthorized":
 ### المشكلة: AI features not working
 
 **الجواب**: تم تعطيل AI features عمداً. لتفعيلها:
+
 1. افتح `server/_core/llm.ts`
 2. استبدل OpenAI API بـ OpenAI أو Anthropic
 3. أضف API key في متغيرات البيئة
@@ -282,21 +295,22 @@ DATABASE_URL=mysql://user:password@host:3306/database?ssl={"rejectUnauthorized":
 
 ## 💰 تقدير التكاليف الشهرية - Monthly Cost Estimate
 
-| الخدمة | التكلفة |
-|--------|---------|
-| Vercel (Hosting) | $0-20 |
-| PlanetScale (Database) | $0-29 |
-| AWS S3 (Storage) | $1-5 |
-| AWS SES (Email) | $0.10/1000 emails |
-| Stripe (Payments) | 2.9% + $0.30/transaction |
-| Twilio SMS (Optional) | $0.0075/message |
-| **المجموع** | **$10-60/شهر** |
+| الخدمة                 | التكلفة                  |
+| ---------------------- | ------------------------ |
+| Vercel (Hosting)       | $0-20                    |
+| PlanetScale (Database) | $0-29                    |
+| AWS S3 (Storage)       | $1-5                     |
+| AWS SES (Email)        | $0.10/1000 emails        |
+| Stripe (Payments)      | 2.9% + $0.30/transaction |
+| Twilio SMS (Optional)  | $0.0075/message          |
+| **المجموع**            | **$10-60/شهر**           |
 
 ---
 
 ## 📚 موارد إضافية - Additional Resources
 
 ### التوثيق:
+
 - [Vercel Docs](https://vercel.com/docs)
 - [PlanetScale Docs](https://planetscale.com/docs)
 - [Railway Docs](https://docs.railway.app)
@@ -304,6 +318,7 @@ DATABASE_URL=mysql://user:password@host:3306/database?ssl={"rejectUnauthorized":
 - [AWS S3 Docs](https://docs.aws.amazon.com/s3/)
 
 ### الدعم:
+
 - [Drizzle ORM Docs](https://orm.drizzle.team)
 - [tRPC Docs](https://trpc.io)
 - [React Docs](https://react.dev)
@@ -341,6 +356,7 @@ DATABASE_URL=mysql://user:password@host:3306/database?ssl={"rejectUnauthorized":
 ## 📞 الدعم - Support
 
 إذا واجهت أي مشاكل:
+
 1. راجع قسم استكشاف الأخطاء أعلاه
 2. تحقق من logs في لوحة التحكم
 3. راجع التوثيق الرسمي للخدمات المستخدمة

@@ -1,15 +1,26 @@
 import { getDb } from "./db";
-import { appointments, customers, tenants, appointmentServices, services } from "../drizzle/schema";
+import {
+  appointments,
+  customers,
+  tenants,
+  appointmentServices,
+  services,
+} from "../drizzle/schema";
 import { eq, and } from "drizzle-orm";
-import { sendEmail, renderBookingConfirmationEmail, renderBookingCancellationEmail, renderBookingRescheduleEmail } from "./email";
+import {
+  sendEmail,
+  renderBookingConfirmationEmail,
+  renderBookingCancellationEmail,
+  renderBookingRescheduleEmail,
+} from "./email";
 
 /**
  * Send appointment confirmation email if possible
- * 
+ *
  * Called when an appointment status transitions to "confirmed"
  * - Manually via appointments.updateStatus
  * - Automatically via Stripe webhook
- * 
+ *
  * @param appointmentId Appointment ID
  * @param tenantId Tenant ID (for multi-tenant isolation)
  */
@@ -28,7 +39,12 @@ export async function sendAppointmentConfirmationIfPossible(
     const [appointment] = await db
       .select()
       .from(appointments)
-      .where(and(eq(appointments.id, appointmentId), eq(appointments.tenantId, tenantId)));
+      .where(
+        and(
+          eq(appointments.id, appointmentId),
+          eq(appointments.tenantId, tenantId)
+        )
+      );
 
     if (!appointment) {
       console.warn("[Email] Appointment not found:", appointmentId);
@@ -39,7 +55,12 @@ export async function sendAppointmentConfirmationIfPossible(
     const [customer] = await db
       .select()
       .from(customers)
-      .where(and(eq(customers.id, appointment.customerId), eq(customers.tenantId, tenantId)));
+      .where(
+        and(
+          eq(customers.id, appointment.customerId),
+          eq(customers.tenantId, tenantId)
+        )
+      );
 
     if (!customer || !customer.email) {
       console.log("[Email] Customer has no email, skipping confirmation email");
@@ -66,7 +87,7 @@ export async function sendAppointmentConfirmationIfPossible(
       .innerJoin(services, eq(appointmentServices.serviceId, services.id))
       .where(eq(appointmentServices.appointmentId, appointment.id));
 
-    const servicesNames = serviceRows.map((s) => s.name);
+    const servicesNames = serviceRows.map(s => s.name);
 
     // Format date and time
     const dateStr = formatNorwegianDate(appointment.appointmentDate);
@@ -75,7 +96,8 @@ export async function sendAppointmentConfirmationIfPossible(
     // Render and send email
     const { subject, html } = renderBookingConfirmationEmail({
       salonName: tenant.name,
-      customerName: `${customer.firstName} ${customer.lastName}`.trim() || customer.phone,
+      customerName:
+        `${customer.firstName} ${customer.lastName}`.trim() || customer.phone,
       date: dateStr,
       time: timeStr,
       services: servicesNames.length > 0 ? servicesNames : ["Timebestilling"],
@@ -87,7 +109,10 @@ export async function sendAppointmentConfirmationIfPossible(
       html,
     });
 
-    console.log("[Email] Confirmation email sent for appointment:", appointmentId);
+    console.log(
+      "[Email] Confirmation email sent for appointment:",
+      appointmentId
+    );
   } catch (error) {
     console.error("[Email] Failed to send confirmation email:", error);
     // Don't throw - email failure should not break main logic
@@ -96,9 +121,9 @@ export async function sendAppointmentConfirmationIfPossible(
 
 /**
  * Send appointment cancellation email if possible
- * 
+ *
  * Called when an appointment status transitions to "canceled"
- * 
+ *
  * @param appointmentId Appointment ID
  * @param tenantId Tenant ID (for multi-tenant isolation)
  */
@@ -117,7 +142,12 @@ export async function sendAppointmentCancellationIfPossible(
     const [appointment] = await db
       .select()
       .from(appointments)
-      .where(and(eq(appointments.id, appointmentId), eq(appointments.tenantId, tenantId)));
+      .where(
+        and(
+          eq(appointments.id, appointmentId),
+          eq(appointments.tenantId, tenantId)
+        )
+      );
 
     if (!appointment) {
       console.warn("[Email] Appointment not found:", appointmentId);
@@ -128,7 +158,12 @@ export async function sendAppointmentCancellationIfPossible(
     const [customer] = await db
       .select()
       .from(customers)
-      .where(and(eq(customers.id, appointment.customerId), eq(customers.tenantId, tenantId)));
+      .where(
+        and(
+          eq(customers.id, appointment.customerId),
+          eq(customers.tenantId, tenantId)
+        )
+      );
 
     if (!customer || !customer.email) {
       console.log("[Email] Customer has no email, skipping cancellation email");
@@ -153,7 +188,8 @@ export async function sendAppointmentCancellationIfPossible(
     // Render and send email
     const { subject, html } = renderBookingCancellationEmail({
       salonName: tenant.name,
-      customerName: `${customer.firstName} ${customer.lastName}`.trim() || customer.phone,
+      customerName:
+        `${customer.firstName} ${customer.lastName}`.trim() || customer.phone,
       date: dateStr,
       time: timeStr,
     });
@@ -164,7 +200,10 @@ export async function sendAppointmentCancellationIfPossible(
       html,
     });
 
-    console.log("[Email] Cancellation email sent for appointment:", appointmentId);
+    console.log(
+      "[Email] Cancellation email sent for appointment:",
+      appointmentId
+    );
   } catch (error) {
     console.error("[Email] Failed to send cancellation email:", error);
     // Don't throw - email failure should not break main logic
@@ -173,9 +212,9 @@ export async function sendAppointmentCancellationIfPossible(
 
 /**
  * Send appointment reschedule email if possible
- * 
+ *
  * Called when an appointment date/time is changed
- * 
+ *
  * @param appointmentId Appointment ID
  * @param tenantId Tenant ID (for multi-tenant isolation)
  * @param oldDateTime ISO string of old appointment date/time
@@ -198,7 +237,12 @@ export async function sendAppointmentRescheduleIfPossible(
     const [appointment] = await db
       .select()
       .from(appointments)
-      .where(and(eq(appointments.id, appointmentId), eq(appointments.tenantId, tenantId)));
+      .where(
+        and(
+          eq(appointments.id, appointmentId),
+          eq(appointments.tenantId, tenantId)
+        )
+      );
 
     if (!appointment) {
       console.warn("[Email] Appointment not found:", appointmentId);
@@ -209,7 +253,12 @@ export async function sendAppointmentRescheduleIfPossible(
     const [customer] = await db
       .select()
       .from(customers)
-      .where(and(eq(customers.id, appointment.customerId), eq(customers.tenantId, tenantId)));
+      .where(
+        and(
+          eq(customers.id, appointment.customerId),
+          eq(customers.tenantId, tenantId)
+        )
+      );
 
     if (!customer || !customer.email) {
       console.log("[Email] Customer has no email, skipping reschedule email");
@@ -236,22 +285,23 @@ export async function sendAppointmentRescheduleIfPossible(
       .innerJoin(services, eq(appointmentServices.serviceId, services.id))
       .where(eq(appointmentServices.appointmentId, appointment.id));
 
-    const servicesNames = serviceRows.map((s) => s.name);
+    const servicesNames = serviceRows.map(s => s.name);
 
     // Format old and new dates/times
     const oldDate = new Date(oldDateTime);
     const newDate = new Date(newDateTime);
-    
+
     const oldDateStr = formatNorwegianDate(oldDate);
     const oldTimeStr = oldDate.toTimeString().slice(0, 5); // HH:MM
-    
+
     const newDateStr = formatNorwegianDate(newDate);
     const newTimeStr = newDate.toTimeString().slice(0, 5); // HH:MM
 
     // Render and send email
     const { subject, html } = renderBookingRescheduleEmail({
       salonName: tenant.name,
-      customerName: `${customer.firstName} ${customer.lastName}`.trim() || customer.phone,
+      customerName:
+        `${customer.firstName} ${customer.lastName}`.trim() || customer.phone,
       oldDate: oldDateStr,
       oldTime: oldTimeStr,
       newDate: newDateStr,
@@ -265,12 +315,15 @@ export async function sendAppointmentRescheduleIfPossible(
       html,
     });
 
-    console.log("[Email] Reschedule email sent for appointment:", appointmentId);
+    console.log(
+      "[Email] Reschedule email sent for appointment:",
+      appointmentId
+    );
 
     // Send SMS if customer has phone number
     if (customer.phone) {
       const { sendRescheduleSMS } = await import("./sms");
-      
+
       await sendRescheduleSMS(
         customer.phone,
         tenant.name,
@@ -290,14 +343,24 @@ export async function sendAppointmentRescheduleIfPossible(
 
 /**
  * Format date in Norwegian format
- * 
+ *
  * @param date Date object
  * @returns Formatted string like "25. mars 2026"
  */
 function formatNorwegianDate(date: Date): string {
   const months = [
-    "januar", "februar", "mars", "april", "mai", "juni",
-    "juli", "august", "september", "oktober", "november", "desember"
+    "januar",
+    "februar",
+    "mars",
+    "april",
+    "mai",
+    "juni",
+    "juli",
+    "august",
+    "september",
+    "oktober",
+    "november",
+    "desember",
   ];
 
   const day = date.getDate();

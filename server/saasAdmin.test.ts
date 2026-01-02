@@ -66,7 +66,9 @@ describe("SaaS Admin - Platform Admin Procedures", () => {
         })
       );
 
-      await expect(caller.saasAdmin.getOverview()).rejects.toThrow("Platform admin access required");
+      await expect(caller.saasAdmin.getOverview()).rejects.toThrow(
+        "Platform admin access required"
+      );
     });
   });
 
@@ -163,7 +165,7 @@ describe("SaaS Admin - Platform Admin Procedures", () => {
 
       const result = await caller.saasAdmin.listTenants({ status: "active" });
 
-      expect(result.items.every((t) => t.status === "active")).toBe(true);
+      expect(result.items.every(t => t.status === "active")).toBe(true);
     });
 
     it("should support pagination", async () => {
@@ -186,7 +188,10 @@ describe("SaaS Admin - Platform Admin Procedures", () => {
         })
       );
 
-      const page1 = await caller.saasAdmin.listTenants({ page: 1, pageSize: 5 });
+      const page1 = await caller.saasAdmin.listTenants({
+        page: 1,
+        pageSize: 5,
+      });
       expect(page1.page).toBe(1);
       expect(page1.pageSize).toBe(5);
       expect(page1.items.length).toBeLessThanOrEqual(5);
@@ -289,7 +294,9 @@ describe("SaaS Admin - Platform Admin Procedures", () => {
       );
 
       await expect(
-        caller.saasAdmin.getTenantDetails({ tenantId: "non-existent-tenant-id" })
+        caller.saasAdmin.getTenantDetails({
+          tenantId: "non-existent-tenant-id",
+        })
       ).rejects.toThrow("Tenant not found");
     });
   });

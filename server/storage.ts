@@ -1,7 +1,11 @@
 // Storage helpers - S3 or local filesystem
 // Uses AWS S3 or local filesystem fallback
 
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import * as fs from "fs";
 import * as path from "path";
@@ -85,7 +89,8 @@ export async function storagePut(
       fs.mkdirSync(fileDir, { recursive: true });
     }
 
-    const body = typeof data === "string" ? Buffer.from(data) : Buffer.from(data);
+    const body =
+      typeof data === "string" ? Buffer.from(data) : Buffer.from(data);
     fs.writeFileSync(filePath, body);
 
     // Return local URL (assumes files are served from /uploads)
@@ -132,7 +137,11 @@ export function isStorageConfigured(): boolean {
 /**
  * Get storage configuration info (for debugging)
  */
-export function getStorageInfo(): { type: "s3" | "local"; bucket?: string; region?: string } {
+export function getStorageInfo(): {
+  type: "s3" | "local";
+  bucket?: string;
+  region?: string;
+} {
   if (isS3Configured()) {
     return {
       type: "s3",

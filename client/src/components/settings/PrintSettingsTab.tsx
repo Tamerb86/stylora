@@ -2,29 +2,60 @@ import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { useThermalPrinter } from "@/contexts/ThermalPrinterContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
-import { Printer, FileText, Type, Eye, Upload, X, Usb, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import {
+  Printer,
+  FileText,
+  Type,
+  Eye,
+  Upload,
+  X,
+  Usb,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
 
 export function PrintSettingsTab() {
-  const { data: printSettings, isLoading } = trpc.salonSettings.getPrintSettings.useQuery();
+  const { data: printSettings, isLoading } =
+    trpc.salonSettings.getPrintSettings.useQuery();
   const { data: settings } = trpc.salonSettings.getBranding.useQuery();
-  const updatePrintSettings = trpc.salonSettings.updatePrintSettings.useMutation();
+  const updatePrintSettings =
+    trpc.salonSettings.updatePrintSettings.useMutation();
   const uploadLogo = trpc.salonSettings.uploadReceiptLogo.useMutation();
   const removeLogo = trpc.salonSettings.removeReceiptLogo.useMutation();
   const utils = trpc.useUtils();
-  
+
   // Thermal printer context
   const thermalPrinter = useThermalPrinter();
 
-  const [printerType, setPrinterType] = useState<"thermal_80mm" | "a4">("thermal_80mm");
-  const [fontSize, setFontSize] = useState<"small" | "medium" | "large">("medium");
+  const [printerType, setPrinterType] = useState<"thermal_80mm" | "a4">(
+    "thermal_80mm"
+  );
+  const [fontSize, setFontSize] = useState<"small" | "medium" | "large">(
+    "medium"
+  );
   const [showLogo, setShowLogo] = useState(true);
-  const [customFooterText, setCustomFooterText] = useState("Takk for besøket! Velkommen tilbake!");
+  const [customFooterText, setCustomFooterText] = useState(
+    "Takk for besøket! Velkommen tilbake!"
+  );
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [autoPrintReceipt, setAutoPrintReceipt] = useState(false);
@@ -78,7 +109,9 @@ export function PrintSettingsTab() {
     }
   };
 
-  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -164,7 +197,8 @@ export function PrintSettingsTab() {
               Direkte utskrift (Termisk skriver)
             </CardTitle>
             <CardDescription>
-              Koble til termisk skriver direkte via USB eller Serial port for raskere utskrift
+              Koble til termisk skriver direkte via USB eller Serial port for
+              raskere utskrift
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -178,7 +212,10 @@ export function PrintSettingsTab() {
                       {thermalPrinter.connectedPrinter.name}
                     </p>
                     <p className="text-sm text-green-700">
-                      {thermalPrinter.connectedPrinter.type === "usb" ? "USB" : "Serial"} - Tilkoblet
+                      {thermalPrinter.connectedPrinter.type === "usb"
+                        ? "USB"
+                        : "Serial"}{" "}
+                      - Tilkoblet
                     </p>
                   </div>
                 </div>
@@ -188,7 +225,10 @@ export function PrintSettingsTab() {
                     variant="outline"
                     size="sm"
                     onClick={() => thermalPrinter.testPrint()}
-                    disabled={thermalPrinter.isPrinting || thermalPrinter.isOpeningDrawer}
+                    disabled={
+                      thermalPrinter.isPrinting ||
+                      thermalPrinter.isOpeningDrawer
+                    }
                   >
                     {thermalPrinter.isPrinting ? (
                       <>
@@ -206,7 +246,10 @@ export function PrintSettingsTab() {
                     variant="outline"
                     size="sm"
                     onClick={() => thermalPrinter.openCashDrawer()}
-                    disabled={thermalPrinter.isPrinting || thermalPrinter.isOpeningDrawer}
+                    disabled={
+                      thermalPrinter.isPrinting ||
+                      thermalPrinter.isOpeningDrawer
+                    }
                     className="bg-green-50 hover:bg-green-100 border-green-300"
                   >
                     {thermalPrinter.isOpeningDrawer ? (
@@ -225,7 +268,10 @@ export function PrintSettingsTab() {
                     variant="outline"
                     size="sm"
                     onClick={() => thermalPrinter.disconnectPrinter()}
-                    disabled={thermalPrinter.isPrinting || thermalPrinter.isOpeningDrawer}
+                    disabled={
+                      thermalPrinter.isPrinting ||
+                      thermalPrinter.isOpeningDrawer
+                    }
                   >
                     <XCircle className="w-4 h-4 mr-2" />
                     Koble fra
@@ -237,7 +283,9 @@ export function PrintSettingsTab() {
                 <div className="flex items-center gap-2 p-3 bg-gray-50 border border-gray-200 rounded-lg">
                   <XCircle className="w-5 h-5 text-gray-400" />
                   <div>
-                    <p className="font-medium text-gray-700">Ingen skriver tilkoblet</p>
+                    <p className="font-medium text-gray-700">
+                      Ingen skriver tilkoblet
+                    </p>
                     <p className="text-sm text-gray-500">
                       Koble til en termisk skriver for direkte utskrift
                     </p>
@@ -285,10 +333,15 @@ export function PrintSettingsTab() {
                 </div>
 
                 <div className="text-xs text-gray-500 space-y-1">
-                  <p>💡 <strong>Tips:</strong></p>
+                  <p>
+                    💡 <strong>Tips:</strong>
+                  </p>
                   <ul className="list-disc list-inside space-y-1 ml-2">
                     <li>Koble til skriveren via USB eller Serial port</li>
-                    <li>Nettleseren vil be om tillatelse til å få tilgang til enheten</li>
+                    <li>
+                      Nettleseren vil be om tillatelse til å få tilgang til
+                      enheten
+                    </li>
                     <li>Velg riktig skriver fra listen</li>
                     <li>Test utskrift for å bekrefte at den fungerer</li>
                   </ul>
@@ -318,12 +371,17 @@ export function PrintSettingsTab() {
                 <Printer className="w-4 h-4" />
                 Skrivertype
               </Label>
-              <Select value={printerType} onValueChange={(value: any) => setPrinterType(value)}>
+              <Select
+                value={printerType}
+                onValueChange={(value: any) => setPrinterType(value)}
+              >
                 <SelectTrigger id="printerType">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="thermal_80mm">Termisk skriver (80mm)</SelectItem>
+                  <SelectItem value="thermal_80mm">
+                    Termisk skriver (80mm)
+                  </SelectItem>
                   <SelectItem value="a4">A4 skriver</SelectItem>
                 </SelectContent>
               </Select>
@@ -338,7 +396,10 @@ export function PrintSettingsTab() {
                 <Type className="w-4 h-4" />
                 Skriftstørrelse
               </Label>
-              <Select value={fontSize} onValueChange={(value: any) => setFontSize(value)}>
+              <Select
+                value={fontSize}
+                onValueChange={(value: any) => setFontSize(value)}
+              >
                 <SelectTrigger id="fontSize">
                   <SelectValue />
                 </SelectTrigger>
@@ -374,7 +435,10 @@ export function PrintSettingsTab() {
             {/* Auto Print Receipt */}
             <div className="flex items-center justify-between space-x-2">
               <div className="space-y-0.5">
-                <Label htmlFor="autoPrintReceipt" className="flex items-center gap-2">
+                <Label
+                  htmlFor="autoPrintReceipt"
+                  className="flex items-center gap-2"
+                >
                   <Printer className="w-4 h-4" />
                   Automatisk utskrift
                 </Label>
@@ -393,12 +457,16 @@ export function PrintSettingsTab() {
             {thermalPrinter.connectedPrinter && (
               <div className="flex items-center justify-between space-x-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="space-y-0.5">
-                  <Label htmlFor="autoOpenCashDrawer" className="flex items-center gap-2">
+                  <Label
+                    htmlFor="autoOpenCashDrawer"
+                    className="flex items-center gap-2"
+                  >
                     <Usb className="w-4 h-4 text-blue-600" />
                     Automatisk åpne kassaskuff
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    Åpne kassaskuff automatisk ved kontantbetaling (krever termisk skriver)
+                    Åpne kassaskuff automatisk ved kontantbetaling (krever
+                    termisk skriver)
                   </p>
                 </div>
                 <Switch
@@ -415,11 +483,15 @@ export function PrintSettingsTab() {
                 <Upload className="w-4 h-4" />
                 Kvitteringslogo
               </Label>
-              
+
               {logoUrl ? (
                 <div className="space-y-2">
                   <div className="relative w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg overflow-hidden">
-                    <img src={logoUrl} alt="Receipt logo" className="w-full h-full object-contain" />
+                    <img
+                      src={logoUrl}
+                      alt="Receipt logo"
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                   <Button
                     type="button"
@@ -445,7 +517,9 @@ export function PrintSettingsTab() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => document.getElementById("logoUpload")?.click()}
+                    onClick={() =>
+                      document.getElementById("logoUpload")?.click()
+                    }
                     disabled={isUploadingLogo}
                   >
                     <Upload className="w-4 h-4 mr-2" />
@@ -453,9 +527,10 @@ export function PrintSettingsTab() {
                   </Button>
                 </div>
               )}
-              
+
               <p className="text-xs text-muted-foreground">
-                Last opp en logo som vises øverst på kvitteringen. Maks 2MB, JPEG/PNG/WebP.
+                Last opp en logo som vises øverst på kvitteringen. Maks 2MB,
+                JPEG/PNG/WebP.
               </p>
             </div>
 
@@ -465,26 +540,29 @@ export function PrintSettingsTab() {
               <Input
                 id="customFooterText"
                 value={customFooterText}
-                onChange={(e) => setCustomFooterText(e.target.value)}
+                onChange={e => setCustomFooterText(e.target.value)}
                 placeholder="Takk for besøket! Velkommen tilbake!"
                 maxLength={200}
               />
               <p className="text-xs text-muted-foreground">
-                Tekst som vises nederst på kvitteringen ({customFooterText.length}/200)
+                Tekst som vises nederst på kvitteringen (
+                {customFooterText.length}/200)
               </p>
             </div>
 
             {/* Business Information Section */}
             <div className="space-y-4 pt-4 border-t">
-              <h3 className="text-sm font-semibold">Bedriftsinformasjon (valgfritt)</h3>
-              
+              <h3 className="text-sm font-semibold">
+                Bedriftsinformasjon (valgfritt)
+              </h3>
+
               {/* Organization Number */}
               <div className="space-y-2">
                 <Label htmlFor="orgNumber">Organisasjonsnummer</Label>
                 <Input
                   id="orgNumber"
                   value={orgNumber}
-                  onChange={(e) => setOrgNumber(e.target.value)}
+                  onChange={e => setOrgNumber(e.target.value)}
                   placeholder="123 456 789"
                   maxLength={50}
                 />
@@ -496,7 +574,7 @@ export function PrintSettingsTab() {
                 <Input
                   id="bankAccount"
                   value={bankAccount}
-                  onChange={(e) => setBankAccount(e.target.value)}
+                  onChange={e => setBankAccount(e.target.value)}
                   placeholder="1234 56 78901"
                   maxLength={50}
                 />
@@ -509,7 +587,7 @@ export function PrintSettingsTab() {
                   id="website"
                   type="url"
                   value={website}
-                  onChange={(e) => setWebsite(e.target.value)}
+                  onChange={e => setWebsite(e.target.value)}
                   placeholder="https://www.eksempel.no"
                   maxLength={200}
                 />
@@ -521,7 +599,7 @@ export function PrintSettingsTab() {
                 <Input
                   id="businessHours"
                   value={businessHours}
-                  onChange={(e) => setBusinessHours(e.target.value)}
+                  onChange={e => setBusinessHours(e.target.value)}
                   placeholder="Man-Fre: 09:00-18:00, Lør: 10:00-15:00"
                   maxLength={200}
                 />
@@ -534,7 +612,9 @@ export function PrintSettingsTab() {
               disabled={updatePrintSettings.isPending}
               className="w-full bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-white"
             >
-              {updatePrintSettings.isPending ? "Lagrer..." : "Lagre innstillinger"}
+              {updatePrintSettings.isPending
+                ? "Lagrer..."
+                : "Lagre innstillinger"}
             </Button>
           </CardContent>
         </Card>
@@ -546,16 +626,16 @@ export function PrintSettingsTab() {
               <Eye className="w-5 h-5 text-orange-600" />
               Forhåndsvisning
             </CardTitle>
-            <CardDescription>
-              Slik vil kvitteringen se ut
-            </CardDescription>
+            <CardDescription>Slik vil kvitteringen se ut</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className={`border rounded-lg bg-white space-y-4 mx-auto ${
-              printerType === "thermal_80mm" 
-                ? "max-w-[226px] p-3" // 80mm thermal printer width with smaller padding
-                : "p-6" // A4 full width with normal padding
-            }`}>
+            <div
+              className={`border rounded-lg bg-white space-y-4 mx-auto ${
+                printerType === "thermal_80mm"
+                  ? "max-w-[226px] p-3" // 80mm thermal printer width with smaller padding
+                  : "p-6" // A4 full width with normal padding
+              }`}
+            >
               {/* Logo */}
               {showLogo && (
                 <div className="flex items-center justify-center pb-4 border-b">
@@ -567,20 +647,28 @@ export function PrintSettingsTab() {
 
               {/* Salon Name */}
               <div className="text-center">
-                <h4 className={`font-bold ${fontSize === "small" ? "text-sm" : fontSize === "large" ? "text-lg" : "text-base"}`}>
+                <h4
+                  className={`font-bold ${fontSize === "small" ? "text-sm" : fontSize === "large" ? "text-lg" : "text-base"}`}
+                >
                   Din Salong AS
                 </h4>
-                <p className={`text-muted-foreground ${fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-sm" : "text-xs"}`}>
+                <p
+                  className={`text-muted-foreground ${fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-sm" : "text-xs"}`}
+                >
                   Storgata 1, 0123 Oslo
                 </p>
               </div>
 
               {/* Receipt Title */}
               <div className="text-center border-b pb-2">
-                <h5 className={`font-semibold ${fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-base" : "text-sm"}`}>
+                <h5
+                  className={`font-semibold ${fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-base" : "text-sm"}`}
+                >
                   KVITTERING
                 </h5>
-                <p className={`text-muted-foreground ${fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-sm" : "text-xs"}`}>
+                <p
+                  className={`text-muted-foreground ${fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-sm" : "text-xs"}`}
+                >
                   #12345 - 01.12.2025, 14:30
                 </p>
               </div>
@@ -588,18 +676,50 @@ export function PrintSettingsTab() {
               {/* Items */}
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className={fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-sm" : "text-xs"}>
+                  <span
+                    className={
+                      fontSize === "small"
+                        ? "text-xs"
+                        : fontSize === "large"
+                          ? "text-sm"
+                          : "text-xs"
+                    }
+                  >
                     Herreklipp
                   </span>
-                  <span className={fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-sm" : "text-xs"}>
+                  <span
+                    className={
+                      fontSize === "small"
+                        ? "text-xs"
+                        : fontSize === "large"
+                          ? "text-sm"
+                          : "text-xs"
+                    }
+                  >
                     299,00 kr
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className={fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-sm" : "text-xs"}>
+                  <span
+                    className={
+                      fontSize === "small"
+                        ? "text-xs"
+                        : fontSize === "large"
+                          ? "text-sm"
+                          : "text-xs"
+                    }
+                  >
                     Voks
                   </span>
-                  <span className={fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-sm" : "text-xs"}>
+                  <span
+                    className={
+                      fontSize === "small"
+                        ? "text-xs"
+                        : fontSize === "large"
+                          ? "text-sm"
+                          : "text-xs"
+                    }
+                  >
                     150,00 kr
                   </span>
                 </div>
@@ -608,26 +728,62 @@ export function PrintSettingsTab() {
               {/* Totals */}
               <div className="border-t pt-2 space-y-1">
                 <div className="flex justify-between">
-                  <span className={`${fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-sm" : "text-xs"}`}>
+                  <span
+                    className={`${fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-sm" : "text-xs"}`}
+                  >
                     Subtotal:
                   </span>
-                  <span className={fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-sm" : "text-xs"}>
+                  <span
+                    className={
+                      fontSize === "small"
+                        ? "text-xs"
+                        : fontSize === "large"
+                          ? "text-sm"
+                          : "text-xs"
+                    }
+                  >
                     449,00 kr
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className={`${fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-sm" : "text-xs"}`}>
+                  <span
+                    className={`${fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-sm" : "text-xs"}`}
+                  >
                     MVA (25%):
                   </span>
-                  <span className={fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-sm" : "text-xs"}>
+                  <span
+                    className={
+                      fontSize === "small"
+                        ? "text-xs"
+                        : fontSize === "large"
+                          ? "text-sm"
+                          : "text-xs"
+                    }
+                  >
                     112,25 kr
                   </span>
                 </div>
                 <div className="flex justify-between font-bold border-t pt-1">
-                  <span className={fontSize === "small" ? "text-sm" : fontSize === "large" ? "text-base" : "text-sm"}>
+                  <span
+                    className={
+                      fontSize === "small"
+                        ? "text-sm"
+                        : fontSize === "large"
+                          ? "text-base"
+                          : "text-sm"
+                    }
+                  >
                     TOTAL:
                   </span>
-                  <span className={fontSize === "small" ? "text-sm" : fontSize === "large" ? "text-base" : "text-sm"}>
+                  <span
+                    className={
+                      fontSize === "small"
+                        ? "text-sm"
+                        : fontSize === "large"
+                          ? "text-base"
+                          : "text-sm"
+                    }
+                  >
                     561,25 kr
                   </span>
                 </div>
@@ -635,14 +791,18 @@ export function PrintSettingsTab() {
 
               {/* Payment Method */}
               <div className="text-center border-t pt-2">
-                <p className={`text-muted-foreground ${fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-sm" : "text-xs"}`}>
+                <p
+                  className={`text-muted-foreground ${fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-sm" : "text-xs"}`}
+                >
                   Betalt med: Kontant
                 </p>
               </div>
 
               {/* Footer */}
               <div className="text-center border-t pt-3">
-                <p className={`${fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-sm" : "text-xs"}`}>
+                <p
+                  className={`${fontSize === "small" ? "text-xs" : fontSize === "large" ? "text-sm" : "text-xs"}`}
+                >
                   {customFooterText}
                 </p>
               </div>

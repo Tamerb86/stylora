@@ -1,7 +1,13 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "./_core/trpc";
 import { getDb } from "./db";
-import { expenses, appointments, appointmentServices, services as servicesTable, customers } from "../drizzle/schema";
+import {
+  expenses,
+  appointments,
+  appointmentServices,
+  services as servicesTable,
+  customers,
+} from "../drizzle/schema";
 import { eq, and, gte, lte, sql, desc } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
@@ -10,7 +16,12 @@ async function generateFinancialPDF(data: {
   tenantId: string;
   startDate: string;
   endDate: string;
-  summary: { revenue: number; expenses: number; profit: number; profitMargin: number };
+  summary: {
+    revenue: number;
+    expenses: number;
+    profit: number;
+    profitMargin: number;
+  };
   expensesByCategory: Array<{ category: string; total: string }>;
   salonName?: string;
 }) {
@@ -73,7 +84,7 @@ async function generateFinancialPDF(data: {
     <h2>Utgifter per kategori</h2>
     ${data.expensesByCategory
       .map(
-        (item) => `
+        item => `
       <div class="breakdown-item">
         <span class="category">${getCategoryLabel(item.category)}</span>
         <span class="amount">${formatNOK(parseFloat(item.total))}</span>
@@ -94,7 +105,10 @@ async function generateFinancialPDF(data: {
 }
 
 function formatNOK(amount: number): string {
-  return new Intl.NumberFormat("nb-NO", { style: "currency", currency: "NOK" }).format(amount);
+  return new Intl.NumberFormat("nb-NO", {
+    style: "currency",
+    currency: "NOK",
+  }).format(amount);
 }
 
 function getCategoryLabel(category: string): string {
@@ -114,19 +128,29 @@ function getCategoryLabel(category: string): string {
 
 // Excel generation using CSV format (compatible with Excel)
 async function generateFinancialExcel(data: {
-  expenses: Array<{ id: number; category: string; amount: string; description: string | null; expenseDate: Date | null }>;
+  expenses: Array<{
+    id: number;
+    category: string;
+    amount: string;
+    description: string | null;
+    expenseDate: Date | null;
+  }>;
   startDate: string;
   endDate: string;
 }) {
   const headers = ["Dato", "Kategori", "Beløp (NOK)", "Beskrivelse"];
-  const rows = data.expenses.map((exp) => [
-    exp.expenseDate ? new Date(exp.expenseDate).toLocaleDateString("nb-NO") : "N/A",
+  const rows = data.expenses.map(exp => [
+    exp.expenseDate
+      ? new Date(exp.expenseDate).toLocaleDateString("nb-NO")
+      : "N/A",
     getCategoryLabel(exp.category),
     parseFloat(exp.amount).toFixed(2),
     exp.description || "",
   ]);
 
-  const csv = [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(",")).join("\n");
+  const csv = [headers, ...rows]
+    .map(row => row.map(cell => `"${cell}"`).join(","))
+    .join("\n");
 
   return csv;
 }
@@ -141,20 +165,34 @@ export const exportRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       if (!ctx.user.tenantId) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "No tenant context" });
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "No tenant context",
+        });
       }
 
       const db = await getDb();
       if (!db) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       // Get summary
       const revenueResult = await db
-        .select({ total: sql<string>`COALESCE(SUM(${servicesTable.price}), 0)` })
+        .select({
+          total: sql<string>`COALESCE(SUM(${servicesTable.price}), 0)`,
+        })
         .from(appointments)
-        .leftJoin(appointmentServices, eq(appointments.id, appointmentServices.appointmentId))
-        .leftJoin(servicesTable, eq(appointmentServices.serviceId, servicesTable.id))
+        .leftJoin(
+          appointmentServices,
+          eq(appointments.id, appointmentServices.appointmentId)
+        )
+        .leftJoin(
+          servicesTable,
+          eq(appointmentServices.serviceId, servicesTable.id)
+        )
         .where(
           and(
             eq(appointments.tenantId, ctx.user.tenantId),
@@ -223,12 +261,18 @@ export const exportRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       if (!ctx.user.tenantId) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "No tenant context" });
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "No tenant context",
+        });
       }
 
       const db = await getDb();
       if (!db) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database not available",
+        });
       }
 
       const expensesList = await db

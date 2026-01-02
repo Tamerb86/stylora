@@ -1,26 +1,40 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Bell, CheckCircle, XCircle, Clock, Send } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 
 export default function Notifications() {
-  const [filter, setFilter] = useState<"all" | "pending" | "sent" | "delivered" | "failed">("all");
-  
-  const { data: notifications, isLoading, refetch } = trpc.notifications.list.useQuery({
+  const [filter, setFilter] = useState<
+    "all" | "pending" | "sent" | "delivered" | "failed"
+  >("all");
+
+  const {
+    data: notifications,
+    isLoading,
+    refetch,
+  } = trpc.notifications.list.useQuery({
     limit: 50,
     status: filter === "all" ? undefined : filter,
   });
 
   const triggerReminders = trpc.notifications.triggerReminders.useMutation({
-    onSuccess: (result) => {
-      toast.success(`Påminnelser sendt: ${result.sent} vellykket, ${result.failed} feilet`);
+    onSuccess: result => {
+      toast.success(
+        `Påminnelser sendt: ${result.sent} vellykket, ${result.failed} feilet`
+      );
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Feil ved sending av påminnelser: ${error.message}`);
     },
   });
@@ -30,11 +44,26 @@ export default function Notifications() {
     switch (status) {
       case "sent":
       case "delivered":
-        return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />Sendt</Badge>;
+        return (
+          <Badge className="bg-green-500">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Sendt
+          </Badge>
+        );
       case "failed":
-        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Feilet</Badge>;
+        return (
+          <Badge variant="destructive">
+            <XCircle className="w-3 h-3 mr-1" />
+            Feilet
+          </Badge>
+        );
       case "pending":
-        return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />Venter</Badge>;
+        return (
+          <Badge variant="secondary">
+            <Clock className="w-3 h-3 mr-1" />
+            Venter
+          </Badge>
+        );
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -76,8 +105,8 @@ export default function Notifications() {
           <CardHeader>
             <CardTitle>Automatiske SMS-påminnelser</CardTitle>
             <CardDescription>
-              Systemet sender automatisk SMS-påminnelser til kunder 24 timer før deres avtale.
-              Påminnelsene sendes hver time.
+              Systemet sender automatisk SMS-påminnelser til kunder 24 timer før
+              deres avtale. Påminnelsene sendes hver time.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -129,7 +158,7 @@ export default function Notifications() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {notifications.map((notification) => (
+            {notifications.map(notification => (
               <Card key={notification.id}>
                 <CardContent className="py-4">
                   <div className="flex items-start justify-between">
@@ -146,7 +175,9 @@ export default function Notifications() {
                         )}
                       </div>
                       <div className="mb-2">
-                        {notification.subject && <p className="font-medium">{notification.subject}</p>}
+                        {notification.subject && (
+                          <p className="font-medium">{notification.subject}</p>
+                        )}
                         <p className="text-sm text-muted-foreground">
                           Til: {notification.recipientContact}
                         </p>
@@ -165,11 +196,13 @@ export default function Notifications() {
                       {notification.sentAt && (
                         <p>Sendt: {formatDate(notification.sentAt)}</p>
                       )}
-                      {notification.attempts != null && notification.attempts > 0 && (
-                        <p className="mt-1">
-                          Forsøk: {notification.attempts}/{notification.maxAttempts}
-                        </p>
-                      )}
+                      {notification.attempts != null &&
+                        notification.attempts > 0 && (
+                          <p className="mt-1">
+                            Forsøk: {notification.attempts}/
+                            {notification.maxAttempts}
+                          </p>
+                        )}
                     </div>
                   </div>
                 </CardContent>

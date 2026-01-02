@@ -4,16 +4,16 @@ import { getSupabaseAdmin } from "../_core/supabase";
 describe("Supabase Connection", () => {
   it("should connect to Supabase with valid credentials", async () => {
     const supabase = getSupabaseAdmin();
-    
+
     // Test connection by trying to get auth users (should not throw)
     const { data, error } = await supabase.auth.admin.listUsers({
       page: 1,
       perPage: 1,
     });
-    
+
     // Should not have an error
     expect(error).toBeNull();
-    
+
     // Data should be defined (even if empty)
     expect(data).toBeDefined();
     expect(data.users).toBeDefined();

@@ -1,11 +1,25 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
-import { Loader2, CreditCard, Wifi, WifiOff, CheckCircle2, XCircle, RefreshCw } from "lucide-react";
+import {
+  Loader2,
+  CreditCard,
+  Wifi,
+  WifiOff,
+  CheckCircle2,
+  XCircle,
+  RefreshCw,
+} from "lucide-react";
 
 export function StripeTerminalSettings() {
   const [stripeApiKey, setStripeApiKey] = useState("");
@@ -15,9 +29,10 @@ export function StripeTerminalSettings() {
 
   // Get Stripe API key from payment settings
   const { data: settings } = (trpc as any).paymentSettings.get.useQuery();
-  
+
   // Stripe Terminal mutations
-  const connectionTokenMutation = trpc.stripeTerminal.createConnectionToken.useMutation();
+  const connectionTokenMutation =
+    trpc.stripeTerminal.createConnectionToken.useMutation();
   const listReadersMutation = trpc.stripeTerminal.listReaders.useMutation();
 
   useEffect(() => {
@@ -37,11 +52,13 @@ export function StripeTerminalSettings() {
       const result = await listReadersMutation.mutateAsync({
         apiKey: stripeApiKey,
       });
-      
+
       setReaders(result);
-      
+
       if (result.length === 0) {
-        toast.info("Ingen lesere funnet. Sørg for at leseren er påslått og koblet til WiFi.");
+        toast.info(
+          "Ingen lesere funnet. Sørg for at leseren er påslått og koblet til WiFi."
+        );
       } else {
         toast.success(`Fant ${result.length} leser(e)`);
       }
@@ -107,9 +124,7 @@ export function StripeTerminalSettings() {
             </div>
             {!stripeApiKey && (
               <Button variant="outline" size="sm" asChild>
-                <a href="#payment-settings">
-                  Legg til API-nøkkel
-                </a>
+                <a href="#payment-settings">Legg til API-nøkkel</a>
               </Button>
             )}
           </div>
@@ -149,7 +164,7 @@ export function StripeTerminalSettings() {
               {/* Readers List */}
               {readers.length > 0 && (
                 <div className="space-y-2">
-                  {readers.map((reader) => (
+                  {readers.map(reader => (
                     <div
                       key={reader.id}
                       className="flex items-center justify-between p-3 border rounded-lg"
@@ -157,9 +172,12 @@ export function StripeTerminalSettings() {
                       <div className="flex items-center gap-3">
                         {getReaderStatusIcon(reader.status)}
                         <div>
-                          <p className="text-sm font-medium">{reader.label || reader.id}</p>
+                          <p className="text-sm font-medium">
+                            {reader.label || reader.id}
+                          </p>
                           <p className="text-xs text-muted-foreground">
-                            {reader.device_type} • {getReaderStatusText(reader.status)}
+                            {reader.device_type} •{" "}
+                            {getReaderStatusText(reader.status)}
                           </p>
                         </div>
                       </div>
@@ -180,7 +198,8 @@ export function StripeTerminalSettings() {
                   <CreditCard className="h-12 w-12 mx-auto mb-3 opacity-50" />
                   <p className="text-sm">Ingen lesere funnet</p>
                   <p className="text-xs mt-1">
-                    Klikk "Søk etter lesere" for å finne tilgjengelige Stripe-lesere
+                    Klikk "Søk etter lesere" for å finne tilgjengelige
+                    Stripe-lesere
                   </p>
                 </div>
               )}
@@ -188,13 +207,33 @@ export function StripeTerminalSettings() {
 
             {/* Setup Instructions */}
             <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
-              <h4 className="text-sm font-medium mb-2">Slik setter du opp Stripe Terminal:</h4>
+              <h4 className="text-sm font-medium mb-2">
+                Slik setter du opp Stripe Terminal:
+              </h4>
               <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
-                <li>Bestill en Stripe kortleser fra <a href="https://dashboard.stripe.com/terminal/shop" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Stripe Dashboard</a></li>
-                <li>Koble leseren til WiFi (følg instruksjonene som følger med leseren)</li>
-                <li>Sørg for at leseren er på samme nettverk som denne enheten</li>
+                <li>
+                  Bestill en Stripe kortleser fra{" "}
+                  <a
+                    href="https://dashboard.stripe.com/terminal/shop"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    Stripe Dashboard
+                  </a>
+                </li>
+                <li>
+                  Koble leseren til WiFi (følg instruksjonene som følger med
+                  leseren)
+                </li>
+                <li>
+                  Sørg for at leseren er på samme nettverk som denne enheten
+                </li>
                 <li>Klikk "Søk etter lesere" for å finne leseren</li>
-                <li>Når leseren vises som "Online", er den klar til bruk i POS-systemet</li>
+                <li>
+                  Når leseren vises som "Online", er den klar til bruk i
+                  POS-systemet
+                </li>
               </ol>
             </div>
 
@@ -207,7 +246,8 @@ export function StripeTerminalSettings() {
                 <li>• Verifone P400 (~$299)</li>
               </ul>
               <p className="text-xs text-muted-foreground mt-3">
-                💡 <strong>Tips:</strong> Stripe Terminal støtter chip, contactless, Apple Pay og Google Pay
+                💡 <strong>Tips:</strong> Stripe Terminal støtter chip,
+                contactless, Apple Pay og Google Pay
               </p>
             </div>
           </>

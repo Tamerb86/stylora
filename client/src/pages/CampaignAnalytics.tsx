@@ -1,20 +1,26 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  TrendingUp, 
-  Send, 
-  CheckCircle2, 
-  XCircle, 
+import {
+  TrendingUp,
+  Send,
+  CheckCircle2,
+  XCircle,
   Clock,
   Eye,
   MousePointerClick,
   Mail,
   MessageSquare,
   Calendar,
-  Users
+  Users,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { safeToFixed } from "@/lib/utils";
@@ -35,16 +41,19 @@ import {
 } from "@/components/ui/table";
 
 export function CampaignAnalytics() {
-  const [selectedCampaignId, setSelectedCampaignId] = useState<number | null>(null);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<number | null>(
+    null
+  );
 
   // Fetch campaigns
   const { data: campaigns = [] } = trpc.communications.listCampaigns.useQuery();
 
   // Fetch campaign details when selected
-  const { data: campaignDetails } = trpc.communications.getCampaignDetails.useQuery(
-    { campaignId: selectedCampaignId! },
-    { enabled: selectedCampaignId !== null }
-  );
+  const { data: campaignDetails } =
+    trpc.communications.getCampaignDetails.useQuery(
+      { campaignId: selectedCampaignId! },
+      { enabled: selectedCampaignId !== null }
+    );
 
   const getStatusBadge = (status: string | null) => {
     if (!status) return <Badge variant="secondary">Ukjent</Badge>;
@@ -61,14 +70,19 @@ export function CampaignAnalytics() {
   };
 
   const getRecipientStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: any; label: string; icon: any }> = {
-      pending: { variant: "secondary", label: "Venter", icon: Clock },
-      sent: { variant: "default", label: "Sendt", icon: Send },
-      delivered: { variant: "default", label: "Levert", icon: CheckCircle2 },
-      failed: { variant: "destructive", label: "Feilet", icon: XCircle },
-      opened: { variant: "default", label: "Åpnet", icon: Eye },
-      clicked: { variant: "default", label: "Klikket", icon: MousePointerClick },
-    };
+    const variants: Record<string, { variant: any; label: string; icon: any }> =
+      {
+        pending: { variant: "secondary", label: "Venter", icon: Clock },
+        sent: { variant: "default", label: "Sendt", icon: Send },
+        delivered: { variant: "default", label: "Levert", icon: CheckCircle2 },
+        failed: { variant: "destructive", label: "Feilet", icon: XCircle },
+        opened: { variant: "default", label: "Åpnet", icon: Eye },
+        clicked: {
+          variant: "default",
+          label: "Klikket",
+          icon: MousePointerClick,
+        },
+      };
 
     const config = variants[status] || variants.pending;
     const Icon = config.icon;
@@ -83,7 +97,10 @@ export function CampaignAnalytics() {
   const calculateMetrics = (campaign: any) => {
     const deliveryRate =
       campaign.recipientCount > 0
-        ? safeToFixed((campaign.deliveredCount / campaign.recipientCount) * 100, 1)
+        ? safeToFixed(
+            (campaign.deliveredCount / campaign.recipientCount) * 100,
+            1
+          )
         : "0.0";
 
     const openRate =
@@ -115,7 +132,9 @@ export function CampaignAnalytics() {
               <div className="text-center space-y-4">
                 <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground" />
                 <div>
-                  <h3 className="font-semibold text-lg">Ingen kampanjer ennå</h3>
+                  <h3 className="font-semibold text-lg">
+                    Ingen kampanjer ennå
+                  </h3>
                   <p className="text-muted-foreground">
                     Opprett din første masseutsendelse for å se analyser her
                   </p>
@@ -130,7 +149,10 @@ export function CampaignAnalytics() {
               const Icon = campaign.type === "sms" ? MessageSquare : Mail;
 
               return (
-                <Card key={campaign.id} className="hover:shadow-md transition-shadow">
+                <Card
+                  key={campaign.id}
+                  className="hover:shadow-md transition-shadow"
+                >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
@@ -140,8 +162,13 @@ export function CampaignAnalytics() {
                           {getStatusBadge(campaign.status)}
                         </div>
                         <CardDescription>
-                          {campaign.type === "sms" ? "SMS-kampanje" : "E-postkampanje"} •{" "}
-                          {new Date(campaign.createdAt).toLocaleDateString("no-NO")}
+                          {campaign.type === "sms"
+                            ? "SMS-kampanje"
+                            : "E-postkampanje"}{" "}
+                          •{" "}
+                          {new Date(campaign.createdAt).toLocaleDateString(
+                            "no-NO"
+                          )}
                         </CardDescription>
                       </div>
                       <Button
@@ -160,7 +187,9 @@ export function CampaignAnalytics() {
                           <Users className="h-4 w-4" />
                           <span className="text-sm">Mottakere</span>
                         </div>
-                        <p className="text-2xl font-bold">{campaign.recipientCount}</p>
+                        <p className="text-2xl font-bold">
+                          {campaign.recipientCount}
+                        </p>
                       </div>
 
                       <div className="space-y-1">
@@ -168,7 +197,9 @@ export function CampaignAnalytics() {
                           <Send className="h-4 w-4" />
                           <span className="text-sm">Sendt</span>
                         </div>
-                        <p className="text-2xl font-bold">{campaign.sentCount}</p>
+                        <p className="text-2xl font-bold">
+                          {campaign.sentCount}
+                        </p>
                       </div>
 
                       <div className="space-y-1">
@@ -176,8 +207,12 @@ export function CampaignAnalytics() {
                           <CheckCircle2 className="h-4 w-4" />
                           <span className="text-sm">Levert</span>
                         </div>
-                        <p className="text-2xl font-bold">{campaign.deliveredCount}</p>
-                        <p className="text-xs text-muted-foreground">{metrics.deliveryRate}%</p>
+                        <p className="text-2xl font-bold">
+                          {campaign.deliveredCount}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {metrics.deliveryRate}%
+                        </p>
                       </div>
 
                       <div className="space-y-1">
@@ -185,7 +220,9 @@ export function CampaignAnalytics() {
                           <XCircle className="h-4 w-4" />
                           <span className="text-sm">Feilet</span>
                         </div>
-                        <p className="text-2xl font-bold">{campaign.failedCount}</p>
+                        <p className="text-2xl font-bold">
+                          {campaign.failedCount}
+                        </p>
                       </div>
 
                       {campaign.type === "email" && (
@@ -195,8 +232,12 @@ export function CampaignAnalytics() {
                               <Eye className="h-4 w-4" />
                               <span className="text-sm">Åpnet</span>
                             </div>
-                            <p className="text-2xl font-bold">{campaign.openedCount}</p>
-                            <p className="text-xs text-muted-foreground">{metrics.openRate}%</p>
+                            <p className="text-2xl font-bold">
+                              {campaign.openedCount}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {metrics.openRate}%
+                            </p>
                           </div>
 
                           <div className="space-y-1">
@@ -204,22 +245,29 @@ export function CampaignAnalytics() {
                               <MousePointerClick className="h-4 w-4" />
                               <span className="text-sm">Klikket</span>
                             </div>
-                            <p className="text-2xl font-bold">{campaign.clickedCount}</p>
-                            <p className="text-xs text-muted-foreground">{metrics.clickRate}%</p>
+                            <p className="text-2xl font-bold">
+                              {campaign.clickedCount}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {metrics.clickRate}%
+                            </p>
                           </div>
                         </>
                       )}
                     </div>
 
-                    {campaign.scheduledAt && campaign.status === "scheduled" && (
-                      <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        <span>
-                          Planlagt:{" "}
-                          {new Date(campaign.scheduledAt).toLocaleString("no-NO")}
-                        </span>
-                      </div>
-                    )}
+                    {campaign.scheduledAt &&
+                      campaign.status === "scheduled" && (
+                        <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                          <Calendar className="h-4 w-4" />
+                          <span>
+                            Planlagt:{" "}
+                            {new Date(campaign.scheduledAt).toLocaleString(
+                              "no-NO"
+                            )}
+                          </span>
+                        </div>
+                      )}
                   </CardContent>
                 </Card>
               );
@@ -231,7 +279,7 @@ export function CampaignAnalytics() {
       {/* Campaign Details Dialog */}
       <Dialog
         open={selectedCampaignId !== null}
-        onOpenChange={(open) => !open && setSelectedCampaignId(null)}
+        onOpenChange={open => !open && setSelectedCampaignId(null)}
       >
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -245,14 +293,18 @@ export function CampaignAnalytics() {
             <div className="space-y-6">
               {/* Campaign Info */}
               <div className="space-y-2">
-                <h3 className="font-semibold">{campaignDetails.campaign.name}</h3>
+                <h3 className="font-semibold">
+                  {campaignDetails.campaign.name}
+                </h3>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <span>
                     {campaignDetails.campaign.type === "sms" ? "SMS" : "E-post"}
                   </span>
                   <span>•</span>
                   <span>
-                    {new Date(campaignDetails.campaign.createdAt).toLocaleString("no-NO")}
+                    {new Date(
+                      campaignDetails.campaign.createdAt
+                    ).toLocaleString("no-NO")}
                   </span>
                   <span>•</span>
                   {getStatusBadge(campaignDetails.campaign.status)}
@@ -295,7 +347,10 @@ export function CampaignAnalytics() {
                     <TableBody>
                       {campaignDetails.recipients.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={7} className="text-center text-muted-foreground">
+                          <TableCell
+                            colSpan={7}
+                            className="text-center text-muted-foreground"
+                          >
                             Ingen mottakere
                           </TableCell>
                         </TableRow>
@@ -308,18 +363,25 @@ export function CampaignAnalytics() {
                             <TableCell className="text-sm text-muted-foreground">
                               {recipient.recipientContact}
                             </TableCell>
-                            <TableCell>{getRecipientStatusBadge(recipient.status)}</TableCell>
+                            <TableCell>
+                              {getRecipientStatusBadge(recipient.status)}
+                            </TableCell>
                             <TableCell className="text-sm">
                               {recipient.sentAt
-                                ? new Date(recipient.sentAt).toLocaleString("no-NO", {
-                                    dateStyle: "short",
-                                    timeStyle: "short",
-                                  })
+                                ? new Date(recipient.sentAt).toLocaleString(
+                                    "no-NO",
+                                    {
+                                      dateStyle: "short",
+                                      timeStyle: "short",
+                                    }
+                                  )
                                 : "-"}
                             </TableCell>
                             <TableCell className="text-sm">
                               {recipient.deliveredAt
-                                ? new Date(recipient.deliveredAt).toLocaleString("no-NO", {
+                                ? new Date(
+                                    recipient.deliveredAt
+                                  ).toLocaleString("no-NO", {
                                     dateStyle: "short",
                                     timeStyle: "short",
                                   })
@@ -329,7 +391,9 @@ export function CampaignAnalytics() {
                               <>
                                 <TableCell className="text-sm">
                                   {recipient.openedAt
-                                    ? new Date(recipient.openedAt).toLocaleString("no-NO", {
+                                    ? new Date(
+                                        recipient.openedAt
+                                      ).toLocaleString("no-NO", {
                                         dateStyle: "short",
                                         timeStyle: "short",
                                       })
@@ -348,13 +412,17 @@ export function CampaignAnalytics() {
               {/* Error Messages */}
               {campaignDetails.recipients.some((r: any) => r.errorMessage) && (
                 <div className="space-y-2">
-                  <h4 className="font-semibold text-destructive">Feilmeldinger</h4>
+                  <h4 className="font-semibold text-destructive">
+                    Feilmeldinger
+                  </h4>
                   <div className="border border-destructive/50 rounded-lg p-4 space-y-2">
                     {campaignDetails.recipients
                       .filter((r: any) => r.errorMessage)
                       .map((recipient: any) => (
                         <div key={recipient.id} className="text-sm">
-                          <span className="font-medium">{recipient.customerName}:</span>{" "}
+                          <span className="font-medium">
+                            {recipient.customerName}:
+                          </span>{" "}
                           <span className="text-muted-foreground">
                             {recipient.errorMessage}
                           </span>

@@ -53,14 +53,14 @@
 
 ### Required on Railway:
 
-| Variable | Status | Notes |
-|----------|--------|-------|
-| DATABASE_URL | ✅ | Railway MySQL |
-| SUPABASE_URL | ✅ | Added |
-| SUPABASE_ANON_KEY | ✅ | Added |
-| SUPABASE_SERVICE_KEY | ✅ | Added |
-| JWT_SECRET | ✅ | Auto-generated |
-| STRIPE_SECRET_KEY | ⚠️ | Optional now |
+| Variable             | Status | Notes          |
+| -------------------- | ------ | -------------- |
+| DATABASE_URL         | ✅     | Railway MySQL  |
+| SUPABASE_URL         | ✅     | Added          |
+| SUPABASE_ANON_KEY    | ✅     | Added          |
+| SUPABASE_SERVICE_KEY | ✅     | Added          |
+| JWT_SECRET           | ✅     | Auto-generated |
+| STRIPE_SECRET_KEY    | ⚠️     | Optional now   |
 
 ---
 
@@ -69,6 +69,7 @@
 ### Immediate:
 
 1. **Push database schema to Railway**:
+
    ```bash
    cd C:\Users\tamer\barbertime
    git pull origin main
@@ -90,12 +91,12 @@
 
 ## Summary
 
-| Component | Status |
-|-----------|--------|
-| Frontend | ✅ Working |
-| Backend | ⚠️ Needs DB |
-| Database | ❌ No tables |
-| Auth | ⚠️ Needs DB |
-| API | ⚠️ Needs DB |
+| Component | Status       |
+| --------- | ------------ |
+| Frontend  | ✅ Working   |
+| Backend   | ⚠️ Needs DB  |
+| Database  | ❌ No tables |
+| Auth      | ⚠️ Needs DB  |
+| API       | ⚠️ Needs DB  |
 
 **Root Cause**: Database schema never pushed to production.

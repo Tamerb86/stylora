@@ -1,11 +1,11 @@
 /**
  * SMS Service for sending appointment reminders
- * 
+ *
  * In production, this would integrate with a Norwegian SMS provider like:
  * - PSWinCom (https://www.pswin.com/)
  * - Link Mobility (https://www.linkmobility.com/)
  * - Twilio (international)
- * 
+ *
  * For development, we use a mock service that logs to console.
  */
 
@@ -39,12 +39,12 @@ async function getSMSConfig(tenantId?: string): Promise<SMSConfig> {
       const { getDb } = await import("./db");
       const { tenants } = await import("../drizzle/schema");
       const { eq } = await import("drizzle-orm");
-      
+
       const db = await getDb();
       if (!db) {
         throw new Error("Database not available");
       }
-      
+
       const [tenant] = await db
         .select({
           smsProvider: tenants.smsProvider,
@@ -55,14 +55,15 @@ async function getSMSConfig(tenantId?: string): Promise<SMSConfig> {
         .from(tenants)
         .where(eq(tenants.id, tenantId))
         .limit(1);
-      
+
       // If tenant has SMS configured, use tenant settings
       if (tenant?.smsProvider && tenant?.smsApiKey) {
         return {
           provider: tenant.smsProvider,
           apiKey: tenant.smsApiKey,
           apiSecret: tenant.smsApiSecret || undefined,
-          senderId: tenant.smsPhoneNumber || process.env.SMS_SENDER_ID || "Stylora",
+          senderId:
+            tenant.smsPhoneNumber || process.env.SMS_SENDER_ID || "Stylora",
         };
       }
     } catch (error) {
@@ -70,10 +71,11 @@ async function getSMSConfig(tenantId?: string): Promise<SMSConfig> {
       // Fall through to global settings
     }
   }
-  
+
   // Fallback to global environment variables
-  const provider = (process.env.SMS_PROVIDER || "mock") as SMSConfig["provider"];
-  
+  const provider = (process.env.SMS_PROVIDER ||
+    "mock") as SMSConfig["provider"];
+
   return {
     provider,
     apiKey: process.env.SMS_API_KEY,
@@ -99,16 +101,16 @@ export async function sendSMS(message: SMSMessage): Promise<SMSResult> {
   switch (config.provider) {
     case "mock":
       return sendMockSMS(message, config);
-    
+
     case "pswincom":
       return sendPSWinComSMS(message, config);
-    
+
     case "linkmobility":
       return sendLinkMobilitySMS(message, config);
-    
+
     case "twilio":
       return sendTwilioSMS(message, config);
-    
+
     default:
       return {
         success: false,
@@ -120,7 +122,10 @@ export async function sendSMS(message: SMSMessage): Promise<SMSResult> {
 /**
  * Mock SMS service for development
  */
-async function sendMockSMS(message: SMSMessage, config: SMSConfig): Promise<SMSResult> {
+async function sendMockSMS(
+  message: SMSMessage,
+  config: SMSConfig
+): Promise<SMSResult> {
   console.log("📱 [MOCK SMS]");
   console.log(`   To: ${message.to}`);
   console.log(`   From: ${config.senderId}`);
@@ -140,7 +145,10 @@ async function sendMockSMS(message: SMSMessage, config: SMSConfig): Promise<SMSR
  * PSWinCom SMS service (Norwegian provider)
  * Documentation: https://wiki.pswin.com/
  */
-async function sendPSWinComSMS(message: SMSMessage, config: SMSConfig): Promise<SMSResult> {
+async function sendPSWinComSMS(
+  message: SMSMessage,
+  config: SMSConfig
+): Promise<SMSResult> {
   if (!config.apiKey) {
     return { success: false, error: "PSWinCom API key not configured" };
   }
@@ -151,7 +159,7 @@ async function sendPSWinComSMS(message: SMSMessage, config: SMSConfig): Promise<
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${config.apiKey}`,
+        Authorization: `Bearer ${config.apiKey}`,
       },
       body: JSON.stringify({
         USER: config.apiKey,
@@ -170,7 +178,7 @@ async function sendPSWinComSMS(message: SMSMessage, config: SMSConfig): Promise<
     }
 
     const data = await response.text();
-    
+
     return {
       success: true,
       messageId: data.trim(),
@@ -187,7 +195,10 @@ async function sendPSWinComSMS(message: SMSMessage, config: SMSConfig): Promise<
  * Link Mobility SMS service (Norwegian provider)
  * Documentation: https://www.linkmobility.com/developers/
  */
-async function sendLinkMobilitySMS(message: SMSMessage, config: SMSConfig): Promise<SMSResult> {
+async function sendLinkMobilitySMS(
+  message: SMSMessage,
+  config: SMSConfig
+): Promise<SMSResult> {
   if (!config.apiKey) {
     return { success: false, error: "Link Mobility API key not configured" };
   }
@@ -197,7 +208,7 @@ async function sendLinkMobilitySMS(message: SMSMessage, config: SMSConfig): Prom
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${config.apiKey}`,
+        Authorization: `Bearer ${config.apiKey}`,
       },
       body: JSON.stringify({
         source: config.senderId,
@@ -216,7 +227,7 @@ async function sendLinkMobilitySMS(message: SMSMessage, config: SMSConfig): Prom
     }
 
     const data = await response.json();
-    
+
     return {
       success: true,
       messageId: data.messageId || data.id,
@@ -233,7 +244,10 @@ async function sendLinkMobilitySMS(message: SMSMessage, config: SMSConfig): Prom
  * Twilio SMS service (international provider)
  * Documentation: https://www.twilio.com/docs/sms
  */
-async function sendTwilioSMS(message: SMSMessage, config: SMSConfig): Promise<SMSResult> {
+async function sendTwilioSMS(
+  message: SMSMessage,
+  config: SMSConfig
+): Promise<SMSResult> {
   if (!config.apiKey || !config.apiSecret) {
     return { success: false, error: "Twilio credentials not configured" };
   }
@@ -249,7 +263,7 @@ async function sendTwilioSMS(message: SMSMessage, config: SMSConfig): Promise<SM
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-          "Authorization": `Basic ${auth}`,
+          Authorization: `Basic ${auth}`,
         },
         body: new URLSearchParams({
           To: message.to,
@@ -268,7 +282,7 @@ async function sendTwilioSMS(message: SMSMessage, config: SMSConfig): Promise<SM
     }
 
     const data = await response.json();
-    
+
     return {
       success: true,
       messageId: data.sid,
@@ -298,7 +312,7 @@ export function formatAppointmentReminder(params: {
   });
 
   let message = `Hei ${params.customerName}! Dette er en påminnelse om din time hos ${params.salonName} ${dateStr} kl. ${params.appointmentTime}.`;
-  
+
   if (params.serviceName) {
     message += ` Tjeneste: ${params.serviceName}.`;
   }

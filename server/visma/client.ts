@@ -67,9 +67,9 @@ export class VismaClient {
       throw new Error("Visma access token not configured");
     }
     return {
-      "Authorization": `Bearer ${this.config.accessToken}`,
+      Authorization: `Bearer ${this.config.accessToken}`,
       "Content-Type": "application/json",
-      "Accept": "application/json",
+      Accept: "application/json",
     };
   }
 
@@ -96,7 +96,11 @@ export class VismaClient {
   }
 
   // OAuth Flow
-  static getAuthorizationUrl(clientId: string, redirectUri: string, state: string): string {
+  static getAuthorizationUrl(
+    clientId: string,
+    redirectUri: string,
+    state: string
+  ): string {
     const params = new URLSearchParams({
       client_id: clientId,
       redirect_uri: redirectUri,
@@ -107,7 +111,10 @@ export class VismaClient {
     return `https://identity.visma.com/connect/authorize?${params}`;
   }
 
-  async exchangeCodeForToken(code: string, redirectUri: string): Promise<{
+  async exchangeCodeForToken(
+    code: string,
+    redirectUri: string
+  ): Promise<{
     access_token: string;
     refresh_token: string;
     expires_in: number;
@@ -175,7 +182,10 @@ export class VismaClient {
     return this.request<VismaCustomer>("POST", "/customers", customer);
   }
 
-  async updateCustomer(id: string, customer: Partial<VismaCustomer>): Promise<VismaCustomer> {
+  async updateCustomer(
+    id: string,
+    customer: Partial<VismaCustomer>
+  ): Promise<VismaCustomer> {
     return this.request<VismaCustomer>("PUT", `/customers/${id}`, customer);
   }
 
@@ -213,7 +223,9 @@ export class VismaClient {
 }
 
 // Helper to get Visma client for a tenant
-export async function getVismaClient(tenantId: string): Promise<VismaClient | null> {
+export async function getVismaClient(
+  tenantId: string
+): Promise<VismaClient | null> {
   const dbInstance = await getDb();
   if (!dbInstance) return null;
 
@@ -228,6 +240,6 @@ export async function getVismaClient(tenantId: string): Promise<VismaClient | nu
   // Get Visma config from tenant settings (stored in JSON field or separate table)
   // For now, return null if not configured
   // In production, you would store these in a secure settings table
-  
+
   return null;
 }

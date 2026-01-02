@@ -21,8 +21,27 @@ import {
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
-import { Download, Calendar, User, Pencil, Trash2, AlertCircle, FileDown, FileSpreadsheet, Filter, X, ChevronDown, ChevronUp, Clock } from "lucide-react";
-import { exportToPDF, exportToExcel, formatHours, formatDuration } from "../lib/exportUtils";
+import {
+  Download,
+  Calendar,
+  User,
+  Pencil,
+  Trash2,
+  AlertCircle,
+  FileDown,
+  FileSpreadsheet,
+  Filter,
+  X,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+} from "lucide-react";
+import {
+  exportToPDF,
+  exportToExcel,
+  formatHours,
+  formatDuration,
+} from "../lib/exportUtils";
 
 export default function AttendanceReport() {
   const [dateRange, setDateRange] = useState("thisMonth");
@@ -70,7 +89,11 @@ export default function AttendanceReport() {
         break;
       }
       case "lastMonth": {
-        const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+        const lastMonthStart = new Date(
+          today.getFullYear(),
+          today.getMonth() - 1,
+          1
+        );
         const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
         startDate = lastMonthStart.toISOString().split("T")[0];
         endDate = lastMonthEnd.toISOString().split("T")[0];
@@ -90,16 +113,19 @@ export default function AttendanceReport() {
 
   const { startDate, endDate } = getDateRange();
 
-  const { data: timesheets = [], isLoading } = trpc.attendance.getAllTimesheets.useQuery({
-    startDate,
-    endDate,
-    employeeId: selectedEmployee === "all" ? undefined : parseInt(selectedEmployee),
-  });
+  const { data: timesheets = [], isLoading } =
+    trpc.attendance.getAllTimesheets.useQuery({
+      startDate,
+      endDate,
+      employeeId:
+        selectedEmployee === "all" ? undefined : parseInt(selectedEmployee),
+    });
 
-  const { data: employeeTotals = [] } = trpc.attendance.getEmployeeTotals.useQuery({
-    startDate,
-    endDate,
-  });
+  const { data: employeeTotals = [] } =
+    trpc.attendance.getEmployeeTotals.useQuery({
+      startDate,
+      endDate,
+    });
 
   const { data: employees = [] } = trpc.employees.list.useQuery();
 
@@ -126,8 +152,10 @@ export default function AttendanceReport() {
   const handleEdit = (timesheet: any) => {
     setSelectedTimesheet(timesheet);
     const clockInDate = new Date(timesheet.clockIn);
-    const clockOutDate = timesheet.clockOut ? new Date(timesheet.clockOut) : null;
-    
+    const clockOutDate = timesheet.clockOut
+      ? new Date(timesheet.clockOut)
+      : null;
+
     setEditForm({
       clockIn: clockInDate.toISOString().slice(0, 16),
       clockOut: clockOutDate ? clockOutDate.toISOString().slice(0, 16) : "",
@@ -171,7 +199,10 @@ export default function AttendanceReport() {
   const getFilteredData = () => {
     return timesheets.filter((t: any) => {
       // Employee filter
-      if (selectedEmployee !== "all" && t.employeeId?.toString() !== selectedEmployee) {
+      if (
+        selectedEmployee !== "all" &&
+        t.employeeId?.toString() !== selectedEmployee
+      ) {
         return false;
       }
       // Status filter
@@ -191,8 +222,18 @@ export default function AttendanceReport() {
     const exportData = filteredTimesheets.map((t: any) => ({
       employeeName: t.employeeName || "Ukjent",
       workDate: new Date(t.workDate),
-      clockIn: t.clockIn ? new Date(t.clockIn).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" }) : "-",
-      clockOut: t.clockOut ? new Date(t.clockOut).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" }) : "Aktiv",
+      clockIn: t.clockIn
+        ? new Date(t.clockIn).toLocaleTimeString("no-NO", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "-",
+      clockOut: t.clockOut
+        ? new Date(t.clockOut).toLocaleTimeString("no-NO", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "Aktiv",
       duration: formatDuration(t.totalHours || 0),
       edited: t.editReason ? "Ja" : "Nei",
     }));
@@ -216,15 +257,17 @@ export default function AttendanceReport() {
     };
 
     // Prepare employee name
-    const selectedEmployeeName = selectedEmployee === "all" 
-      ? "Alle ansatte" 
-      : employees.find((e: any) => e.id === parseInt(selectedEmployee))?.name || "Ukjent";
+    const selectedEmployeeName =
+      selectedEmployee === "all"
+        ? "Alle ansatte"
+        : employees.find((e: any) => e.id === parseInt(selectedEmployee))
+            ?.name || "Ukjent";
 
     // Prepare metadata
     const metadata = {
       filters: {
         period: periodLabels[dateRange] || dateRange,
-        dateRange: `${new Date(startDate).toLocaleDateString('no-NO')} - ${new Date(endDate).toLocaleDateString('no-NO')}`,
+        dateRange: `${new Date(startDate).toLocaleDateString("no-NO")} - ${new Date(endDate).toLocaleDateString("no-NO")}`,
         employee: selectedEmployeeName,
       },
       totals: employeeTotals.map((et: any) => ({
@@ -234,15 +277,31 @@ export default function AttendanceReport() {
       })),
     };
 
-    exportToPDF(exportData, columns, "Timeregistrering", `timeregistrering_${startDate}_${endDate}`, metadata);
+    exportToPDF(
+      exportData,
+      columns,
+      "Timeregistrering",
+      `timeregistrering_${startDate}_${endDate}`,
+      metadata
+    );
   };
 
   const handleExportExcel = () => {
     const exportData = filteredTimesheets.map((t: any) => ({
       employeeName: t.employeeName || "Ukjent",
       workDate: new Date(t.workDate),
-      clockIn: t.clockIn ? new Date(t.clockIn).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" }) : "-",
-      clockOut: t.clockOut ? new Date(t.clockOut).toLocaleTimeString("no-NO", { hour: "2-digit", minute: "2-digit" }) : "Aktiv",
+      clockIn: t.clockIn
+        ? new Date(t.clockIn).toLocaleTimeString("no-NO", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "-",
+      clockOut: t.clockOut
+        ? new Date(t.clockOut).toLocaleTimeString("no-NO", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "Aktiv",
       duration: formatDuration(t.totalHours || 0),
       edited: t.editReason ? "Ja" : "Nei",
     }));
@@ -256,7 +315,12 @@ export default function AttendanceReport() {
       { header: "Redigert", key: "edited" },
     ];
 
-    exportToExcel(exportData, columns, "Timeregistrering", `timeregistrering_${startDate}_${endDate}`);
+    exportToExcel(
+      exportData,
+      columns,
+      "Timeregistrering",
+      `timeregistrering_${startDate}_${endDate}`
+    );
   };
 
   return (
@@ -273,11 +337,18 @@ export default function AttendanceReport() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleExportPDF} variant="outline" className="border-blue-500 text-blue-600 hover:bg-blue-50">
+            <Button
+              onClick={handleExportPDF}
+              variant="outline"
+              className="border-blue-500 text-blue-600 hover:bg-blue-50"
+            >
               <FileDown className="w-4 h-4 mr-2" />
               PDF
             </Button>
-            <Button onClick={handleExportExcel} className="bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600">
+            <Button
+              onClick={handleExportExcel}
+              className="bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600"
+            >
               <FileSpreadsheet className="w-4 h-4 mr-2" />
               Excel
             </Button>
@@ -311,7 +382,10 @@ export default function AttendanceReport() {
                 <User className="w-4 h-4" />
                 Ansatt
               </Label>
-              <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
+              <Select
+                value={selectedEmployee}
+                onValueChange={setSelectedEmployee}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -338,7 +412,11 @@ export default function AttendanceReport() {
                 <Filter className="w-4 h-4" />
                 Avanserte filtre
               </span>
-              {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              {showFilters ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
             </Button>
 
             {showFilters && (
@@ -351,7 +429,7 @@ export default function AttendanceReport() {
                       <Input
                         type="date"
                         value={customStartDate}
-                        onChange={(e) => setCustomStartDate(e.target.value)}
+                        onChange={e => setCustomStartDate(e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
@@ -359,7 +437,7 @@ export default function AttendanceReport() {
                       <Input
                         type="date"
                         value={customEndDate}
-                        onChange={(e) => setCustomEndDate(e.target.value)}
+                        onChange={e => setCustomEndDate(e.target.value)}
                       />
                     </div>
                   </>
@@ -374,7 +452,9 @@ export default function AttendanceReport() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Alle</SelectItem>
-                      <SelectItem value="active">Aktive (ikke stemplet ut)</SelectItem>
+                      <SelectItem value="active">
+                        Aktive (ikke stemplet ut)
+                      </SelectItem>
                       <SelectItem value="completed">Fullførte</SelectItem>
                     </SelectContent>
                   </Select>
@@ -403,7 +483,9 @@ export default function AttendanceReport() {
             {/* Record Count Preview */}
             <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
               <p className="text-sm text-blue-900">
-                <strong>{filteredTimesheets.length}</strong> av <strong>{timesheets.length}</strong> oppføringer vil bli eksportert
+                <strong>{filteredTimesheets.length}</strong> av{" "}
+                <strong>{timesheets.length}</strong> oppføringer vil bli
+                eksportert
               </p>
             </div>
           </div>
@@ -417,7 +499,13 @@ export default function AttendanceReport() {
                 <div>
                   <p className="text-sm opacity-90">Totale timer</p>
                   <p className="text-3xl font-bold mt-1">
-                    {employeeTotals.reduce((sum: number, emp: any) => sum + (parseFloat(emp.totalHours) || 0), 0).toFixed(2)}
+                    {employeeTotals
+                      .reduce(
+                        (sum: number, emp: any) =>
+                          sum + (parseFloat(emp.totalHours) || 0),
+                        0
+                      )
+                      .toFixed(2)}
                   </p>
                   <p className="text-xs opacity-75 mt-1">timer</p>
                 </div>
@@ -432,7 +520,10 @@ export default function AttendanceReport() {
                 <div>
                   <p className="text-sm opacity-90">Totale skift</p>
                   <p className="text-3xl font-bold mt-1">
-                    {employeeTotals.reduce((sum: number, emp: any) => sum + (emp.shiftCount || 0), 0)}
+                    {employeeTotals.reduce(
+                      (sum: number, emp: any) => sum + (emp.shiftCount || 0),
+                      0
+                    )}
                   </p>
                   <p className="text-xs opacity-75 mt-1">skift</p>
                 </div>
@@ -447,8 +538,21 @@ export default function AttendanceReport() {
                 <div>
                   <p className="text-sm opacity-90">Gjennomsnitt per dag</p>
                   <p className="text-3xl font-bold mt-1">
-                    {(employeeTotals.reduce((sum: number, emp: any) => sum + (parseFloat(emp.totalHours) || 0), 0) / 
-                      Math.max(employeeTotals.reduce((sum: number, emp: any) => sum + (emp.shiftCount || 0), 0), 1)).toFixed(2)}
+                    {(
+                      employeeTotals.reduce(
+                        (sum: number, emp: any) =>
+                          sum + (parseFloat(emp.totalHours) || 0),
+                        0
+                      ) /
+                      Math.max(
+                        employeeTotals.reduce(
+                          (sum: number, emp: any) =>
+                            sum + (emp.shiftCount || 0),
+                          0
+                        ),
+                        1
+                      )
+                    ).toFixed(2)}
                   </p>
                   <p className="text-xs opacity-75 mt-1">timer/skift</p>
                 </div>
@@ -481,10 +585,17 @@ export default function AttendanceReport() {
             <h2 className="text-lg font-semibold mb-4">Totalt per ansatt</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {employeeTotals.map((emp: any) => (
-                <div key={emp.employeeId} className="p-4 bg-gradient-to-br from-blue-50 to-orange-50 rounded-lg">
+                <div
+                  key={emp.employeeId}
+                  className="p-4 bg-gradient-to-br from-blue-50 to-orange-50 rounded-lg"
+                >
                   <p className="font-medium">{emp.employeeName}</p>
-                  <p className="text-2xl font-bold text-blue-600">{emp.totalHours || "0.00"} timer</p>
-                  <p className="text-sm text-muted-foreground">{emp.shiftCount} skift</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {emp.totalHours || "0.00"} timer
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {emp.shiftCount} skift
+                  </p>
                 </div>
               ))}
             </div>
@@ -509,13 +620,19 @@ export default function AttendanceReport() {
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={7} className="text-center p-8 text-muted-foreground">
+                    <td
+                      colSpan={7}
+                      className="text-center p-8 text-muted-foreground"
+                    >
                       Laster...
                     </td>
                   </tr>
                 ) : timesheets.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center p-8 text-muted-foreground">
+                    <td
+                      colSpan={7}
+                      className="text-center p-8 text-muted-foreground"
+                    >
                       Ingen registreringer funnet
                     </td>
                   </tr>
@@ -523,7 +640,9 @@ export default function AttendanceReport() {
                   timesheets.map((t: any) => (
                     <tr key={t.id} className="border-b hover:bg-muted/50">
                       <td className="p-4">{t.employeeName || "Ukjent"}</td>
-                      <td className="p-4">{new Date(t.workDate).toLocaleDateString("no-NO")}</td>
+                      <td className="p-4">
+                        {new Date(t.workDate).toLocaleDateString("no-NO")}
+                      </td>
                       <td className="p-4">
                         {t.clockIn
                           ? new Date(t.clockIn).toLocaleTimeString("no-NO", {
@@ -533,14 +652,20 @@ export default function AttendanceReport() {
                           : "-"}
                       </td>
                       <td className="p-4">
-                        {t.clockOut
-                          ? new Date(t.clockOut).toLocaleTimeString("no-NO", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : <span className="text-green-600 font-medium">Aktiv</span>}
+                        {t.clockOut ? (
+                          new Date(t.clockOut).toLocaleTimeString("no-NO", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        ) : (
+                          <span className="text-green-600 font-medium">
+                            Aktiv
+                          </span>
+                        )}
                       </td>
-                      <td className="p-4 font-medium">{t.totalHours || "0.00"}</td>
+                      <td className="p-4 font-medium">
+                        {t.totalHours || "0.00"}
+                      </td>
                       <td className="p-4">
                         {t.editReason ? (
                           <div className="flex items-center gap-1 text-amber-600 text-sm">
@@ -548,7 +673,9 @@ export default function AttendanceReport() {
                             Redigert
                           </div>
                         ) : (
-                          <span className="text-muted-foreground text-sm">Original</span>
+                          <span className="text-muted-foreground text-sm">
+                            Original
+                          </span>
                         )}
                       </td>
                       <td className="p-4">
@@ -593,7 +720,9 @@ export default function AttendanceReport() {
                 <Input
                   type="datetime-local"
                   value={editForm.clockIn}
-                  onChange={(e) => setEditForm({ ...editForm, clockIn: e.target.value })}
+                  onChange={e =>
+                    setEditForm({ ...editForm, clockIn: e.target.value })
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -601,7 +730,9 @@ export default function AttendanceReport() {
                 <Input
                   type="datetime-local"
                   value={editForm.clockOut}
-                  onChange={(e) => setEditForm({ ...editForm, clockOut: e.target.value })}
+                  onChange={e =>
+                    setEditForm({ ...editForm, clockOut: e.target.value })
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -609,16 +740,21 @@ export default function AttendanceReport() {
                 <Textarea
                   placeholder="Beskriv hvorfor du endrer denne registreringen..."
                   value={editForm.editReason}
-                  onChange={(e) => setEditForm({ ...editForm, editReason: e.target.value })}
+                  onChange={e =>
+                    setEditForm({ ...editForm, editReason: e.target.value })
+                  }
                   rows={3}
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setEditDialogOpen(false)}
+              >
                 Avbryt
               </Button>
-              <Button 
+              <Button
                 onClick={handleSaveEdit}
                 disabled={updateMutation.isPending}
                 className="bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600"
@@ -635,7 +771,8 @@ export default function AttendanceReport() {
             <DialogHeader>
               <DialogTitle>Slett timeregistrering</DialogTitle>
               <DialogDescription>
-                Er du sikker på at du vil slette denne registreringen for {selectedTimesheet?.employeeName}?
+                Er du sikker på at du vil slette denne registreringen for{" "}
+                {selectedTimesheet?.employeeName}?
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
@@ -649,13 +786,16 @@ export default function AttendanceReport() {
                 <Textarea
                   placeholder="Beskriv hvorfor du sletter denne registreringen..."
                   value={deleteReason}
-                  onChange={(e) => setDeleteReason(e.target.value)}
+                  onChange={e => setDeleteReason(e.target.value)}
                   rows={3}
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setDeleteDialogOpen(false)}
+              >
                 Avbryt
               </Button>
               <Button

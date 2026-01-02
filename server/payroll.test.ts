@@ -1,6 +1,14 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { getDb } from "./db";
-import { users, appointments, employeeLeaves, appointmentServices, services, tenants, customers } from "../drizzle/schema";
+import {
+  users,
+  appointments,
+  employeeLeaves,
+  appointmentServices,
+  services,
+  tenants,
+  customers,
+} from "../drizzle/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
@@ -66,10 +74,18 @@ describe("Payroll System", () => {
       await dbInstance.execute(
         sql`DELETE FROM appointmentServices WHERE appointmentId IN (SELECT id FROM appointments WHERE tenantId = ${testTenantId})`
       );
-      await dbInstance.delete(appointments).where(eq(appointments.tenantId, testTenantId));
-      await dbInstance.delete(employeeLeaves).where(eq(employeeLeaves.tenantId, testTenantId));
-      await dbInstance.delete(services).where(eq(services.tenantId, testTenantId));
-      await dbInstance.delete(customers).where(eq(customers.tenantId, testTenantId));
+      await dbInstance
+        .delete(appointments)
+        .where(eq(appointments.tenantId, testTenantId));
+      await dbInstance
+        .delete(employeeLeaves)
+        .where(eq(employeeLeaves.tenantId, testTenantId));
+      await dbInstance
+        .delete(services)
+        .where(eq(services.tenantId, testTenantId));
+      await dbInstance
+        .delete(customers)
+        .where(eq(customers.tenantId, testTenantId));
       await dbInstance.delete(users).where(eq(users.tenantId, testTenantId));
       await dbInstance.delete(tenants).where(eq(tenants.id, testTenantId));
     } catch (e) {
@@ -80,7 +96,7 @@ describe("Payroll System", () => {
   describe("Leave Deductions Calculation", () => {
     it("should calculate unpaid leave deductions correctly", async () => {
       const { calculateLeaveDeductionsForPayroll } = await import("./leave");
-      
+
       // Create an unpaid leave for the current month
       const today = new Date();
       const startDate = new Date(today.getFullYear(), today.getMonth(), 10);
@@ -111,7 +127,7 @@ describe("Payroll System", () => {
 
     it("should calculate paid leave days correctly", async () => {
       const { calculateLeaveDeductionsForPayroll } = await import("./leave");
-      
+
       // Create an annual leave
       const today = new Date();
       const startDate = new Date(today.getFullYear(), today.getMonth(), 15);
@@ -135,12 +151,14 @@ describe("Payroll System", () => {
       );
 
       expect(result.paidLeaveDays).toBeGreaterThanOrEqual(0);
-      expect(result.totalLeaveDays).toBeGreaterThanOrEqual(result.paidLeaveDays);
+      expect(result.totalLeaveDays).toBeGreaterThanOrEqual(
+        result.paidLeaveDays
+      );
     });
 
     it("should calculate sick leave days correctly", async () => {
       const { calculateLeaveDeductionsForPayroll } = await import("./leave");
-      
+
       // Create a sick leave
       const today = new Date();
       const startDate = new Date(today.getFullYear(), today.getMonth(), 20);
@@ -170,7 +188,7 @@ describe("Payroll System", () => {
   describe("Leave Summary", () => {
     it("should return leave summary for a period", async () => {
       const { getEmployeeLeaveSummary } = await import("./leave");
-      
+
       const today = new Date();
       const startDate = new Date(today.getFullYear(), today.getMonth(), 1);
       const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -195,13 +213,17 @@ describe("Payroll System", () => {
     it("should create completed appointment for payroll calculation", async () => {
       // Create a completed appointment for the current month
       const today = new Date();
-      const appointmentDate = new Date(today.getFullYear(), today.getMonth(), 5);
-      
+      const appointmentDate = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        5
+      );
+
       const appointmentResult = await dbInstance!.insert(appointments).values({
         tenantId: testTenantId,
         customerId: testCustomerId,
         employeeId: testEmployeeId,
-        appointmentDate: appointmentDate.toISOString().split('T')[0],
+        appointmentDate: appointmentDate.toISOString().split("T")[0],
         startTime: "10:00:00",
         endTime: "10:30:00",
         status: "completed",
@@ -256,7 +278,7 @@ describe("Payroll System", () => {
   describe("Leave Balance", () => {
     it("should return correct leave balance", async () => {
       const { getLeaveBalance } = await import("./leave");
-      
+
       const balance = await getLeaveBalance(testEmployeeId, testTenantId);
 
       expect(balance).toHaveProperty("annualLeaveTotal");
@@ -264,7 +286,9 @@ describe("Payroll System", () => {
       expect(balance).toHaveProperty("annualLeaveRemaining");
       expect(balance).toHaveProperty("sickLeaveUsed");
       expect(balance.annualLeaveTotal).toBeGreaterThanOrEqual(0);
-      expect(balance.annualLeaveRemaining).toBeLessThanOrEqual(balance.annualLeaveTotal);
+      expect(balance.annualLeaveRemaining).toBeLessThanOrEqual(
+        balance.annualLeaveTotal
+      );
     });
   });
 });

@@ -2,12 +2,41 @@ import { useState, useEffect } from "react";
 import { useRoute } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar as CalendarIcon, Clock, MapPin, Phone, Mail, User, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Calendar as CalendarIcon,
+  Clock,
+  MapPin,
+  Phone,
+  Mail,
+  User,
+  AlertCircle,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
@@ -22,43 +51,48 @@ export default function ManageBooking() {
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState("");
 
-  const { data: booking, isLoading, refetch } = trpc.publicBooking.getBookingByToken.useQuery(
+  const {
+    data: booking,
+    isLoading,
+    refetch,
+  } = trpc.publicBooking.getBookingByToken.useQuery(
     { token },
     { enabled: !!token }
   );
 
-  const { data: availableSlots = [] } = trpc.publicBooking.getAvailableTimeSlots.useQuery(
-    {
-      tenantId: booking?.tenantId || "",
-      date: selectedDate ? format(selectedDate, "yyyy-MM-dd") : "",
-      serviceId: booking?.services[0]?.name ? 1 : 0, // Simplified - would need service ID
-      employeeId: booking?.employeeId,
-    },
-    {
-      enabled: !!selectedDate && !!booking,
-    }
-  );
+  const { data: availableSlots = [] } =
+    trpc.publicBooking.getAvailableTimeSlots.useQuery(
+      {
+        tenantId: booking?.tenantId || "",
+        date: selectedDate ? format(selectedDate, "yyyy-MM-dd") : "",
+        serviceId: booking?.services[0]?.name ? 1 : 0, // Simplified - would need service ID
+        employeeId: booking?.employeeId,
+      },
+      {
+        enabled: !!selectedDate && !!booking,
+      }
+    );
 
   const cancelMutation = trpc.publicBooking.cancelBooking.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success(data.message);
       setShowCancelDialog(false);
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message);
     },
   });
 
   const rescheduleMutation = trpc.publicBooking.rescheduleBooking.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success(data.message);
       setShowRescheduleDialog(false);
       setSelectedDate(undefined);
       setSelectedTime("");
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message);
     },
   });
@@ -104,7 +138,8 @@ export default function ManageBooking() {
               <CardTitle>Booking ikke funnet</CardTitle>
             </div>
             <CardDescription>
-              Vi kunne ikke finne bookingen din. Vennligst sjekk linken eller kontakt salongen direkte.
+              Vi kunne ikke finne bookingen din. Vennligst sjekk linken eller
+              kontakt salongen direkte.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -122,7 +157,9 @@ export default function ManageBooking() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Din Booking</h1>
-          <p className="text-gray-600">Administrer din time hos {booking.salonName}</p>
+          <p className="text-gray-600">
+            Administrer din time hos {booking.salonName}
+          </p>
         </div>
 
         {/* Status Badge */}
@@ -159,7 +196,9 @@ export default function ManageBooking() {
                 <div>
                   <p className="text-sm text-gray-500">Dato og tid</p>
                   <p className="font-medium">
-                    {format(appointmentDate, "EEEE d. MMMM yyyy", { locale: nb })}
+                    {format(appointmentDate, "EEEE d. MMMM yyyy", {
+                      locale: nb,
+                    })}
                   </p>
                   <p className="text-sm text-gray-600">
                     Kl. {format(appointmentDate, "HH:mm")}
@@ -180,9 +219,13 @@ export default function ManageBooking() {
                 <div>
                   <p className="text-sm text-gray-500">Kunde</p>
                   <p className="font-medium">{booking.customerName}</p>
-                  <p className="text-sm text-gray-600">{booking.customerPhone}</p>
+                  <p className="text-sm text-gray-600">
+                    {booking.customerPhone}
+                  </p>
                   {booking.customerEmail && (
-                    <p className="text-sm text-gray-600">{booking.customerEmail}</p>
+                    <p className="text-sm text-gray-600">
+                      {booking.customerEmail}
+                    </p>
                   )}
                 </div>
               </div>
@@ -193,10 +236,14 @@ export default function ManageBooking() {
                   <p className="text-sm text-gray-500">Salong</p>
                   <p className="font-medium">{booking.salonName}</p>
                   {booking.salonAddress && (
-                    <p className="text-sm text-gray-600">{booking.salonAddress}</p>
+                    <p className="text-sm text-gray-600">
+                      {booking.salonAddress}
+                    </p>
                   )}
                   {booking.salonPhone && (
-                    <p className="text-sm text-gray-600">{booking.salonPhone}</p>
+                    <p className="text-sm text-gray-600">
+                      {booking.salonPhone}
+                    </p>
                   )}
                 </div>
               </div>
@@ -205,7 +252,10 @@ export default function ManageBooking() {
             <div className="border-t pt-4">
               <p className="text-sm text-gray-500 mb-2">Tjenester</p>
               {booking.services.map((service, idx) => (
-                <div key={idx} className="flex justify-between items-center mb-1">
+                <div
+                  key={idx}
+                  className="flex justify-between items-center mb-1"
+                >
                   <span className="font-medium">{service.name}</span>
                   <span className="text-gray-600">{service.price} kr</span>
                 </div>
@@ -232,9 +282,12 @@ export default function ManageBooking() {
               <div className="flex items-start gap-3">
                 <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
                 <div>
-                  <CardTitle className="text-blue-900">Avbestillingsregler</CardTitle>
+                  <CardTitle className="text-blue-900">
+                    Avbestillingsregler
+                  </CardTitle>
                   <CardDescription className="text-blue-700">
-                    Du kan avbestille eller endre timen din gratis frem til {booking.cancellationWindowHours} timer før avtalt tid.
+                    Du kan avbestille eller endre timen din gratis frem til{" "}
+                    {booking.cancellationWindowHours} timer før avtalt tid.
                     Avbestilling etter dette regnes som sen avbestilling.
                   </CardDescription>
                 </div>
@@ -267,9 +320,9 @@ export default function ManageBooking() {
           </div>
         )}
 
-        {(!booking.canCancel && !isCanceled && !isCompleted) && (
+        {!booking.canCancel && !isCanceled && !isCompleted && (
           <p className="text-center text-sm text-gray-500 mt-4">
-            Du kan ikke lenger endre eller avbestille denne bookingen online. 
+            Du kan ikke lenger endre eller avbestille denne bookingen online.
             Vennligst kontakt salongen direkte på {booking.salonPhone}.
           </p>
         )}
@@ -290,29 +343,37 @@ export default function ManageBooking() {
                 </label>
                 <Textarea
                   value={cancellationReason}
-                  onChange={(e) => setCancellationReason(e.target.value)}
+                  onChange={e => setCancellationReason(e.target.value)}
                   placeholder="Fortell oss hvorfor du avbestiller..."
                   rows={3}
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowCancelDialog(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowCancelDialog(false)}
+              >
                 Avbryt
               </Button>
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 onClick={handleCancel}
                 disabled={cancelMutation.isPending}
               >
-                {cancelMutation.isPending ? "Avbestiller..." : "Bekreft avbestilling"}
+                {cancelMutation.isPending
+                  ? "Avbestiller..."
+                  : "Bekreft avbestilling"}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
         {/* Reschedule Dialog */}
-        <Dialog open={showRescheduleDialog} onOpenChange={setShowRescheduleDialog}>
+        <Dialog
+          open={showRescheduleDialog}
+          onOpenChange={setShowRescheduleDialog}
+        >
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Endre tid</DialogTitle>
@@ -322,27 +383,35 @@ export default function ManageBooking() {
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">Velg ny dato</label>
+                <label className="text-sm font-medium mb-2 block">
+                  Velg ny dato
+                </label>
                 <Calendar
                   mode="single"
                   selected={selectedDate}
                   onSelect={setSelectedDate}
-                  disabled={(date) => date < new Date()}
+                  disabled={date => date < new Date()}
                   className="rounded-md border"
                   locale={nb}
                 />
               </div>
               {selectedDate && (
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Velg ny tid</label>
+                  <label className="text-sm font-medium mb-2 block">
+                    Velg ny tid
+                  </label>
                   {availableSlots.length === 0 ? (
-                    <p className="text-sm text-gray-500">Ingen ledige tider denne dagen</p>
+                    <p className="text-sm text-gray-500">
+                      Ingen ledige tider denne dagen
+                    </p>
                   ) : (
                     <div className="grid grid-cols-4 gap-2">
-                      {availableSlots.map((slot) => (
+                      {availableSlots.map(slot => (
                         <Button
                           key={slot.time}
-                          variant={selectedTime === slot.time ? "default" : "outline"}
+                          variant={
+                            selectedTime === slot.time ? "default" : "outline"
+                          }
                           onClick={() => setSelectedTime(slot.time)}
                           className="text-sm"
                         >
@@ -355,16 +424,21 @@ export default function ManageBooking() {
               )}
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => {
-                setShowRescheduleDialog(false);
-                setSelectedDate(undefined);
-                setSelectedTime("");
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowRescheduleDialog(false);
+                  setSelectedDate(undefined);
+                  setSelectedTime("");
+                }}
+              >
                 Avbryt
               </Button>
-              <Button 
+              <Button
                 onClick={handleReschedule}
-                disabled={!selectedDate || !selectedTime || rescheduleMutation.isPending}
+                disabled={
+                  !selectedDate || !selectedTime || rescheduleMutation.isPending
+                }
               >
                 {rescheduleMutation.isPending ? "Endrer..." : "Bekreft endring"}
               </Button>

@@ -1,14 +1,28 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
-import { Calendar, Clock, User, Scissors, ArrowRight, Loader2 } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  User,
+  Scissors,
+  ArrowRight,
+  Loader2,
+} from "lucide-react";
 import { Link } from "wouter";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 
 export default function TodayAppointments() {
-  const { data: appointments = [], isLoading } = trpc.appointments.getToday.useQuery();
+  const { data: appointments = [], isLoading } =
+    trpc.appointments.getToday.useQuery();
 
   const getStatusBadge = (status: string | null) => {
     switch (status) {
@@ -83,7 +97,9 @@ export default function TodayAppointments() {
                   {/* Customer */}
                   <div className="flex items-center gap-2 min-w-[150px]">
                     <User className="h-4 w-4 text-gray-500" />
-                    <span className="text-gray-900">{apt.customerName || `Kunde #${apt.customerId}`}</span>
+                    <span className="text-gray-900">
+                      {apt.customerName || `Kunde #${apt.customerId}`}
+                    </span>
                   </div>
 
                   {/* Services */}
@@ -98,14 +114,14 @@ export default function TodayAppointments() {
 
                   {/* Employee */}
                   <div className="text-sm text-gray-600 min-w-[120px]">
-                    <span className="font-medium">{apt.employeeName || `Ansatt #${apt.employeeId}`}</span>
+                    <span className="font-medium">
+                      {apt.employeeName || `Ansatt #${apt.employeeId}`}
+                    </span>
                   </div>
                 </div>
 
                 {/* Status Badge */}
-                <div className="ml-4">
-                  {getStatusBadge(apt.status)}
-                </div>
+                <div className="ml-4">{getStatusBadge(apt.status)}</div>
               </div>
             ))}
 
@@ -114,24 +130,37 @@ export default function TodayAppointments() {
               <div className="mt-6 pt-4 border-t">
                 <div className="grid grid-cols-4 gap-4 text-center">
                   <div>
-                    <div className="text-2xl font-bold text-gray-900">{appointments.length}</div>
+                    <div className="text-2xl font-bold text-gray-900">
+                      {appointments.length}
+                    </div>
                     <div className="text-xs text-gray-600 mt-1">Totalt</div>
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-green-600">
-                      {appointments.filter((a: any) => a.status === "confirmed").length}
+                      {
+                        appointments.filter(
+                          (a: any) => a.status === "confirmed"
+                        ).length
+                      }
                     </div>
                     <div className="text-xs text-gray-600 mt-1">Bekreftet</div>
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-yellow-600">
-                      {appointments.filter((a: any) => a.status === "pending").length}
+                      {
+                        appointments.filter((a: any) => a.status === "pending")
+                          .length
+                      }
                     </div>
                     <div className="text-xs text-gray-600 mt-1">Venter</div>
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-blue-600">
-                      {appointments.filter((a: any) => a.status === "completed").length}
+                      {
+                        appointments.filter(
+                          (a: any) => a.status === "completed"
+                        ).length
+                      }
                     </div>
                     <div className="text-xs text-gray-600 mt-1">Fullført</div>
                   </div>

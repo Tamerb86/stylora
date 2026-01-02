@@ -1,15 +1,21 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Calendar, 
-  Users, 
-  Scissors, 
-  Package, 
-  DollarSign, 
+import {
+  Calendar,
+  Users,
+  Scissors,
+  Package,
+  DollarSign,
   Settings,
   Plus,
   Edit,
@@ -33,7 +39,7 @@ import {
   Mail,
   Phone,
   MapPin,
-  Star
+  Star,
 } from "lucide-react";
 
 export default function UXShowcase() {
@@ -53,12 +59,16 @@ export default function UXShowcase() {
         {/* Primary Buttons Section */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-2xl">Primary Buttons (Primærknapper)</CardTitle>
+            <CardTitle className="text-2xl">
+              Primary Buttons (Primærknapper)
+            </CardTitle>
             <CardDescription>Hovedhandlinger med gradient-stil</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold mb-3">Standard Primary Buttons</h3>
+              <h3 className="text-lg font-semibold mb-3">
+                Standard Primary Buttons
+              </h3>
               <div className="flex flex-wrap gap-3">
                 <Button className="bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600">
                   <Plus className="mr-2 h-4 w-4" />
@@ -84,7 +94,9 @@ export default function UXShowcase() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold mb-3">Action Buttons with Icons</h3>
+              <h3 className="text-lg font-semibold mb-3">
+                Action Buttons with Icons
+              </h3>
               <div className="flex flex-wrap gap-3">
                 <Button className="bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600">
                   <Save className="mr-2 h-4 w-4" />
@@ -112,11 +124,17 @@ export default function UXShowcase() {
             <div>
               <h3 className="text-lg font-semibold mb-3">Large CTA Buttons</h3>
               <div className="flex flex-wrap gap-3">
-                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-lg">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-lg"
+                >
                   <ArrowRight className="mr-2 h-5 w-5" />
                   Kom i gang gratis
                 </Button>
-                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-lg">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-lg"
+                >
                   <Calendar className="mr-2 h-5 w-5" />
                   Prøv gratis i 14 dager
                 </Button>
@@ -128,8 +146,12 @@ export default function UXShowcase() {
         {/* Secondary & Outline Buttons */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-2xl">Secondary & Outline Buttons</CardTitle>
-            <CardDescription>Sekundære handlinger og alternativer</CardDescription>
+            <CardTitle className="text-2xl">
+              Secondary & Outline Buttons
+            </CardTitle>
+            <CardDescription>
+              Sekundære handlinger og alternativer
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
@@ -143,12 +165,8 @@ export default function UXShowcase() {
                   <Search className="mr-2 h-4 w-4" />
                   Søk
                 </Button>
-                <Button variant="secondary">
-                  Avbryt
-                </Button>
-                <Button variant="secondary">
-                  Tilbake
-                </Button>
+                <Button variant="secondary">Avbryt</Button>
+                <Button variant="secondary">Tilbake</Button>
               </div>
             </div>
 
@@ -167,9 +185,7 @@ export default function UXShowcase() {
                   <Settings className="mr-2 h-4 w-4" />
                   Innstillinger
                 </Button>
-                <Button variant="outline">
-                  Se demo
-                </Button>
+                <Button variant="outline">Se demo</Button>
               </div>
             </div>
 
@@ -184,9 +200,7 @@ export default function UXShowcase() {
                   <LogOut className="mr-2 h-4 w-4" />
                   Logg ut
                 </Button>
-                <Button variant="ghost">
-                  Hopp over
-                </Button>
+                <Button variant="ghost">Hopp over</Button>
               </div>
             </div>
           </CardContent>
@@ -195,12 +209,18 @@ export default function UXShowcase() {
         {/* Destructive & Status Buttons */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-2xl">Destructive & Status Buttons</CardTitle>
-            <CardDescription>Fargerike knapper for spesifikke handlinger</CardDescription>
+            <CardTitle className="text-2xl">
+              Destructive & Status Buttons
+            </CardTitle>
+            <CardDescription>
+              Fargerike knapper for spesifikke handlinger
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <h3 className="text-lg font-semibold mb-3">Destructive Buttons (Sletting)</h3>
+              <h3 className="text-lg font-semibold mb-3">
+                Destructive Buttons (Sletting)
+              </h3>
               <div className="flex flex-wrap gap-3">
                 <Button variant="destructive">
                   <Trash2 className="mr-2 h-4 w-4" />
@@ -210,14 +230,14 @@ export default function UXShowcase() {
                   <X className="mr-2 h-4 w-4" />
                   Kanseller avtale
                 </Button>
-                <Button variant="destructive">
-                  Fjern
-                </Button>
+                <Button variant="destructive">Fjern</Button>
               </div>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold mb-3">Success Buttons (Grønn)</h3>
+              <h3 className="text-lg font-semibold mb-3">
+                Success Buttons (Grønn)
+              </h3>
               <div className="flex flex-wrap gap-3">
                 <Button className="bg-green-600 hover:bg-green-700">
                   <Check className="mr-2 h-4 w-4" />
@@ -235,7 +255,9 @@ export default function UXShowcase() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold mb-3">Warning Buttons (Oransje)</h3>
+              <h3 className="text-lg font-semibold mb-3">
+                Warning Buttons (Oransje)
+              </h3>
               <div className="flex flex-wrap gap-3">
                 <Button className="bg-orange-600 hover:bg-orange-700">
                   <Clock className="mr-2 h-4 w-4" />
@@ -252,8 +274,12 @@ export default function UXShowcase() {
         {/* Icon Buttons */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-2xl">Icon Buttons (Kun ikoner)</CardTitle>
-            <CardDescription>Kompakte knapper for verktøylinjer</CardDescription>
+            <CardTitle className="text-2xl">
+              Icon Buttons (Kun ikoner)
+            </CardTitle>
+            <CardDescription>
+              Kompakte knapper for verktøylinjer
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
@@ -281,18 +307,32 @@ export default function UXShowcase() {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold mb-3">Gradient Icon Buttons</h3>
+              <h3 className="text-lg font-semibold mb-3">
+                Gradient Icon Buttons
+              </h3>
               <div className="flex flex-wrap gap-3">
-                <Button size="icon" className="bg-gradient-to-r from-blue-600 to-cyan-500">
+                <Button
+                  size="icon"
+                  className="bg-gradient-to-r from-blue-600 to-cyan-500"
+                >
                   <Calendar className="h-4 w-4" />
                 </Button>
-                <Button size="icon" className="bg-gradient-to-r from-orange-600 to-red-500">
+                <Button
+                  size="icon"
+                  className="bg-gradient-to-r from-orange-600 to-red-500"
+                >
                   <Users className="h-4 w-4" />
                 </Button>
-                <Button size="icon" className="bg-gradient-to-r from-green-600 to-emerald-500">
+                <Button
+                  size="icon"
+                  className="bg-gradient-to-r from-green-600 to-emerald-500"
+                >
                   <DollarSign className="h-4 w-4" />
                 </Button>
-                <Button size="icon" className="bg-gradient-to-r from-purple-600 to-pink-500">
+                <Button
+                  size="icon"
+                  className="bg-gradient-to-r from-purple-600 to-pink-500"
+                >
                   <Sparkles className="h-4 w-4" />
                 </Button>
               </div>
@@ -344,8 +384,12 @@ export default function UXShowcase() {
         {/* Form Elements */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-2xl">Form Elements (Skjemaelementer)</CardTitle>
-            <CardDescription>Input-felt, tekstområder og etiketter</CardDescription>
+            <CardTitle className="text-2xl">
+              Form Elements (Skjemaelementer)
+            </CardTitle>
+            <CardDescription>
+              Input-felt, tekstområder og etiketter
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -355,7 +399,11 @@ export default function UXShowcase() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">E-post</Label>
-                <Input id="email" type="email" placeholder="eksempel@email.com" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="eksempel@email.com"
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="phone">Telefon</Label>
@@ -372,7 +420,11 @@ export default function UXShowcase() {
 
             <div className="space-y-2">
               <Label htmlFor="notes">Notater</Label>
-              <Textarea id="notes" placeholder="Skriv notater her..." rows={4} />
+              <Textarea
+                id="notes"
+                placeholder="Skriv notater her..."
+                rows={4}
+              />
             </div>
           </CardContent>
         </Card>
@@ -380,7 +432,9 @@ export default function UXShowcase() {
         {/* Navigation Icons */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-2xl">Navigation Icons (Navigasjonsikoner)</CardTitle>
+            <CardTitle className="text-2xl">
+              Navigation Icons (Navigasjonsikoner)
+            </CardTitle>
             <CardDescription>Ikoner brukt i sidebar og menyer</CardDescription>
           </CardHeader>
           <CardContent>
@@ -440,8 +494,12 @@ export default function UXShowcase() {
         {/* Interactive Cards */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-2xl">Interactive Cards (Interaktive kort)</CardTitle>
-            <CardDescription>Kort med hover-effekter og gradient-bakgrunner</CardDescription>
+            <CardTitle className="text-2xl">
+              Interactive Cards (Interaktive kort)
+            </CardTitle>
+            <CardDescription>
+              Kort med hover-effekter og gradient-bakgrunner
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -457,7 +515,9 @@ export default function UXShowcase() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-blue-600">24</div>
-                  <p className="text-sm text-muted-foreground mt-1">+12% fra i går</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    +12% fra i går
+                  </p>
                 </CardContent>
               </Card>
 
@@ -472,8 +532,12 @@ export default function UXShowcase() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-orange-600">kr 8,450</div>
-                  <p className="text-sm text-muted-foreground mt-1">+8% fra i går</p>
+                  <div className="text-3xl font-bold text-orange-600">
+                    kr 8,450
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    +8% fra i går
+                  </p>
                 </CardContent>
               </Card>
 
@@ -489,7 +553,9 @@ export default function UXShowcase() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-green-600">7</div>
-                  <p className="text-sm text-muted-foreground mt-1">Denne uken</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Denne uken
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -499,18 +565,29 @@ export default function UXShowcase() {
         {/* Size Variants */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-2xl">Button Sizes (Knappestørrelser)</CardTitle>
+            <CardTitle className="text-2xl">
+              Button Sizes (Knappestørrelser)
+            </CardTitle>
             <CardDescription>Alle tilgjengelige størrelser</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex flex-wrap items-center gap-3">
-              <Button size="sm" className="bg-gradient-to-r from-blue-600 to-orange-500">
+              <Button
+                size="sm"
+                className="bg-gradient-to-r from-blue-600 to-orange-500"
+              >
                 Liten
               </Button>
-              <Button size="default" className="bg-gradient-to-r from-blue-600 to-orange-500">
+              <Button
+                size="default"
+                className="bg-gradient-to-r from-blue-600 to-orange-500"
+              >
                 Standard
               </Button>
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-orange-500">
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-blue-600 to-orange-500"
+              >
                 Stor
               </Button>
             </div>

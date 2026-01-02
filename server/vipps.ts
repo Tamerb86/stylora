@@ -1,17 +1,17 @@
 /**
  * Vipps Payment Gateway Integration
- * 
+ *
  * This module provides integration with Vipps eCom API for Norwegian payment processing.
- * 
+ *
  * Documentation: https://developer.vippsmobilepay.com/docs/APIs/ecom-api/
- * 
+ *
  * Required environment variables:
  * - VIPPS_CLIENT_ID: Your Vipps client ID
  * - VIPPS_CLIENT_SECRET: Your Vipps client secret
  * - VIPPS_SUBSCRIPTION_KEY: Your Vipps subscription key (Ocp-Apim-Subscription-Key)
  * - VIPPS_MERCHANT_SERIAL_NUMBER: Your merchant serial number (MSN)
  * - VIPPS_API_URL: API base URL (https://apitest.vipps.no for test, https://api.vipps.no for production)
- * 
+ *
  * Setup instructions:
  * 1. Register for a Vipps merchant account at https://vipps.no/
  * 2. Get your test credentials from the Vipps portal
@@ -54,7 +54,14 @@ interface VippsPaymentDetails {
   orderId: string;
   transactionInfo: {
     amount: number;
-    status: "INITIATE" | "REGISTER" | "RESERVE" | "SALE" | "CANCEL" | "VOID" | "REFUND";
+    status:
+      | "INITIATE"
+      | "REGISTER"
+      | "RESERVE"
+      | "SALE"
+      | "CANCEL"
+      | "VOID"
+      | "REFUND";
     timeStamp: string;
     transactionId: string;
   };
@@ -84,7 +91,11 @@ export async function getVippsAccessToken(): Promise<string> {
   }
 
   // Validate required credentials
-  if (!ENV.vippsClientId || !ENV.vippsClientSecret || !ENV.vippsSubscriptionKey) {
+  if (
+    !ENV.vippsClientId ||
+    !ENV.vippsClientSecret ||
+    !ENV.vippsSubscriptionKey
+  ) {
     throw new Error(
       "Vipps credentials not configured. Please set VIPPS_CLIENT_ID, VIPPS_CLIENT_SECRET, and VIPPS_SUBSCRIPTION_KEY environment variables."
     );
@@ -94,8 +105,8 @@ export async function getVippsAccessToken(): Promise<string> {
   const response = await fetch(`${ENV.vippsApiUrl}/accesstoken/get`, {
     method: "POST",
     headers: {
-      "client_id": ENV.vippsClientId,
-      "client_secret": ENV.vippsClientSecret,
+      client_id: ENV.vippsClientId,
+      client_secret: ENV.vippsClientSecret,
       "Ocp-Apim-Subscription-Key": ENV.vippsSubscriptionKey,
       "Content-Type": "application/json",
     },
@@ -103,11 +114,13 @@ export async function getVippsAccessToken(): Promise<string> {
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Failed to get Vipps access token: ${response.status} ${errorText}`);
+    throw new Error(
+      `Failed to get Vipps access token: ${response.status} ${errorText}`
+    );
   }
 
   const data: VippsAccessTokenResponse = await response.json();
-  
+
   // Cache the token
   cachedAccessToken = data.access_token;
   tokenExpiresAt = Date.now() + data.expires_in * 1000;
@@ -117,7 +130,7 @@ export async function getVippsAccessToken(): Promise<string> {
 
 /**
  * Initiate a Vipps payment
- * 
+ *
  * @param orderId - Unique order ID (must be unique per merchant)
  * @param amountNOK - Amount in Norwegian Kroner (will be converted to øre)
  * @param transactionText - Description shown to customer (max 100 chars, avoid sensitive info)
@@ -171,7 +184,7 @@ export async function initiateVippsPayment(params: {
   const response = await fetch(`${ENV.vippsApiUrl}/ecomm/v2/payments`, {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
       "Ocp-Apim-Subscription-Key": ENV.vippsSubscriptionKey,
       "Content-Type": "application/json",
       "Merchant-Serial-Number": ENV.vippsMerchantSerialNumber,
@@ -181,7 +194,9 @@ export async function initiateVippsPayment(params: {
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Failed to initiate Vipps payment: ${response.status} ${errorText}`);
+    throw new Error(
+      `Failed to initiate Vipps payment: ${response.status} ${errorText}`
+    );
   }
 
   const data: VippsInitiatePaymentResponse = await response.json();
@@ -190,29 +205,36 @@ export async function initiateVippsPayment(params: {
 
 /**
  * Get payment details from Vipps
- * 
+ *
  * @param orderId - The order ID used when initiating the payment
  * @returns Payment details including status and transaction history
  */
-export async function getVippsPaymentDetails(orderId: string): Promise<VippsPaymentDetails> {
+export async function getVippsPaymentDetails(
+  orderId: string
+): Promise<VippsPaymentDetails> {
   const accessToken = await getVippsAccessToken();
 
   if (!ENV.vippsMerchantSerialNumber) {
     throw new Error("VIPPS_MERCHANT_SERIAL_NUMBER not configured");
   }
 
-  const response = await fetch(`${ENV.vippsApiUrl}/ecomm/v2/payments/${orderId}/details`, {
-    method: "GET",
-    headers: {
-      "Authorization": `Bearer ${accessToken}`,
-      "Ocp-Apim-Subscription-Key": ENV.vippsSubscriptionKey,
-      "Merchant-Serial-Number": ENV.vippsMerchantSerialNumber,
-    },
-  });
+  const response = await fetch(
+    `${ENV.vippsApiUrl}/ecomm/v2/payments/${orderId}/details`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Ocp-Apim-Subscription-Key": ENV.vippsSubscriptionKey,
+        "Merchant-Serial-Number": ENV.vippsMerchantSerialNumber,
+      },
+    }
+  );
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Failed to get Vipps payment details: ${response.status} ${errorText}`);
+    throw new Error(
+      `Failed to get Vipps payment details: ${response.status} ${errorText}`
+    );
   }
 
   const data: VippsPaymentDetails = await response.json();
@@ -221,7 +243,7 @@ export async function getVippsPaymentDetails(orderId: string): Promise<VippsPaym
 
 /**
  * Capture a reserved Vipps payment
- * 
+ *
  * @param orderId - The order ID
  * @param amountNOK - Amount to capture in NOK (can be less than reserved amount)
  * @param transactionText - Description for the capture
@@ -240,28 +262,33 @@ export async function captureVippsPayment(params: {
 
   const amountInOre = Math.round(params.amountNOK * 100);
 
-  const response = await fetch(`${ENV.vippsApiUrl}/ecomm/v2/payments/${params.orderId}/capture`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${accessToken}`,
-      "Ocp-Apim-Subscription-Key": ENV.vippsSubscriptionKey,
-      "Content-Type": "application/json",
-      "Merchant-Serial-Number": ENV.vippsMerchantSerialNumber,
-    },
-    body: JSON.stringify({
-      merchantInfo: {
-        merchantSerialNumber: ENV.vippsMerchantSerialNumber,
+  const response = await fetch(
+    `${ENV.vippsApiUrl}/ecomm/v2/payments/${params.orderId}/capture`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Ocp-Apim-Subscription-Key": ENV.vippsSubscriptionKey,
+        "Content-Type": "application/json",
+        "Merchant-Serial-Number": ENV.vippsMerchantSerialNumber,
       },
-      transaction: {
-        amount: amountInOre,
-        transactionText: params.transactionText,
-      },
-    }),
-  });
+      body: JSON.stringify({
+        merchantInfo: {
+          merchantSerialNumber: ENV.vippsMerchantSerialNumber,
+        },
+        transaction: {
+          amount: amountInOre,
+          transactionText: params.transactionText,
+        },
+      }),
+    }
+  );
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Failed to capture Vipps payment: ${response.status} ${errorText}`);
+    throw new Error(
+      `Failed to capture Vipps payment: ${response.status} ${errorText}`
+    );
   }
 
   return await response.json();
@@ -269,7 +296,7 @@ export async function captureVippsPayment(params: {
 
 /**
  * Cancel a reserved Vipps payment
- * 
+ *
  * @param orderId - The order ID
  * @param transactionText - Reason for cancellation
  * @returns Cancellation response
@@ -284,27 +311,32 @@ export async function cancelVippsPayment(params: {
     throw new Error("VIPPS_MERCHANT_SERIAL_NUMBER not configured");
   }
 
-  const response = await fetch(`${ENV.vippsApiUrl}/ecomm/v2/payments/${params.orderId}/cancel`, {
-    method: "PUT",
-    headers: {
-      "Authorization": `Bearer ${accessToken}`,
-      "Ocp-Apim-Subscription-Key": ENV.vippsSubscriptionKey,
-      "Content-Type": "application/json",
-      "Merchant-Serial-Number": ENV.vippsMerchantSerialNumber,
-    },
-    body: JSON.stringify({
-      merchantInfo: {
-        merchantSerialNumber: ENV.vippsMerchantSerialNumber,
+  const response = await fetch(
+    `${ENV.vippsApiUrl}/ecomm/v2/payments/${params.orderId}/cancel`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Ocp-Apim-Subscription-Key": ENV.vippsSubscriptionKey,
+        "Content-Type": "application/json",
+        "Merchant-Serial-Number": ENV.vippsMerchantSerialNumber,
       },
-      transaction: {
-        transactionText: params.transactionText,
-      },
-    }),
-  });
+      body: JSON.stringify({
+        merchantInfo: {
+          merchantSerialNumber: ENV.vippsMerchantSerialNumber,
+        },
+        transaction: {
+          transactionText: params.transactionText,
+        },
+      }),
+    }
+  );
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Failed to cancel Vipps payment: ${response.status} ${errorText}`);
+    throw new Error(
+      `Failed to cancel Vipps payment: ${response.status} ${errorText}`
+    );
   }
 
   return await response.json();
@@ -312,7 +344,7 @@ export async function cancelVippsPayment(params: {
 
 /**
  * Refund a captured Vipps payment
- * 
+ *
  * @param orderId - The order ID
  * @param amountNOK - Amount to refund in NOK (can be partial)
  * @param transactionText - Reason for refund
@@ -331,28 +363,33 @@ export async function refundVippsPayment(params: {
 
   const amountInOre = Math.round(params.amountNOK * 100);
 
-  const response = await fetch(`${ENV.vippsApiUrl}/ecomm/v2/payments/${params.orderId}/refund`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${accessToken}`,
-      "Ocp-Apim-Subscription-Key": ENV.vippsSubscriptionKey,
-      "Content-Type": "application/json",
-      "Merchant-Serial-Number": ENV.vippsMerchantSerialNumber,
-    },
-    body: JSON.stringify({
-      merchantInfo: {
-        merchantSerialNumber: ENV.vippsMerchantSerialNumber,
+  const response = await fetch(
+    `${ENV.vippsApiUrl}/ecomm/v2/payments/${params.orderId}/refund`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Ocp-Apim-Subscription-Key": ENV.vippsSubscriptionKey,
+        "Content-Type": "application/json",
+        "Merchant-Serial-Number": ENV.vippsMerchantSerialNumber,
       },
-      transaction: {
-        amount: amountInOre,
-        transactionText: params.transactionText,
-      },
-    }),
-  });
+      body: JSON.stringify({
+        merchantInfo: {
+          merchantSerialNumber: ENV.vippsMerchantSerialNumber,
+        },
+        transaction: {
+          amount: amountInOre,
+          transactionText: params.transactionText,
+        },
+      }),
+    }
+  );
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Failed to refund Vipps payment: ${response.status} ${errorText}`);
+    throw new Error(
+      `Failed to refund Vipps payment: ${response.status} ${errorText}`
+    );
   }
 
   return await response.json();

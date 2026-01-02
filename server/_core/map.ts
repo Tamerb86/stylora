@@ -1,9 +1,9 @@
 /**
  * Google Maps API Integration
- * 
+ *
  * Main function: makeRequest<T>(endpoint, params) - Makes authenticated requests to Google Maps APIs
  * Requires GOOGLE_MAPS_API_KEY environment variable.
- * 
+ *
  * See API examples below the type definitions for usage patterns.
  */
 
@@ -42,7 +42,7 @@ interface RequestOptions {
 
 /**
  * Make authenticated requests to Google Maps APIs
- * 
+ *
  * @param endpoint - The API endpoint (e.g., "/maps/api/geocode/json")
  * @param params - Query parameters for the request
  * @param options - Additional request options

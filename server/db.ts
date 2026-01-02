@@ -1,15 +1,15 @@
 import { eq, and, isNull, gte, lte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import mysql from 'mysql2/promise';
-import { 
-  InsertUser, 
-  users, 
-  tenants, 
-  customers, 
-  services, 
-  appointments 
+import mysql from "mysql2/promise";
+import {
+  InsertUser,
+  users,
+  tenants,
+  customers,
+  services,
+  appointments,
 } from "../drizzle/schema";
-import { ENV } from './_core/env';
+import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 let _connection: mysql.Connection | null = null;
@@ -18,15 +18,18 @@ let _connection: mysql.Connection | null = null;
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      console.log("[Database] Connecting to:", process.env.DATABASE_URL?.replace(/:\/\/.*@/, "://***@"));
-      
+      console.log(
+        "[Database] Connecting to:",
+        process.env.DATABASE_URL?.replace(/:\/\/.*@/, "://***@")
+      );
+
       // Create MySQL connection
       _connection = await mysql.createConnection(process.env.DATABASE_URL);
-      
+
       // Test connection
       await _connection.ping();
       console.log("[Database] Connection successful!");
-      
+
       // Create Drizzle instance with the connection
       _db = drizzle(_connection);
     } catch (error: any) {
@@ -67,7 +70,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     const values: InsertUser = {
       openId: user.openId,
       tenantId: user.tenantId,
-      role: user.role || (user.openId === ENV.ownerOpenId ? 'owner' : 'employee'),
+      role:
+        user.role || (user.openId === ENV.ownerOpenId ? "owner" : "employee"),
     };
     const updateSet: Record<string, unknown> = {};
 
@@ -117,7 +121,11 @@ export async function getUserByOpenId(openId: string) {
     return undefined;
   }
 
-  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+  const result = await db
+    .select()
+    .from(users)
+    .where(eq(users.openId, openId))
+    .limit(1);
 
   return result.length > 0 ? result[0] : undefined;
 }
@@ -129,14 +137,22 @@ export async function getUserByOpenId(openId: string) {
 export async function getTenantBySubdomain(subdomain: string) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(tenants).where(eq(tenants.subdomain, subdomain)).limit(1);
+  const result = await db
+    .select()
+    .from(tenants)
+    .where(eq(tenants.subdomain, subdomain))
+    .limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
 
 export async function getTenantById(tenantId: string) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(tenants).where(eq(tenants.id, tenantId)).limit(1);
+  const result = await db
+    .select()
+    .from(tenants)
+    .where(eq(tenants.id, tenantId))
+    .limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
 
@@ -147,17 +163,20 @@ export async function getTenantById(tenantId: string) {
 export async function getCustomersByTenant(tenantId: string) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(customers).where(
-    and(eq(customers.tenantId, tenantId), isNull(customers.deletedAt))
-  );
+  return db
+    .select()
+    .from(customers)
+    .where(and(eq(customers.tenantId, tenantId), isNull(customers.deletedAt)));
 }
 
 export async function getCustomerById(customerId: number, tenantId: string) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(customers).where(
-    and(eq(customers.id, customerId), eq(customers.tenantId, tenantId))
-  ).limit(1);
+  const result = await db
+    .select()
+    .from(customers)
+    .where(and(eq(customers.id, customerId), eq(customers.tenantId, tenantId)))
+    .limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
 
@@ -168,17 +187,20 @@ export async function getCustomerById(customerId: number, tenantId: string) {
 export async function getServicesByTenant(tenantId: string) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(services).where(
-    and(eq(services.tenantId, tenantId), eq(services.isActive, true))
-  );
+  return db
+    .select()
+    .from(services)
+    .where(and(eq(services.tenantId, tenantId), eq(services.isActive, true)));
 }
 
 export async function getServiceById(serviceId: number, tenantId: string) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(services).where(
-    and(eq(services.id, serviceId), eq(services.tenantId, tenantId))
-  ).limit(1);
+  const result = await db
+    .select()
+    .from(services)
+    .where(and(eq(services.id, serviceId), eq(services.tenantId, tenantId)))
+    .limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
 
@@ -186,33 +208,49 @@ export async function getServiceById(serviceId: number, tenantId: string) {
 // APPOINTMENT HELPERS
 // ============================================================================
 
-export async function getAppointmentsByTenant(tenantId: string, startDate: Date, endDate: Date) {
+export async function getAppointmentsByTenant(
+  tenantId: string,
+  startDate: Date,
+  endDate: Date
+) {
   const db = await getDb();
   if (!db) return [];
   const { and, sql } = await import("drizzle-orm");
-  
+
   // Format dates as YYYY-MM-DD using local date components to avoid timezone issues
-  const startDateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
-  const endDateStr = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
-  
-  return db.select().from(appointments).where(
-    and(
-      eq(appointments.tenantId, tenantId),
-      sql`${appointments.appointmentDate} >= ${startDateStr}`,
-      sql`${appointments.appointmentDate} <= ${endDateStr}`
-    )
-  );
+  const startDateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, "0")}-${String(startDate.getDate()).padStart(2, "0")}`;
+  const endDateStr = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, "0")}-${String(endDate.getDate()).padStart(2, "0")}`;
+
+  return db
+    .select()
+    .from(appointments)
+    .where(
+      and(
+        eq(appointments.tenantId, tenantId),
+        sql`${appointments.appointmentDate} >= ${startDateStr}`,
+        sql`${appointments.appointmentDate} <= ${endDateStr}`
+      )
+    );
 }
 
-export async function getAppointmentById(appointmentId: number, tenantId: string) {
+export async function getAppointmentById(
+  appointmentId: number,
+  tenantId: string
+) {
   const db = await getDb();
   if (!db) return undefined;
-  const result = await db.select().from(appointments).where(
-    and(eq(appointments.id, appointmentId), eq(appointments.tenantId, tenantId))
-  ).limit(1);
+  const result = await db
+    .select()
+    .from(appointments)
+    .where(
+      and(
+        eq(appointments.id, appointmentId),
+        eq(appointments.tenantId, tenantId)
+      )
+    )
+    .limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
-
 
 // ============================================================================
 // PAYMENTS
@@ -241,7 +279,7 @@ export async function createPayment(data: {
   if (!db) throw new Error("Database not initialized");
 
   const { payments } = await import("../drizzle/schema");
-  
+
   const [result] = await db.insert(payments).values({
     tenantId: data.tenantId,
     appointmentId: data.appointmentId ?? null,
@@ -276,37 +314,42 @@ export async function createPayment(data: {
 export async function getPaymentById(paymentId: number, tenantId: string) {
   const db = await getDb();
   if (!db) return undefined;
-  
+
   const { payments } = await import("../drizzle/schema");
   const result = await db
     .select()
     .from(payments)
     .where(and(eq(payments.id, paymentId), eq(payments.tenantId, tenantId)))
     .limit(1);
-  
+
   return result.length > 0 ? result[0] : undefined;
 }
 
-export async function getPaymentsByAppointment(appointmentId: number, tenantId: string) {
+export async function getPaymentsByAppointment(
+  appointmentId: number,
+  tenantId: string
+) {
   const db = await getDb();
   if (!db) return [];
-  
+
   const { payments } = await import("../drizzle/schema");
   return db
     .select()
     .from(payments)
-    .where(and(eq(payments.appointmentId, appointmentId), eq(payments.tenantId, tenantId)));
+    .where(
+      and(
+        eq(payments.appointmentId, appointmentId),
+        eq(payments.tenantId, tenantId)
+      )
+    );
 }
 
 export async function getPaymentsByTenant(tenantId: string) {
   const db = await getDb();
   if (!db) return [];
-  
+
   const { payments } = await import("../drizzle/schema");
-  return db
-    .select()
-    .from(payments)
-    .where(eq(payments.tenantId, tenantId));
+  return db.select().from(payments).where(eq(payments.tenantId, tenantId));
 }
 
 export async function updatePayment(
@@ -330,7 +373,8 @@ export async function updatePayment(
   if (data.status) updateData.status = data.status;
   if (data.processedAt) updateData.paidAt = data.processedAt;
   if (data.paidAt) updateData.paidAt = data.paidAt;
-  if (data.gatewayPaymentId) updateData.gatewayPaymentId = data.gatewayPaymentId;
+  if (data.gatewayPaymentId)
+    updateData.gatewayPaymentId = data.gatewayPaymentId;
   if (data.gatewayMetadata) updateData.gatewayMetadata = data.gatewayMetadata;
   if (data.errorMessage) updateData.errorMessage = data.errorMessage;
 
@@ -376,7 +420,7 @@ export async function createOrderWithItems(
   const { orders, orderItems } = await import("../drizzle/schema");
 
   // Use transaction to ensure atomicity
-  return await db.transaction(async (tx) => {
+  return await db.transaction(async tx => {
     // Insert order
     const [orderResult] = await tx.insert(orders).values({
       tenantId: orderData.tenantId,
@@ -395,7 +439,7 @@ export async function createOrderWithItems(
     const orderId = orderResult.insertId;
 
     // Insert order items
-    const itemsToInsert = items.map((item) => ({
+    const itemsToInsert = items.map(item => ({
       orderId,
       itemType: item.itemType,
       itemId: item.itemId,
@@ -534,7 +578,9 @@ export async function getOrdersWithDetails(
 
   // Filter by payment method if specified
   if (filters?.paymentMethod) {
-    return result.filter(r => r.payment?.paymentMethod === filters.paymentMethod);
+    return result.filter(
+      r => r.payment?.paymentMethod === filters.paymentMethod
+    );
   }
 
   return result;
@@ -544,7 +590,10 @@ export async function getOrdersWithDetails(
 // NO-SHOW TRACKING
 // ============================================================================
 
-export async function getNoShowCountForCustomer(tenantId: string, customerId: number): Promise<number> {
+export async function getNoShowCountForCustomer(
+  tenantId: string,
+  customerId: number
+): Promise<number> {
   const db = await getDb();
   if (!db) return 0;
 
@@ -573,7 +622,9 @@ export async function globalSearch(tenantId: string, query: string) {
   const db = await getDb();
   if (!db) return { customers: [], appointments: [], orders: [], services: [] };
 
-  const { customers, appointments, services, orders, users } = await import("../drizzle/schema");
+  const { customers, appointments, services, orders, users } = await import(
+    "../drizzle/schema"
+  );
   const { eq, and, or, like, desc } = await import("drizzle-orm");
 
   const searchTerm = `%${query}%`;
@@ -644,10 +695,7 @@ export async function globalSearch(tenantId: string, query: string) {
     .select()
     .from(services)
     .where(
-      and(
-        eq(services.tenantId, tenantId),
-        like(services.name, searchTerm)
-      )
+      and(eq(services.tenantId, tenantId), like(services.name, searchTerm))
     )
     .limit(5);
 
@@ -708,9 +756,15 @@ export async function getSplitsByOrder(orderId: number, tenantId: string) {
   const { paymentSplits } = await import("../drizzle/schema");
   const { eq, and } = await import("drizzle-orm");
 
-  return db.select().from(paymentSplits).where(
-    and(eq(paymentSplits.orderId, orderId), eq(paymentSplits.tenantId, tenantId))
-  );
+  return db
+    .select()
+    .from(paymentSplits)
+    .where(
+      and(
+        eq(paymentSplits.orderId, orderId),
+        eq(paymentSplits.tenantId, tenantId)
+      )
+    );
 }
 
 export async function getSplitsByPayment(paymentId: number, tenantId: string) {
@@ -720,9 +774,15 @@ export async function getSplitsByPayment(paymentId: number, tenantId: string) {
   const { paymentSplits } = await import("../drizzle/schema");
   const { eq, and } = await import("drizzle-orm");
 
-  return db.select().from(paymentSplits).where(
-    and(eq(paymentSplits.paymentId, paymentId), eq(paymentSplits.tenantId, tenantId))
-  );
+  return db
+    .select()
+    .from(paymentSplits)
+    .where(
+      and(
+        eq(paymentSplits.paymentId, paymentId),
+        eq(paymentSplits.tenantId, tenantId)
+      )
+    );
 }
 
 // ============================================================================
@@ -793,9 +853,10 @@ export async function getRefundsByOrder(orderId: number, tenantId: string) {
   const { refunds } = await import("../drizzle/schema");
   const { eq, and } = await import("drizzle-orm");
 
-  return db.select().from(refunds).where(
-    and(eq(refunds.orderId, orderId), eq(refunds.tenantId, tenantId))
-  );
+  return db
+    .select()
+    .from(refunds)
+    .where(and(eq(refunds.orderId, orderId), eq(refunds.tenantId, tenantId)));
 }
 
 export async function getRefundsByPayment(paymentId: number, tenantId: string) {
@@ -805,9 +866,12 @@ export async function getRefundsByPayment(paymentId: number, tenantId: string) {
   const { refunds } = await import("../drizzle/schema");
   const { eq, and } = await import("drizzle-orm");
 
-  return db.select().from(refunds).where(
-    and(eq(refunds.paymentId, paymentId), eq(refunds.tenantId, tenantId))
-  );
+  return db
+    .select()
+    .from(refunds)
+    .where(
+      and(eq(refunds.paymentId, paymentId), eq(refunds.tenantId, tenantId))
+    );
 }
 
 export async function getRefundsByTenant(tenantId: string) {

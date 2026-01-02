@@ -1,6 +1,6 @@
 /**
  * Default Services and Products for Barbershops/Salons
- * 
+ *
  * This file contains comprehensive default data that can be loaded
  * when a new salon is created to help them get started quickly.
  * All prices are in NOK and can be edited by salon owners.
@@ -38,7 +38,8 @@ export const defaultServices: DefaultService[] = [
   {
     categoryName: "Herreklipp",
     name: "Herreklipp Standard",
-    description: "Klassisk herreklipp med saks og maskin, inkludert vask og styling",
+    description:
+      "Klassisk herreklipp med saks og maskin, inkludert vask og styling",
     durationMinutes: 30,
     price: 399,
   },

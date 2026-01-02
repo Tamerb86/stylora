@@ -31,27 +31,49 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, LogIn, Save, Users, Calendar, ShoppingCart, DollarSign, Pause, Play, Trash2, AlertTriangle, Loader2, Key, Mail, Phone, User, LogOut } from "lucide-react";
+import {
+  ArrowLeft,
+  LogIn,
+  Save,
+  Users,
+  Calendar,
+  ShoppingCart,
+  DollarSign,
+  Pause,
+  Play,
+  Trash2,
+  AlertTriangle,
+  Loader2,
+  Key,
+  Mail,
+  Phone,
+  User,
+  LogOut,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export default function SaasAdminTenantDetails() {
   const [match, params] = useRoute("/saas-admin/tenants/:tenantId");
   const [, setLocation] = useLocation();
   const tenantId = params?.tenantId as string;
-  
-  // Validate tenantId
-  const isValidTenantId = tenantId && tenantId !== ":tenantId" && !tenantId.includes(":");
 
-  const [selectedStatus, setSelectedStatus] = useState<"trial" | "active" | "suspended" | "canceled">("active");
+  // Validate tenantId
+  const isValidTenantId =
+    tenantId && tenantId !== ":tenantId" && !tenantId.includes(":");
+
+  const [selectedStatus, setSelectedStatus] = useState<
+    "trial" | "active" | "suspended" | "canceled"
+  >("active");
   const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
-  
+
   // Dialog states
   const [showSuspendDialog, setShowSuspendDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showPermanentDeleteDialog, setShowPermanentDeleteDialog] = useState(false);
+  const [showPermanentDeleteDialog, setShowPermanentDeleteDialog] =
+    useState(false);
   const [deleteConfirmName, setDeleteConfirmName] = useState("");
   const [permanentDeleteConfirm, setPermanentDeleteConfirm] = useState("");
-  
+
   // Owner credentials state
   const [showEditOwnerDialog, setShowEditOwnerDialog] = useState(false);
   const [ownerEmail, setOwnerEmail] = useState("");
@@ -59,7 +81,11 @@ export default function SaasAdminTenantDetails() {
   const [ownerPhone, setOwnerPhone] = useState("");
   const [ownerNewPassword, setOwnerNewPassword] = useState("");
 
-  const { data: details, isLoading, refetch } = trpc.saasAdmin.getTenantDetails.useQuery(
+  const {
+    data: details,
+    isLoading,
+    refetch,
+  } = trpc.saasAdmin.getTenantDetails.useQuery(
     { tenantId },
     { enabled: !!tenantId }
   );
@@ -67,10 +93,10 @@ export default function SaasAdminTenantDetails() {
   const { data: plans } = trpc.saasAdmin.getSubscriptionPlans.useQuery();
 
   const impersonateMutation = trpc.saasAdmin.impersonateTenant.useMutation({
-    onSuccess: (result) => {
+    onSuccess: result => {
       setLocation(result.redirectUrl);
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Feil: ${error.message}`);
     },
   });
@@ -80,71 +106,74 @@ export default function SaasAdminTenantDetails() {
       toast.success("Oppdatert!");
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Feil: ${error.message}`);
     },
   });
 
   const suspendMutation = trpc.saasAdmin.suspendTenant.useMutation({
-    onSuccess: (result) => {
+    onSuccess: result => {
       toast.success(result.message);
       setShowSuspendDialog(false);
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Feil: ${error.message}`);
     },
   });
 
   const reactivateMutation = trpc.saasAdmin.reactivateTenant.useMutation({
-    onSuccess: (result) => {
+    onSuccess: result => {
       toast.success(result.message);
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Feil: ${error.message}`);
     },
   });
 
   const deleteMutation = trpc.saasAdmin.deleteTenant.useMutation({
-    onSuccess: (result) => {
+    onSuccess: result => {
       toast.success(result.message);
       setShowDeleteDialog(false);
       setLocation("/saas-admin/tenants");
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Feil: ${error.message}`);
     },
   });
 
-  const permanentDeleteMutation = trpc.saasAdmin.permanentlyDeleteTenant.useMutation({
-    onSuccess: (result) => {
-      toast.success(result.message);
-      setShowPermanentDeleteDialog(false);
-      setLocation("/saas-admin/tenants");
-    },
-    onError: (error) => {
-      toast.error(`Feil: ${error.message}`);
-    },
-  });
+  const permanentDeleteMutation =
+    trpc.saasAdmin.permanentlyDeleteTenant.useMutation({
+      onSuccess: result => {
+        toast.success(result.message);
+        setShowPermanentDeleteDialog(false);
+        setLocation("/saas-admin/tenants");
+      },
+      onError: error => {
+        toast.error(`Feil: ${error.message}`);
+      },
+    });
 
   // Owner credentials queries and mutations
-  const { data: ownerData, refetch: refetchOwner } = trpc.saasAdmin.getTenantOwner.useQuery(
-    { tenantId },
-    { enabled: !!tenantId }
-  );
+  const { data: ownerData, refetch: refetchOwner } =
+    trpc.saasAdmin.getTenantOwner.useQuery(
+      { tenantId },
+      { enabled: !!tenantId }
+    );
 
-  const updateOwnerMutation = trpc.saasAdmin.updateTenantOwnerCredentials.useMutation({
-    onSuccess: () => {
-      toast.success("Eierinformasjon oppdatert!");
-      setShowEditOwnerDialog(false);
-      setOwnerNewPassword("");
-      refetchOwner();
-    },
-    onError: (error) => {
-      toast.error(`Feil: ${error.message}`);
-    },
-  });
+  const updateOwnerMutation =
+    trpc.saasAdmin.updateTenantOwnerCredentials.useMutation({
+      onSuccess: () => {
+        toast.success("Eierinformasjon oppdatert!");
+        setShowEditOwnerDialog(false);
+        setOwnerNewPassword("");
+        refetchOwner();
+      },
+      onError: error => {
+        toast.error(`Feil: ${error.message}`);
+      },
+    });
 
   // Initialize owner form when data loads
   useEffect(() => {
@@ -208,10 +237,10 @@ export default function SaasAdminTenantDetails() {
       toast.error("Skriv 'DELETE PERMANENTLY' for å bekrefte.");
       return;
     }
-    permanentDeleteMutation.mutate({ 
-      tenantId, 
+    permanentDeleteMutation.mutate({
+      tenantId,
       confirmName: deleteConfirmName,
-      confirmPermanent: "DELETE PERMANENTLY"
+      confirmPermanent: "DELETE PERMANENTLY",
     });
   };
 
@@ -220,9 +249,15 @@ export default function SaasAdminTenantDetails() {
     return (
       <div className="container py-8">
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-          <div className="text-red-600 text-lg font-semibold">Ugyldig salong-ID</div>
-          <div className="text-muted-foreground">URL-en er ikke gyldig. Vennligst gå tilbake til salonglisten.</div>
-          <Button onClick={() => setLocation("/saas-admin/tenants")}>Tilbake til salonger</Button>
+          <div className="text-red-600 text-lg font-semibold">
+            Ugyldig salong-ID
+          </div>
+          <div className="text-muted-foreground">
+            URL-en er ikke gyldig. Vennligst gå tilbake til salonglisten.
+          </div>
+          <Button onClick={() => setLocation("/saas-admin/tenants")}>
+            Tilbake til salonger
+          </Button>
         </div>
       </div>
     );
@@ -242,8 +277,12 @@ export default function SaasAdminTenantDetails() {
     return (
       <div className="container py-8">
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-          <div className="text-muted-foreground text-lg">Salong ikke funnet</div>
-          <Button onClick={() => setLocation("/saas-admin/tenants")}>Tilbake til salonger</Button>
+          <div className="text-muted-foreground text-lg">
+            Salong ikke funnet
+          </div>
+          <Button onClick={() => setLocation("/saas-admin/tenants")}>
+            Tilbake til salonger
+          </Button>
         </div>
       </div>
     );
@@ -300,42 +339,54 @@ export default function SaasAdminTenantDetails() {
         <h2 className="text-xl font-bold mb-4">Grunnleggende informasjon</h2>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label className="text-sm font-medium text-muted-foreground">Navn</label>
+            <label className="text-sm font-medium text-muted-foreground">
+              Navn
+            </label>
             <p className="text-lg font-medium mt-1">{tenant.name}</p>
           </div>
           <div>
-            <label className="text-sm font-medium text-muted-foreground">Subdomene</label>
+            <label className="text-sm font-medium text-muted-foreground">
+              Subdomene
+            </label>
             <p className="text-lg font-medium mt-1">{tenant.subdomain}</p>
           </div>
           <div>
-            <label className="text-sm font-medium text-muted-foreground">Org.nummer</label>
-            <p className="text-lg font-medium mt-1">{tenant.orgNumber || "Ikke angitt"}</p>
+            <label className="text-sm font-medium text-muted-foreground">
+              Org.nummer
+            </label>
+            <p className="text-lg font-medium mt-1">
+              {tenant.orgNumber || "Ikke angitt"}
+            </p>
           </div>
           <div>
-            <label className="text-sm font-medium text-muted-foreground">Opprettet</label>
+            <label className="text-sm font-medium text-muted-foreground">
+              Opprettet
+            </label>
             <p className="text-lg font-medium mt-1">
               {new Date(tenant.createdAt).toLocaleDateString("no-NO")}
             </p>
           </div>
           <div>
-            <label className="text-sm font-medium text-muted-foreground">Status</label>
+            <label className="text-sm font-medium text-muted-foreground">
+              Status
+            </label>
             <div className="mt-1">
               <Badge
                 variant={
                   tenant.status === "active"
                     ? "default"
                     : tenant.status === "trial"
-                    ? "secondary"
-                    : "destructive"
+                      ? "secondary"
+                      : "destructive"
                 }
               >
                 {tenant.status === "active"
                   ? "Aktiv"
                   : tenant.status === "trial"
-                  ? "Prøve"
-                  : tenant.status === "suspended"
-                  ? "Suspendert"
-                  : "Kansellert"}
+                    ? "Prøve"
+                    : tenant.status === "suspended"
+                      ? "Suspendert"
+                      : "Kansellert"}
               </Badge>
             </div>
           </div>
@@ -364,34 +415,46 @@ export default function SaasAdminTenantDetails() {
             Rediger innlogging
           </Button>
         </div>
-        
+
         {ownerData ? (
           <div className="grid gap-4 md:grid-cols-2 p-4 bg-muted/50 rounded-lg">
             <div className="flex items-center gap-3">
               <User className="h-5 w-5 text-muted-foreground" />
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Navn</label>
+                <label className="text-sm font-medium text-muted-foreground">
+                  Navn
+                </label>
                 <p className="font-medium">{ownerData.name || "Ikke angitt"}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Mail className="h-5 w-5 text-muted-foreground" />
               <div>
-                <label className="text-sm font-medium text-muted-foreground">E-post</label>
-                <p className="font-medium">{ownerData.email || "Ikke angitt"}</p>
+                <label className="text-sm font-medium text-muted-foreground">
+                  E-post
+                </label>
+                <p className="font-medium">
+                  {ownerData.email || "Ikke angitt"}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Phone className="h-5 w-5 text-muted-foreground" />
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Telefon</label>
-                <p className="font-medium">{ownerData.phone || "Ikke angitt"}</p>
+                <label className="text-sm font-medium text-muted-foreground">
+                  Telefon
+                </label>
+                <p className="font-medium">
+                  {ownerData.phone || "Ikke angitt"}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Key className="h-5 w-5 text-muted-foreground" />
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Passord</label>
+                <label className="text-sm font-medium text-muted-foreground">
+                  Passord
+                </label>
                 <p className="font-medium text-muted-foreground">••••••••</p>
               </div>
             </div>
@@ -404,26 +467,45 @@ export default function SaasAdminTenantDetails() {
       {/* Subscription Management */}
       <Card className="p-6 border-0 shadow-lg">
         <h2 className="text-xl font-bold mb-4">Abonnement</h2>
-        
+
         {subscription && (
           <div className="grid gap-4 md:grid-cols-2 mb-6 p-4 bg-muted/50 rounded-lg">
             <div>
-              <label className="text-sm font-medium text-muted-foreground">Nåværende plan</label>
-              <p className="text-lg font-medium mt-1">{subscription.planName}</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Pris</label>
-              <p className="text-lg font-medium mt-1">{subscription.priceMonthly} kr/mnd</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Abonnementsstatus</label>
-              <p className="text-lg font-medium mt-1 capitalize">{subscription.status}</p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-muted-foreground">Periode</label>
+              <label className="text-sm font-medium text-muted-foreground">
+                Nåværende plan
+              </label>
               <p className="text-lg font-medium mt-1">
-                {new Date(subscription.currentPeriodStart).toLocaleDateString("no-NO")} -{" "}
-                {new Date(subscription.currentPeriodEnd).toLocaleDateString("no-NO")}
+                {subscription.planName}
+              </p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Pris
+              </label>
+              <p className="text-lg font-medium mt-1">
+                {subscription.priceMonthly} kr/mnd
+              </p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Abonnementsstatus
+              </label>
+              <p className="text-lg font-medium mt-1 capitalize">
+                {subscription.status}
+              </p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">
+                Periode
+              </label>
+              <p className="text-lg font-medium mt-1">
+                {new Date(subscription.currentPeriodStart).toLocaleDateString(
+                  "no-NO"
+                )}{" "}
+                -{" "}
+                {new Date(subscription.currentPeriodEnd).toLocaleDateString(
+                  "no-NO"
+                )}
               </p>
             </div>
           </div>
@@ -431,10 +513,14 @@ export default function SaasAdminTenantDetails() {
 
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium mb-2 block">Endre status</label>
+            <label className="text-sm font-medium mb-2 block">
+              Endre status
+            </label>
             <Select
               value={selectedStatus}
-              onValueChange={(value: typeof selectedStatus) => setSelectedStatus(value)}
+              onValueChange={(value: typeof selectedStatus) =>
+                setSelectedStatus(value)
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -452,7 +538,9 @@ export default function SaasAdminTenantDetails() {
             <label className="text-sm font-medium mb-2 block">Endre plan</label>
             <Select
               value={selectedPlanId?.toString() || "none"}
-              onValueChange={(value) => setSelectedPlanId(value === "none" ? null : parseInt(value))}
+              onValueChange={value =>
+                setSelectedPlanId(value === "none" ? null : parseInt(value))
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -482,7 +570,7 @@ export default function SaasAdminTenantDetails() {
       {/* Usage Stats */}
       <Card className="p-6 border-0 shadow-lg">
         <h2 className="text-xl font-bold mb-4">Bruksstatistikk</h2>
-        
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <div className="flex items-start gap-4">
             <div className="p-3 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500">
@@ -540,7 +628,9 @@ export default function SaasAdminTenantDetails() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Timer</p>
-                <p className="text-2xl font-bold">{usage.last30DaysAppointments}</p>
+                <p className="text-2xl font-bold">
+                  {usage.last30DaysAppointments}
+                </p>
               </div>
             </div>
 
@@ -578,7 +668,7 @@ export default function SaasAdminTenantDetails() {
         <p className="text-muted-foreground mb-6">
           Disse handlingene kan ikke angres. Vær forsiktig.
         </p>
-        
+
         <div className="space-y-4">
           {/* Suspend/Reactivate */}
           {tenant.status === "suspended" ? (
@@ -603,23 +693,25 @@ export default function SaasAdminTenantDetails() {
                 Reaktiver
               </Button>
             </div>
-          ) : tenant.status !== "canceled" && (
-            <div className="flex items-center justify-between p-4 border rounded-lg bg-white dark:bg-gray-900">
-              <div>
-                <h3 className="font-semibold">Suspender salong</h3>
-                <p className="text-sm text-muted-foreground">
-                  Midlertidig deaktiver tilgang for denne salongen
-                </p>
+          ) : (
+            tenant.status !== "canceled" && (
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-white dark:bg-gray-900">
+                <div>
+                  <h3 className="font-semibold">Suspender salong</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Midlertidig deaktiver tilgang for denne salongen
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                  onClick={() => setShowSuspendDialog(true)}
+                >
+                  <Pause className="h-4 w-4 mr-2" />
+                  Suspender
+                </Button>
               </div>
-              <Button
-                variant="outline"
-                className="border-orange-500 text-orange-600 hover:bg-orange-50"
-                onClick={() => setShowSuspendDialog(true)}
-              >
-                <Pause className="h-4 w-4 mr-2" />
-                Suspender
-              </Button>
-            </div>
+            )
           )}
 
           {/* Soft Delete */}
@@ -674,8 +766,9 @@ export default function SaasAdminTenantDetails() {
           <AlertDialogHeader>
             <AlertDialogTitle>Suspender salong?</AlertDialogTitle>
             <AlertDialogDescription>
-              Dette vil midlertidig deaktivere tilgang for "{tenant.name}". 
-              Alle brukere vil bli logget ut og kan ikke logge inn igjen før salongen reaktiveres.
+              Dette vil midlertidig deaktivere tilgang for "{tenant.name}". Alle
+              brukere vil bli logget ut og kan ikke logge inn igjen før salongen
+              reaktiveres.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -702,32 +795,38 @@ export default function SaasAdminTenantDetails() {
           <DialogHeader>
             <DialogTitle className="text-red-600">Slett salong</DialogTitle>
             <DialogDescription>
-              Dette vil deaktivere salongen "{tenant.name}" og alle brukere. 
+              Dette vil deaktivere salongen "{tenant.name}" og alle brukere.
               Data vil bli bevart, men salongen kan ikke brukes.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
               <Label htmlFor="confirmName">
-                Skriv inn salongnavnet for å bekrefte: <strong>{tenant.name}</strong>
+                Skriv inn salongnavnet for å bekrefte:{" "}
+                <strong>{tenant.name}</strong>
               </Label>
               <Input
                 id="confirmName"
                 value={deleteConfirmName}
-                onChange={(e) => setDeleteConfirmName(e.target.value)}
+                onChange={e => setDeleteConfirmName(e.target.value)}
                 placeholder="Skriv salongnavnet her"
                 className="mt-2"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+            >
               Avbryt
             </Button>
             <Button
               variant="destructive"
               onClick={handleDelete}
-              disabled={deleteMutation.isPending || deleteConfirmName !== tenant.name}
+              disabled={
+                deleteMutation.isPending || deleteConfirmName !== tenant.name
+              }
             >
               {deleteMutation.isPending ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -755,7 +854,7 @@ export default function SaasAdminTenantDetails() {
               <Input
                 id="ownerName"
                 value={ownerName}
-                onChange={(e) => setOwnerName(e.target.value)}
+                onChange={e => setOwnerName(e.target.value)}
                 placeholder="Fullt navn"
                 className="mt-2"
               />
@@ -766,7 +865,7 @@ export default function SaasAdminTenantDetails() {
                 id="ownerEmail"
                 type="email"
                 value={ownerEmail}
-                onChange={(e) => setOwnerEmail(e.target.value)}
+                onChange={e => setOwnerEmail(e.target.value)}
                 placeholder="epost@eksempel.no"
                 className="mt-2"
               />
@@ -777,7 +876,7 @@ export default function SaasAdminTenantDetails() {
                 id="ownerPhone"
                 type="tel"
                 value={ownerPhone}
-                onChange={(e) => setOwnerPhone(e.target.value)}
+                onChange={e => setOwnerPhone(e.target.value)}
                 placeholder="+47 xxx xx xxx"
                 className="mt-2"
               />
@@ -788,7 +887,7 @@ export default function SaasAdminTenantDetails() {
                 id="ownerPassword"
                 type="password"
                 value={ownerNewPassword}
-                onChange={(e) => setOwnerNewPassword(e.target.value)}
+                onChange={e => setOwnerNewPassword(e.target.value)}
                 placeholder="La stå tom for å beholde nåværende"
                 className="mt-2"
               />
@@ -798,7 +897,10 @@ export default function SaasAdminTenantDetails() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditOwnerDialog(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowEditOwnerDialog(false)}
+            >
               Avbryt
             </Button>
             <Button
@@ -818,7 +920,10 @@ export default function SaasAdminTenantDetails() {
       </Dialog>
 
       {/* Permanent Delete Dialog */}
-      <Dialog open={showPermanentDeleteDialog} onOpenChange={setShowPermanentDeleteDialog}>
+      <Dialog
+        open={showPermanentDeleteDialog}
+        onOpenChange={setShowPermanentDeleteDialog}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="text-red-600 flex items-center gap-2">
@@ -826,9 +931,10 @@ export default function SaasAdminTenantDetails() {
               Permanent sletting
             </DialogTitle>
             <DialogDescription>
-              <strong className="text-red-600">ADVARSEL:</strong> Dette vil permanent slette salongen "{tenant.name}" 
-              og ALL tilknyttet data inkludert kunder, ansatte, timer, ordre, og betalinger. 
-              Denne handlingen kan IKKE angres!
+              <strong className="text-red-600">ADVARSEL:</strong> Dette vil
+              permanent slette salongen "{tenant.name}" og ALL tilknyttet data
+              inkludert kunder, ansatte, timer, ordre, og betalinger. Denne
+              handlingen kan IKKE angres!
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -839,7 +945,7 @@ export default function SaasAdminTenantDetails() {
               <Input
                 id="confirmNamePerm"
                 value={deleteConfirmName}
-                onChange={(e) => setDeleteConfirmName(e.target.value)}
+                onChange={e => setDeleteConfirmName(e.target.value)}
                 placeholder="Skriv salongnavnet her"
                 className="mt-2"
               />
@@ -851,22 +957,25 @@ export default function SaasAdminTenantDetails() {
               <Input
                 id="confirmPerm"
                 value={permanentDeleteConfirm}
-                onChange={(e) => setPermanentDeleteConfirm(e.target.value)}
+                onChange={e => setPermanentDeleteConfirm(e.target.value)}
                 placeholder="DELETE PERMANENTLY"
                 className="mt-2"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPermanentDeleteDialog(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowPermanentDeleteDialog(false)}
+            >
               Avbryt
             </Button>
             <Button
               variant="destructive"
               onClick={handlePermanentDelete}
               disabled={
-                permanentDeleteMutation.isPending || 
-                deleteConfirmName !== tenant.name || 
+                permanentDeleteMutation.isPending ||
+                deleteConfirmName !== tenant.name ||
                 permanentDeleteConfirm !== "DELETE PERMANENTLY"
               }
             >

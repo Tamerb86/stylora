@@ -1,18 +1,75 @@
 import { useState, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts";
-import { TrendingUp, Users, DollarSign, ShoppingCart, Download, Calendar } from "lucide-react";
-import { format, subDays, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths } from "date-fns";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
+import {
+  TrendingUp,
+  Users,
+  DollarSign,
+  ShoppingCart,
+  Download,
+  Calendar,
+} from "lucide-react";
+import {
+  format,
+  subDays,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+  subMonths,
+} from "date-fns";
 import { nb } from "date-fns/locale";
 import { safeToFixed } from "@/lib/utils";
 
-const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316"];
+const COLORS = [
+  "#3b82f6",
+  "#10b981",
+  "#f59e0b",
+  "#ef4444",
+  "#8b5cf6",
+  "#ec4899",
+  "#14b8a6",
+  "#f97316",
+];
 
-type DatePreset = "today" | "last7days" | "last30days" | "thisMonth" | "lastMonth" | "thisYear" | "custom";
+type DatePreset =
+  | "today"
+  | "last7days"
+  | "last30days"
+  | "thisMonth"
+  | "lastMonth"
+  | "thisYear"
+  | "custom";
 
 export default function AdvancedFinancialReports() {
   return (
@@ -24,7 +81,9 @@ export default function AdvancedFinancialReports() {
 
 function AdvancedFinancialReportsContent() {
   const [datePreset, setDatePreset] = useState<DatePreset>("thisMonth");
-  const [paymentMethod, setPaymentMethod] = useState<"all" | "cash" | "card" | "stripe" | "vipps">("all");
+  const [paymentMethod, setPaymentMethod] = useState<
+    "all" | "cash" | "card" | "stripe" | "vipps"
+  >("all");
   const [period, setPeriod] = useState<"daily" | "weekly" | "monthly">("daily");
 
   // Calculate date range based on preset
@@ -67,44 +126,50 @@ function AdvancedFinancialReportsContent() {
   }, [datePreset]);
 
   // Fetch data
-  const { data: summary, isLoading: summaryLoading } = trpc.financialReports.getSummary.useQuery({
-    startDate,
-    endDate,
-  });
+  const { data: summary, isLoading: summaryLoading } =
+    trpc.financialReports.getSummary.useQuery({
+      startDate,
+      endDate,
+    });
 
-  const { data: salesByEmployee, isLoading: employeeLoading } = trpc.financialReports.salesByEmployee.useQuery({
-    startDate,
-    endDate,
-    paymentMethod,
-  });
+  const { data: salesByEmployee, isLoading: employeeLoading } =
+    trpc.financialReports.salesByEmployee.useQuery({
+      startDate,
+      endDate,
+      paymentMethod,
+    });
 
-  const { data: salesByService, isLoading: serviceLoading } = trpc.financialReports.salesByService.useQuery({
-    startDate,
-    endDate,
-  });
+  const { data: salesByService, isLoading: serviceLoading } =
+    trpc.financialReports.salesByService.useQuery({
+      startDate,
+      endDate,
+    });
 
-  const { data: revenueTrends, isLoading: trendsLoading } = trpc.financialReports.revenueTrends.useQuery({
-    startDate,
-    endDate,
-    period,
-  });
+  const { data: revenueTrends, isLoading: trendsLoading } =
+    trpc.financialReports.revenueTrends.useQuery({
+      startDate,
+      endDate,
+      period,
+    });
 
-  const { data: topPerformers, isLoading: performersLoading } = trpc.financialReports.topPerformers.useQuery({
-    startDate,
-    endDate,
-    limit: 5,
-  });
+  const { data: topPerformers, isLoading: performersLoading } =
+    trpc.financialReports.topPerformers.useQuery({
+      startDate,
+      endDate,
+      limit: 5,
+    });
 
-  const { data: topServices, isLoading: topServicesLoading } = trpc.financialReports.topServices.useQuery({
-    startDate,
-    endDate,
-    limit: 5,
-  });
+  const { data: topServices, isLoading: topServicesLoading } =
+    trpc.financialReports.topServices.useQuery({
+      startDate,
+      endDate,
+      limit: 5,
+    });
 
   // Format data for charts
   const employeeChartData = useMemo(() => {
     if (!salesByEmployee) return [];
-    return salesByEmployee.map((item) => ({
+    return salesByEmployee.map(item => ({
       name: item.employeeName || "Ukjent",
       revenue: parseFloat(item.totalRevenue) || 0,
       orders: item.orderCount,
@@ -113,7 +178,7 @@ function AdvancedFinancialReportsContent() {
 
   const serviceChartData = useMemo(() => {
     if (!salesByService) return [];
-    return salesByService.map((item) => ({
+    return salesByService.map(item => ({
       name: item.serviceName || "Ukjent",
       value: parseFloat(item.totalRevenue) || 0,
       count: item.itemCount,
@@ -122,7 +187,7 @@ function AdvancedFinancialReportsContent() {
 
   const trendsChartData = useMemo(() => {
     if (!revenueTrends) return [];
-    return revenueTrends.map((item) => ({
+    return revenueTrends.map(item => ({
       period: item.period,
       revenue: parseFloat(item.revenue) || 0,
       orders: item.orderCount,
@@ -137,15 +202,20 @@ function AdvancedFinancialReportsContent() {
     if (!salesByEmployee) return;
 
     const csvContent = [
-      ["Ansatt", "Antall ordre", "Total omsetning", "Gjennomsnittlig ordrebeløp"],
-      ...salesByEmployee.map((item) => [
+      [
+        "Ansatt",
+        "Antall ordre",
+        "Total omsetning",
+        "Gjennomsnittlig ordrebeløp",
+      ],
+      ...salesByEmployee.map(item => [
         item.employeeName || "Ukjent",
         item.orderCount,
         item.totalRevenue,
         item.averageOrderValue,
       ]),
     ]
-      .map((row) => row.join(","))
+      .map(row => row.join(","))
       .join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -190,7 +260,10 @@ function AdvancedFinancialReportsContent() {
         <CardContent className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[200px]">
             <label className="text-sm font-medium mb-2 block">Periode</label>
-            <Select value={datePreset} onValueChange={(v) => setDatePreset(v as DatePreset)}>
+            <Select
+              value={datePreset}
+              onValueChange={v => setDatePreset(v as DatePreset)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -206,8 +279,13 @@ function AdvancedFinancialReportsContent() {
           </div>
 
           <div className="flex-1 min-w-[200px]">
-            <label className="text-sm font-medium mb-2 block">Betalingsmetode</label>
-            <Select value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as any)}>
+            <label className="text-sm font-medium mb-2 block">
+              Betalingsmetode
+            </label>
+            <Select
+              value={paymentMethod}
+              onValueChange={v => setPaymentMethod(v as any)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -222,8 +300,10 @@ function AdvancedFinancialReportsContent() {
           </div>
 
           <div className="flex-1 min-w-[200px]">
-            <label className="text-sm font-medium mb-2 block">Trendperiode</label>
-            <Select value={period} onValueChange={(v) => setPeriod(v as any)}>
+            <label className="text-sm font-medium mb-2 block">
+              Trendperiode
+            </label>
+            <Select value={period} onValueChange={v => setPeriod(v as any)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -248,7 +328,9 @@ function AdvancedFinancialReportsContent() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-blue-900 dark:text-blue-100">
-              {summaryLoading ? "..." : `${safeToFixed(parseFloat(summary?.totalRevenue || "0"), 2)} kr`}
+              {summaryLoading
+                ? "..."
+                : `${safeToFixed(parseFloat(summary?.totalRevenue || "0"), 2)} kr`}
             </div>
           </CardContent>
         </Card>
@@ -276,7 +358,9 @@ function AdvancedFinancialReportsContent() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-purple-900 dark:text-purple-100">
-              {summaryLoading ? "..." : `${safeToFixed(parseFloat(summary?.averageOrderValue || "0"), 2)} kr`}
+              {summaryLoading
+                ? "..."
+                : `${safeToFixed(parseFloat(summary?.averageOrderValue || "0"), 2)} kr`}
             </div>
           </CardContent>
         </Card>
@@ -290,7 +374,12 @@ function AdvancedFinancialReportsContent() {
             Omsetningstrend
           </CardTitle>
           <CardDescription>
-            {period === "daily" ? "Daglig" : period === "weekly" ? "Ukentlig" : "Månedlig"} omsetning
+            {period === "daily"
+              ? "Daglig"
+              : period === "weekly"
+                ? "Ukentlig"
+                : "Månedlig"}{" "}
+            omsetning
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -300,7 +389,9 @@ function AdvancedFinancialReportsContent() {
             </div>
           ) : trendsChartData.length === 0 ? (
             <div className="h-[300px] flex items-center justify-center">
-              <p className="text-muted-foreground">Ingen data tilgjengelig for valgt periode</p>
+              <p className="text-muted-foreground">
+                Ingen data tilgjengelig for valgt periode
+              </p>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={300}>
@@ -309,9 +400,27 @@ function AdvancedFinancialReportsContent() {
                 <XAxis dataKey="period" />
                 <YAxis />
                 <Tooltip />
-                <Legend wrapperStyle={{ fontSize: '16px', fontWeight: '700', color: '#000000' }} />
-                <Line type="monotone" dataKey="revenue" stroke="#3b82f6" name="Omsetning (kr)" strokeWidth={2} />
-                <Line type="monotone" dataKey="orders" stroke="#10b981" name="Antall ordre" strokeWidth={2} />
+                <Legend
+                  wrapperStyle={{
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    color: "#000000",
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="#3b82f6"
+                  name="Omsetning (kr)"
+                  strokeWidth={2}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="orders"
+                  stroke="#10b981"
+                  name="Antall ordre"
+                  strokeWidth={2}
+                />
               </LineChart>
             </ResponsiveContainer>
           )}
@@ -343,7 +452,13 @@ function AdvancedFinancialReportsContent() {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Legend wrapperStyle={{ fontSize: '16px', fontWeight: '700', color: '#000000' }} />
+                <Legend
+                  wrapperStyle={{
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    color: "#000000",
+                  }}
+                />
                 <Bar dataKey="revenue" fill="#3b82f6" name="Omsetning (kr)" />
                 <Bar dataKey="orders" fill="#10b981" name="Antall ordre" />
               </BarChart>
@@ -375,13 +490,18 @@ function AdvancedFinancialReportsContent() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={(entry) => `${entry.name}: ${safeToFixed(entry.value, 0)} kr`}
+                  label={entry =>
+                    `${entry.name}: ${safeToFixed(entry.value, 0)} kr`
+                  }
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
                 >
                   {serviceChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -409,20 +529,34 @@ function AdvancedFinancialReportsContent() {
             ) : (
               <div className="space-y-4">
                 {topPerformers.map((performer, index) => (
-                  <div key={performer.employeeId} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <div
+                    key={performer.employeeId}
+                    className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                  >
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white font-bold">
                         {index + 1}
                       </div>
                       <div>
-                        <p className="font-medium">{performer.employeeName || "Ukjent"}</p>
-                        <p className="text-sm text-muted-foreground">{performer.orderCount} ordre</p>
+                        <p className="font-medium">
+                          {performer.employeeName || "Ukjent"}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {performer.orderCount} ordre
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-lg">{safeToFixed(parseFloat(performer.totalRevenue), 2)} kr</p>
+                      <p className="font-bold text-lg">
+                        {safeToFixed(parseFloat(performer.totalRevenue), 2)} kr
+                      </p>
                       <p className="text-sm text-muted-foreground">
-                        Snitt: {safeToFixed(parseFloat(performer.averageOrderValue), 2)} kr
+                        Snitt:{" "}
+                        {safeToFixed(
+                          parseFloat(performer.averageOrderValue),
+                          2
+                        )}{" "}
+                        kr
                       </p>
                     </div>
                   </div>
@@ -445,20 +579,30 @@ function AdvancedFinancialReportsContent() {
             ) : (
               <div className="space-y-4">
                 {topServices.map((service, index) => (
-                  <div key={service.serviceId} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                  <div
+                    key={service.serviceId}
+                    className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                  >
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-teal-500 text-white font-bold">
                         {index + 1}
                       </div>
                       <div>
-                        <p className="font-medium">{service.serviceName || "Ukjent"}</p>
-                        <p className="text-sm text-muted-foreground">{service.bookingCount} bestillinger</p>
+                        <p className="font-medium">
+                          {service.serviceName || "Ukjent"}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {service.bookingCount} bestillinger
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-lg">{safeToFixed(parseFloat(service.totalRevenue), 2)} kr</p>
+                      <p className="font-bold text-lg">
+                        {safeToFixed(parseFloat(service.totalRevenue), 2)} kr
+                      </p>
                       <p className="text-sm text-muted-foreground">
-                        Snitt: {safeToFixed(parseFloat(service.averagePrice), 2)} kr
+                        Snitt:{" "}
+                        {safeToFixed(parseFloat(service.averagePrice), 2)} kr
                       </p>
                     </div>
                   </div>

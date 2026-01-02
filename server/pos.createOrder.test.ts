@@ -48,7 +48,7 @@ describe("POS createOrder", () => {
     expect(result.order.subtotal).toBe(testOrderData.subtotal);
     expect(result.order.total).toBe(testOrderData.total);
     expect(result.order.status).toBe("pending");
-    
+
     expect(result.items).toBeDefined();
     expect(result.items.length).toBe(1);
     expect(result.items[0].itemType).toBe("service");
@@ -61,8 +61,8 @@ describe("POS createOrder", () => {
   it("should handle date conversion from Date object", async () => {
     // Arrange
     const now = new Date();
-    const formattedDate = now.toISOString().split('T')[0];
-    const formattedTime = now.toTimeString().split(' ')[0].substring(0, 5);
+    const formattedDate = now.toISOString().split("T")[0];
+    const formattedTime = now.toTimeString().split(" ")[0].substring(0, 5);
 
     const testOrderData = {
       tenantId: "test-tenant-2",
@@ -95,6 +95,9 @@ describe("POS createOrder", () => {
     // Assert
     expect(result).toBeDefined();
     expect(result.order.id).toBeGreaterThan(0);
-    console.log("✅ Order with date conversion created successfully:", result.order.id);
+    console.log(
+      "✅ Order with date conversion created successfully:",
+      result.order.id
+    );
   });
 });

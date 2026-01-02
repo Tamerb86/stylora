@@ -24,7 +24,9 @@ describe("Employee Management", () => {
     const { eq } = await import("drizzle-orm");
 
     // Clean up test data
-    await dbInstance.delete(timesheets).where(eq(timesheets.tenantId, testTenantId));
+    await dbInstance
+      .delete(timesheets)
+      .where(eq(timesheets.tenantId, testTenantId));
     await dbInstance.delete(users).where(eq(users.tenantId, testTenantId));
 
     // Create test owner
@@ -78,12 +80,7 @@ describe("Employee Management", () => {
     const updated = await dbInstance
       .select()
       .from(users)
-      .where(
-        and(
-          eq(users.id, employee.id),
-          eq(users.tenantId, testTenantId)
-        )
-      )
+      .where(and(eq(users.id, employee.id), eq(users.tenantId, testTenantId)))
       .limit(1);
 
     expect(updated[0].name).toBe("Updated Name");
@@ -111,10 +108,7 @@ describe("Employee Management", () => {
       .select()
       .from(users)
       .where(
-        and(
-          eq(users.tenantId, testTenantId),
-          eq(users.openId, "test-emp-pin")
-        )
+        and(eq(users.tenantId, testTenantId), eq(users.openId, "test-emp-pin"))
       )
       .limit(1);
 
@@ -128,12 +122,7 @@ describe("Employee Management", () => {
     const updated = await dbInstance
       .select()
       .from(users)
-      .where(
-        and(
-          eq(users.id, employee.id),
-          eq(users.tenantId, testTenantId)
-        )
-      )
+      .where(and(eq(users.id, employee.id), eq(users.tenantId, testTenantId)))
       .limit(1);
 
     expect(updated[0].pin).toBe("1234");
@@ -218,12 +207,7 @@ describe("Employee Management", () => {
     const updated = await dbInstance
       .select()
       .from(users)
-      .where(
-        and(
-          eq(users.id, employee.id),
-          eq(users.tenantId, testTenantId)
-        )
-      )
+      .where(and(eq(users.id, employee.id), eq(users.tenantId, testTenantId)))
       .limit(1);
 
     expect(updated[0].isActive).toBe(false);
@@ -266,12 +250,7 @@ describe("Employee Management", () => {
     const updated = await dbInstance
       .select()
       .from(users)
-      .where(
-        and(
-          eq(users.id, employee.id),
-          eq(users.tenantId, testTenantId)
-        )
-      )
+      .where(and(eq(users.id, employee.id), eq(users.tenantId, testTenantId)))
       .limit(1);
 
     expect(updated[0].isActive).toBe(true);
@@ -318,12 +297,7 @@ describe("Employee Management", () => {
     const updated = await dbInstance
       .select()
       .from(users)
-      .where(
-        and(
-          eq(users.id, employee.id),
-          eq(users.tenantId, testTenantId)
-        )
-      )
+      .where(and(eq(users.id, employee.id), eq(users.tenantId, testTenantId)))
       .limit(1);
 
     expect(updated[0].commissionType).toBe("fixed");

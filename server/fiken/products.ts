@@ -1,6 +1,11 @@
 import { FikenClient } from "./client";
 import { getDb } from "../db";
-import { services, products, fikenProductMapping, fikenSyncLog } from "../../drizzle/schema";
+import {
+  services,
+  products,
+  fikenProductMapping,
+  fikenSyncLog,
+} from "../../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 
 /**
@@ -221,7 +226,12 @@ export async function syncProductToFiken(
 export async function bulkSyncServices(
   client: FikenClient,
   tenantId: string
-): Promise<{ success: boolean; synced: number; failed: number; errors?: string[] }> {
+): Promise<{
+  success: boolean;
+  synced: number;
+  failed: number;
+  errors?: string[];
+}> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
@@ -260,7 +270,12 @@ export async function bulkSyncServices(
 export async function bulkSyncProducts(
   client: FikenClient,
   tenantId: string
-): Promise<{ success: boolean; synced: number; failed: number; errors?: string[] }> {
+): Promise<{
+  success: boolean;
+  synced: number;
+  failed: number;
+  errors?: string[];
+}> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 

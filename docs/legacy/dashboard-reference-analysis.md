@@ -5,6 +5,7 @@
 ### Image 1 (pasted_file_tsJuku_image.png) - Full Dashboard View
 
 **Top Section - Statistics Cards (4 cards in a row):**
+
 1. Card 1: Light blue background - "NO K" (partially visible)
 2. Card 2: Light pink background - (content not fully visible)
 3. Card 3: Light green background - "Fullførte avtaler" (Completed appointments)
@@ -13,6 +14,7 @@
 **Middle Section - Two Column Layout:**
 
 **Left Column - Welcome Card:**
+
 - Title: "👋 Velkommen til Stylora"
 - Subtitle: "Kom i gang med å administrere salongen din"
 - Three purple gradient buttons (stacked vertically):
@@ -21,6 +23,7 @@
   3. "📊 Administrer tjenester" + "Sett opp priser og varighet"
 
 **Right Column - Performance Card:**
+
 - Title: "📈 Dagens ytelse"
 - Subtitle: "Sammendrag av aktivitet"
 - Three metrics:
@@ -32,10 +35,12 @@
 ### Image 2 (pasted_file_8JPG5l_image.png) - Dashboard with Email Banner
 
 **Top Banners:**
+
 1. Orange gradient banner: "Du er logget inn som en annen salong (Impersonation Mode)" + "Avslutt innlogging" button
 2. Yellow banner: "Bekreft e-postadressen din" + "Send på nytt" link
 
 **Main Content:**
+
 - Large gradient title: "Dashboard" (blue to orange gradient)
 - Subtitle: "Oversikt over dagens aktivitet"
 - "Ny avtale" button (blue to orange gradient)

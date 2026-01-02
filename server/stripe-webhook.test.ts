@@ -4,7 +4,7 @@ import * as db from "./db";
 
 /**
  * Test suite for Stripe webhook handler
- * 
+ *
  * Tests the webhook endpoint that processes checkout.session.completed events
  * and updates payment/appointment status.
  */
@@ -25,10 +25,17 @@ describe("Stripe Webhook Handler", () => {
     }
 
     // Create test tenant
-    const { tenants, users, customers, services, appointments, appointmentServices } = await import("../drizzle/schema");
-    
+    const {
+      tenants,
+      users,
+      customers,
+      services,
+      appointments,
+      appointmentServices,
+    } = await import("../drizzle/schema");
+
     testTenantId = `test-tenant-${Date.now()}`;
-    
+
     await dbInstance.insert(tenants).values({
       id: testTenantId,
       name: "Test Salon",
@@ -256,7 +263,9 @@ describe("Stripe Webhook Handler", () => {
     const dbInstance = await db.getDb();
     if (!dbInstance) throw new Error("DB not available");
 
-    const { appointments, appointmentServices } = await import("../drizzle/schema");
+    const { appointments, appointmentServices } = await import(
+      "../drizzle/schema"
+    );
 
     const [canceledAppointment] = await dbInstance.insert(appointments).values({
       tenantId: testTenantId,

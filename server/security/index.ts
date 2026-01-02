@@ -20,7 +20,7 @@ export const apiRateLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => {
+  keyGenerator: req => {
     return req.ip || req.headers["x-forwarded-for"]?.toString() || "unknown";
   },
 });
@@ -43,7 +43,8 @@ export const passwordResetRateLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 3,
   message: {
-    error: "For mange tilbakestillingsforespørsler. Vennligst prøv igjen senere.",
+    error:
+      "For mange tilbakestillingsforespørsler. Vennligst prøv igjen senere.",
     retryAfter: 60,
   },
   standardHeaders: true,
@@ -78,7 +79,7 @@ const htmlEntities: Record<string, string> = {
 };
 
 export function escapeHtml(str: string): string {
-  return str.replace(/[&<>"'`=/]/g, (char) => htmlEntities[char] || char);
+  return str.replace(/[&<>"'`=/]/g, char => htmlEntities[char] || char);
 }
 
 export function sanitizeString(input: string): string {
@@ -95,12 +96,12 @@ export function sanitizeObject<T extends Record<string, any>>(obj: T): T {
     if (typeof value === "string") {
       sanitized[key] = sanitizeString(value);
     } else if (Array.isArray(value)) {
-      sanitized[key] = value.map((item) =>
+      sanitized[key] = value.map(item =>
         typeof item === "string"
           ? sanitizeString(item)
           : typeof item === "object" && item !== null
-          ? sanitizeObject(item)
-          : item
+            ? sanitizeObject(item)
+            : item
       );
     } else if (typeof value === "object" && value !== null) {
       sanitized[key] = sanitizeObject(value);
@@ -138,7 +139,7 @@ const sqlInjectionPatterns = [
 
 export function containsSqlInjection(input: string): boolean {
   if (typeof input !== "string") return false;
-  return sqlInjectionPatterns.some((pattern) => pattern.test(input));
+  return sqlInjectionPatterns.some(pattern => pattern.test(input));
 }
 
 export function sqlInjectionProtection(
@@ -160,9 +161,7 @@ export function sqlInjectionProtection(
   };
 
   const hasSqlInjection =
-    checkValue(req.body) ||
-    checkValue(req.query) ||
-    checkValue(req.params);
+    checkValue(req.body) || checkValue(req.query) || checkValue(req.params);
 
   if (hasSqlInjection) {
     console.warn("SQL injection attempt detected:", {
@@ -188,14 +187,10 @@ const xssPatterns = [
 
 export function containsXss(input: string): boolean {
   if (typeof input !== "string") return false;
-  return xssPatterns.some((pattern) => pattern.test(input));
+  return xssPatterns.some(pattern => pattern.test(input));
 }
 
-export function xssProtection(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export function xssProtection(req: Request, res: Response, next: NextFunction) {
   const checkValue = (value: any): boolean => {
     if (typeof value === "string") {
       return containsXss(value);
@@ -280,7 +275,7 @@ export function isStrongPassword(password: string): {
 export function generateCsrfToken(): string {
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
-  return Array.from(array, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return Array.from(array, byte => byte.toString(16).padStart(2, "0")).join("");
 }
 
 /**
@@ -356,7 +351,7 @@ export function logAuditEvent(entry: Omit<AuditLogEntry, "timestamp">): void {
 
 export function getAuditLogs(filter?: Partial<AuditLogEntry>): AuditLogEntry[] {
   if (!filter) return [...auditLogs];
-  return auditLogs.filter((log) => {
+  return auditLogs.filter(log => {
     for (const [key, value] of Object.entries(filter)) {
       if (log[key as keyof AuditLogEntry] !== value) {
         return false;

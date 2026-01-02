@@ -31,8 +31,8 @@ export function registerOAuthRoutes(app: Express) {
 
       await db.upsertUser({
         openId: userInfo.openId,
-        tenantId: 'default-tenant', // TODO: Implement proper tenant selection
-        role: userInfo.openId === ENV.ownerOpenId ? 'owner' : 'employee',
+        tenantId: "default-tenant", // TODO: Implement proper tenant selection
+        role: userInfo.openId === ENV.ownerOpenId ? "owner" : "employee",
         name: userInfo.name || null,
         email: userInfo.email ?? null,
         loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
@@ -45,7 +45,10 @@ export function registerOAuthRoutes(app: Express) {
       });
 
       const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      res.cookie(COOKIE_NAME, sessionToken, {
+        ...cookieOptions,
+        maxAge: ONE_YEAR_MS,
+      });
 
       res.redirect(302, "/");
     } catch (error) {

@@ -12,24 +12,28 @@ export function cn(...inputs: ClassValue[]) {
  * @param defaultValue - Default value to return if conversion fails (default: "0")
  * @returns Formatted string with specified decimal places
  */
-export function safeToFixed(value: any, decimals: number = 2, defaultValue: string = "0"): string {
+export function safeToFixed(
+  value: any,
+  decimals: number = 2,
+  defaultValue: string = "0"
+): string {
   // Check if value is already a number
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     // Check if it's NaN or Infinity
     if (isNaN(value) || !isFinite(value)) {
       return defaultValue;
     }
     return value.toFixed(decimals);
   }
-  
+
   // Try to parse the value
-  const parsed = typeof value === 'string' ? parseFloat(value) : Number(value);
-  
+  const parsed = typeof value === "string" ? parseFloat(value) : Number(value);
+
   // Check if parsing was successful and result is a valid number
-  if (typeof parsed === 'number' && !isNaN(parsed) && isFinite(parsed)) {
+  if (typeof parsed === "number" && !isNaN(parsed) && isFinite(parsed)) {
     return parsed.toFixed(decimals);
   }
-  
+
   // Return default value if conversion failed
   return defaultValue;
 }

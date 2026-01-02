@@ -29,18 +29,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { 
-  ArrowLeft, 
-  CreditCard, 
-  Plus, 
-  Edit, 
-  Trash2, 
+  ArrowLeft,
+  CreditCard,
+  Plus,
+  Edit,
+  Trash2,
   Loader2,
   Building2,
   Calendar,
@@ -50,7 +45,7 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  LogOut
+  LogOut,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -76,8 +71,15 @@ export default function SaasAdminSubscriptions() {
     isActive: true,
   });
 
-  const { data: plans, isLoading: plansLoading, refetch: refetchPlans } = trpc.saasAdmin.getSubscriptionPlans.useQuery();
-  const { data: tenants } = trpc.saasAdmin.listTenants.useQuery({ page: 1, pageSize: 1000 });
+  const {
+    data: plans,
+    isLoading: plansLoading,
+    refetch: refetchPlans,
+  } = trpc.saasAdmin.getSubscriptionPlans.useQuery();
+  const { data: tenants } = trpc.saasAdmin.listTenants.useQuery({
+    page: 1,
+    pageSize: 1000,
+  });
 
   // Mutations for creating and updating plans
   const createPlanMutation = trpc.saasAdmin.createSubscriptionPlan.useMutation({
@@ -87,7 +89,7 @@ export default function SaasAdminSubscriptions() {
       resetPlanForm();
       refetchPlans();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Feil: ${error.message}`);
     },
   });
@@ -98,7 +100,7 @@ export default function SaasAdminSubscriptions() {
       setEditPlanDialog({ open: false, plan: null });
       refetchPlans();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Feil: ${error.message}`);
     },
   });
@@ -108,7 +110,7 @@ export default function SaasAdminSubscriptions() {
       toast.success("Plan slettet!");
       refetchPlans();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Feil: ${error.message}`);
     },
   });
@@ -149,18 +151,23 @@ export default function SaasAdminSubscriptions() {
   const stats = {
     totalActive: tenants?.items.filter(t => t.status === "active").length || 0,
     totalTrial: tenants?.items.filter(t => t.status === "trial").length || 0,
-    totalSuspended: tenants?.items.filter(t => t.status === "suspended").length || 0,
-    totalCanceled: tenants?.items.filter(t => t.status === "canceled").length || 0,
-    monthlyRevenue: tenants?.items
-      .filter(t => t.status === "active" && t.planPriceMonthly)
-      .reduce((sum, t) => sum + (Number(t.planPriceMonthly) || 0), 0) || 0,
+    totalSuspended:
+      tenants?.items.filter(t => t.status === "suspended").length || 0,
+    totalCanceled:
+      tenants?.items.filter(t => t.status === "canceled").length || 0,
+    monthlyRevenue:
+      tenants?.items
+        .filter(t => t.status === "active" && t.planPriceMonthly)
+        .reduce((sum, t) => sum + (Number(t.planPriceMonthly) || 0), 0) || 0,
   };
 
   // Group tenants by plan
-  const tenantsByPlan = plans?.reduce((acc: any, plan: any) => {
-    acc[plan.id] = tenants?.items.filter(t => t.planName === plan.displayNameNo) || [];
-    return acc;
-  }, {}) || {};
+  const tenantsByPlan =
+    plans?.reduce((acc: any, plan: any) => {
+      acc[plan.id] =
+        tenants?.items.filter(t => t.planName === plan.displayNameNo) || [];
+      return acc;
+    }, {}) || {};
 
   const resetPlanForm = () => {
     setPlanForm({
@@ -218,7 +225,7 @@ export default function SaasAdminSubscriptions() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button 
+          <Button
             onClick={openNewPlan}
             className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
           >
@@ -296,7 +303,9 @@ export default function SaasAdminSubscriptions() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">MRR</p>
-              <p className="text-2xl font-bold">{stats.monthlyRevenue.toLocaleString("no-NO")} kr</p>
+              <p className="text-2xl font-bold">
+                {stats.monthlyRevenue.toLocaleString("no-NO")} kr
+              </p>
             </div>
           </div>
         </Card>
@@ -315,34 +324,52 @@ export default function SaasAdminSubscriptions() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {plans?.map((plan: any) => {
               const subscriberCount = tenantsByPlan[plan.id]?.length || 0;
-              const activeCount = tenantsByPlan[plan.id]?.filter((t: any) => t.status === "active").length || 0;
-              
+              const activeCount =
+                tenantsByPlan[plan.id]?.filter(
+                  (t: any) => t.status === "active"
+                ).length || 0;
+
               return (
                 <Card key={plan.id} className="p-6 border-0 shadow-lg">
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h3 className="text-xl font-bold">{plan.displayNameNo}</h3>
+                      <h3 className="text-xl font-bold">
+                        {plan.displayNameNo}
+                      </h3>
                       <p className="text-2xl font-bold text-primary mt-1">
-                        {plan.priceMonthly} kr<span className="text-sm font-normal text-muted-foreground">/mnd</span>
+                        {plan.priceMonthly} kr
+                        <span className="text-sm font-normal text-muted-foreground">
+                          /mnd
+                        </span>
                       </p>
                     </div>
-                    <Badge variant={plan.isActive !== false ? "default" : "secondary"}>
+                    <Badge
+                      variant={
+                        plan.isActive !== false ? "default" : "secondary"
+                      }
+                    >
                       {plan.isActive !== false ? "Aktiv" : "Inaktiv"}
                     </Badge>
                   </div>
-                  
+
                   <div className="space-y-2 text-sm text-muted-foreground mb-4">
                     <div className="flex justify-between">
                       <span>Maks ansatte:</span>
-                      <span className="font-medium text-foreground">{plan.maxEmployees || "Ubegrenset"}</span>
+                      <span className="font-medium text-foreground">
+                        {plan.maxEmployees || "Ubegrenset"}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Maks kunder:</span>
-                      <span className="font-medium text-foreground">{plan.maxCustomers || "Ubegrenset"}</span>
+                      <span className="font-medium text-foreground">
+                        {plan.maxCustomers || "Ubegrenset"}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Timer/mnd:</span>
-                      <span className="font-medium text-foreground">{plan.maxAppointmentsPerMonth || "Ubegrenset"}</span>
+                      <span className="font-medium text-foreground">
+                        {plan.maxAppointmentsPerMonth || "Ubegrenset"}
+                      </span>
                     </div>
                   </div>
 
@@ -351,10 +378,15 @@ export default function SaasAdminSubscriptions() {
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">
-                          <strong>{activeCount}</strong> aktive av {subscriberCount} totalt
+                          <strong>{activeCount}</strong> aktive av{" "}
+                          {subscriberCount} totalt
                         </span>
                       </div>
-                      <Button variant="outline" size="sm" onClick={() => openEditPlan(plan)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEditPlan(plan)}
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
                     </div>
@@ -392,22 +424,38 @@ export default function SaasAdminSubscriptions() {
                       <TableRow key={plan.id}>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{plan.displayNameNo}</div>
-                            <div className="text-xs text-muted-foreground">{plan.name}</div>
+                            <div className="font-medium">
+                              {plan.displayNameNo}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {plan.name}
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell>{plan.priceMonthly} kr</TableCell>
-                        <TableCell>{plan.priceYearly || plan.priceMonthly * 10} kr</TableCell>
+                        <TableCell>
+                          {plan.priceYearly || plan.priceMonthly * 10} kr
+                        </TableCell>
                         <TableCell>{plan.maxEmployees || "∞"}</TableCell>
                         <TableCell>{plan.maxCustomers || "∞"}</TableCell>
                         <TableCell>
-                          <Badge variant={plan.isActive !== false ? "default" : "secondary"}>
+                          <Badge
+                            variant={
+                              plan.isActive !== false ? "default" : "secondary"
+                            }
+                          >
                             {plan.isActive !== false ? "Aktiv" : "Inaktiv"}
                           </Badge>
                         </TableCell>
-                        <TableCell>{tenantsByPlan[plan.id]?.length || 0}</TableCell>
+                        <TableCell>
+                          {tenantsByPlan[plan.id]?.length || 0}
+                        </TableCell>
                         <TableCell className="text-right">
-                          <Button variant="outline" size="sm" onClick={() => openEditPlan(plan)}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditPlan(plan)}
+                          >
                             <Edit className="h-4 w-4 mr-1" />
                             Rediger
                           </Button>
@@ -439,30 +487,47 @@ export default function SaasAdminSubscriptions() {
                 <TableBody>
                   {tenants?.items
                     .filter(t => t.status === "active" || t.status === "trial")
-                    .map((tenant) => (
+                    .map(tenant => (
                       <TableRow key={tenant.id}>
                         <TableCell>
-                          <Link href={`/saas-admin/tenants/${tenant.id}`} className="hover:underline">
+                          <Link
+                            href={`/saas-admin/tenants/${tenant.id}`}
+                            className="hover:underline"
+                          >
                             <div className="font-medium">{tenant.name}</div>
-                            <div className="text-xs text-muted-foreground">{tenant.subdomain}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {tenant.subdomain}
+                            </div>
                           </Link>
                         </TableCell>
                         <TableCell>{tenant.planName || "Ingen plan"}</TableCell>
                         <TableCell>
-                          <Badge variant={tenant.status === "active" ? "default" : "secondary"}>
+                          <Badge
+                            variant={
+                              tenant.status === "active"
+                                ? "default"
+                                : "secondary"
+                            }
+                          >
                             {tenant.status === "active" ? "Aktiv" : "Prøve"}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-sm">
-                          {new Date(tenant.createdAt).toLocaleDateString("no-NO")}
+                          {new Date(tenant.createdAt).toLocaleDateString(
+                            "no-NO"
+                          )}
                         </TableCell>
                         <TableCell className="text-sm">
                           {tenant.status === "trial" && tenant.trialEndsAt
-                            ? new Date(tenant.trialEndsAt).toLocaleDateString("no-NO")
+                            ? new Date(tenant.trialEndsAt).toLocaleDateString(
+                                "no-NO"
+                              )
                             : "-"}
                         </TableCell>
                         <TableCell className="text-right font-medium">
-                          {tenant.planPriceMonthly ? `${tenant.planPriceMonthly} kr` : "-"}
+                          {tenant.planPriceMonthly
+                            ? `${tenant.planPriceMonthly} kr`
+                            : "-"}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -474,7 +539,10 @@ export default function SaasAdminSubscriptions() {
       </Tabs>
 
       {/* Edit Plan Dialog */}
-      <Dialog open={editPlanDialog.open} onOpenChange={(open) => setEditPlanDialog(prev => ({ ...prev, open }))}>
+      <Dialog
+        open={editPlanDialog.open}
+        onOpenChange={open => setEditPlanDialog(prev => ({ ...prev, open }))}
+      >
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Rediger plan</DialogTitle>
@@ -482,14 +550,16 @@ export default function SaasAdminSubscriptions() {
               Oppdater planens detaljer og begrensninger
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Navn (intern)</Label>
                 <Input
                   value={planForm.name}
-                  onChange={(e) => setPlanForm(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={e =>
+                    setPlanForm(prev => ({ ...prev, name: e.target.value }))
+                  }
                   placeholder="basic"
                 />
               </div>
@@ -497,7 +567,12 @@ export default function SaasAdminSubscriptions() {
                 <Label>Visningsnavn (NO)</Label>
                 <Input
                   value={planForm.displayNameNo}
-                  onChange={(e) => setPlanForm(prev => ({ ...prev, displayNameNo: e.target.value }))}
+                  onChange={e =>
+                    setPlanForm(prev => ({
+                      ...prev,
+                      displayNameNo: e.target.value,
+                    }))
+                  }
                   placeholder="Basis"
                 />
               </div>
@@ -509,7 +584,12 @@ export default function SaasAdminSubscriptions() {
                 <Input
                   type="number"
                   value={planForm.priceMonthly}
-                  onChange={(e) => setPlanForm(prev => ({ ...prev, priceMonthly: parseInt(e.target.value) || 0 }))}
+                  onChange={e =>
+                    setPlanForm(prev => ({
+                      ...prev,
+                      priceMonthly: parseInt(e.target.value) || 0,
+                    }))
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -517,7 +597,12 @@ export default function SaasAdminSubscriptions() {
                 <Input
                   type="number"
                   value={planForm.priceYearly}
-                  onChange={(e) => setPlanForm(prev => ({ ...prev, priceYearly: parseInt(e.target.value) || 0 }))}
+                  onChange={e =>
+                    setPlanForm(prev => ({
+                      ...prev,
+                      priceYearly: parseInt(e.target.value) || 0,
+                    }))
+                  }
                 />
               </div>
             </div>
@@ -528,7 +613,12 @@ export default function SaasAdminSubscriptions() {
                 <Input
                   type="number"
                   value={planForm.maxEmployees}
-                  onChange={(e) => setPlanForm(prev => ({ ...prev, maxEmployees: parseInt(e.target.value) || 0 }))}
+                  onChange={e =>
+                    setPlanForm(prev => ({
+                      ...prev,
+                      maxEmployees: parseInt(e.target.value) || 0,
+                    }))
+                  }
                   placeholder="0 = ubegrenset"
                 />
               </div>
@@ -537,7 +627,12 @@ export default function SaasAdminSubscriptions() {
                 <Input
                   type="number"
                   value={planForm.maxCustomers}
-                  onChange={(e) => setPlanForm(prev => ({ ...prev, maxCustomers: parseInt(e.target.value) || 0 }))}
+                  onChange={e =>
+                    setPlanForm(prev => ({
+                      ...prev,
+                      maxCustomers: parseInt(e.target.value) || 0,
+                    }))
+                  }
                   placeholder="0 = ubegrenset"
                 />
               </div>
@@ -546,7 +641,12 @@ export default function SaasAdminSubscriptions() {
                 <Input
                   type="number"
                   value={planForm.maxAppointmentsPerMonth}
-                  onChange={(e) => setPlanForm(prev => ({ ...prev, maxAppointmentsPerMonth: parseInt(e.target.value) || 0 }))}
+                  onChange={e =>
+                    setPlanForm(prev => ({
+                      ...prev,
+                      maxAppointmentsPerMonth: parseInt(e.target.value) || 0,
+                    }))
+                  }
                   placeholder="0 = ubegrenset"
                 />
               </div>
@@ -556,23 +656,31 @@ export default function SaasAdminSubscriptions() {
               <Label>Funksjoner (kommaseparert)</Label>
               <Input
                 value={planForm.features}
-                onChange={(e) => setPlanForm(prev => ({ ...prev, features: e.target.value }))}
+                onChange={e =>
+                  setPlanForm(prev => ({ ...prev, features: e.target.value }))
+                }
                 placeholder="Online booking, SMS påminnelser, Rapporter"
               />
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditPlanDialog({ open: false, plan: null })}>
+            <Button
+              variant="outline"
+              onClick={() => setEditPlanDialog({ open: false, plan: null })}
+            >
               Avbryt
             </Button>
-            <Button 
+            <Button
               className="bg-gradient-to-r from-blue-600 to-purple-600"
               onClick={handleUpdatePlan}
               disabled={updatePlanMutation.isPending}
             >
               {updatePlanMutation.isPending ? (
-                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Lagrer...</>
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Lagrer...
+                </>
               ) : (
                 "Lagre endringer"
               )}
@@ -590,14 +698,16 @@ export default function SaasAdminSubscriptions() {
               Legg til en ny abonnementsplan
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Navn (intern)</Label>
                 <Input
                   value={planForm.name}
-                  onChange={(e) => setPlanForm(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={e =>
+                    setPlanForm(prev => ({ ...prev, name: e.target.value }))
+                  }
                   placeholder="premium"
                 />
               </div>
@@ -605,7 +715,12 @@ export default function SaasAdminSubscriptions() {
                 <Label>Visningsnavn (NO)</Label>
                 <Input
                   value={planForm.displayNameNo}
-                  onChange={(e) => setPlanForm(prev => ({ ...prev, displayNameNo: e.target.value }))}
+                  onChange={e =>
+                    setPlanForm(prev => ({
+                      ...prev,
+                      displayNameNo: e.target.value,
+                    }))
+                  }
                   placeholder="Premium"
                 />
               </div>
@@ -617,7 +732,12 @@ export default function SaasAdminSubscriptions() {
                 <Input
                   type="number"
                   value={planForm.priceMonthly}
-                  onChange={(e) => setPlanForm(prev => ({ ...prev, priceMonthly: parseInt(e.target.value) || 0 }))}
+                  onChange={e =>
+                    setPlanForm(prev => ({
+                      ...prev,
+                      priceMonthly: parseInt(e.target.value) || 0,
+                    }))
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -625,7 +745,12 @@ export default function SaasAdminSubscriptions() {
                 <Input
                   type="number"
                   value={planForm.priceYearly}
-                  onChange={(e) => setPlanForm(prev => ({ ...prev, priceYearly: parseInt(e.target.value) || 0 }))}
+                  onChange={e =>
+                    setPlanForm(prev => ({
+                      ...prev,
+                      priceYearly: parseInt(e.target.value) || 0,
+                    }))
+                  }
                 />
               </div>
             </div>
@@ -636,7 +761,12 @@ export default function SaasAdminSubscriptions() {
                 <Input
                   type="number"
                   value={planForm.maxEmployees}
-                  onChange={(e) => setPlanForm(prev => ({ ...prev, maxEmployees: parseInt(e.target.value) || 0 }))}
+                  onChange={e =>
+                    setPlanForm(prev => ({
+                      ...prev,
+                      maxEmployees: parseInt(e.target.value) || 0,
+                    }))
+                  }
                   placeholder="0 = ubegrenset"
                 />
               </div>
@@ -645,7 +775,12 @@ export default function SaasAdminSubscriptions() {
                 <Input
                   type="number"
                   value={planForm.maxCustomers}
-                  onChange={(e) => setPlanForm(prev => ({ ...prev, maxCustomers: parseInt(e.target.value) || 0 }))}
+                  onChange={e =>
+                    setPlanForm(prev => ({
+                      ...prev,
+                      maxCustomers: parseInt(e.target.value) || 0,
+                    }))
+                  }
                   placeholder="0 = ubegrenset"
                 />
               </div>
@@ -654,7 +789,12 @@ export default function SaasAdminSubscriptions() {
                 <Input
                   type="number"
                   value={planForm.maxAppointmentsPerMonth}
-                  onChange={(e) => setPlanForm(prev => ({ ...prev, maxAppointmentsPerMonth: parseInt(e.target.value) || 0 }))}
+                  onChange={e =>
+                    setPlanForm(prev => ({
+                      ...prev,
+                      maxAppointmentsPerMonth: parseInt(e.target.value) || 0,
+                    }))
+                  }
                   placeholder="0 = ubegrenset"
                 />
               </div>
@@ -664,7 +804,9 @@ export default function SaasAdminSubscriptions() {
               <Label>Funksjoner (kommaseparert)</Label>
               <Input
                 value={planForm.features}
-                onChange={(e) => setPlanForm(prev => ({ ...prev, features: e.target.value }))}
+                onChange={e =>
+                  setPlanForm(prev => ({ ...prev, features: e.target.value }))
+                }
                 placeholder="Online booking, SMS påminnelser, Rapporter"
               />
             </div>
@@ -674,13 +816,20 @@ export default function SaasAdminSubscriptions() {
             <Button variant="outline" onClick={() => setNewPlanDialog(false)}>
               Avbryt
             </Button>
-            <Button 
+            <Button
               className="bg-gradient-to-r from-blue-600 to-purple-600"
               onClick={handleCreatePlan}
-              disabled={createPlanMutation.isPending || !planForm.name || !planForm.displayNameNo}
+              disabled={
+                createPlanMutation.isPending ||
+                !planForm.name ||
+                !planForm.displayNameNo
+              }
             >
               {createPlanMutation.isPending ? (
-                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Oppretter...</>
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Oppretter...
+                </>
               ) : (
                 "Opprett plan"
               )}

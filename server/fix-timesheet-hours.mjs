@@ -3,17 +3,17 @@
  * Run with: node server/fix-timesheet-hours.mjs
  */
 
-import mysql from 'mysql2/promise';
+import mysql from "mysql2/promise";
 
 async function fixTimesheetHours() {
   // Create database connection
   const connection = await mysql.createConnection(process.env.DATABASE_URL);
 
-  console.log('🔍 Fetching all timesheets with clockOut...');
+  console.log("🔍 Fetching all timesheets with clockOut...");
 
   // Get all timesheets that have both clockIn and clockOut
   const [timesheets] = await connection.execute(
-    'SELECT id, employeeId, workDate, clockIn, clockOut, totalHours FROM timesheets WHERE clockOut IS NOT NULL'
+    "SELECT id, employeeId, workDate, clockIn, clockOut, totalHours FROM timesheets WHERE clockOut IS NOT NULL"
   );
 
   console.log(`📊 Found ${timesheets.length} timesheets to process`);
@@ -32,7 +32,7 @@ async function fixTimesheetHours() {
       const newTotalHours = hours.toFixed(2);
 
       // Check if current value is different
-      const currentHours = parseFloat(timesheet.totalHours || '0');
+      const currentHours = parseFloat(timesheet.totalHours || "0");
       const calculatedHours = parseFloat(newTotalHours);
 
       if (Math.abs(currentHours - calculatedHours) > 0.01) {
@@ -46,14 +46,17 @@ async function fixTimesheetHours() {
 
         // Update the timesheet
         await connection.execute(
-          'UPDATE timesheets SET totalHours = ? WHERE id = ?',
+          "UPDATE timesheets SET totalHours = ? WHERE id = ?",
           [newTotalHours, timesheet.id]
         );
 
         fixed++;
       }
     } catch (error) {
-      console.error(`❌ Error processing timesheet #${timesheet.id}:`, error.message);
+      console.error(
+        `❌ Error processing timesheet #${timesheet.id}:`,
+        error.message
+      );
       errors++;
     }
   }
@@ -69,10 +72,10 @@ async function fixTimesheetHours() {
 // Run the script
 fixTimesheetHours()
   .then(() => {
-    console.log('\n🎉 Script finished successfully');
+    console.log("\n🎉 Script finished successfully");
     process.exit(0);
   })
-  .catch((error) => {
-    console.error('\n💥 Script failed:', error);
+  .catch(error => {
+    console.error("\n💥 Script failed:", error);
     process.exit(1);
   });

@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,7 +14,9 @@ import { Link } from "wouter";
 
 export default function Demo() {
   const [, setLocation] = useLocation();
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    "loading"
+  );
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -29,7 +37,7 @@ export default function Demo() {
         }
 
         setStatus("success");
-        
+
         // Redirect to dashboard after a short delay
         setTimeout(() => {
           setLocation("/dashboard");
@@ -59,23 +67,25 @@ export default function Demo() {
               {status === "error" && "Noe gikk galt"}
             </CardTitle>
             <CardDescription className="text-center">
-              {status === "loading" && "Vennligst vent mens vi setter opp demo-kontoen"}
+              {status === "loading" &&
+                "Vennligst vent mens vi setter opp demo-kontoen"}
               {status === "success" && "Du blir nå videresendt til dashboardet"}
-              {status === "error" && "Vi kunne ikke logge deg inn på demo-kontoen"}
+              {status === "error" &&
+                "Vi kunne ikke logge deg inn på demo-kontoen"}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center py-8">
             {status === "loading" && (
               <Loader2 className="w-16 h-16 text-primary animate-spin" />
             )}
-            
+
             {status === "success" && (
               <div className="text-center">
                 <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
                 <p className="text-slate-600">Omdirigerer til dashboard...</p>
               </div>
             )}
-            
+
             {status === "error" && (
               <div className="text-center space-y-4">
                 <XCircle className="w-16 h-16 text-red-500 mx-auto" />
@@ -87,9 +97,7 @@ export default function Demo() {
                     Prøv igjen
                   </Button>
                   <Link href="/login">
-                    <Button variant="outline">
-                      Logg inn manuelt
-                    </Button>
+                    <Button variant="outline">Logg inn manuelt</Button>
                   </Link>
                 </div>
               </div>
@@ -98,7 +106,9 @@ export default function Demo() {
         </Card>
 
         <div className="mt-8 text-center">
-          <h3 className="font-semibold text-slate-900 mb-2">Demo-konto inneholder:</h3>
+          <h3 className="font-semibold text-slate-900 mb-2">
+            Demo-konto inneholder:
+          </h3>
           <ul className="text-sm text-slate-600 space-y-1">
             <li>✓ Demo Barbershop salong</li>
             <li>✓ 2 ansatte (Lars Olsen, Kari Hansen)</li>

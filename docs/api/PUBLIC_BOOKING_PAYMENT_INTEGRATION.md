@@ -15,6 +15,7 @@ This document explains how to integrate the public booking flow with Stripe paym
 Added new mutation: `publicBooking.createBookingAndStartPayment`
 
 **What it does:**
+
 1. Creates the appointment (status: `"pending"`)
 2. Creates or reuses customer based on phone number
 3. Creates a Stripe Checkout Session
@@ -22,6 +23,7 @@ Added new mutation: `publicBooking.createBookingAndStartPayment`
 5. Returns checkout URL for frontend redirect
 
 **When payment completes:**
+
 - Stripe webhook updates payment status to `"completed"`
 - Webhook updates appointment status to `"confirmed"`
 
@@ -30,6 +32,7 @@ Added new mutation: `publicBooking.createBookingAndStartPayment`
 **File:** `server/publicBookingPayment.test.ts` (NEW)
 
 5 comprehensive tests covering:
+
 1. ✅ Create booking and return checkout URL
 2. ✅ Create new customer if phone doesn't exist
 3. ✅ Reuse existing customer if phone matches
@@ -45,7 +48,7 @@ All tests pass successfully.
 ### Endpoint
 
 ```typescript
-trpc.publicBooking.createBookingAndStartPayment.useMutation()
+trpc.publicBooking.createBookingAndStartPayment.useMutation();
 ```
 
 ### Input Schema
@@ -72,12 +75,12 @@ trpc.publicBooking.createBookingAndStartPayment.useMutation()
 
 ```typescript
 {
-  success: boolean;           // Always true on success
-  appointmentId: number;      // Created appointment ID
-  customerId: number;         // Customer ID (created or existing)
-  checkoutUrl: string;        // Stripe Checkout URL (redirect here)
-  paymentId: number;          // Payment record ID
-  sessionId: string;          // Stripe session ID (cs_xxx)
+  success: boolean; // Always true on success
+  appointmentId: number; // Created appointment ID
+  customerId: number; // Customer ID (created or existing)
+  checkoutUrl: string; // Stripe Checkout URL (redirect here)
+  paymentId: number; // Payment record ID
+  sessionId: string; // Stripe session ID (cs_xxx)
 }
 ```
 
@@ -328,6 +331,7 @@ The endpoint enforces multi-tenant isolation at multiple levels:
 4. **Stripe metadata** - Includes `tenantId` for webhook verification
 
 **Cross-tenant attacks are impossible** because:
+
 - Each tenant's data is isolated by `tenantId`
 - Webhook verifies `tenantId` matches before updating records
 - Database queries enforce tenant boundaries
@@ -339,6 +343,7 @@ The endpoint enforces multi-tenant isolation at multiple levels:
 ### Common Errors
 
 **Service not found**
+
 ```typescript
 {
   code: "NOT_FOUND",
@@ -347,6 +352,7 @@ The endpoint enforces multi-tenant isolation at multiple levels:
 ```
 
 **Database unavailable**
+
 ```typescript
 {
   code: "INTERNAL_SERVER_ERROR",
@@ -355,6 +361,7 @@ The endpoint enforces multi-tenant isolation at multiple levels:
 ```
 
 **Invalid service price**
+
 ```typescript
 {
   code: "PRECONDITION_FAILED",
@@ -365,17 +372,18 @@ The endpoint enforces multi-tenant isolation at multiple levels:
 ### Frontend Error Handling
 
 ```typescript
-const createBookingAndPay = trpc.publicBooking.createBookingAndStartPayment.useMutation({
-  onError: (error) => {
-    if (error.data?.code === "NOT_FOUND") {
-      toast.error("Service not found. Please select a valid service.");
-    } else if (error.data?.code === "PRECONDITION_FAILED") {
-      toast.error("Invalid service configuration. Please contact support.");
-    } else {
-      toast.error("Booking failed. Please try again.");
-    }
-  },
-});
+const createBookingAndPay =
+  trpc.publicBooking.createBookingAndStartPayment.useMutation({
+    onError: error => {
+      if (error.data?.code === "NOT_FOUND") {
+        toast.error("Service not found. Please select a valid service.");
+      } else if (error.data?.code === "PRECONDITION_FAILED") {
+        toast.error("Invalid service configuration. Please contact support.");
+      } else {
+        toast.error("Booking failed. Please try again.");
+      }
+    },
+  });
 ```
 
 ---
@@ -399,22 +407,24 @@ pnpm test server/publicBookingPayment.test.ts
 ### Manual Testing
 
 1. **Create a booking:**
+
    ```typescript
-   const result = await trpc.publicBooking.createBookingAndStartPayment.mutateAsync({
-     tenantId: "your-tenant-id",
-     serviceId: 1,
-     employeeId: 1,
-     date: "2025-12-25",
-     time: "14:00",
-     customerInfo: {
-       firstName: "Test",
-       lastName: "Customer",
-       phone: "+4712345678",
-       email: "test@example.com",
-     },
-     successUrl: "http://localhost:3000/booking/success",
-     cancelUrl: "http://localhost:3000/booking/cancel",
-   });
+   const result =
+     await trpc.publicBooking.createBookingAndStartPayment.mutateAsync({
+       tenantId: "your-tenant-id",
+       serviceId: 1,
+       employeeId: 1,
+       date: "2025-12-25",
+       time: "14:00",
+       customerInfo: {
+         firstName: "Test",
+         lastName: "Customer",
+         phone: "+4712345678",
+         email: "test@example.com",
+       },
+       successUrl: "http://localhost:3000/booking/success",
+       cancelUrl: "http://localhost:3000/booking/cancel",
+     });
    ```
 
 2. **Verify response:**
@@ -436,14 +446,14 @@ pnpm test server/publicBookingPayment.test.ts
 
 ## Comparison: Option A vs Option B
 
-| Feature | Option A (Combined) | Option B (Two-Step) |
-|---------|---------------------|---------------------|
-| **API calls** | 1 mutation | 2 mutations |
-| **Atomicity** | ✅ Single transaction | ⚠️ Two separate calls |
-| **Error handling** | ✅ Simpler | ⚠️ More complex |
-| **Code complexity** | ✅ Less code | ⚠️ More code |
-| **Flexibility** | ⚠️ Less flexible | ✅ More control |
-| **Recommended** | ✅ Yes | ⚠️ Only if needed |
+| Feature             | Option A (Combined)   | Option B (Two-Step)   |
+| ------------------- | --------------------- | --------------------- |
+| **API calls**       | 1 mutation            | 2 mutations           |
+| **Atomicity**       | ✅ Single transaction | ⚠️ Two separate calls |
+| **Error handling**  | ✅ Simpler            | ⚠️ More complex       |
+| **Code complexity** | ✅ Less code          | ⚠️ More code          |
+| **Flexibility**     | ⚠️ Less flexible      | ✅ More control       |
+| **Recommended**     | ✅ Yes                | ⚠️ Only if needed     |
 
 **Recommendation:** Use Option A (combined endpoint) unless you have specific requirements for separating booking and payment logic.
 
@@ -454,11 +464,13 @@ pnpm test server/publicBookingPayment.test.ts
 The original `publicBooking.createBooking` endpoint **still works** without payment.
 
 **Use cases:**
+
 - Tenants who don't require prepayment
 - Walk-in appointments booked by staff
 - Free services or consultations
 
 **Example:**
+
 ```typescript
 // Original endpoint (no payment)
 const result = await trpc.publicBooking.createBooking.mutateAsync({
@@ -497,11 +509,11 @@ const result = await trpc.publicBooking.createBooking.mutateAsync({
 
 ## Files Created/Modified
 
-| File | Status | Purpose |
-|------|--------|---------|
-| `server/routers.ts` | MODIFIED | Added `createBookingAndStartPayment` mutation |
-| `server/publicBookingPayment.test.ts` | NEW | Comprehensive test suite (5 tests) |
-| `PUBLIC_BOOKING_PAYMENT_INTEGRATION.md` | NEW | This documentation |
+| File                                    | Status   | Purpose                                       |
+| --------------------------------------- | -------- | --------------------------------------------- |
+| `server/routers.ts`                     | MODIFIED | Added `createBookingAndStartPayment` mutation |
+| `server/publicBookingPayment.test.ts`   | NEW      | Comprehensive test suite (5 tests)            |
+| `PUBLIC_BOOKING_PAYMENT_INTEGRATION.md` | NEW      | This documentation                            |
 
 ---
 
@@ -509,14 +521,16 @@ const result = await trpc.publicBooking.createBooking.mutateAsync({
 
 **Stripe Dashboard:** https://dashboard.stripe.com  
 **Webhook Configuration:** See `STRIPE_WEBHOOK_SETUP.md`  
-**Payment System Docs:** See `STRIPE_CHECKOUT_INTEGRATION.md`  
+**Payment System Docs:** See `STRIPE_CHECKOUT_INTEGRATION.md`
 
 **Test the endpoint:**
+
 ```bash
 pnpm test server/publicBookingPayment.test.ts
 ```
 
 **Check server logs:**
+
 ```bash
 # Look for these entries:
 [Stripe Webhook] Verified event: checkout.session.completed

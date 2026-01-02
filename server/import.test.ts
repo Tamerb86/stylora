@@ -1,7 +1,18 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { importCustomersFromFile, importServicesFromFile, importProductsFromFile, listImports } from "./import";
+import {
+  importCustomersFromFile,
+  importServicesFromFile,
+  importProductsFromFile,
+  listImports,
+} from "./import";
 import { getDb } from "./db";
-import { tenants, users, customers, services, products } from "../drizzle/schema";
+import {
+  tenants,
+  users,
+  customers,
+  services,
+  products,
+} from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import * as XLSX from "xlsx";
@@ -36,7 +47,9 @@ describe("Data Import System", () => {
       isActive: true,
     });
 
-    const insertedId = Array.isArray(userResult) ? userResult[0]?.insertId : (userResult as any).insertId;
+    const insertedId = Array.isArray(userResult)
+      ? userResult[0]?.insertId
+      : (userResult as any).insertId;
     testUserId = Number(insertedId);
   });
 
@@ -59,8 +72,20 @@ describe("Data Import System", () => {
   it("should import customers from CSV file", async () => {
     // Create CSV data
     const csvData = [
-      { firstName: "Ola", lastName: "Nordmann", phone: "12345678", email: "ola@test.com", notes: "Test customer" },
-      { firstName: "Kari", lastName: "Hansen", phone: "87654321", email: "kari@test.com", notes: "" },
+      {
+        firstName: "Ola",
+        lastName: "Nordmann",
+        phone: "12345678",
+        email: "ola@test.com",
+        notes: "Test customer",
+      },
+      {
+        firstName: "Kari",
+        lastName: "Hansen",
+        phone: "87654321",
+        email: "kari@test.com",
+        notes: "",
+      },
     ];
 
     // Convert to Excel buffer
@@ -97,8 +122,18 @@ describe("Data Import System", () => {
   it("should import services from Excel file", async () => {
     // Create Excel data
     const serviceData = [
-      { name: "Herreklipp", description: "Standard herreklipp", price: 350, duration: 30 },
-      { name: "Dameklipp", description: "Standard dameklipp", price: 450, duration: 45 },
+      {
+        name: "Herreklipp",
+        description: "Standard herreklipp",
+        price: 350,
+        duration: 30,
+      },
+      {
+        name: "Dameklipp",
+        description: "Standard dameklipp",
+        price: 450,
+        duration: 45,
+      },
     ];
 
     // Convert to Excel buffer
@@ -135,8 +170,24 @@ describe("Data Import System", () => {
   it("should import products from Excel file", async () => {
     // Create Excel data
     const productData = [
-      { name: "Shampoo", description: "Profesjonell shampoo", price: 150, costPrice: 75, stock: 50, lowStockThreshold: 10, sku: "SH001" },
-      { name: "Voks", description: "Stylingvoks", price: 120, costPrice: 60, stock: 30, lowStockThreshold: 5, sku: "WX001" },
+      {
+        name: "Shampoo",
+        description: "Profesjonell shampoo",
+        price: 150,
+        costPrice: 75,
+        stock: 50,
+        lowStockThreshold: 10,
+        sku: "SH001",
+      },
+      {
+        name: "Voks",
+        description: "Stylingvoks",
+        price: 120,
+        costPrice: 60,
+        stock: 30,
+        lowStockThreshold: 5,
+        sku: "WX001",
+      },
     ];
 
     // Convert to Excel buffer
@@ -173,7 +224,12 @@ describe("Data Import System", () => {
   it("should handle duplicate customers gracefully", async () => {
     // Create CSV with duplicate phone number
     const csvData = [
-      { firstName: "Duplicate", lastName: "User", phone: "12345678", email: "dup@test.com" }, // Same phone as first test
+      {
+        firstName: "Duplicate",
+        lastName: "User",
+        phone: "12345678",
+        email: "dup@test.com",
+      }, // Same phone as first test
     ];
 
     const worksheet = XLSX.utils.json_to_sheet(csvData);
@@ -226,7 +282,7 @@ describe("Data Import System", () => {
 
     expect(Array.isArray(imports)).toBe(true);
     expect(imports.length).toBeGreaterThan(0);
-    
+
     // Check that all imports belong to this tenant
     imports.forEach(imp => {
       expect(imp.tenantId).toBe(testTenantId);

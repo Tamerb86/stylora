@@ -3,15 +3,24 @@ import { useLocation, useRouter } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function StripeCallback() {
   const [, setLocation] = useLocation();
   const router = useRouter();
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    "loading"
+  );
   const [errorMessage, setErrorMessage] = useState("");
 
-  const handleCallbackMutation = trpc.stripeConnect.handleCallback.useMutation();
+  const handleCallbackMutation =
+    trpc.stripeConnect.handleCallback.useMutation();
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -161,10 +170,7 @@ export default function StripeCallback() {
             >
               Tilbake til innstillinger
             </Button>
-            <Button
-              onClick={() => window.location.reload()}
-              className="flex-1"
-            >
+            <Button onClick={() => window.location.reload()} className="flex-1">
               Prøv igjen
             </Button>
           </div>

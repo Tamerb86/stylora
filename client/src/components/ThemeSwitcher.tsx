@@ -10,9 +10,9 @@ export function ThemeSwitcher() {
   }
 
   return (
-    <Button 
-      variant="ghost" 
-      size="icon" 
+    <Button
+      variant="ghost"
+      size="icon"
       className="h-9 w-9"
       onClick={toggleTheme}
     >

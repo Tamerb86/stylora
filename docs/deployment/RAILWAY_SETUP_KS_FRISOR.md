@@ -51,12 +51,14 @@ railway link
 ### الخطوات:
 
 1. **رفع الملف إلى Railway**
+
    ```bash
    # من مجلد المشروع
    railway up seed-ks-frisor.mjs
    ```
 
 2. **تشغيل Script**
+
    ```bash
    railway run node seed-ks-frisor.mjs
    ```
@@ -72,18 +74,21 @@ railway link
 بعد التنفيذ، جرب:
 
 ### 1. الدخول إلى Admin Dashboard
+
 ```
 URL: https://www.stylora.no
 Email: khaled@ksfrisor.no
 ```
 
 ### 2. صفحة الحجز العامة
+
 ```
 Development: https://www.stylora.no/book?tenantId=ks-frisor-tenant
 Production: https://ks-frisor.stylora.no/book (إذا تم ربط subdomain)
 ```
 
 ### 3. التحقق من Database
+
 ```sql
 -- في Railway MySQL Query tab
 SELECT * FROM tenants WHERE id = 'ks-frisor-tenant';
@@ -96,16 +101,19 @@ SELECT * FROM users WHERE tenantId = 'ks-frisor-tenant';
 ## 🔧 استكشاف الأخطاء
 
 ### خطأ: Duplicate Entry
+
 ```
 ERROR 1062 (23000): Duplicate entry '...' for key 'tenants.PRIMARY'
 ```
 
 **الحل:** K S Frisør موجود مسبقاً! تحقق من البيانات:
+
 ```sql
 SELECT * FROM tenants WHERE subdomain = 'ks-frisor';
 ```
 
 ### خطأ: Unknown Column
+
 ```
 ERROR 1054 (42S22): Unknown column 'categoryId' in 'field list'
 ```
@@ -113,11 +121,13 @@ ERROR 1054 (42S22): Unknown column 'categoryId' in 'field list'
 **الحل:** احذف الأسطر المتعلقة بـ `serviceCategories` من SQL file.
 
 ### خطأ: DATABASE_URL not set
+
 ```
 ❌ ERROR: DATABASE_URL environment variable is not set!
 ```
 
 **الحل:** استخدم `railway run` بدلاً من `node` مباشرة:
+
 ```bash
 railway run node seed-ks-frisor.mjs
 ```
@@ -127,6 +137,7 @@ railway run node seed-ks-frisor.mjs
 ## 📊 البيانات المضافة
 
 ### Tenant
+
 - **ID:** `ks-frisor-tenant`
 - **Name:** K S Frisør
 - **Subdomain:** `ks-frisor`
@@ -135,16 +146,17 @@ railway run node seed-ks-frisor.mjs
 - **Email:** khaled@ksfrisor.no
 
 ### Users
+
 1. **Owner (Admin)**
    - Email: khaled@ksfrisor.no
    - Role: admin
-   
 2. **Employee**
    - Name: Khaled
    - Email: khaled.employee@ksfrisor.no
    - Role: employee
 
 ### Services
+
 1. **Herreklipp** - 30 min - 450 kr
 2. **Dameklipp** - 45 min - 650 kr
 3. **Skjeggstell** - 20 min - 300 kr
@@ -152,6 +164,7 @@ railway run node seed-ks-frisor.mjs
 5. **Permanent** - 120 min - 1500 kr
 
 ### Working Hours
+
 - **Monday - Friday:** 09:00 - 17:00
 - **Saturday - Sunday:** Closed
 
@@ -189,6 +202,7 @@ railway run node seed-ks-frisor.mjs
 ## 📞 الدعم
 
 إذا واجهت مشاكل:
+
 1. تحقق من Railway Logs
 2. نفذ verification queries
 3. اتصل بالدعم الفني

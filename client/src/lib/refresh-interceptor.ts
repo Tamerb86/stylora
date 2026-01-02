@@ -19,7 +19,7 @@ function subscribeTokenRefresh(callback: () => void) {
  * Notify all subscribers that token has been refreshed
  */
 function onRefreshed() {
-  refreshSubscribers.forEach((callback) => callback());
+  refreshSubscribers.forEach(callback => callback());
   refreshSubscribers = [];
 }
 
@@ -83,7 +83,7 @@ export async function fetchWithRefresh(
 
         // Redirect to login
         toast.error("Din økt har utløpt. Vennligst logg inn på nytt.");
-        
+
         // Wait a bit before redirecting to show toast
         setTimeout(() => {
           window.location.href = "/login";
@@ -93,7 +93,7 @@ export async function fetchWithRefresh(
       }
     } else {
       // Wait for ongoing refresh to complete
-      await new Promise<void>((resolve) => {
+      await new Promise<void>(resolve => {
         subscribeTokenRefresh(() => {
           resolve();
         });

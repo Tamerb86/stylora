@@ -31,19 +31,36 @@ describe("Analytics API", () => {
     }
 
     // Clean up test data
-    const { customers, appointments, users, services, appointmentServices } = await import("../drizzle/schema");
+    const { customers, appointments, users, services, appointmentServices } =
+      await import("../drizzle/schema");
     const { eq } = await import("drizzle-orm");
 
     // appointmentServices doesn't have tenantId, delete via appointments join
-    const appointmentIds = await dbInstance.select({ id: appointments.id }).from(appointments).where(eq(appointments.tenantId, mockContext.tenantId));
+    const appointmentIds = await dbInstance
+      .select({ id: appointments.id })
+      .from(appointments)
+      .where(eq(appointments.tenantId, mockContext.tenantId));
     if (appointmentIds.length > 0) {
       const { inArray } = await import("drizzle-orm");
-      await dbInstance.delete(appointmentServices).where(inArray(appointmentServices.appointmentId, appointmentIds.map(a => a.id)));
+      await dbInstance.delete(appointmentServices).where(
+        inArray(
+          appointmentServices.appointmentId,
+          appointmentIds.map(a => a.id)
+        )
+      );
     }
-    await dbInstance.delete(appointments).where(eq(appointments.tenantId, mockContext.tenantId));
-    await dbInstance.delete(customers).where(eq(customers.tenantId, mockContext.tenantId));
-    await dbInstance.delete(services).where(eq(services.tenantId, mockContext.tenantId));
-    await dbInstance.delete(users).where(eq(users.tenantId, mockContext.tenantId));
+    await dbInstance
+      .delete(appointments)
+      .where(eq(appointments.tenantId, mockContext.tenantId));
+    await dbInstance
+      .delete(customers)
+      .where(eq(customers.tenantId, mockContext.tenantId));
+    await dbInstance
+      .delete(services)
+      .where(eq(services.tenantId, mockContext.tenantId));
+    await dbInstance
+      .delete(users)
+      .where(eq(users.tenantId, mockContext.tenantId));
   });
 
   describe("customerGrowth", () => {
@@ -108,7 +125,8 @@ describe("Analytics API", () => {
       const dbInstance = await db.getDb();
       if (!dbInstance) throw new Error("Database not available");
 
-      const { appointments, users, services, appointmentServices, customers } = await import("../drizzle/schema");
+      const { appointments, users, services, appointmentServices, customers } =
+        await import("../drizzle/schema");
 
       // Create test employee
       await dbInstance.insert(users).values({
@@ -137,9 +155,15 @@ describe("Analytics API", () => {
       });
 
       // Create completed appointment
-      const [custResult] = await dbInstance.select({ id: customers.id }).from(customers).where(eq(customers.tenantId, mockContext.tenantId));
-      const [empResult] = await dbInstance.select({ id: users.id }).from(users).where(eq(users.tenantId, mockContext.tenantId));
-      
+      const [custResult] = await dbInstance
+        .select({ id: customers.id })
+        .from(customers)
+        .where(eq(customers.tenantId, mockContext.tenantId));
+      const [empResult] = await dbInstance
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.tenantId, mockContext.tenantId));
+
       await dbInstance.insert(appointments).values({
         tenantId: mockContext.tenantId,
         customerId: custResult.id,
@@ -150,9 +174,15 @@ describe("Analytics API", () => {
         status: "completed",
       });
 
-      const [appResult] = await dbInstance.select({ id: appointments.id }).from(appointments).where(eq(appointments.tenantId, mockContext.tenantId));
-      const [svcResult] = await dbInstance.select({ id: services.id }).from(services).where(eq(services.tenantId, mockContext.tenantId));
-      
+      const [appResult] = await dbInstance
+        .select({ id: appointments.id })
+        .from(appointments)
+        .where(eq(appointments.tenantId, mockContext.tenantId));
+      const [svcResult] = await dbInstance
+        .select({ id: services.id })
+        .from(services)
+        .where(eq(services.tenantId, mockContext.tenantId));
+
       await dbInstance.insert(appointmentServices).values({
         appointmentId: appResult.id,
         serviceId: svcResult.id,
@@ -178,7 +208,8 @@ describe("Analytics API", () => {
       const dbInstance = await db.getDb();
       if (!dbInstance) throw new Error("Database not available");
 
-      const { appointments, services, appointmentServices, customers, users } = await import("../drizzle/schema");
+      const { appointments, services, appointmentServices, customers, users } =
+        await import("../drizzle/schema");
 
       // Create test data
       await dbInstance.insert(customers).values({
@@ -213,9 +244,15 @@ describe("Analytics API", () => {
       ]);
 
       // Create appointments
-      const [custResult] = await dbInstance.select({ id: customers.id }).from(customers).where(eq(customers.tenantId, mockContext.tenantId));
-      const [empResult] = await dbInstance.select({ id: users.id }).from(users).where(eq(users.tenantId, mockContext.tenantId));
-      
+      const [custResult] = await dbInstance
+        .select({ id: customers.id })
+        .from(customers)
+        .where(eq(customers.tenantId, mockContext.tenantId));
+      const [empResult] = await dbInstance
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.tenantId, mockContext.tenantId));
+
       await dbInstance.insert(appointments).values([
         {
           tenantId: mockContext.tenantId,
@@ -237,9 +274,15 @@ describe("Analytics API", () => {
         },
       ]);
 
-      const appResults = await dbInstance.select({ id: appointments.id }).from(appointments).where(eq(appointments.tenantId, mockContext.tenantId));
-      const [svcResult] = await dbInstance.select({ id: services.id }).from(services).where(eq(services.tenantId, mockContext.tenantId));
-      
+      const appResults = await dbInstance
+        .select({ id: appointments.id })
+        .from(appointments)
+        .where(eq(appointments.tenantId, mockContext.tenantId));
+      const [svcResult] = await dbInstance
+        .select({ id: services.id })
+        .from(services)
+        .where(eq(services.tenantId, mockContext.tenantId));
+
       await dbInstance.insert(appointmentServices).values([
         {
           appointmentId: appResults[0].id,
@@ -272,7 +315,8 @@ describe("Analytics API", () => {
       const dbInstance = await db.getDb();
       if (!dbInstance) throw new Error("Database not available");
 
-      const { appointments, services, appointmentServices, customers, users } = await import("../drizzle/schema");
+      const { appointments, services, appointmentServices, customers, users } =
+        await import("../drizzle/schema");
 
       // Create test data
       await dbInstance.insert(customers).values({
@@ -298,9 +342,15 @@ describe("Analytics API", () => {
         price: "300",
       });
 
-      const [custResult] = await dbInstance.select({ id: customers.id }).from(customers).where(eq(customers.tenantId, mockContext.tenantId));
-      const [empResult] = await dbInstance.select({ id: users.id }).from(users).where(eq(users.tenantId, mockContext.tenantId));
-      
+      const [custResult] = await dbInstance
+        .select({ id: customers.id })
+        .from(customers)
+        .where(eq(customers.tenantId, mockContext.tenantId));
+      const [empResult] = await dbInstance
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.tenantId, mockContext.tenantId));
+
       await dbInstance.insert(appointments).values({
         tenantId: mockContext.tenantId,
         customerId: custResult.id,
@@ -311,9 +361,15 @@ describe("Analytics API", () => {
         status: "completed",
       });
 
-      const [appResult] = await dbInstance.select({ id: appointments.id }).from(appointments).where(eq(appointments.tenantId, mockContext.tenantId));
-      const [svcResult] = await dbInstance.select({ id: services.id }).from(services).where(eq(services.tenantId, mockContext.tenantId));
-      
+      const [appResult] = await dbInstance
+        .select({ id: appointments.id })
+        .from(appointments)
+        .where(eq(appointments.tenantId, mockContext.tenantId));
+      const [svcResult] = await dbInstance
+        .select({ id: services.id })
+        .from(services)
+        .where(eq(services.tenantId, mockContext.tenantId));
+
       await dbInstance.insert(appointmentServices).values({
         appointmentId: appResult.id,
         serviceId: svcResult.id,
@@ -337,7 +393,9 @@ describe("Analytics API", () => {
       const dbInstance = await db.getDb();
       if (!dbInstance) throw new Error("Database not available");
 
-      const { appointments, customers, users } = await import("../drizzle/schema");
+      const { appointments, customers, users } = await import(
+        "../drizzle/schema"
+      );
       const { eq } = await import("drizzle-orm");
 
       // Create test data
@@ -357,9 +415,15 @@ describe("Analytics API", () => {
         openId: `employee-open-id-${Date.now()}-${Math.random()}`,
       });
 
-      const [custResult] = await dbInstance.select({ id: customers.id }).from(customers).where(eq(customers.tenantId, mockContext.tenantId));
-      const [empResult] = await dbInstance.select({ id: users.id }).from(users).where(eq(users.tenantId, mockContext.tenantId));
-      
+      const [custResult] = await dbInstance
+        .select({ id: customers.id })
+        .from(customers)
+        .where(eq(customers.tenantId, mockContext.tenantId));
+      const [empResult] = await dbInstance
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.tenantId, mockContext.tenantId));
+
       await dbInstance.insert(appointments).values([
         {
           tenantId: mockContext.tenantId,

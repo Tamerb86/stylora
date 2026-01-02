@@ -45,6 +45,7 @@ export const refreshTokens = mysqlTable("refreshTokens", {
 ```
 
 **Indexes:**
+
 - `token` (unique) - for fast lookup
 - `userId` - for user's token management
 - `tenantId` - for tenant isolation
@@ -120,7 +121,9 @@ export const refreshTokens = mysqlTable("refreshTokens", {
 ## API Endpoints
 
 ### 1. POST /auth/login
+
 **Request:**
+
 ```json
 {
   "email": "user@example.com",
@@ -129,6 +132,7 @@ export const refreshTokens = mysqlTable("refreshTokens", {
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -141,16 +145,20 @@ export const refreshTokens = mysqlTable("refreshTokens", {
 ```
 
 **Cookies Set:**
+
 - `app_session_id` (access token, 30 days, httpOnly, secure)
 - `app_refresh_token` (refresh token, 90 days, httpOnly, secure)
 
 ---
 
 ### 2. POST /auth/refresh
+
 **Request:**
+
 - Cookie: `app_refresh_token`
 
 **Response:**
+
 ```json
 {
   "success": true
@@ -158,20 +166,25 @@ export const refreshTokens = mysqlTable("refreshTokens", {
 ```
 
 **Cookies Set:**
+
 - `app_session_id` (new access token, 30 days, httpOnly, secure)
 
 **Error Responses:**
+
 - `401` - Refresh token missing, invalid, expired, or revoked
 - `403` - Refresh token belongs to different tenant
 
 ---
 
 ### 3. POST /auth/logout
+
 **Request:**
+
 - Cookie: `app_session_id`
 - Cookie: `app_refresh_token`
 
 **Response:**
+
 ```json
 {
   "success": true
@@ -179,16 +192,20 @@ export const refreshTokens = mysqlTable("refreshTokens", {
 ```
 
 **Actions:**
+
 - Revoke refresh token in database
 - Clear both cookies
 
 ---
 
 ### 4. POST /auth/logout-all
+
 **Request:**
+
 - Cookie: `app_session_id`
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -197,6 +214,7 @@ export const refreshTokens = mysqlTable("refreshTokens", {
 ```
 
 **Actions:**
+
 - Revoke ALL refresh tokens for the user
 - Clear cookies
 - Useful for "logout from all devices"
@@ -210,7 +228,7 @@ export const refreshTokens = mysqlTable("refreshTokens", {
 ```typescript
 // client/src/lib/api-client.ts
 
-import { toast } from 'sonner';
+import { toast } from "sonner";
 
 let isRefreshing = false;
 let refreshSubscribers: Array<(token: string) => void> = [];
@@ -226,19 +244,19 @@ function onRefreshed(token: string) {
 
 async function refreshAccessToken(): Promise<boolean> {
   try {
-    const response = await fetch('/api/auth/refresh', {
-      method: 'POST',
-      credentials: 'include', // Include cookies
+    const response = await fetch("/api/auth/refresh", {
+      method: "POST",
+      credentials: "include", // Include cookies
     });
 
     if (response.ok) {
       return true;
     }
-    
+
     // Refresh token expired or invalid
     return false;
   } catch (error) {
-    console.error('Token refresh failed:', error);
+    console.error("Token refresh failed:", error);
     return false;
   }
 }
@@ -247,33 +265,33 @@ async function refreshAccessToken(): Promise<boolean> {
 export async function apiRequest(url: string, options: RequestInit = {}) {
   const response = await fetch(url, {
     ...options,
-    credentials: 'include',
+    credentials: "include",
   });
 
   // If 401, try to refresh token
   if (response.status === 401) {
     if (!isRefreshing) {
       isRefreshing = true;
-      
+
       const refreshed = await refreshAccessToken();
-      
+
       if (refreshed) {
         isRefreshing = false;
-        onRefreshed('refreshed');
-        
+        onRefreshed("refreshed");
+
         // Retry original request
         return fetch(url, {
           ...options,
-          credentials: 'include',
+          credentials: "include",
         });
       } else {
         isRefreshing = false;
-        
+
         // Redirect to login
-        toast.error('Session expired. Please login again.');
-        window.location.href = '/login';
-        
-        throw new Error('Session expired');
+        toast.error("Session expired. Please login again.");
+        window.location.href = "/login";
+
+        throw new Error("Session expired");
       }
     } else {
       // Wait for refresh to complete
@@ -281,8 +299,10 @@ export async function apiRequest(url: string, options: RequestInit = {}) {
         subscribeTokenRefresh(() => {
           fetch(url, {
             ...options,
-            credentials: 'include',
-          }).then(resolve).catch(reject);
+            credentials: "include",
+          })
+            .then(resolve)
+            .catch(reject);
         });
       });
     }
@@ -297,37 +317,44 @@ export async function apiRequest(url: string, options: RequestInit = {}) {
 ## Security Considerations
 
 ### 1. Token Storage
+
 - ✅ Both tokens stored in HTTP-only cookies
 - ✅ Secure flag enabled in production
 - ✅ SameSite=Strict to prevent CSRF
 - ❌ Never store in localStorage or sessionStorage
 
 ### 2. Token Rotation
+
 - On each refresh, optionally issue a new refresh token
 - Revoke old refresh token
 - Prevents token reuse attacks
 
 ### 3. Token Revocation
+
 - Store refresh tokens in database
 - Can revoke individual tokens
 - Can revoke all tokens for a user
 - Check revocation status on each use
 
 ### 4. Expiry Times
+
 - Access token: 30 days (short-lived)
 - Refresh token: 90 days (long-lived)
 - Refresh token should be longer than access token
 
 ### 5. Tenant Isolation
+
 - Refresh tokens include tenantId
 - Verify tenantId matches on refresh
 - Prevents cross-tenant token use
 
 ### 6. Rate Limiting
+
 - Limit refresh endpoint to 10 requests per minute per IP
 - Prevents brute force attacks
 
 ### 7. Audit Trail
+
 - Log all token refresh attempts
 - Track IP address and user agent
 - Monitor for suspicious activity
@@ -337,15 +364,17 @@ export async function apiRequest(url: string, options: RequestInit = {}) {
 ## Database Cleanup
 
 ### Expired Tokens
+
 Run daily cleanup job to delete expired tokens:
 
 ```sql
-DELETE FROM refreshTokens 
-WHERE expiresAt < NOW() 
+DELETE FROM refreshTokens
+WHERE expiresAt < NOW()
   OR (revoked = true AND revokedAt < DATE_SUB(NOW(), INTERVAL 30 DAY));
 ```
 
 ### Revoked Tokens
+
 Keep revoked tokens for 30 days for audit purposes, then delete.
 
 ---

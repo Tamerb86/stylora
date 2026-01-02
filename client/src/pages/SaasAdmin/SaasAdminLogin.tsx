@@ -27,14 +27,14 @@ export default function SaasAdminLogin() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast.error("Vennligst fyll inn e-post og passord");
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
@@ -102,8 +102,8 @@ export default function SaasAdminLogin() {
                 Ingen tilgang
               </h2>
               <p className="text-gray-600 mb-6">
-                Du har ikke tillatelse til å få tilgang til Platform Admin-panelet. 
-                Dette området er kun for plattformeieren.
+                Du har ikke tillatelse til å få tilgang til Platform
+                Admin-panelet. Dette området er kun for plattformeieren.
               </p>
               <div className="space-y-2">
                 <Button
@@ -142,7 +142,7 @@ export default function SaasAdminLogin() {
                   type="email"
                   placeholder="admin@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   required
                 />
               </div>
@@ -154,7 +154,7 @@ export default function SaasAdminLogin() {
                   type="password"
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={e => setPassword(e.target.value)}
                   required
                 />
               </div>

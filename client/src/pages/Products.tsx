@@ -39,7 +39,7 @@ export default function Products() {
       refetch();
       resetForm();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error("Kunne ikke opprette produkt: " + error.message);
     },
   });
@@ -51,7 +51,7 @@ export default function Products() {
       refetch();
       setStockAdjustment("");
     },
-    onError: (error) => {
+    onError: error => {
       toast.error("Kunne ikke oppdatere lager: " + error.message);
     },
   });
@@ -63,7 +63,7 @@ export default function Products() {
       refetch();
       resetForm();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error("Kunne ikke oppdatere produkt: " + error.message);
     },
   });
@@ -147,10 +147,17 @@ export default function Products() {
       <div className="p-6 max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">Produkter</h1>
-            <p className="text-muted-foreground">Administrer produkter og varelager</p>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
+              Produkter
+            </h1>
+            <p className="text-muted-foreground">
+              Administrer produkter og varelager
+            </p>
           </div>
-          <Button onClick={() => setIsCreateOpen(true)} className="bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-white shadow-lg">
+          <Button
+            onClick={() => setIsCreateOpen(true)}
+            className="bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-white shadow-lg"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Nytt produkt
           </Button>
@@ -162,14 +169,21 @@ export default function Products() {
               <Package className="h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-lg font-medium mb-2">Ingen produkter ennå</p>
               <p className="text-sm text-muted-foreground mb-4 text-center max-w-md">
-                Legg til produkter for å selge dem i kassen. Du kan administrere lager, priser og strekkoder.
+                Legg til produkter for å selge dem i kassen. Du kan administrere
+                lager, priser og strekkoder.
               </p>
               <div className="flex gap-3">
-                <Button onClick={() => setIsCreateOpen(true)} className="bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-white shadow-lg">
+                <Button
+                  onClick={() => setIsCreateOpen(true)}
+                  className="bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-white shadow-lg"
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Opprett første produkt
                 </Button>
-                <Button variant="outline" onClick={() => window.location.href = "/pos"}>
+                <Button
+                  variant="outline"
+                  onClick={() => (window.location.href = "/pos")}
+                >
                   <ShoppingCart className="h-4 w-4 mr-2" />
                   Gå til kasse
                 </Button>
@@ -178,9 +192,12 @@ export default function Products() {
           </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {products.map((product) => {
-              const isLowStock = product.reorderPoint && product.stockQuantity !== null && product.stockQuantity <= product.reorderPoint;
-              
+            {products.map(product => {
+              const isLowStock =
+                product.reorderPoint &&
+                product.stockQuantity !== null &&
+                product.stockQuantity <= product.reorderPoint;
+
               return (
                 <Card key={product.id}>
                   <CardContent className="p-4">
@@ -198,19 +215,25 @@ export default function Products() {
 
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">Pris:</span>
-                        <span className="font-medium">{product.retailPrice} NOK</span>
+                        <span className="font-medium">
+                          {product.retailPrice} NOK
+                        </span>
                       </div>
 
                       {product.costPrice && (
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Kostpris:</span>
+                          <span className="text-muted-foreground">
+                            Kostpris:
+                          </span>
                           <span>{product.costPrice} NOK</span>
                         </div>
                       )}
 
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">På lager:</span>
-                        <span className={`font-medium ${isLowStock ? "text-red-600" : ""}`}>
+                        <span
+                          className={`font-medium ${isLowStock ? "text-red-600" : ""}`}
+                        >
                           {product.stockQuantity} stk
                           {isLowStock && " ⚠️"}
                         </span>
@@ -245,7 +268,7 @@ export default function Products() {
                         size="sm"
                         variant="default"
                         className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
-                        onClick={() => window.location.href = "/pos"}
+                        onClick={() => (window.location.href = "/pos")}
                       >
                         <ShoppingCart className="h-3 w-3 mr-2" />
                         Gå til kasse
@@ -275,7 +298,7 @@ export default function Products() {
                   id="name"
                   placeholder="F.eks. Sjampo"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={e => setName(e.target.value)}
                 />
               </div>
 
@@ -285,7 +308,7 @@ export default function Products() {
                   id="description"
                   placeholder="Valgfri beskrivelse"
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  onChange={e => setDescription(e.target.value)}
                 />
               </div>
 
@@ -298,7 +321,7 @@ export default function Products() {
                     step="0.01"
                     placeholder="299.00"
                     value={price}
-                    onChange={(e) => setPrice(e.target.value)}
+                    onChange={e => setPrice(e.target.value)}
                   />
                 </div>
                 <div>
@@ -309,7 +332,7 @@ export default function Products() {
                     step="0.01"
                     placeholder="150.00"
                     value={cost}
-                    onChange={(e) => setCost(e.target.value)}
+                    onChange={e => setCost(e.target.value)}
                   />
                 </div>
               </div>
@@ -320,7 +343,7 @@ export default function Products() {
                   id="barcode"
                   placeholder="Valgfri strekkode"
                   value={barcode}
-                  onChange={(e) => setBarcode(e.target.value)}
+                  onChange={e => setBarcode(e.target.value)}
                 />
               </div>
 
@@ -332,7 +355,7 @@ export default function Products() {
                     type="number"
                     placeholder="0"
                     value={stockQuantity}
-                    onChange={(e) => setStockQuantity(e.target.value)}
+                    onChange={e => setStockQuantity(e.target.value)}
                   />
                 </div>
                 <div>
@@ -342,7 +365,7 @@ export default function Products() {
                     type="number"
                     placeholder="5"
                     value={minStockLevel}
-                    onChange={(e) => setMinStockLevel(e.target.value)}
+                    onChange={e => setMinStockLevel(e.target.value)}
                   />
                 </div>
               </div>
@@ -352,7 +375,10 @@ export default function Products() {
               <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
                 Avbryt
               </Button>
-              <Button onClick={handleCreate} disabled={createMutation.isPending}>
+              <Button
+                onClick={handleCreate}
+                disabled={createMutation.isPending}
+              >
                 {createMutation.isPending ? "Oppretter..." : "Opprett produkt"}
               </Button>
             </DialogFooter>
@@ -364,9 +390,7 @@ export default function Products() {
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Rediger produkt</DialogTitle>
-              <DialogDescription>
-                Oppdater produktinformasjon
-              </DialogDescription>
+              <DialogDescription>Oppdater produktinformasjon</DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
@@ -376,7 +400,7 @@ export default function Products() {
                   id="edit-name"
                   placeholder="F.eks. Sjampo"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={e => setName(e.target.value)}
                 />
               </div>
 
@@ -386,7 +410,7 @@ export default function Products() {
                   id="edit-description"
                   placeholder="Valgfri beskrivelse"
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  onChange={e => setDescription(e.target.value)}
                 />
               </div>
 
@@ -399,7 +423,7 @@ export default function Products() {
                     step="0.01"
                     placeholder="299.00"
                     value={price}
-                    onChange={(e) => setPrice(e.target.value)}
+                    onChange={e => setPrice(e.target.value)}
                   />
                 </div>
                 <div>
@@ -410,7 +434,7 @@ export default function Products() {
                     step="0.01"
                     placeholder="150.00"
                     value={cost}
-                    onChange={(e) => setCost(e.target.value)}
+                    onChange={e => setCost(e.target.value)}
                   />
                 </div>
               </div>
@@ -421,7 +445,7 @@ export default function Products() {
                   id="edit-barcode"
                   placeholder="Valgfri strekkode"
                   value={barcode}
-                  onChange={(e) => setBarcode(e.target.value)}
+                  onChange={e => setBarcode(e.target.value)}
                 />
               </div>
 
@@ -433,7 +457,7 @@ export default function Products() {
                     type="number"
                     placeholder="0"
                     value={stockQuantity}
-                    onChange={(e) => setStockQuantity(e.target.value)}
+                    onChange={e => setStockQuantity(e.target.value)}
                   />
                 </div>
                 <div>
@@ -443,7 +467,7 @@ export default function Products() {
                     type="number"
                     placeholder="5"
                     value={minStockLevel}
-                    onChange={(e) => setMinStockLevel(e.target.value)}
+                    onChange={e => setMinStockLevel(e.target.value)}
                   />
                 </div>
               </div>
@@ -453,7 +477,10 @@ export default function Products() {
               <Button variant="outline" onClick={() => setIsEditOpen(false)}>
                 Avbryt
               </Button>
-              <Button onClick={handleUpdate} disabled={updateMutation.isPending}>
+              <Button
+                onClick={handleUpdate}
+                disabled={updateMutation.isPending}
+              >
                 {updateMutation.isPending ? "Oppdaterer..." : "Lagre endringer"}
               </Button>
             </DialogFooter>
@@ -472,12 +499,18 @@ export default function Products() {
 
             <div className="space-y-4">
               <div>
-                <Label htmlFor="adjustment">Antall (bruk - for å trekke fra)</Label>
+                <Label htmlFor="adjustment">
+                  Antall (bruk - for å trekke fra)
+                </Label>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => setStockAdjustment((prev) => String(parseInt(prev || "0") - 1))}
+                    onClick={() =>
+                      setStockAdjustment(prev =>
+                        String(parseInt(prev || "0") - 1)
+                      )
+                    }
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
@@ -486,13 +519,17 @@ export default function Products() {
                     type="number"
                     placeholder="0"
                     value={stockAdjustment}
-                    onChange={(e) => setStockAdjustment(e.target.value)}
+                    onChange={e => setStockAdjustment(e.target.value)}
                     className="flex-1 text-center"
                   />
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => setStockAdjustment((prev) => String(parseInt(prev || "0") + 1))}
+                    onClick={() =>
+                      setStockAdjustment(prev =>
+                        String(parseInt(prev || "0") + 1)
+                      )
+                    }
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -507,8 +544,13 @@ export default function Products() {
               <Button variant="outline" onClick={() => setIsStockOpen(false)}>
                 Avbryt
               </Button>
-              <Button onClick={handleStockAdjustment} disabled={adjustStockMutation.isPending}>
-                {adjustStockMutation.isPending ? "Oppdaterer..." : "Oppdater lager"}
+              <Button
+                onClick={handleStockAdjustment}
+                disabled={adjustStockMutation.isPending}
+              >
+                {adjustStockMutation.isPending
+                  ? "Oppdaterer..."
+                  : "Oppdater lager"}
               </Button>
             </DialogFooter>
           </DialogContent>

@@ -3,7 +3,7 @@ import * as db from "./db";
 
 /**
  * Test suite for POS (Point of Sale) backend functionality
- * 
+ *
  * Tests order creation and payment recording for in-salon sales
  */
 
@@ -20,11 +20,13 @@ describe("POS Backend", () => {
       throw new Error("Database not available for testing");
     }
 
-    const { tenants, users, services, products, customers } = await import("../drizzle/schema");
-    
+    const { tenants, users, services, products, customers } = await import(
+      "../drizzle/schema"
+    );
+
     // Create test tenant
     testTenantId = `test-pos-tenant-${Date.now()}`;
-    
+
     await dbInstance.insert(tenants).values({
       id: testTenantId,
       name: "Test POS Salon",
@@ -178,7 +180,7 @@ describe("POS Backend", () => {
       });
 
       expect(result.items.length).toBe(2);
-      
+
       // Verify totals: (400 + 150*2) = 700, VAT = 175, Total = 875
       expect(result.order.subtotal).toBe("700.00");
       expect(result.order.vatAmount).toBe("175.00");

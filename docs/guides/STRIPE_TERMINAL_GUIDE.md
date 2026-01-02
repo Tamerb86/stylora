@@ -21,14 +21,14 @@ Stylora POS now supports **Stripe Terminal** for card payments! This guide will 
 
 ### Advantages over iZettle/PayPal Reader:
 
-| Feature | iZettle | Stripe Terminal |
-|---------|---------|-----------------|
-| **Setup Complexity** | Very High | Low |
-| **API Quality** | Poor | Excellent |
-| **Documentation** | Incomplete | Comprehensive |
-| **Success Rate** | 0% (pairing fails) | 99%+ |
-| **Developer Support** | Limited | 24/7 Support |
-| **Time to Production** | ∞ (blocked) | 2-3 hours |
+| Feature                | iZettle            | Stripe Terminal |
+| ---------------------- | ------------------ | --------------- |
+| **Setup Complexity**   | Very High          | Low             |
+| **API Quality**        | Poor               | Excellent       |
+| **Documentation**      | Incomplete         | Comprehensive   |
+| **Success Rate**       | 0% (pairing fails) | 99%+            |
+| **Developer Support**  | Limited            | 24/7 Support    |
+| **Time to Production** | ∞ (blocked)        | 2-3 hours       |
 
 ### Cost Comparison:
 
@@ -51,6 +51,7 @@ Stylora POS now supports **Stripe Terminal** for card payments! This guide will 
 ### Supported Readers:
 
 #### 1. **Stripe Reader S700** (~$299)
+
 - **Best for**: Small to medium salons
 - **Features**:
   - 4G + WiFi connectivity
@@ -59,6 +60,7 @@ Stylora POS now supports **Stripe Terminal** for card payments! This guide will 
   - Color screen
 
 #### 2. **BBPOS WisePOS E** (~$299)
+
 - **Best for**: Full-featured POS
 - **Features**:
   - Touch screen
@@ -67,6 +69,7 @@ Stylora POS now supports **Stripe Terminal** for card payments! This guide will 
   - Android-based
 
 #### 3. **Verifone P400** (~$299)
+
 - **Best for**: High-volume salons
 - **Features**:
   - Countertop design
@@ -201,6 +204,7 @@ Stripe Terminal also works with split payments:
 **Problem**: "Ingen lesere funnet" (No readers found)
 
 **Solutions**:
+
 1. ✅ Check reader is powered on
 2. ✅ Check WiFi connection on reader
 3. ✅ Ensure reader and POS are on same network
@@ -212,6 +216,7 @@ Stripe Terminal also works with split payments:
 **Problem**: Reader appears in list but status is "Offline"
 
 **Solutions**:
+
 1. ✅ Check WiFi connection on reader
 2. ✅ Restart reader (hold power button → restart)
 3. ✅ Check Stripe Dashboard for reader status
@@ -222,12 +227,14 @@ Stripe Terminal also works with split payments:
 **Problem**: "Betaling feilet" (Payment failed)
 
 **Common Causes**:
+
 1. ❌ Insufficient funds on card
 2. ❌ Card declined by bank
 3. ❌ Reader lost connection during payment
 4. ❌ Customer removed card too early
 
 **Solutions**:
+
 1. ✅ Ask customer to try again
 2. ✅ Try different card
 3. ✅ Check reader connection
@@ -238,6 +245,7 @@ Stripe Terminal also works with split payments:
 **Problem**: Error when trying to use Stripe Terminal
 
 **Solution**:
+
 1. Go to **Innstillinger** → **Betaling**
 2. Enable **Kortbetaling** toggle
 3. Enter Stripe API keys (see Step 4 above)
@@ -258,6 +266,7 @@ Stripe Terminal also works with split payments:
 ### Q: What are the transaction fees?
 
 **A**: Stripe charges:
+
 - **2.7% + €0.25** per transaction (Norway)
 - No monthly fees
 - No setup fees
@@ -271,6 +280,7 @@ Compare to iZettle: 1.75% + €0.10 (but API doesn't work!)
 ### Q: How long does battery last?
 
 **A**: Stripe Reader S700:
+
 - **500+ transactions** per charge
 - **Standby**: 7+ days
 - **Charging time**: ~2 hours
@@ -281,7 +291,8 @@ Compare to iZettle: 1.75% + €0.10 (but API doesn't work!)
 
 ### Q: What if reader gets lost or stolen?
 
-**A**: 
+**A**:
+
 1. Log in to Stripe Dashboard
 2. Go to Terminal → Readers
 3. Find the reader and click "Deactivate"
@@ -290,6 +301,7 @@ Compare to iZettle: 1.75% + €0.10 (but API doesn't work!)
 ### Q: Can I test without buying a reader?
 
 **A**: Yes! Stripe provides **simulated readers** for testing:
+
 1. In code, set `simulated: true` in reader discovery
 2. A virtual reader will appear
 3. You can test payment flow without hardware
@@ -299,6 +311,7 @@ Compare to iZettle: 1.75% + €0.10 (but API doesn't work!)
 ### Q: Does it work with Norwegian cards?
 
 **A**: Yes! Stripe Terminal supports:
+
 - ✅ All Norwegian bank cards (BankAxept, Visa, Mastercard)
 - ✅ International cards
 - ✅ Vipps (via card)
@@ -307,12 +320,14 @@ Compare to iZettle: 1.75% + €0.10 (but API doesn't work!)
 ### Q: How do I get support?
 
 **Stripe Support**:
+
 - 📧 Email: support@stripe.com
 - 💬 Chat: https://dashboard.stripe.com (click "?" icon)
 - 📞 Phone: Available in Stripe Dashboard
 - ⏰ 24/7 support in English
 
 **Stylora Support**:
+
 - 📧 Email: [Your support email]
 - 💬 In-app chat
 - 📚 Documentation: This guide
@@ -324,11 +339,13 @@ Compare to iZettle: 1.75% + €0.10 (but API doesn't work!)
 ### iZettle (PayPal Reader)
 
 **Pros**:
+
 - ✅ Cheaper hardware (€29-49)
 - ✅ Lower transaction fees (1.75% + €0.10)
 - ✅ Works with Zettle Go app
 
 **Cons**:
+
 - ❌ API integration broken
 - ❌ Poor documentation
 - ❌ No developer support
@@ -339,6 +356,7 @@ Compare to iZettle: 1.75% + €0.10 (but API doesn't work!)
 ### Stripe Terminal
 
 **Pros**:
+
 - ✅ Excellent API
 - ✅ Comprehensive documentation
 - ✅ 24/7 developer support
@@ -348,6 +366,7 @@ Compare to iZettle: 1.75% + €0.10 (but API doesn't work!)
 - ✅ Supports all payment methods
 
 **Cons**:
+
 - ❌ More expensive hardware ($299)
 - ❌ Higher transaction fees (2.7% + €0.25)
 
@@ -356,6 +375,7 @@ Compare to iZettle: 1.75% + €0.10 (but API doesn't work!)
 **Choose Stripe Terminal!**
 
 The €230 price difference is worth it for:
+
 - ✅ Guaranteed functionality
 - ✅ Time savings (10+ hours)
 - ✅ Peace of mind
@@ -368,6 +388,7 @@ The €230 price difference is worth it for:
 ### Quick Start Guide for Staff:
 
 **Taking a Payment**:
+
 1. Open **Kasse (POS)**
 2. Enter amount
 3. Select **Stripe Terminal**
@@ -377,6 +398,7 @@ The €230 price difference is worth it for:
 7. Done!
 
 **If Reader Not Connected**:
+
 1. Go to **Innstillinger** → **Betaling**
 2. Scroll to **Stripe Terminal**
 3. Click **Søk etter lesere**
@@ -384,6 +406,7 @@ The €230 price difference is worth it for:
 5. Return to POS
 
 **If Payment Fails**:
+
 1. Ask customer to try again
 2. Check reader is online (green icon)
 3. Try different card if needed
@@ -394,6 +417,7 @@ The €230 price difference is worth it for:
 ## 📞 Support Contacts
 
 ### Stripe Support:
+
 - **Dashboard**: https://dashboard.stripe.com
 - **Email**: support@stripe.com
 - **Chat**: Available in dashboard (click "?" icon)
@@ -401,6 +425,7 @@ The €230 price difference is worth it for:
 - **Hours**: 24/7
 
 ### Stylora Support:
+
 - **Email**: [Your email]
 - **Documentation**: This guide
 - **In-app**: Help button in sidebar
@@ -410,6 +435,7 @@ The €230 price difference is worth it for:
 ## 📝 Changelog
 
 ### Version 1.0 (December 2024)
+
 - ✅ Initial Stripe Terminal integration
 - ✅ Reader discovery and connection
 - ✅ Payment processing in POS
@@ -418,6 +444,7 @@ The €230 price difference is worth it for:
 - ✅ Reader management page
 
 ### Planned Features:
+
 - 🔜 Receipt printing via reader
 - 🔜 Refund support
 - 🔜 Multiple reader support
@@ -431,6 +458,7 @@ The €230 price difference is worth it for:
 Stripe Terminal provides a **reliable, professional** card payment solution for Stylora POS. While it costs more than iZettle, the **guaranteed functionality** and **excellent support** make it the right choice for your salon.
 
 **Next Steps**:
+
 1. ✅ Create Stripe account
 2. ✅ Order Stripe reader
 3. ✅ Configure API keys in Stylora

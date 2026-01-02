@@ -1,19 +1,33 @@
 import { getDb } from "./db";
-import { loyaltyPoints, loyaltyTransactions, loyaltyRewards, loyaltyRedemptions, settings } from "../drizzle/schema";
+import {
+  loyaltyPoints,
+  loyaltyTransactions,
+  loyaltyRewards,
+  loyaltyRedemptions,
+  settings,
+} from "../drizzle/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 /**
  * Get or create loyalty points record for a customer
  */
-export async function getOrCreateLoyaltyPoints(tenantId: string, customerId: number) {
+export async function getOrCreateLoyaltyPoints(
+  tenantId: string,
+  customerId: number
+) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
   const existing = await db
     .select()
     .from(loyaltyPoints)
-    .where(and(eq(loyaltyPoints.tenantId, tenantId), eq(loyaltyPoints.customerId, customerId)))
+    .where(
+      and(
+        eq(loyaltyPoints.tenantId, tenantId),
+        eq(loyaltyPoints.customerId, customerId)
+      )
+    )
     .limit(1);
 
   if (existing.length > 0) {
@@ -31,7 +45,12 @@ export async function getOrCreateLoyaltyPoints(tenantId: string, customerId: num
   const newRecord = await db
     .select()
     .from(loyaltyPoints)
-    .where(and(eq(loyaltyPoints.tenantId, tenantId), eq(loyaltyPoints.customerId, customerId)))
+    .where(
+      and(
+        eq(loyaltyPoints.tenantId, tenantId),
+        eq(loyaltyPoints.customerId, customerId)
+      )
+    )
     .limit(1);
 
   return newRecord[0];
@@ -47,10 +66,12 @@ export async function getLoyaltySettings(tenantId: string) {
   const settingsData = await db
     .select()
     .from(settings)
-    .where(and(
-      eq(settings.tenantId, tenantId),
-      sql`${settings.settingKey} IN ('loyaltyEnabled', 'loyaltyPointsPerVisit', 'loyaltyPointsPerNOK')`
-    ));
+    .where(
+      and(
+        eq(settings.tenantId, tenantId),
+        sql`${settings.settingKey} IN ('loyaltyEnabled', 'loyaltyPointsPerVisit', 'loyaltyPointsPerNOK')`
+      )
+    );
 
   const config = {
     enabled: true,
@@ -110,7 +131,10 @@ export async function awardPoints(
     performedBy,
   });
 
-  return { success: true, newBalance: (loyaltyRecord!.currentPoints || 0) + points };
+  return {
+    success: true,
+    newBalance: (loyaltyRecord!.currentPoints || 0) + points,
+  };
 }
 
 /**
@@ -160,14 +184,19 @@ export async function deductPoints(
   const lastTransaction = await db
     .select()
     .from(loyaltyTransactions)
-    .where(and(eq(loyaltyTransactions.tenantId, tenantId), eq(loyaltyTransactions.customerId, customerId)))
+    .where(
+      and(
+        eq(loyaltyTransactions.tenantId, tenantId),
+        eq(loyaltyTransactions.customerId, customerId)
+      )
+    )
     .orderBy(desc(loyaltyTransactions.id))
     .limit(1);
 
-  return { 
-    success: true, 
+  return {
+    success: true,
     newBalance: (loyaltyRecord!.currentPoints || 0) - points,
-    transactionId: lastTransaction[0]?.id
+    transactionId: lastTransaction[0]?.id,
   };
 }
 
@@ -187,7 +216,12 @@ export async function redeemReward(
   const reward = await db
     .select()
     .from(loyaltyRewards)
-    .where(and(eq(loyaltyRewards.id, rewardId), eq(loyaltyRewards.tenantId, tenantId)))
+    .where(
+      and(
+        eq(loyaltyRewards.id, rewardId),
+        eq(loyaltyRewards.tenantId, tenantId)
+      )
+    )
     .limit(1);
 
   if (reward.length === 0 || !reward[0]?.isActive) {
@@ -235,14 +269,23 @@ export async function redeemReward(
 /**
  * Get customer loyalty history
  */
-export async function getCustomerLoyaltyHistory(tenantId: string, customerId: number, limit: number = 50) {
+export async function getCustomerLoyaltyHistory(
+  tenantId: string,
+  customerId: number,
+  limit: number = 50
+) {
   const db = await getDb();
   if (!db) return [];
 
   return await db
     .select()
     .from(loyaltyTransactions)
-    .where(and(eq(loyaltyTransactions.tenantId, tenantId), eq(loyaltyTransactions.customerId, customerId)))
+    .where(
+      and(
+        eq(loyaltyTransactions.tenantId, tenantId),
+        eq(loyaltyTransactions.customerId, customerId)
+      )
+    )
     .orderBy(desc(loyaltyTransactions.createdAt))
     .limit(limit);
 }
@@ -250,7 +293,10 @@ export async function getCustomerLoyaltyHistory(tenantId: string, customerId: nu
 /**
  * Get customer active redemptions
  */
-export async function getCustomerRedemptions(tenantId: string, customerId: number) {
+export async function getCustomerRedemptions(
+  tenantId: string,
+  customerId: number
+) {
   const db = await getDb();
   if (!db) return [];
 
@@ -260,7 +306,10 @@ export async function getCustomerRedemptions(tenantId: string, customerId: numbe
       reward: loyaltyRewards,
     })
     .from(loyaltyRedemptions)
-    .leftJoin(loyaltyRewards, eq(loyaltyRedemptions.rewardId, loyaltyRewards.id))
+    .leftJoin(
+      loyaltyRewards,
+      eq(loyaltyRedemptions.rewardId, loyaltyRewards.id)
+    )
     .where(
       and(
         eq(loyaltyRedemptions.tenantId, tenantId),

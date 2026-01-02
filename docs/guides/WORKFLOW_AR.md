@@ -3,18 +3,21 @@
 ## البيئات
 
 ### 1️⃣ بيئة التطوير (Local Development)
+
 - **الرابط:** `http://localhost:3000`
 - **قاعدة البيانات:** MySQL محلي أو Supabase
 - **الاستخدام:** للتطوير والاختبار
 - **ملاحظة:** البيانات هنا **منفصلة تماماً** عن الإنتاج
 
 ### 2️⃣ بيئة الإنتاج (Railway Production)
+
 - **الرابط:** `https://www.stylora.no`
 - **قاعدة البيانات:** MySQL على Railway
 - **الاستخدام:** الموقع المنشور للعملاء
 - **ملاحظة:** البيانات الحقيقية للعملاء
 
 ### 3️⃣ GitHub (الكود فقط)
+
 - **Repository:** `https://github.com/Tamerb86/stylora`
 - **المحتوى:** الكود فقط (لا يحتوي على بيانات)
 - **الاستخدام:** مصدر الكود لـ Railway
@@ -26,16 +29,19 @@
 ### ✅ الطريقة الصحيحة
 
 1. **التطوير محلياً:**
+
    ```
    عمل تعديلات → اختبار محلي → commit
    ```
 
 2. **رفع الكود إلى GitHub:**
+
    ```
    git add . → git commit → git push
    ```
 
 3. **النشر على Railway:**
+
    ```
    GitHub → Railway Auto-Deploy → Production
    ```
@@ -76,12 +82,14 @@
 ### 2. عند إضافة بيانات
 
 **محلياً (للاختبار):**
+
 ```
 افتح: http://localhost:3000/dashboard
 أضف: خدمات، موظفين، عملاء
 ```
 
 **في Railway (للإنتاج):**
+
 ```
 افتح: https://www.stylora.no/dashboard
 أضف: خدمات، موظفين، عملاء
@@ -90,6 +98,7 @@
 ### 3. عند حدوث مشكلة
 
 **إذا ضاع شيء:**
+
 ```
 1. تحقق من آخر commit في GitHub
 2. استخدم git revert إذا لزم الأمر
@@ -97,6 +106,7 @@
 ```
 
 **إذا لم تظهر التحديثات على Railway:**
+
 ```
 1. تحقق من GitHub: هل الـ commit موجود؟
 2. تحقق من Railway Deployments: هل الـ deploy انتهى؟
@@ -118,6 +128,7 @@
 ## الملفات المهمة
 
 ### للتوثيق:
+
 - `todo.md` - قائمة المهام والميزات
 - `WORKFLOW_AR.md` - هذا الملف (دليل العمل)
 - `VIPPS_SETUP_GUIDE.md` - دليل إعداد Vipps
@@ -125,6 +136,7 @@
 - `STRIPE_TERMINAL_GUIDE.md` - دليل إعداد Stripe Terminal
 
 ### للكود:
+
 - `client/src/pages/` - صفحات الموقع
 - `server/routers.ts` - API endpoints
 - `drizzle/schema.ts` - قاعدة البيانات

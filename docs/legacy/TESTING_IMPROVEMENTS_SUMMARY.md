@@ -126,14 +126,14 @@ it("should work", async () => {
 
 The helpers automatically set critical fields that were often forgotten in manual setup:
 
-| Field | Default Value | Why It Matters |
-|-------|---------------|----------------|
-| `emailVerified` | `true` | Many procedures require verified tenants |
-| `emailVerifiedAt` | Current date | Timestamp needed for verification checks |
-| `status` | `"active"` | Most tests assume active subscription |
-| `onboardingCompleted` | `true` | Prevents onboarding redirects in tests |
-| `role` | `"admin"` | Most tests need admin permissions |
-| `isActive` | `true` | Inactive users can't perform actions |
+| Field                 | Default Value | Why It Matters                           |
+| --------------------- | ------------- | ---------------------------------------- |
+| `emailVerified`       | `true`        | Many procedures require verified tenants |
+| `emailVerifiedAt`     | Current date  | Timestamp needed for verification checks |
+| `status`              | `"active"`    | Most tests assume active subscription    |
+| `onboardingCompleted` | `true`        | Prevents onboarding redirects in tests   |
+| `role`                | `"admin"`     | Most tests need admin permissions        |
+| `isActive`            | `true`        | Inactive users can't perform actions     |
 
 ## Migration Path
 
@@ -191,6 +191,7 @@ None - all changes are additive and non-breaking.
 This testing infrastructure update provides a solid foundation for writing consistent, maintainable tests in Stylora. The centralized helpers eliminate common setup errors, reduce code duplication, and make it easier for developers to write comprehensive tests.
 
 The investment in proper test infrastructure pays dividends in:
+
 - Faster development cycles
 - Fewer bugs reaching production
 - Easier onboarding for new developers

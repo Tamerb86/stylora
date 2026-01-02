@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { createDatabaseBackup, listBackups, deleteBackup, regenerateBackupSQL } from "./backup";
+import {
+  createDatabaseBackup,
+  listBackups,
+  deleteBackup,
+  regenerateBackupSQL,
+} from "./backup";
 import { getDb } from "./db";
 import { tenants, users } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
@@ -36,7 +41,9 @@ describe("Backup System", () => {
       isActive: true,
     });
 
-    const insertedId = Array.isArray(userResult) ? userResult[0]?.insertId : (userResult as any).insertId;
+    const insertedId = Array.isArray(userResult)
+      ? userResult[0]?.insertId
+      : (userResult as any).insertId;
     testUserId = Number(insertedId);
   });
 
@@ -114,8 +121,8 @@ describe("Backup System", () => {
   });
 
   it("should fail to regenerate SQL for non-existent backup", async () => {
-    await expect(
-      regenerateBackupSQL(999999, testTenantId)
-    ).rejects.toThrow("Backup not found");
+    await expect(regenerateBackupSQL(999999, testTenantId)).rejects.toThrow(
+      "Backup not found"
+    );
   });
 });
