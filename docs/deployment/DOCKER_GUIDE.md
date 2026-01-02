@@ -60,7 +60,7 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
 AWS_ACCESS_KEY_ID=AKIA...
 AWS_SECRET_ACCESS_KEY=...
 AWS_REGION=us-east-1
-AWS_S3_BUCKET=barbertime-uploads
+AWS_S3_BUCKET=stylora-uploads
 AWS_SES_FROM_EMAIL=noreply@yourdomain.com
 ```
 
@@ -187,14 +187,14 @@ docker-compose exec -T db mysql \
 docker login
 
 # Tag image
-docker tag barbertime:latest yourusername/barbertime:latest
+docker tag barbertime:latest yourusername/stylora:latest
 
 # Push to Docker Hub
-docker push yourusername/barbertime:latest
+docker push yourusername/stylora:latest
 
 # Pull and run on server
-docker pull yourusername/barbertime:latest
-docker run -d -p 3000:3000 --env-file .env yourusername/barbertime:latest
+docker pull yourusername/stylora:latest
+docker run -d -p 3000:3000 --env-file .env yourusername/stylora:latest
 ```
 
 ### 2. DigitalOcean App Platform:
@@ -214,8 +214,8 @@ docker run -d -p 3000:3000 --env-file .env yourusername/barbertime:latest
 ```bash
 # 1. Push image to ECR
 aws ecr create-repository --repository-name barbertime
-docker tag barbertime:latest AWS_ACCOUNT.dkr.ecr.REGION.amazonaws.com/barbertime:latest
-docker push AWS_ACCOUNT.dkr.ecr.REGION.amazonaws.com/barbertime:latest
+docker tag barbertime:latest AWS_ACCOUNT.dkr.ecr.REGION.amazonaws.com/stylora:latest
+docker push AWS_ACCOUNT.dkr.ecr.REGION.amazonaws.com/stylora:latest
 
 # 2. Create ECS task definition
 # 3. Create ECS service
@@ -225,11 +225,11 @@ docker push AWS_ACCOUNT.dkr.ecr.REGION.amazonaws.com/barbertime:latest
 
 ```bash
 # Build and push to GCR
-gcloud builds submit --tag gcr.io/PROJECT_ID/barbertime
+gcloud builds submit --tag gcr.io/PROJECT_ID/stylora
 
 # Deploy to Cloud Run
 gcloud run deploy barbertime \
-  --image gcr.io/PROJECT_ID/barbertime \
+  --image gcr.io/PROJECT_ID/stylora \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated

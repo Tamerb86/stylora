@@ -123,7 +123,7 @@ SMS_SENDER_ID=BarberTime
 #### الخطوة 4: إعادة تشغيل الخادم
 
 ```bash
-cd /home/ubuntu/barbertime
+cd /home/ubuntu/stylora
 # سيتم إعادة التشغيل تلقائياً عند حفظ المتغيرات البيئية
 ```
 
@@ -170,7 +170,7 @@ SMS_SENDER_ID=+4712345678  # رقم Twilio الخاص بك
 #### الخطوة 5: إعادة تشغيل الخادم
 
 ```bash
-cd /home/ubuntu/barbertime
+cd /home/ubuntu/stylora
 # سيتم إعادة التشغيل تلقائياً
 ```
 

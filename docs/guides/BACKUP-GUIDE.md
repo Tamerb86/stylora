@@ -52,7 +52,7 @@ DB_USER="your-username"
 DB_PASS="your-password"
 BACKUP_DIR="/path/to/backups"
 DATE=$(date +%Y%m%d_%H%M%S)
-BACKUP_FILE="$BACKUP_DIR/barbertime_$DATE.sql.gz"
+BACKUP_FILE="$BACKUP_DIR/stylora_$DATE.sql.gz"
 
 # إنشاء مجلد النسخ الاحتياطية
 mkdir -p $BACKUP_DIR

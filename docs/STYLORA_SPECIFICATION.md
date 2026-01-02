@@ -526,7 +526,7 @@ Each salon is represented by a tenant entity:
 
 - **Tenant ID**: Unique identifier (UUID)
 - **Salon name**: Display name (e.g., "Barber & Co Oslo")
-- **Subdomain**: Custom subdomain for online booking (e.g., `barberco.barbertime.no`)
+- **Subdomain**: Custom subdomain for online booking (e.g., `barberco.stylora.no`)
 - **Contact info**: Phone, email, address
 - **Business registration**: Norwegian organization number (organisasjonsnummer)
 - **Branding**: Logo URL, primary color, accent color
@@ -2009,7 +2009,7 @@ This design system is documented in `DESIGN_SYSTEM.md` for future developers.
 6. **Go Live**
    - Checklist shows: "Alt klart! Åpne for online booking"
    - User clicks "Aktiver online booking"
-   - System generates public booking URL: `https://barberco.barbertime.no/book`
+   - System generates public booking URL: `https://barberco.stylora.no/book`
    - User receives confirmation: "Din online booking er nå aktiv! Del denne lenken med kundene dine."
 
 **Success Criteria**: Salon can receive online bookings within 10 minutes of signup.
@@ -2021,7 +2021,7 @@ This design system is documented in `DESIGN_SYSTEM.md` for future developers.
 **Steps**:
 
 1. **Customer Flow**
-   - Customer visits `https://barberco.barbertime.no/book` (from salon's website, social media, or Google)
+   - Customer visits `https://barberco.stylora.no/book` (from salon's website, social media, or Google)
    - Sees salon name, address, phone number at top
 
 2. **Select Service**

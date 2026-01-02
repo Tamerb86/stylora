@@ -1,7 +1,7 @@
 # Railway Database Connection Fix Guide
 
 ## Problem
-The BarberTime application was experiencing "Database connection error" when trying to save iZettle OAuth tokens because the `DATABASE_URL` environment variable was not properly configured in Railway.
+The Stylora application was experiencing "Database connection error" when trying to save iZettle OAuth tokens because the `DATABASE_URL` environment variable was not properly configured in Railway.
 
 ## Root Cause
 - The application code uses `process.env.DATABASE_URL` to connect to MySQL

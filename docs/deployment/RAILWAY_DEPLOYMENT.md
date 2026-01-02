@@ -2,7 +2,7 @@
 
 ## 🚂 لماذا Railway؟
 
-Railway هو أسهل خيار لنشر BarberTime لأنه يوفر:
+Railway هو أسهل خيار لنشر Stylora لأنه يوفر:
 - ✅ **قاعدة بيانات MySQL + استضافة** في مكان واحد
 - ✅ **إعداد سريع جداً** - أقل من 10 دقائق
 - ✅ **أسعار معقولة** - $5-25/شهر
@@ -53,12 +53,12 @@ Railway هو أسهل خيار لنشر BarberTime لأنه يوفر:
 # اذهب إلى github.com وأنشئ repository باسم "barbertime"
 
 # 2. رفع الكود
-cd /path/to/barbertime-website
+cd /path/to/stylora-website
 git init
 git add .
 git commit -m "Initial commit - Ready for Railway deployment"
 git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/barbertime.git
+git remote add origin https://github.com/YOUR_USERNAME/stylora.git
 git push -u origin main
 ```
 
@@ -98,7 +98,7 @@ JWT_SECRET=your-super-secret-jwt-key-min-32-chars
 
 # App Configuration
 VITE_APP_ID=barbertime
-VITE_APP_TITLE=BarberTime
+VITE_APP_TITLE=Stylora
 NODE_ENV=production
 PORT=3000
 
@@ -126,7 +126,7 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_live_...
 AWS_ACCESS_KEY_ID=AKIA...
 AWS_SECRET_ACCESS_KEY=...
 AWS_REGION=us-east-1
-AWS_S3_BUCKET=barbertime-uploads
+AWS_S3_BUCKET=stylora-uploads
 ```
 
 #### متغيرات Email (AWS SES):
