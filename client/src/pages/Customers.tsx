@@ -169,7 +169,7 @@ export default function Customers() {
   // Calculate stats
   const totalCustomers = customers?.length || 0;
   const totalRevenue =
-    customers?.reduce((sum, c) => sum + (c.totalRevenue || 0), 0) || 0;
+    customers?.reduce((sum, c) => sum + (Number(c.totalRevenue) || 0), 0) || 0;
   const totalVisits =
     customers?.reduce((sum, c) => sum + (c.totalVisits || 0), 0) || 0;
   const avgRevenuePerCustomer =
