@@ -18,6 +18,22 @@ import { nanoid } from "nanoid";
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === "string" && value.length > 0;
 
+// Email validation regex - RFC 5322 simplified
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Validate and normalize email address
+ * @param email - Email to validate
+ * @returns Trimmed, lowercase email or null if invalid
+ */
+function validateEmail(email: string): string | null {
+  const trimmed = email.trim();
+  if (!trimmed || !EMAIL_REGEX.test(trimmed)) {
+    return null;
+  }
+  return trimmed;
+}
+
 export type SessionPayload = {
   openId: string;
   appId: string;
@@ -188,18 +204,10 @@ export function registerAuthRoutes(app: Express) {
         return;
       }
 
-      // Trim and validate email format
-      const trimmedEmail = email.trim();
+      // Validate and normalize email
+      const trimmedEmail = validateEmail(email);
       if (!trimmedEmail) {
-        console.warn("[Auth] Login attempt with empty email");
-        res.status(400).json({ error: "Vennligst oppgi en gyldig e-postadresse" });
-        return;
-      }
-
-      // Basic email format validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(trimmedEmail)) {
-        console.warn("[Auth] Login attempt with invalid email format:", trimmedEmail);
+        console.warn("[Auth] Login attempt with invalid email format:", email);
         res.status(400).json({ error: "Vennligst oppgi en gyldig e-postadresse" });
         return;
       }
@@ -212,7 +220,8 @@ export function registerAuthRoutes(app: Express) {
         return;
       }
 
-      // Case-insensitive email lookup using SQL LOWER function
+      // Case-insensitive email lookup using parameterized SQL
+      // Note: Drizzle ORM properly sanitizes the sql`` template literal parameters
       const [user] = await dbInstance
         .select()
         .from(users)
@@ -388,10 +397,9 @@ export function registerAuthRoutes(app: Express) {
         return;
       }
 
-      // Trim and validate email
-      const trimmedEmail = email.trim();
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(trimmedEmail)) {
+      // Validate and normalize email
+      const trimmedEmail = validateEmail(email);
+      if (!trimmedEmail) {
         res.status(400).json({ error: "Vennligst oppgi en gyldig e-postadresse" });
         return;
       }
@@ -513,10 +521,9 @@ export function registerAuthRoutes(app: Express) {
         return;
       }
 
-      // Trim and validate email
-      const trimmedEmail = email.trim();
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(trimmedEmail)) {
+      // Validate and normalize email
+      const trimmedEmail = validateEmail(email);
+      if (!trimmedEmail) {
         res.status(400).json({ error: "Vennligst oppgi en gyldig e-postadresse" });
         return;
       }

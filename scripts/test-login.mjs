@@ -9,7 +9,8 @@
  * 4. Input validation
  */
 
-import fetch from 'node-fetch';
+// Native fetch is available in Node.js 18+
+// No external dependencies needed
 
 const BASE_URL = process.env.API_URL || 'http://localhost:3000';
 
