@@ -1,8 +1,8 @@
-# BarberTime - نظام إدارة صالونات الحلاقة
+# Stylora - نظام إدارة صالونات الحلاقة
 
 ## 📋 نظرة عامة - Overview
 
-**BarberTime** هو نظام SaaS شامل لإدارة صالونات الحلاقة والتجميل، مبني بتقنيات حديثة ومصمم للنشر على استضافة خارجية.
+**Stylora** هو نظام SaaS شامل لإدارة صالونات الحلاقة والتجميل، مبني بتقنيات حديثة ومصمم للنشر على استضافة خارجية.
 
 ### المميزات الرئيسية:
 
@@ -53,8 +53,8 @@
 
 ```bash
 # 1. استنساخ المشروع
-git clone https://github.com/YOUR_USERNAME/barbertime.git
-cd barbertime
+git clone https://github.com/YOUR_USERNAME/stylora.git
+cd stylora
 
 # 2. تثبيت المكتبات
 pnpm install
@@ -80,14 +80,14 @@ pnpm dev
 
 ```env
 # Database
-DATABASE_URL=mysql://user:password@localhost:3306/barbertime
+DATABASE_URL=mysql://user:password@localhost:3306/stylora
 
 # JWT
 JWT_SECRET=your-super-secret-key-change-this
 
 # App
-VITE_APP_ID=barbertime
-VITE_APP_TITLE=BarberTime
+VITE_APP_ID=stylora
+VITE_APP_TITLE=Stylora
 NODE_ENV=development
 PORT=3000
 
@@ -138,7 +138,7 @@ docker-compose logs -f app
 ## 📁 هيكل المشروع - Project Structure
 
 ```
-barbertime-website/
+stylora/
 ├── client/                 # Frontend React app
 │   ├── public/            # Static assets
 │   └── src/
@@ -259,7 +259,7 @@ STRIPE_SECRET_KEY=sk_test_your_key
 ```bash
 # تأكد من تشغيل MySQL وصحة DATABASE_URL
 mysql -u root -p
-CREATE DATABASE barbertime;
+CREATE DATABASE stylora;
 ```
 
 ### خطأ: "Port 3000 already in use"
@@ -323,7 +323,7 @@ MIT License
 
 ## 📧 التواصل - Contact
 
-للأسئلة والدعم: support@barbertime.com
+للأسئلة والدعم: support@stylora.com
 
 ---
 
