@@ -50,10 +50,10 @@ const generalLimiter = rateLimit({
   },
 });
 
-// Strict rate limiter for authentication - 5 requests per 15 minutes
+// Strict rate limiter for authentication - 20 requests per 15 minutes
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 login attempts per windowMs
+  max: 20, // Limit each IP to 20 login attempts per windowMs
   message: {
     error: "For mange innloggingsforsøk. Vennligst vent 15 minutter.",
     retryAfter: "15 minutter",

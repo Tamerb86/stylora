@@ -36,6 +36,7 @@ import AboutUs from "@/pages/AboutUs";
 import Testimonials from "@/pages/Testimonials";
 import TimeClock from "@/pages/TimeClock";
 import TimeClockAdmin from "@/pages/TimeClockAdmin";
+import WorkHoursReport from "@/pages/WorkHoursReport";
 import AttendanceReport from "@/pages/AttendanceReport";
 import UXShowcase from "@/pages/UXShowcase";
 import POS from "@/pages/POS";
@@ -109,6 +110,7 @@ function Router() {
       <Route path="/privacy" component={Privacy} />
       <Route path="/timeclock" component={TimeClock} />
       <Route path="/timeclock-admin" component={TimeClockAdmin} />
+      <Route path="/work-hours-report" component={WorkHoursReport} />
       <Route path="/attendance" component={AttendanceReport} />
       <Route path="/ux-showcase" component={UXShowcase} />
       <Route path="/pos" component={POS} />

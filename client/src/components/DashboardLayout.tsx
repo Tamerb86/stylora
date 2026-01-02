@@ -75,6 +75,7 @@ const menuItems = [
   { icon: Clock, label: "Timeregistrering", path: "/timeclock", tooltip: "Registrer arbeidstimer for ansatte", submenu: [
     { icon: Clock, label: "Innstemplingsterminal", path: "/timeclock", tooltip: "Stemple inn og ut" },
     { icon: UserCog, label: "Administrer vakter", path: "/timeclock-admin", adminOnly: true, tooltip: "Administrer og godkjenn arbeidstimer" },
+    { icon: BarChart3, label: "Timer rapport", path: "/work-hours-report", adminOnly: true, tooltip: "Vis ukentlig/månedlig rapport over arbeidstimer" },
   ] },
   { icon: Gift, label: "Lojalitet", path: "/loyalty", advancedOnly: true, tooltip: "Administrer lojalitetsprogram og belønninger" },
   { icon: MessageCircle, label: "Kommunikasjon", path: "/communications", advancedOnly: true, tooltip: "Send meldinger og varsler til kunder", submenu: [
