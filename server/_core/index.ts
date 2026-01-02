@@ -45,23 +45,11 @@ const generalLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   skip: (req) => {
-    // Skip rate limiting for specific webhook and callback paths only
-    // Use req.url to include query parameters in comparison
+    // Skip rate limiting for specific webhook and callback URLs only
+    // Use req.url to include query parameters in comparison (prevents bypass)
     return req.url === "/api/stripe/webhook" || req.url === "/api/vipps/callback";
   },
 });
-
-  // Upload rate limiter - 30 requests per minute for file uploads
-  const uploadLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 30,
-    message: {
-      error: "For mange opplastingsforespørsler. Vennligst vent litt.",
-      retryAfter: "1 minutt",
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-  });
 
 // Webhook/callback rate limiter - lighter limits for payment webhooks
 const webhookLimiter = rateLimit({
@@ -93,6 +81,18 @@ const bookingLimiter = rateLimit({
   max: 20, // Limit each IP to 20 requests per minute
   message: {
     error: "For mange bookingforespørsler. Vennligst vent litt.",
+    retryAfter: "1 minutt",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Upload rate limiter - 30 requests per minute for file uploads
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 30,
+  message: {
+    error: "For mange opplastingsforespørsler. Vennligst vent litt.",
     retryAfter: "1 minutt",
   },
   standardHeaders: true,
@@ -336,7 +336,14 @@ async function startServer() {
     try {
       // Authentication check
       const { authenticateRequest } = await import("./auth-simple");
-      const authResult = await authenticateRequest(req);
+      let authResult;
+      try {
+        authResult = await authenticateRequest(req);
+      } catch (error) {
+        console.error("[Storage Upload] Authentication error:", error);
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
       if (!authResult) {
         return res.status(401).json({ error: "Authentication required" });
       }

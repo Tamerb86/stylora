@@ -35,7 +35,7 @@ app.set('trust proxy', process.env.TRUST_PROXY ? Number(process.env.TRUST_PROXY)
 
 ```typescript
 skip: (req) => {
-  return req.path === "/api/stripe/webhook" || req.path === "/api/vipps/callback";
+  return req.url === "/api/stripe/webhook" || req.url === "/api/vipps/callback";
 }
 ```
 
