@@ -12,7 +12,7 @@ import { ENV } from "./env";
 import { getSessionCookieOptions } from "./cookies";
 import bcrypt from "bcrypt";
 import { users, tenants } from "../../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 const isNonEmptyString = (value: unknown): value is string =>
@@ -181,44 +181,103 @@ export function registerAuthRoutes(app: Express) {
     try {
       const { email, password } = req.body;
 
+      // Validate input
       if (!email || !password) {
+        console.warn("[Auth] Login attempt with missing credentials");
         res.status(400).json({ error: "E-post og passord er påkrevd" });
+        return;
+      }
+
+      // Trim and validate email format
+      const trimmedEmail = email.trim();
+      if (!trimmedEmail) {
+        console.warn("[Auth] Login attempt with empty email");
+        res.status(400).json({ error: "Vennligst oppgi en gyldig e-postadresse" });
+        return;
+      }
+
+      // Basic email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmedEmail)) {
+        console.warn("[Auth] Login attempt with invalid email format:", trimmedEmail);
+        res.status(400).json({ error: "Vennligst oppgi en gyldig e-postadresse" });
         return;
       }
 
       // Get user from database
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        res.status(500).json({ error: "Database ikke tilgjengelig" });
+        console.error("[Auth] Database not available for login");
+        res.status(500).json({ error: "Tjenesten er midlertidig utilgjengelig. Prøv igjen senere." });
         return;
       }
 
+      // Case-insensitive email lookup using SQL LOWER function
       const [user] = await dbInstance
         .select()
         .from(users)
-        .where(eq(users.email, email))
+        .where(sql`LOWER(${users.email}) = LOWER(${trimmedEmail})`)
         .limit(1);
 
       if (!user) {
-        res.status(401).json({ error: "Ugyldig e-post eller passord" });
+        console.warn("[Auth] Login attempt for non-existent user:", trimmedEmail);
+        res.status(401).json({ 
+          error: "Ugyldig e-post eller passord",
+          hint: "Hvis du har glemt passordet, klikk på 'Glemt passord?' for å tilbakestille det."
+        });
         return;
       }
 
-      // Check password
+      // Check if user has a password set
       if (!user.passwordHash) {
-        res.status(401).json({ error: "Ugyldig e-post eller passord" });
+        console.warn("[Auth] Login attempt for user without password:", user.id);
+        res.status(401).json({ 
+          error: "Kontoen din bruker en annen innloggingsmetode",
+          hint: "Denne kontoen ble opprettet med en annen innloggingsmetode. Kontakt support for hjelp."
+        });
         return;
       }
 
+      // Verify password
       const isValidPassword = await authService.verifyPassword(password, user.passwordHash);
       if (!isValidPassword) {
-        res.status(401).json({ error: "Ugyldig e-post eller passord" });
+        console.warn("[Auth] Invalid password for user:", user.id);
+        res.status(401).json({ 
+          error: "Ugyldig e-post eller passord",
+          hint: "Hvis du har glemt passordet, klikk på 'Glemt passord?' for å tilbakestille det."
+        });
         return;
       }
 
       // Check if user is active
       if (!user.isActive) {
-        res.status(403).json({ error: "Kontoen er deaktivert" });
+        console.warn("[Auth] Login attempt for deactivated user:", user.id);
+        res.status(403).json({ 
+          error: "Kontoen er deaktivert",
+          hint: "Kontoen din har blitt deaktivert. Kontakt support for å reaktivere den."
+        });
+        return;
+      }
+
+      // Check if tenant exists and is active
+      const tenant = await db.getTenantById(user.tenantId);
+      if (!tenant) {
+        console.error("[Auth] User's tenant not found:", user.tenantId);
+        res.status(500).json({ 
+          error: "Kontokonfigurasjonsfeil",
+          hint: "Det er et problem med kontoen din. Kontakt support for hjelp."
+        });
+        return;
+      }
+
+      if (tenant.status === 'suspended' || tenant.status === 'canceled') {
+        console.warn("[Auth] Login attempt for suspended/canceled tenant:", tenant.id, "status:", tenant.status);
+        res.status(403).json({ 
+          error: tenant.status === 'suspended' 
+            ? "Abonnementet er suspendert"
+            : "Abonnementet er avsluttet",
+          hint: "Kontakt support for å reaktivere abonnementet."
+        });
         return;
       }
 
@@ -226,7 +285,7 @@ export function registerAuthRoutes(app: Express) {
       const sessionToken = await authService.createSessionToken({
         openId: user.openId,
         appId: ENV.appId,
-        name: user.name || email,
+        name: user.name || trimmedEmail,
         email: user.email || undefined,
       }, {
         expiresInMs: THIRTY_DAYS_MS,
@@ -246,6 +305,7 @@ export function registerAuthRoutes(app: Express) {
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: THIRTY_DAYS_MS });
       res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { ...cookieOptions, maxAge: 90 * 24 * 60 * 60 * 1000 }); // 90 days
 
+      console.log("[Auth] Successful login for user:", user.id, "email:", user.email);
       res.json({ 
         success: true,
         user: {
@@ -257,8 +317,11 @@ export function registerAuthRoutes(app: Express) {
         }
       });
     } catch (error) {
-      console.error("[Auth] Login failed", error);
-      res.status(500).json({ error: "Innlogging feilet" });
+      console.error("[Auth] Login failed with error:", error);
+      res.status(500).json({ 
+        error: "En uventet feil oppstod",
+        hint: "Vennligst prøv igjen. Hvis problemet vedvarer, kontakt support."
+      });
     }
   });
 
@@ -325,6 +388,14 @@ export function registerAuthRoutes(app: Express) {
         return;
       }
 
+      // Trim and validate email
+      const trimmedEmail = email.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmedEmail)) {
+        res.status(400).json({ error: "Vennligst oppgi en gyldig e-postadresse" });
+        return;
+      }
+
       if (password.length < 6) {
         res.status(400).json({ error: "Passordet må være minst 6 tegn" });
         return;
@@ -332,31 +403,36 @@ export function registerAuthRoutes(app: Express) {
 
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        res.status(500).json({ error: "Database ikke tilgjengelig" });
+        console.error("[Auth] Database not available for registration");
+        res.status(500).json({ error: "Tjenesten er midlertidig utilgjengelig. Prøv igjen senere." });
         return;
       }
 
-      // Check if email already exists
+      // Check if email already exists (case-insensitive)
       const [existingUser] = await dbInstance
         .select()
         .from(users)
-        .where(eq(users.email, email))
+        .where(sql`LOWER(${users.email}) = LOWER(${trimmedEmail})`)
         .limit(1);
 
       if (existingUser) {
-        res.status(400).json({ error: "E-postadressen er allerede registrert" });
+        console.warn("[Auth] Registration attempt with existing email:", trimmedEmail);
+        res.status(400).json({ 
+          error: "E-postadressen er allerede registrert",
+          hint: "Hvis dette er din konto, kan du logge inn eller bruke 'Glemt passord?' for å tilbakestille passordet."
+        });
         return;
       }
 
       // Create tenant
       const tenantId = `tenant-${nanoid(12)}`;
-      const subdomain = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') + '-' + nanoid(6);
+      const subdomain = trimmedEmail.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') + '-' + nanoid(6);
       
       await dbInstance.insert(tenants).values({
         id: tenantId,
-        name: salonName || `${name || email.split('@')[0]}'s Salong`,
+        name: salonName || `${name || trimmedEmail.split('@')[0]}'s Salong`,
         subdomain,
-        email,
+        email: trimmedEmail,
         phone: phone || null,
         status: 'trial',
         trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days trial
@@ -373,8 +449,8 @@ export function registerAuthRoutes(app: Express) {
       await dbInstance.insert(users).values({
         tenantId,
         openId,
-        email,
-        name: name || email.split('@')[0],
+        email: trimmedEmail,
+        name: name || trimmedEmail.split('@')[0],
         phone: phone || null,
         passwordHash,
         role: 'owner',
@@ -397,8 +473,8 @@ export function registerAuthRoutes(app: Express) {
       const sessionToken = await authService.createSessionToken({
         openId,
         appId: ENV.appId,
-        name: name || email.split('@')[0],
-        email,
+        name: name || trimmedEmail.split('@')[0],
+        email: trimmedEmail,
       }, {
         expiresInMs: ONE_YEAR_MS,
       });
@@ -419,8 +495,11 @@ export function registerAuthRoutes(app: Express) {
         }
       });
     } catch (error) {
-      console.error("[Auth] Registration failed", error);
-      res.status(500).json({ error: "Registrering feilet" });
+      console.error("[Auth] Registration failed with error:", error);
+      res.status(500).json({ 
+        error: "Registrering feilet",
+        hint: "Vennligst prøv igjen. Hvis problemet vedvarer, kontakt support."
+      });
     }
   });
 
@@ -433,25 +512,38 @@ export function registerAuthRoutes(app: Express) {
         res.status(400).json({ error: "E-post er påkrevd" });
         return;
       }
-      
-      const dbInstance = await db.getDb();
-      if (!dbInstance) {
-        res.status(500).json({ error: "Database ikke tilgjengelig" });
+
+      // Trim and validate email
+      const trimmedEmail = email.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(trimmedEmail)) {
+        res.status(400).json({ error: "Vennligst oppgi en gyldig e-postadresse" });
         return;
       }
       
-      // Check if user exists
+      const dbInstance = await db.getDb();
+      if (!dbInstance) {
+        console.error("[Auth] Database not available for forgot password");
+        res.status(500).json({ error: "Tjenesten er midlertidig utilgjengelig. Prøv igjen senere." });
+        return;
+      }
+      
+      // Check if user exists (case-insensitive)
       const [user] = await dbInstance
         .select()
         .from(users)
-        .where(eq(users.email, email))
+        .where(sql`LOWER(${users.email}) = LOWER(${trimmedEmail})`)
         .limit(1);
       
       // Always return success to prevent email enumeration
       // In production, you would send an email here
       if (user) {
-        console.log(`[Auth] Password reset requested for ${email}`);
-        // TODO: Send password reset email
+        console.log(`[Auth] Password reset requested for user ${user.id}, email: ${trimmedEmail}`);
+        // TODO: Send password reset email with reset token
+        // For now, log that the feature needs implementation
+        console.warn("[Auth] Password reset email not implemented yet - user should contact support");
+      } else {
+        console.log(`[Auth] Password reset requested for non-existent email: ${trimmedEmail}`);
       }
       
       res.json({ 

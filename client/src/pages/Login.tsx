@@ -13,11 +13,13 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [errorHint, setErrorHint] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setErrorHint("");
     setIsLoading(true);
 
     try {
@@ -32,6 +34,7 @@ export default function Login() {
 
       if (!response.ok) {
         setError(data.error || "Innlogging feilet");
+        setErrorHint(data.hint || "");
         return;
       }
 
@@ -39,6 +42,7 @@ export default function Login() {
       setLocation("/dashboard");
     } catch (err) {
       setError("Noe gikk galt. Prøv igjen.");
+      setErrorHint("");
     } finally {
       setIsLoading(false);
     }
@@ -67,7 +71,12 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
+                  <AlertDescription>
+                    <div className="font-medium">{error}</div>
+                    {errorHint && (
+                      <div className="text-sm mt-1 opacity-90">{errorHint}</div>
+                    )}
+                  </AlertDescription>
                 </Alert>
               )}
 
