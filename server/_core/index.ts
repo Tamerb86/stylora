@@ -51,8 +51,8 @@ const generalLimiter = rateLimit({
     const path = req.path || req.url || "";
     return (
       path.startsWith("/api/trpc") || // Exclude tRPC requests
-      req.url === "/api/stripe/webhook" ||
-      req.url === "/api/vipps/callback"
+      path === "/api/stripe/webhook" ||
+      path === "/api/vipps/callback"
     );
   },
 });
