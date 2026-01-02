@@ -160,8 +160,13 @@ export function registerAuthRoutes(app: Express) {
     try {
       const { email, password } = req.body ?? {};
 
+      // Validate input
       if (!email || !password) {
-        logAuth.loginFailed(String(email || "no-email"), "Missing credentials", clientIp);
+        logAuth.loginFailed(
+          String(email || "no-email"),
+          "Missing credentials",
+          clientIp
+        );
         res.status(400).json({ error: "E-post og passord er påkrevd" });
         return;
       }
@@ -174,7 +179,7 @@ export function registerAuthRoutes(app: Express) {
       }
 
       // DB instance
-      let dbInstance;
+      let dbInstance: Awaited<ReturnType<typeof db.getDb>> | null = null;
       try {
         dbInstance = await db.getDb();
         if (!dbInstance) throw new Error("Database connection returned null");
@@ -206,7 +211,11 @@ export function registerAuthRoutes(app: Express) {
 
       // Generic message to prevent enumeration
       if (!user || !user.passwordHash) {
-        logAuth.loginFailed(trimmedEmail, "User not found or no password", clientIp);
+        logAuth.loginFailed(
+          trimmedEmail,
+          "User not found or no password",
+          clientIp
+        );
         res.status(401).json({
           error: "Ugyldig e-post eller passord",
           hint: "Sjekk e-post og passord og prøv igjen.",
@@ -217,7 +226,10 @@ export function registerAuthRoutes(app: Express) {
       // Password verify
       let ok = false;
       try {
-        ok = await authService.verifyPassword(String(password), user.passwordHash);
+        ok = await authService.verifyPassword(
+          String(password),
+          user.passwordHash
+        );
       } catch (bcryptError) {
         logError("[Auth] Password verification error", bcryptError as Error, {
           email: trimmedEmail,
@@ -257,6 +269,7 @@ export function registerAuthRoutes(app: Express) {
           });
           return;
         }
+
         if (tenant.status === "suspended" || tenant.status === "canceled") {
           logAuth.loginFailed(trimmedEmail, `Tenant ${tenant.status}`, clientIp);
           res.status(403).json({
@@ -534,7 +547,7 @@ export function registerAuthRoutes(app: Express) {
   app.post("/api/auth/logout", async (req: Request, res: Response) => {
     try {
       const cookies = parseCookieHeader(req.headers.cookie || "");
-      const refreshToken = cookies[REFRESH_TOKEN_COOKIE_NAME];
+      const refreshToken = (cookies as any)[REFRESH_TOKEN_COOKIE_NAME];
 
       if (refreshToken) {
         const { revokeRefreshToken } = await import("./refresh-tokens");
