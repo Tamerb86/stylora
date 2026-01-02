@@ -145,17 +145,20 @@ export default function Onboarding() {
     },
   });
   
+  // Get default category translation
+  const defaultCategory = t("onboarding.services.defaultCategory");
+  
   // Service form state
   const [newService, setNewService] = useState<Partial<Service>>({
     name: "",
-    category: t("onboarding.services.defaultCategory"),
+    category: defaultCategory,
     duration: 30,
     price: 250,
     description: "",
     color: "#667eea",
   });
   
-  const [serviceCategories, setServiceCategories] = useState<string[]>([t("onboarding.services.defaultCategory")]);
+  const [serviceCategories, setServiceCategories] = useState<string[]>([defaultCategory]);
   const [newCategory, setNewCategory] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
@@ -288,7 +291,7 @@ export default function Onboarding() {
 
     setNewService({
       name: "",
-      category: t("onboarding.services.defaultCategory"),
+      category: defaultCategory,
       duration: 30,
       price: 250,
       description: "",
