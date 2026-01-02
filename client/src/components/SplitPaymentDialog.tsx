@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Banknote, CreditCard, Smartphone, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { safeToFixed } from "@/lib/utils";
 
 interface PaymentSplit {
   method: "cash" | "card" | "vipps" | "stripe";
@@ -122,7 +123,7 @@ export function SplitPaymentDialog({
         <DialogHeader>
           <DialogTitle>Delt betaling</DialogTitle>
           <DialogDescription>
-            Del betalingen på flere betalingsmetoder. Totalt: {totalAmount.toFixed(2)} NOK
+            Del betalingen på flere betalingsmetoder. Totalt: {safeToFixed(totalAmount, 2)} NOK
           </DialogDescription>
         </DialogHeader>
 
@@ -133,16 +134,16 @@ export function SplitPaymentDialog({
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
                   <div className="text-sm text-muted-foreground">Totalt</div>
-                  <div className="text-2xl font-bold">{totalAmount.toFixed(2)}</div>
+                  <div className="text-2xl font-bold">{safeToFixed(totalAmount, 2)}</div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Betalt</div>
-                  <div className="text-2xl font-bold">{currentTotal.toFixed(2)}</div>
+                  <div className="text-2xl font-bold">{safeToFixed(currentTotal, 2)}</div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground">Gjenstår</div>
                   <div className={`text-2xl font-bold ${remaining === 0 ? "text-green-600" : remaining < 0 ? "text-red-600" : "text-yellow-600"}`}>
-                    {remaining.toFixed(2)}
+                    {safeToFixed(remaining, 2)}
                   </div>
                 </div>
               </div>
@@ -297,8 +298,8 @@ export function SplitPaymentDialog({
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
                 {remaining < 0 
-                  ? `Beløpet overstiger totalen med ${Math.abs(remaining).toFixed(2)} NOK`
-                  : `Det gjenstår ${remaining.toFixed(2)} NOK å fordele`
+                  ? `Beløpet overstiger totalen med ${safeToFixed(Math.abs(remaining), 2)} NOK`
+                  : `Det gjenstår ${safeToFixed(remaining, 2)} NOK å fordele`
                 }
               </AlertDescription>
             </Alert>
