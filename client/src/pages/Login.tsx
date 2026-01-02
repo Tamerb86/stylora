@@ -31,14 +31,19 @@ export default function Login() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Innlogging feilet");
+        // Show detailed error message if available
+        const errorMessage = data.details 
+          ? `${data.error}\n${data.details}`
+          : data.error || "Innlogging feilet";
+        setError(errorMessage);
         return;
       }
 
       // Redirect to dashboard on success
       setLocation("/dashboard");
     } catch (err) {
-      setError("Noe gikk galt. Prøv igjen.");
+      console.error("Login error:", err);
+      setError("Noe gikk galt. Sjekk din internettforbindelse og prøv igjen.");
     } finally {
       setIsLoading(false);
     }
@@ -67,7 +72,7 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
+                  <AlertDescription className="whitespace-pre-line">{error}</AlertDescription>
                 </Alert>
               )}
 

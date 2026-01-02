@@ -181,44 +181,65 @@ export function registerAuthRoutes(app: Express) {
     try {
       const { email, password } = req.body;
 
+      // Validate input
       if (!email || !password) {
+        console.warn("[Auth] Login attempt with missing credentials");
         res.status(400).json({ error: "E-post og passord er påkrevd" });
         return;
       }
 
+      // Normalize email to lowercase for case-insensitive comparison
+      const normalizedEmail = email.trim().toLowerCase();
+
       // Get user from database
       const dbInstance = await db.getDb();
       if (!dbInstance) {
-        res.status(500).json({ error: "Database ikke tilgjengelig" });
+        console.error("[Auth] Database connection not available during login");
+        res.status(500).json({ 
+          error: "Database ikke tilgjengelig",
+          details: "Vennligst prøv igjen om noen minutter eller kontakt support."
+        });
         return;
       }
 
+      // Query user by normalized email (case-insensitive)
+      const { sql } = await import("drizzle-orm");
       const [user] = await dbInstance
         .select()
         .from(users)
-        .where(eq(users.email, email))
+        .where(sql`LOWER(${users.email}) = ${normalizedEmail}`)
         .limit(1);
 
       if (!user) {
+        console.warn(`[Auth] Login attempt for non-existent user: ${normalizedEmail}`);
         res.status(401).json({ error: "Ugyldig e-post eller passord" });
         return;
       }
 
       // Check password
       if (!user.passwordHash) {
-        res.status(401).json({ error: "Ugyldig e-post eller passord" });
+        console.warn(`[Auth] User ${user.id} has no password hash set`);
+        res.status(401).json({ 
+          error: "Ugyldig e-post eller passord",
+          details: "Kontoen er ikke konfigurert for innlogging med passord."
+        });
         return;
       }
 
       const isValidPassword = await authService.verifyPassword(password, user.passwordHash);
       if (!isValidPassword) {
+        console.warn(`[Auth] Invalid password for user: ${normalizedEmail} (ID: ${user.id})`);
         res.status(401).json({ error: "Ugyldig e-post eller passord" });
         return;
       }
 
       // Check if user is active
       if (!user.isActive) {
-        res.status(403).json({ error: "Kontoen er deaktivert" });
+        console.warn(`[Auth] Login attempt for deactivated user: ${normalizedEmail} (ID: ${user.id})`);
+        res.status(403).json({ 
+          error: "Kontoen er deaktivert",
+          details: "Kontakt din administrator for å aktivere kontoen."
+        });
         return;
       }
 
@@ -246,6 +267,7 @@ export function registerAuthRoutes(app: Express) {
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: THIRTY_DAYS_MS });
       res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { ...cookieOptions, maxAge: 90 * 24 * 60 * 60 * 1000 }); // 90 days
 
+      console.log(`[Auth] Successful login for user: ${normalizedEmail} (ID: ${user.id})`);
       res.json({ 
         success: true,
         user: {
@@ -257,8 +279,11 @@ export function registerAuthRoutes(app: Express) {
         }
       });
     } catch (error) {
-      console.error("[Auth] Login failed", error);
-      res.status(500).json({ error: "Innlogging feilet" });
+      console.error("[Auth] Login failed with error:", error);
+      res.status(500).json({ 
+        error: "Innlogging feilet",
+        details: "En teknisk feil oppstod. Vennligst prøv igjen."
+      });
     }
   });
 
@@ -330,33 +355,39 @@ export function registerAuthRoutes(app: Express) {
         return;
       }
 
+      // Normalize email to lowercase
+      const normalizedEmail = email.trim().toLowerCase();
+
       const dbInstance = await db.getDb();
       if (!dbInstance) {
+        console.error("[Auth] Database not available during registration");
         res.status(500).json({ error: "Database ikke tilgjengelig" });
         return;
       }
 
-      // Check if email already exists
+      // Check if email already exists (case-insensitive)
+      const { sql } = await import("drizzle-orm");
       const [existingUser] = await dbInstance
         .select()
         .from(users)
-        .where(eq(users.email, email))
+        .where(sql`LOWER(${users.email}) = ${normalizedEmail}`)
         .limit(1);
 
       if (existingUser) {
+        console.warn(`[Auth] Registration attempt with existing email: ${normalizedEmail}`);
         res.status(400).json({ error: "E-postadressen er allerede registrert" });
         return;
       }
 
       // Create tenant
       const tenantId = `tenant-${nanoid(12)}`;
-      const subdomain = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') + '-' + nanoid(6);
+      const subdomain = normalizedEmail.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') + '-' + nanoid(6);
       
       await dbInstance.insert(tenants).values({
         id: tenantId,
-        name: salonName || `${name || email.split('@')[0]}'s Salong`,
+        name: salonName || `${name || normalizedEmail.split('@')[0]}'s Salong`,
         subdomain,
-        email,
+        email: normalizedEmail,
         phone: phone || null,
         status: 'trial',
         trialEndsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days trial
@@ -373,8 +404,8 @@ export function registerAuthRoutes(app: Express) {
       await dbInstance.insert(users).values({
         tenantId,
         openId,
-        email,
-        name: name || email.split('@')[0],
+        email: normalizedEmail,
+        name: name || normalizedEmail.split('@')[0],
         phone: phone || null,
         passwordHash,
         role: 'owner',
@@ -397,8 +428,8 @@ export function registerAuthRoutes(app: Express) {
       const sessionToken = await authService.createSessionToken({
         openId,
         appId: ENV.appId,
-        name: name || email.split('@')[0],
-        email,
+        name: name || normalizedEmail.split('@')[0],
+        email: normalizedEmail,
       }, {
         expiresInMs: ONE_YEAR_MS,
       });
@@ -407,6 +438,7 @@ export function registerAuthRoutes(app: Express) {
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
+      console.log(`[Auth] New user registered: ${normalizedEmail} (ID: ${newUser?.id})`);
       res.json({ 
         success: true,
         message: "Registrering vellykket!",
@@ -419,7 +451,7 @@ export function registerAuthRoutes(app: Express) {
         }
       });
     } catch (error) {
-      console.error("[Auth] Registration failed", error);
+      console.error("[Auth] Registration failed:", error);
       res.status(500).json({ error: "Registrering feilet" });
     }
   });
@@ -434,24 +466,31 @@ export function registerAuthRoutes(app: Express) {
         return;
       }
       
+      // Normalize email to lowercase
+      const normalizedEmail = email.trim().toLowerCase();
+      
       const dbInstance = await db.getDb();
       if (!dbInstance) {
+        console.error("[Auth] Database not available for password reset");
         res.status(500).json({ error: "Database ikke tilgjengelig" });
         return;
       }
       
-      // Check if user exists
+      // Check if user exists (case-insensitive)
+      const { sql } = await import("drizzle-orm");
       const [user] = await dbInstance
         .select()
         .from(users)
-        .where(eq(users.email, email))
+        .where(sql`LOWER(${users.email}) = ${normalizedEmail}`)
         .limit(1);
       
       // Always return success to prevent email enumeration
       // In production, you would send an email here
       if (user) {
-        console.log(`[Auth] Password reset requested for ${email}`);
+        console.log(`[Auth] Password reset requested for ${normalizedEmail} (ID: ${user.id})`);
         // TODO: Send password reset email
+      } else {
+        console.log(`[Auth] Password reset requested for non-existent email: ${normalizedEmail}`);
       }
       
       res.json({ 

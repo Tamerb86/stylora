@@ -467,6 +467,23 @@ Sitemap: https://www.stylora.no/sitemap.xml`;
   server.listen(port, async () => {
     console.log(`Server running on http://localhost:${port}/`);
     
+    // Validate database connectivity on startup
+    console.log("[Database] Validating database connection...");
+    try {
+      const { getDb } = await import("../db");
+      const dbInstance = await getDb();
+      if (!dbInstance) {
+        console.error("❌ [Database] CRITICAL: Database connection failed!");
+        console.error("[Database] Please check your DATABASE_URL environment variable");
+        console.error("[Database] Server will continue but authentication will not work");
+      } else {
+        console.log("✅ [Database] Connection validated successfully");
+      }
+    } catch (error) {
+      console.error("❌ [Database] CRITICAL: Database validation error:", error);
+      console.error("[Database] Server will continue but authentication will not work");
+    }
+    
     // Only start schedulers if this is a worker instance or not specified
     // This prevents duplicate scheduler jobs when running multiple instances
     const instanceType = process.env.INSTANCE_TYPE;
