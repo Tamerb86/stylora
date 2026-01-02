@@ -1,4 +1,4 @@
-# Integration Check Report - BarberTime/Stylora
+# Integration Check Report - Stylora/Stylora
 
 ## Date: December 15, 2024
 
