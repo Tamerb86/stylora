@@ -12,7 +12,7 @@ import { ENV } from "./env";
 import { getSessionCookieOptions } from "./cookies";
 import bcrypt from "bcrypt";
 import { users, tenants } from "../../drizzle/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 const isNonEmptyString = (value: unknown): value is string =>
@@ -203,7 +203,6 @@ export function registerAuthRoutes(app: Express) {
       }
 
       // Query user by normalized email (case-insensitive)
-      const { sql } = await import("drizzle-orm");
       const [user] = await dbInstance
         .select()
         .from(users)
@@ -366,7 +365,6 @@ export function registerAuthRoutes(app: Express) {
       }
 
       // Check if email already exists (case-insensitive)
-      const { sql } = await import("drizzle-orm");
       const [existingUser] = await dbInstance
         .select()
         .from(users)
@@ -477,7 +475,6 @@ export function registerAuthRoutes(app: Express) {
       }
       
       // Check if user exists (case-insensitive)
-      const { sql } = await import("drizzle-orm");
       const [user] = await dbInstance
         .select()
         .from(users)
