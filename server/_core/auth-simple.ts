@@ -4,7 +4,7 @@
  */
 
 import { SignJWT, jwtVerify } from "jose";
-import { COOKIE_NAME, THIRTY_DAYS_MS, REFRESH_TOKEN_COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+import { COOKIE_NAME, THIRTY_DAYS_MS, NINETY_DAYS_MS, REFRESH_TOKEN_COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import type { Request, Response, Express } from "express";
 import { parse as parseCookieHeader } from "cookie";
 import * as db from "../db";
@@ -217,7 +217,7 @@ export function registerAuthRoutes(app: Express) {
       try {
         dbInstance = await db.getDb();
         if (!dbInstance) {
-          throw new Error("Database connection returned null");
+          throw new Error("Failed to establish database connection: connection returned null");
         }
       } catch (dbError) {
         console.error("[Auth] Database connection error:", dbError);
@@ -353,7 +353,7 @@ export function registerAuthRoutes(app: Express) {
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: THIRTY_DAYS_MS });
       if (refreshToken) {
-        res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { ...cookieOptions, maxAge: 90 * 24 * 60 * 60 * 1000 }); // 90 days
+        res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { ...cookieOptions, maxAge: NINETY_DAYS_MS });
       }
 
       console.log("[Auth] Successful login for user:", user.id, "email:", user.email);
