@@ -15,6 +15,7 @@ import { scheduleBackups } from "../services/backup";
 import { handleStripeWebhook } from "../stripe-webhook";
 import { handleVippsCallback } from "../vipps-callback";
 import * as Sentry from "@sentry/node";
+import { getDb } from "../db";
 
 // Initialize Sentry for error tracking
 if (process.env.SENTRY_DSN) {
@@ -470,7 +471,6 @@ Sitemap: https://www.stylora.no/sitemap.xml`;
     // Validate database connectivity on startup
     console.log("[Database] Validating database connection...");
     try {
-      const { getDb } = await import("../db");
       const dbInstance = await getDb();
       if (!dbInstance) {
         console.error("❌ [Database] CRITICAL: Database connection failed!");

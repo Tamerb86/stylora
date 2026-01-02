@@ -34,7 +34,7 @@ export default function Login() {
         // Show detailed error message if available
         const errorMessage = data.details 
           ? `${data.error}\n${data.details}`
-          : data.error || "Innlogging feilet";
+          : (data.error || "Innlogging feilet");
         setError(errorMessage);
         return;
       }
