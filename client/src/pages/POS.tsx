@@ -691,7 +691,7 @@ export default function POS() {
                             </p>
                           </div>
                           <p className="font-bold text-orange-600">
-                            {safeToFixed(parseFloat(product.retailPrice), 0)} kr
+                            {safeToFixed(parseFloat(product.retailPrice) || 0, 0)} kr
                           </p>
                         </div>
                         <Button

@@ -348,7 +348,7 @@ function FinancialContent() {
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium">{category?.label || item.category}</span>
                       <span className="text-muted-foreground">
-                        {formatCurrency(parseFloat(item.total))} ({safeToFixed(percentage, 1)}%)
+                        {formatCurrency(parseFloat(item.total) || 0)} ({safeToFixed(percentage, 1)}%)
                       </span>
                     </div>
                     <div className="h-2 bg-secondary rounded-full overflow-hidden">
