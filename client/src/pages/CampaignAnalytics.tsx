@@ -17,6 +17,7 @@ import {
   Users
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { safeToFixed } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -82,17 +83,17 @@ export function CampaignAnalytics() {
   const calculateMetrics = (campaign: any) => {
     const deliveryRate =
       campaign.recipientCount > 0
-        ? ((campaign.deliveredCount / campaign.recipientCount) * 100).toFixed(1)
+        ? safeToFixed((campaign.deliveredCount / campaign.recipientCount) * 100, 1)
         : "0.0";
 
     const openRate =
       campaign.deliveredCount > 0
-        ? ((campaign.openedCount / campaign.deliveredCount) * 100).toFixed(1)
+        ? safeToFixed((campaign.openedCount / campaign.deliveredCount) * 100, 1)
         : "0.0";
 
     const clickRate =
       campaign.openedCount > 0
-        ? ((campaign.clickedCount / campaign.openedCount) * 100).toFixed(1)
+        ? safeToFixed((campaign.clickedCount / campaign.openedCount) * 100, 1)
         : "0.0";
 
     return { deliveryRate, openRate, clickRate };
