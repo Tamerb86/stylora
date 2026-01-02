@@ -8,6 +8,17 @@ import { nb } from "date-fns/locale";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar, Clock, User } from "lucide-react";
 
+interface EmployeeWorkData {
+  employeeId: number;
+  employeeName: string;
+  totalHours: string;
+  shiftCount: number;
+  daysWorked: number;
+  avgHoursPerShift: string;
+  firstDay: string | null;
+  lastDay: string | null;
+}
+
 export default function WorkHoursReport() {
   const [period, setPeriod] = useState<"week" | "month">("week");
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | undefined>(undefined);
@@ -138,7 +149,7 @@ export default function WorkHoursReport() {
 
             <Card>
               <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-gray-600">Gj.snitt timer/dag</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-600">Gjennomsnitt timer/dag</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2">
@@ -166,11 +177,11 @@ export default function WorkHoursReport() {
                       <th className="text-right py-3 px-4 font-semibold text-gray-700">Totale timer</th>
                       <th className="text-right py-3 px-4 font-semibold text-gray-700">Antall vakter</th>
                       <th className="text-right py-3 px-4 font-semibold text-gray-700">Dager arbeidet</th>
-                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Gj.snitt timer/vakt</th>
+                      <th className="text-right py-3 px-4 font-semibold text-gray-700">Gjennomsnitt timer/vakt</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {report.employees.map((emp: any) => (
+                    {report.employees.map((emp: EmployeeWorkData) => (
                       <tr key={emp.employeeId} className="border-b hover:bg-gray-50">
                         <td className="py-3 px-4">
                           <div className="flex items-center gap-2">
