@@ -142,7 +142,7 @@
     "cashPayment": "دفع نقدي",
     "cardPayment": "دفع بالبطاقة",
     "completeSale": "إتمام البيع",
-    "processing": "جاري المعالجة...",
+    "processing": "جاري معالجة الدفع...",
     "clearCart": "إفراغ السلة",
     "backToDashboard": "العودة إلى لوحة التحكم",
     "customerSelected": "تم اختيار العميل: {name}",
@@ -185,8 +185,7 @@
     "shortcutCard": "دفع بالبطاقة",
     "paymentInstructions": "اتبع التعليمات على قارئ البطاقات",
     "insertCard": "أدخل البطاقة",
-    "removeCard": "أخرج البطاقة",
-    "processing": "جاري معالجة الدفع..."
+    "removeCard": "أخرج البطاقة"
   },
   "common": {
     "loading": "جاري التحميل...",
@@ -307,7 +306,8 @@
       "maxEmployeesReached": "الحد الأقصى 10 موظفين",
       "canAddLater": "يمكنك إضافة الموظفين لاحقاً من لوحة التحكم",
       "employeeAdded": "تم إضافة الموظف",
-      "employeeRemoved": "تم حذف الموظف"
+      "employeeRemoved": "تم حذف الموظف",
+      "nameAndEmailRequired": "الاسم والبريد الإلكتروني مطلوبان"
     },
     "services": {
       "requiredNote": "⚠️ يجب إضافة خدمة واحدة على الأقل للمتابعة",

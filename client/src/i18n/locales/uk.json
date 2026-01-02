@@ -142,7 +142,7 @@
     "cashPayment": "Оплата готівкою",
     "cardPayment": "Оплата карткою",
     "completeSale": "Завершити продаж",
-    "processing": "Обробка...",
+    "processing": "Обробка оплати...",
     "clearCart": "Очистити кошик",
     "backToDashboard": "Повернутися до панелі",
     "customerSelected": "Клієнта вибрано: {name}",
@@ -185,8 +185,7 @@
     "shortcutCard": "Оплата карткою",
     "paymentInstructions": "Дотримуйтеся інструкцій на зчитувачі карток",
     "insertCard": "Вставте картку",
-    "removeCard": "Вийміть картку",
-    "processing": "Обробка оплати..."
+    "removeCard": "Вийміть картку"
   },
   "common": {
     "loading": "Завантаження...",
@@ -307,7 +306,8 @@
       "maxEmployeesReached": "Максимум 10 працівників",
       "canAddLater": "Ви можете додати працівників пізніше з панелі керування",
       "employeeAdded": "Працівника додано",
-      "employeeRemoved": "Працівника видалено"
+      "employeeRemoved": "Працівника видалено",
+      "nameAndEmailRequired": "Ім'я та електронна пошта обов'язкові"
     },
     "services": {
       "requiredNote": "⚠️ Потрібно додати принаймні одну послугу для продовження",

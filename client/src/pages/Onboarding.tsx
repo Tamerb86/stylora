@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -151,16 +151,24 @@ export default function Onboarding() {
   // Service form state
   const [newService, setNewService] = useState<Partial<Service>>({
     name: "",
-    category: defaultCategory,
+    category: "",
     duration: 30,
     price: 250,
     description: "",
     color: "#667eea",
   });
   
-  const [serviceCategories, setServiceCategories] = useState<string[]>([defaultCategory]);
+  const [serviceCategories, setServiceCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  // Initialize category with translation when it becomes available
+  useEffect(() => {
+    if (defaultCategory) {
+      setNewService(prev => ({ ...prev, category: defaultCategory }));
+      setServiceCategories([defaultCategory]);
+    }
+  }, [defaultCategory]);
 
   const progress = (currentStep / steps.length) * 100;
 
@@ -212,7 +220,7 @@ export default function Onboarding() {
   // Employee functions
   const addEmployee = () => {
     if (!newEmployee.name || !newEmployee.email) {
-      toast.error(t("onboarding.employees.nameRequired") + " & " + t("onboarding.employees.emailRequired"));
+      toast.error(t("onboarding.employees.nameAndEmailRequired"));
       return;
     }
     

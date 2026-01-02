@@ -142,7 +142,7 @@
     "cashPayment": "Kontantbetaling",
     "cardPayment": "Kortbetaling",
     "completeSale": "Fullfør salg",
-    "processing": "Behandler...",
+    "processing": "Behandler betaling...",
     "clearCart": "Tøm kurv",
     "backToDashboard": "Tilbake til dashbord",
     "customerSelected": "Kunde valgt: {name}",
@@ -185,8 +185,7 @@
     "shortcutCard": "Kortbetaling",
     "paymentInstructions": "Følg instruksjonene på kortleseren",
     "insertCard": "Sett inn kort",
-    "removeCard": "Fjern kort",
-    "processing": "Behandler betaling..."
+    "removeCard": "Fjern kort"
   },
   "common": {
     "loading": "Laster...",
@@ -307,7 +306,8 @@
       "maxEmployeesReached": "Maksimum 10 ansatte",
       "canAddLater": "Du kan legge til ansatte senere fra dashbordet",
       "employeeAdded": "Ansatt lagt til",
-      "employeeRemoved": "Ansatt fjernet"
+      "employeeRemoved": "Ansatt fjernet",
+      "nameAndEmailRequired": "Navn og e-post er påkrevd"
     },
     "services": {
       "requiredNote": "⚠️ Minst én tjeneste må legges til for å fortsette",

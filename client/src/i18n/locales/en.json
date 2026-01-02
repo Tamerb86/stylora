@@ -289,6 +289,7 @@
       "name": "Name",
       "namePlaceholder": "Mohammed Ahmed",
       "nameRequired": "Name is required",
+      "nameAndEmailRequired": "Name and email are required",
       "email": "Email",
       "emailPlaceholder": "mohammed@example.com",
       "emailRequired": "Email is required",
