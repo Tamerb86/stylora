@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -17,27 +17,33 @@ import { useLocation } from "wouter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { useTranslation } from "react-i18next";
 
-// Step 1: Salon Information
-const salonInfoSchema = z.object({
-  salonName: z.string().min(2, "اسم الصالون مطلوب"),
-  subdomain: z.string().min(3, "النطاق الفرعي مطلوب").regex(/^[a-z0-9-]+$/, "حروف صغيرة وأرقام فقط"),
-  address: z.string().min(5, "العنوان مطلوب"),
-  city: z.string().min(2, "المدينة مطلوبة"),
-  phone: z.string().min(8, "رقم الهاتف مطلوب"),
-  email: z.string().email("بريد إلكتروني غير صالح"),
-});
+// Helper function to create schemas with i18n
+const createSchemas = (t: (key: string) => string) => {
+  // Step 1: Salon Information
+  const salonInfoSchema = z.object({
+    salonName: z.string().min(2, t("onboarding.salonInfo.salonNameRequired")),
+    subdomain: z.string().min(3, t("onboarding.salonInfo.subdomainRequired")).regex(/^[a-z0-9-]+$/, t("onboarding.salonInfo.subdomainPattern")),
+    address: z.string().min(5, t("onboarding.salonInfo.addressRequired")),
+    city: z.string().min(2, t("onboarding.salonInfo.cityRequired")),
+    phone: z.string().min(8, t("onboarding.salonInfo.phoneRequired")),
+    email: z.string().email(t("onboarding.salonInfo.emailInvalid")),
+  });
 
-// Step 2: Owner Account
-const ownerAccountSchema = z.object({
-  ownerName: z.string().min(2, "الاسم مطلوب"),
-  ownerEmail: z.string().email("بريد إلكتروني غير صالح"),
-  password: z.string().min(8, "كلمة المرور يجب أن تكون 8 أحرف على الأقل"),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "كلمات المرور غير متطابقة",
-  path: ["confirmPassword"],
-});
+  // Step 2: Owner Account
+  const ownerAccountSchema = z.object({
+    ownerName: z.string().min(2, t("onboarding.ownerAccount.fullNameRequired")),
+    ownerEmail: z.string().email(t("onboarding.ownerAccount.emailInvalid")),
+    password: z.string().min(8, t("onboarding.ownerAccount.passwordMinLength")),
+    confirmPassword: z.string(),
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: t("onboarding.ownerAccount.passwordsMismatch"),
+    path: ["confirmPassword"],
+  });
+
+  return { salonInfoSchema, ownerAccountSchema };
+};
 
 // Step 3: Business Hours
 const businessHoursSchema = z.object({
@@ -82,36 +88,16 @@ type Service = {
 };
 
 type OnboardingData = {
-  salonInfo: z.infer<typeof salonInfoSchema>;
-  ownerAccount: z.infer<typeof ownerAccountSchema>;
+  salonInfo: z.infer<ReturnType<typeof createSchemas>["salonInfoSchema"]>;
+  ownerAccount: z.infer<ReturnType<typeof createSchemas>["ownerAccountSchema"]>;
   businessHours: z.infer<typeof businessHoursSchema>;
   employees: Employee[];
   services: Service[];
   paymentSettings: { stripeEnabled: boolean; vippsEnabled: boolean };
 };
 
-const steps = [
-  { id: 1, name: "معلومات الصالون", icon: Building2 },
-  { id: 2, name: "حساب المالك", icon: User },
-  { id: 3, name: "ساعات العمل", icon: Clock },
-  { id: 4, name: "الموظفين", icon: Users },
-  { id: 5, name: "الخدمات", icon: Scissors },
-  { id: 6, name: "إعدادات الدفع", icon: CreditCard },
-  { id: 7, name: "المراجعة", icon: FileCheck },
-];
-
-const serviceColors = [
-  { value: "#667eea", label: "بنفسجي" },
-  { value: "#f56565", label: "أحمر" },
-  { value: "#48bb78", label: "أخضر" },
-  { value: "#ed8936", label: "برتقالي" },
-  { value: "#4299e1", label: "أزرق" },
-  { value: "#9f7aea", label: "أرجواني" },
-  { value: "#ed64a6", label: "وردي" },
-  { value: "#38b2ac", label: "تركواز" },
-];
-
 export default function Onboarding() {
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(1);
   const [onboardingData, setOnboardingData] = useState<Partial<OnboardingData>>({
     employees: [],
@@ -119,6 +105,32 @@ export default function Onboarding() {
     paymentSettings: { stripeEnabled: false, vippsEnabled: false },
   });
   const [, setLocation] = useLocation();
+  
+  // Create schemas with current translations (memoized)
+  const { salonInfoSchema, ownerAccountSchema } = useMemo(() => createSchemas(t), [t]);
+
+  // Define steps with translations (memoized)
+  const steps = useMemo(() => [
+    { id: 1, name: t("onboarding.steps.salonInfo"), icon: Building2 },
+    { id: 2, name: t("onboarding.steps.ownerAccount"), icon: User },
+    { id: 3, name: t("onboarding.steps.businessHours"), icon: Clock },
+    { id: 4, name: t("onboarding.steps.employees"), icon: Users },
+    { id: 5, name: t("onboarding.steps.services"), icon: Scissors },
+    { id: 6, name: t("onboarding.steps.paymentSettings"), icon: CreditCard },
+    { id: 7, name: t("onboarding.steps.review"), icon: FileCheck },
+  ], [t]);
+
+  // Service colors with translations (memoized)
+  const serviceColors = useMemo(() => [
+    { value: "#667eea", label: t("onboarding.services.colorOptions.purple") },
+    { value: "#f56565", label: t("onboarding.services.colorOptions.red") },
+    { value: "#48bb78", label: t("onboarding.services.colorOptions.green") },
+    { value: "#ed8936", label: t("onboarding.services.colorOptions.orange") },
+    { value: "#4299e1", label: t("onboarding.services.colorOptions.blue") },
+    { value: "#9f7aea", label: t("onboarding.services.colorOptions.violet") },
+    { value: "#ed64a6", label: t("onboarding.services.colorOptions.pink") },
+    { value: "#38b2ac", label: t("onboarding.services.colorOptions.teal") },
+  ], [t]);
   
   // Employee form state
   const [newEmployee, setNewEmployee] = useState<Partial<Employee>>({
@@ -133,19 +145,32 @@ export default function Onboarding() {
     },
   });
   
+  // Get default category translation (memoized with fallback)
+  const defaultCategory = useMemo(() => t("onboarding.services.defaultCategory") || "General Services", [t]);
+  
   // Service form state
   const [newService, setNewService] = useState<Partial<Service>>({
     name: "",
-    category: "خدمات عامة",
+    category: "",
     duration: 30,
     price: 250,
     description: "",
     color: "#667eea",
   });
   
-  const [serviceCategories, setServiceCategories] = useState<string[]>(["خدمات عامة"]);
+  const [serviceCategories, setServiceCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  // Initialize category with translation when it becomes available
+  useEffect(() => {
+    if (defaultCategory) {
+      // Only initialize if categories are empty (first load)
+      setServiceCategories(prev => prev.length === 0 ? [defaultCategory] : prev);
+      // Only update newService category if it's still empty
+      setNewService(prev => prev.category === "" ? { ...prev, category: defaultCategory } : prev);
+    }
+  }, [defaultCategory]);
 
   const progress = (currentStep / steps.length) * 100;
 
@@ -183,26 +208,26 @@ export default function Onboarding() {
 
   const completeOnboarding = trpc.onboarding.complete.useMutation({
     onSuccess: (data) => {
-      toast.success("تم إنشاء حسابك بنجاح! 🎉");
-      toast.info("تم إرسال بريد إلكتروني ترحيبي إلى " + data.email);
+      toast.success(t("onboarding.messages.accountCreated"));
+      toast.info(t("onboarding.messages.welcomeEmailSent", { email: data.email }));
       setTimeout(() => {
         setLocation("/login");
       }, 2000);
     },
     onError: (error) => {
-      toast.error("حدث خطأ: " + error.message);
+      toast.error(t("onboarding.messages.error", { message: error.message }));
     },
   });
 
   // Employee functions
   const addEmployee = () => {
     if (!newEmployee.name || !newEmployee.email) {
-      toast.error("الاسم والبريد الإلكتروني مطلوبان");
+      toast.error(t("onboarding.employees.nameAndEmailRequired"));
       return;
     }
     
     if (onboardingData.employees && onboardingData.employees.length >= 10) {
-      toast.error("الحد الأقصى 10 موظفين");
+      toast.error(t("onboarding.employees.maxEmployeesReached"));
       return;
     }
 
@@ -236,7 +261,7 @@ export default function Onboarding() {
       },
     });
 
-    toast.success("تم إضافة الموظف");
+    toast.success(t("onboarding.employees.employeeAdded"));
   };
 
   const removeEmployee = (id: string) => {
@@ -244,25 +269,25 @@ export default function Onboarding() {
       ...prev,
       employees: prev.employees?.filter((e) => e.id !== id),
     }));
-    toast.success("تم حذف الموظف");
+    toast.success(t("onboarding.employees.employeeRemoved"));
   };
 
   // Service functions
   const addService = () => {
     if (!newService.name) {
-      toast.error("اسم الخدمة مطلوب");
+      toast.error(t("onboarding.services.serviceNameRequired"));
       return;
     }
     
     if (onboardingData.services && onboardingData.services.length >= 20) {
-      toast.error("الحد الأقصى 20 خدمة");
+      toast.error(t("onboarding.services.maxServicesReached"));
       return;
     }
 
     const service: Service = {
       id: Math.random().toString(36).substr(2, 9),
       name: newService.name!,
-      category: newService.category || "خدمات عامة",
+      category: newService.category || t("onboarding.services.defaultCategory"),
       duration: newService.duration || 30,
       price: newService.price || 250,
       description: newService.description || "",
@@ -276,14 +301,14 @@ export default function Onboarding() {
 
     setNewService({
       name: "",
-      category: "خدمات عامة",
+      category: defaultCategory,
       duration: 30,
       price: 250,
       description: "",
       color: "#667eea",
     });
 
-    toast.success("تم إضافة الخدمة");
+    toast.success(t("onboarding.services.serviceAdded"));
   };
 
   const removeService = (id: string) => {
@@ -291,24 +316,24 @@ export default function Onboarding() {
       ...prev,
       services: prev.services?.filter((s) => s.id !== id),
     }));
-    toast.success("تم حذف الخدمة");
+    toast.success(t("onboarding.services.serviceRemoved"));
   };
 
   const addCategory = () => {
     if (!newCategory.trim()) {
-      toast.error("اسم الفئة مطلوب");
+      toast.error(t("onboarding.services.categoryRequired"));
       return;
     }
     
     if (serviceCategories.includes(newCategory.trim())) {
-      toast.error("الفئة موجودة بالفعل");
+      toast.error(t("onboarding.services.categoryExists"));
       return;
     }
 
     setServiceCategories([...serviceCategories, newCategory.trim()]);
     setNewService({ ...newService, category: newCategory.trim() });
     setNewCategory("");
-    toast.success("تم إضافة الفئة");
+    toast.success(t("onboarding.services.categoryAdded"));
   };
 
   const handleNext = () => {
@@ -330,13 +355,13 @@ export default function Onboarding() {
     } else if (currentStep === 4) {
       // Employees step - optional, can skip
       if (!onboardingData.employees || onboardingData.employees.length === 0) {
-        toast.info("يمكنك إضافة الموظفين لاحقاً من لوحة التحكم");
+        toast.info(t("onboarding.employees.canAddLater"));
       }
       setCurrentStep(5);
     } else if (currentStep === 5) {
       // Services step - at least one service required
       if (!onboardingData.services || onboardingData.services.length === 0) {
-        toast.error("يجب إضافة خدمة واحدة على الأقل");
+        toast.error(t("onboarding.services.atLeastOneServiceRequired"));
         return;
       }
       setCurrentStep(6);
@@ -346,7 +371,7 @@ export default function Onboarding() {
     } else if (currentStep === 7) {
       // Final review - submit
       if (!acceptedTerms) {
-        toast.error("يجب الموافقة على الشروط والأحكام");
+        toast.error(t("onboarding.review.termsRequired"));
         return;
       }
       completeOnboarding.mutate(onboardingData as OnboardingData);
@@ -371,9 +396,9 @@ export default function Onboarding() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-orange-500 bg-clip-text text-transparent mb-2">
-            مرحباً في Stylora
+            {t("onboarding.welcome")}
           </h1>
-          <p className="text-gray-600">دعنا نساعدك في إعداد صالونك في دقائق</p>
+          <p className="text-gray-600">{t("onboarding.subtitle")}</p>
         </div>
 
         {/* Progress Bar */}
@@ -416,13 +441,13 @@ export default function Onboarding() {
           <CardHeader>
             <CardTitle className="text-2xl">{steps[currentStep - 1].name}</CardTitle>
             <CardDescription>
-              {currentStep === 1 && "أدخل معلومات الصالون الأساسية"}
-              {currentStep === 2 && "أنشئ حساب المالك/المدير"}
-              {currentStep === 3 && "حدد ساعات عمل الصالون"}
-              {currentStep === 4 && "أضف الموظفين مع أدوارهم وصلاحياتهم (اختياري)"}
-              {currentStep === 5 && "أنشئ الخدمات التي يقدمها صالونك"}
-              {currentStep === 6 && "قم بإعداد طرق الدفع (اختياري)"}
-              {currentStep === 7 && "راجع المعلومات وأكمل التسجيل"}
+              {currentStep === 1 && t("onboarding.stepDescriptions.salonInfo")}
+              {currentStep === 2 && t("onboarding.stepDescriptions.ownerAccount")}
+              {currentStep === 3 && t("onboarding.stepDescriptions.businessHours")}
+              {currentStep === 4 && t("onboarding.stepDescriptions.employees")}
+              {currentStep === 5 && t("onboarding.stepDescriptions.services")}
+              {currentStep === 6 && t("onboarding.stepDescriptions.paymentSettings")}
+              {currentStep === 7 && t("onboarding.stepDescriptions.review")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -430,11 +455,11 @@ export default function Onboarding() {
             {currentStep === 1 && (
               <form className="space-y-4">
                 <div>
-                  <Label htmlFor="salonName">اسم الصالون *</Label>
+                  <Label htmlFor="salonName">{t("onboarding.salonInfo.salonName")} *</Label>
                   <Input
                     id="salonName"
                     {...salonInfoForm.register("salonName")}
-                    placeholder="صالون الجمال الملكي"
+                    placeholder={t("onboarding.salonInfo.salonNamePlaceholder")}
                   />
                   {salonInfoForm.formState.errors.salonName && (
                     <p className="text-sm text-red-500 mt-1">
@@ -444,15 +469,15 @@ export default function Onboarding() {
                 </div>
 
                 <div>
-                  <Label htmlFor="subdomain">النطاق الفرعي *</Label>
+                  <Label htmlFor="subdomain">{t("onboarding.salonInfo.subdomain")} *</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       id="subdomain"
                       {...salonInfoForm.register("subdomain")}
-                      placeholder="royal-salon"
+                      placeholder={t("onboarding.salonInfo.subdomainPlaceholder")}
                       className="flex-1"
                     />
-                    <span className="text-sm text-gray-500">.stylora.no</span>
+                    <span className="text-sm text-gray-500">{t("onboarding.salonInfo.subdomainSuffix")}</span>
                   </div>
                   {salonInfoForm.formState.errors.subdomain && (
                     <p className="text-sm text-red-500 mt-1">
@@ -460,17 +485,17 @@ export default function Onboarding() {
                     </p>
                   )}
                   <p className="text-xs text-gray-500 mt-1">
-                    سيكون رابط صالونك: royal-salon.stylora.no
+                    {t("onboarding.salonInfo.subdomainHint")}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="address">العنوان *</Label>
+                    <Label htmlFor="address">{t("onboarding.salonInfo.address")} *</Label>
                     <Input
                       id="address"
                       {...salonInfoForm.register("address")}
-                      placeholder="شارع الملك فهد"
+                      placeholder={t("onboarding.salonInfo.addressPlaceholder")}
                     />
                     {salonInfoForm.formState.errors.address && (
                       <p className="text-sm text-red-500 mt-1">
@@ -480,11 +505,11 @@ export default function Onboarding() {
                   </div>
 
                   <div>
-                    <Label htmlFor="city">المدينة *</Label>
+                    <Label htmlFor="city">{t("onboarding.salonInfo.city")} *</Label>
                     <Input
                       id="city"
                       {...salonInfoForm.register("city")}
-                      placeholder="أوسلو"
+                      placeholder={t("onboarding.salonInfo.cityPlaceholder")}
                     />
                     {salonInfoForm.formState.errors.city && (
                       <p className="text-sm text-red-500 mt-1">
@@ -496,11 +521,11 @@ export default function Onboarding() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="phone">رقم الهاتف *</Label>
+                    <Label htmlFor="phone">{t("onboarding.salonInfo.phone")} *</Label>
                     <Input
                       id="phone"
                       {...salonInfoForm.register("phone")}
-                      placeholder="+47 123 45 678"
+                      placeholder={t("onboarding.salonInfo.phonePlaceholder")}
                     />
                     {salonInfoForm.formState.errors.phone && (
                       <p className="text-sm text-red-500 mt-1">
@@ -510,12 +535,12 @@ export default function Onboarding() {
                   </div>
 
                   <div>
-                    <Label htmlFor="email">البريد الإلكتروني *</Label>
+                    <Label htmlFor="email">{t("onboarding.salonInfo.email")} *</Label>
                     <Input
                       id="email"
                       type="email"
                       {...salonInfoForm.register("email")}
-                      placeholder="info@salon.no"
+                      placeholder={t("onboarding.salonInfo.emailPlaceholder")}
                     />
                     {salonInfoForm.formState.errors.email && (
                       <p className="text-sm text-red-500 mt-1">
@@ -531,11 +556,11 @@ export default function Onboarding() {
             {currentStep === 2 && (
               <form className="space-y-4">
                 <div>
-                  <Label htmlFor="ownerName">الاسم الكامل *</Label>
+                  <Label htmlFor="ownerName">{t("onboarding.ownerAccount.fullName")} *</Label>
                   <Input
                     id="ownerName"
                     {...ownerAccountForm.register("ownerName")}
-                    placeholder="أحمد محمد"
+                    placeholder={t("onboarding.ownerAccount.fullNamePlaceholder")}
                   />
                   {ownerAccountForm.formState.errors.ownerName && (
                     <p className="text-sm text-red-500 mt-1">
@@ -545,12 +570,12 @@ export default function Onboarding() {
                 </div>
 
                 <div>
-                  <Label htmlFor="ownerEmail">البريد الإلكتروني *</Label>
+                  <Label htmlFor="ownerEmail">{t("onboarding.ownerAccount.email")} *</Label>
                   <Input
                     id="ownerEmail"
                     type="email"
                     {...ownerAccountForm.register("ownerEmail")}
-                    placeholder="ahmed@example.com"
+                    placeholder={t("onboarding.ownerAccount.emailPlaceholder")}
                   />
                   {ownerAccountForm.formState.errors.ownerEmail && (
                     <p className="text-sm text-red-500 mt-1">
@@ -560,7 +585,7 @@ export default function Onboarding() {
                 </div>
 
                 <div>
-                  <Label htmlFor="password">كلمة المرور *</Label>
+                  <Label htmlFor="password">{t("onboarding.ownerAccount.password")} *</Label>
                   <Input
                     id="password"
                     type="password"
@@ -575,7 +600,7 @@ export default function Onboarding() {
                 </div>
 
                 <div>
-                  <Label htmlFor="confirmPassword">تأكيد كلمة المرور *</Label>
+                  <Label htmlFor="confirmPassword">{t("onboarding.ownerAccount.confirmPassword")} *</Label>
                   <Input
                     id="confirmPassword"
                     type="password"
@@ -595,17 +620,17 @@ export default function Onboarding() {
             {currentStep === 3 && (
               <form className="space-y-4">
                 <p className="text-sm text-gray-600 mb-4">
-                  حدد ساعات عمل الصالون لكل يوم من أيام الأسبوع
+                  {t("onboarding.businessHours.title")}
                 </p>
 
                 {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"].map((day) => {
                   const dayNames: Record<string, string> = {
-                    monday: "الاثنين",
-                    tuesday: "الثلاثاء",
-                    wednesday: "الأربعاء",
-                    thursday: "الخميس",
-                    friday: "الجمعة",
-                    saturday: "السبت",
+                    monday: t("onboarding.businessHours.monday"),
+                    tuesday: t("onboarding.businessHours.tuesday"),
+                    wednesday: t("onboarding.businessHours.wednesday"),
+                    thursday: t("onboarding.businessHours.thursday"),
+                    friday: t("onboarding.businessHours.friday"),
+                    saturday: t("onboarding.businessHours.saturday"),
                   };
 
                   return (
@@ -634,7 +659,7 @@ export default function Onboarding() {
                     {...businessHoursForm.register("sundayClosed")}
                     className="w-4 h-4"
                   />
-                  <Label htmlFor="sundayClosed">الأحد مغلق</Label>
+                  <Label htmlFor="sundayClosed">{t("onboarding.businessHours.sundayClosed")}</Label>
                 </div>
               </form>
             )}
@@ -644,45 +669,45 @@ export default function Onboarding() {
               <div className="space-y-6">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-800">
-                    💡 يمكنك إضافة الموظفين الآن أو تخطي هذه الخطوة وإضافتهم لاحقاً من لوحة التحكم
+                    {t("onboarding.employees.optionalNote")}
                   </p>
                 </div>
 
                 {/* Add Employee Form */}
                 <div className="border rounded-lg p-4 space-y-4">
-                  <h3 className="font-semibold text-lg">إضافة موظف جديد</h3>
+                  <h3 className="font-semibold text-lg">{t("onboarding.employees.addNewEmployee")}</h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label>الاسم *</Label>
+                      <Label>{t("onboarding.employees.name")} *</Label>
                       <Input
                         value={newEmployee.name}
                         onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })}
-                        placeholder="محمد أحمد"
+                        placeholder={t("onboarding.employees.namePlaceholder")}
                       />
                     </div>
                     <div>
-                      <Label>البريد الإلكتروني *</Label>
+                      <Label>{t("onboarding.employees.email")} *</Label>
                       <Input
                         type="email"
                         value={newEmployee.email}
                         onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })}
-                        placeholder="mohammed@example.com"
+                        placeholder={t("onboarding.employees.emailPlaceholder")}
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label>رقم الهاتف</Label>
+                      <Label>{t("onboarding.employees.phone")}</Label>
                       <Input
                         value={newEmployee.phone}
                         onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })}
-                        placeholder="+47 123 45 678"
+                        placeholder={t("onboarding.salonInfo.phonePlaceholder")}
                       />
                     </div>
                     <div>
-                      <Label>الدور الوظيفي</Label>
+                      <Label>{t("onboarding.employees.role")}</Label>
                       <Select
                         value={newEmployee.role}
                         onValueChange={(value: any) => setNewEmployee({ ...newEmployee, role: value })}
@@ -691,16 +716,16 @@ export default function Onboarding() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="employee">موظف</SelectItem>
-                          <SelectItem value="manager">مدير</SelectItem>
-                          <SelectItem value="admin">مسؤول</SelectItem>
+                          <SelectItem value="employee">{t("onboarding.employees.roleEmployee")}</SelectItem>
+                          <SelectItem value="manager">{t("onboarding.employees.roleManager")}</SelectItem>
+                          <SelectItem value="admin">{t("onboarding.employees.roleAdmin")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
 
                   <div>
-                    <Label className="mb-2 block">الصلاحيات</Label>
+                    <Label className="mb-2 block">{t("onboarding.employees.permissions")}</Label>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Checkbox
@@ -714,7 +739,7 @@ export default function Onboarding() {
                           }
                         />
                         <Label htmlFor="viewAppointments" className="font-normal">
-                          عرض المواعيد
+                          {t("onboarding.employees.viewAppointments")}
                         </Label>
                       </div>
                       <div className="flex items-center gap-2">
@@ -729,7 +754,7 @@ export default function Onboarding() {
                           }
                         />
                         <Label htmlFor="manageCustomers" className="font-normal">
-                          إدارة العملاء
+                          {t("onboarding.employees.manageCustomers")}
                         </Label>
                       </div>
                       <div className="flex items-center gap-2">
@@ -744,7 +769,7 @@ export default function Onboarding() {
                           }
                         />
                         <Label htmlFor="accessReports" className="font-normal">
-                          الوصول إلى التقارير
+                          {t("onboarding.employees.accessReports")}
                         </Label>
                       </div>
                     </div>
@@ -752,7 +777,7 @@ export default function Onboarding() {
 
                   <Button onClick={addEmployee} className="w-full">
                     <Plus className="w-4 h-4 ml-2" />
-                    إضافة موظف
+                    {t("onboarding.employees.addEmployee")}
                   </Button>
                 </div>
 
@@ -760,7 +785,7 @@ export default function Onboarding() {
                 {onboardingData.employees && onboardingData.employees.length > 0 && (
                   <div className="space-y-2">
                     <h3 className="font-semibold">
-                      الموظفون ({onboardingData.employees.length}/10)
+                      {t("onboarding.employees.employeeList", { count: `${onboardingData.employees.length}/10` })}
                     </h3>
                     {onboardingData.employees.map((emp) => (
                       <div
@@ -771,9 +796,9 @@ export default function Onboarding() {
                           <p className="font-medium">{emp.name}</p>
                           <p className="text-sm text-gray-600">{emp.email}</p>
                           <p className="text-xs text-gray-500">
-                            {emp.role === "employee" && "موظف"}
-                            {emp.role === "manager" && "مدير"}
-                            {emp.role === "admin" && "مسؤول"}
+                            {emp.role === "employee" && t("onboarding.employees.roleEmployee")}
+                            {emp.role === "manager" && t("onboarding.employees.roleManager")}
+                            {emp.role === "admin" && t("onboarding.employees.roleAdmin")}
                           </p>
                         </div>
                         <Button
@@ -795,18 +820,18 @@ export default function Onboarding() {
               <div className="space-y-6">
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <p className="text-sm text-yellow-800">
-                    ⚠️ يجب إضافة خدمة واحدة على الأقل للمتابعة
+                    {t("onboarding.services.requiredNote")}
                   </p>
                 </div>
 
                 {/* Add Category */}
                 <div className="border rounded-lg p-4 space-y-3">
-                  <h3 className="font-semibold">إضافة فئة جديدة</h3>
+                  <h3 className="font-semibold">{t("onboarding.services.addNewCategory")}</h3>
                   <div className="flex gap-2">
                     <Input
                       value={newCategory}
                       onChange={(e) => setNewCategory(e.target.value)}
-                      placeholder="مثال: قص شعر، حلاقة، صبغات"
+                      placeholder={t("onboarding.services.categoryPlaceholder")}
                       className="flex-1"
                     />
                     <Button onClick={addCategory}>
@@ -827,19 +852,19 @@ export default function Onboarding() {
 
                 {/* Add Service Form */}
                 <div className="border rounded-lg p-4 space-y-4">
-                  <h3 className="font-semibold text-lg">إضافة خدمة جديدة</h3>
+                  <h3 className="font-semibold text-lg">{t("onboarding.services.addNewService")}</h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label>اسم الخدمة *</Label>
+                      <Label>{t("onboarding.services.serviceName")} *</Label>
                       <Input
                         value={newService.name}
                         onChange={(e) => setNewService({ ...newService, name: e.target.value })}
-                        placeholder="قص شعر رجالي"
+                        placeholder={t("onboarding.services.serviceNamePlaceholder")}
                       />
                     </div>
                     <div>
-                      <Label>الفئة</Label>
+                      <Label>{t("onboarding.services.category")}</Label>
                       <Select
                         value={newService.category}
                         onValueChange={(value) => setNewService({ ...newService, category: value })}
@@ -860,7 +885,7 @@ export default function Onboarding() {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <Label>المدة (دقيقة)</Label>
+                      <Label>{t("onboarding.services.duration")}</Label>
                       <Input
                         type="number"
                         value={newService.duration}
@@ -870,7 +895,7 @@ export default function Onboarding() {
                       />
                     </div>
                     <div>
-                      <Label>السعر (NOK)</Label>
+                      <Label>{t("onboarding.services.price")}</Label>
                       <Input
                         type="number"
                         value={newService.price}
@@ -880,7 +905,7 @@ export default function Onboarding() {
                       />
                     </div>
                     <div>
-                      <Label>اللون</Label>
+                      <Label>{t("onboarding.services.color")}</Label>
                       <Select
                         value={newService.color}
                         onValueChange={(value) => setNewService({ ...newService, color: value })}
@@ -906,18 +931,18 @@ export default function Onboarding() {
                   </div>
 
                   <div>
-                    <Label>الوصف (اختياري)</Label>
+                    <Label>{t("onboarding.services.description")}</Label>
                     <Textarea
                       value={newService.description}
                       onChange={(e) => setNewService({ ...newService, description: e.target.value })}
-                      placeholder="وصف مختصر للخدمة"
+                      placeholder={t("onboarding.services.descriptionPlaceholder")}
                       rows={2}
                     />
                   </div>
 
                   <Button onClick={addService} className="w-full">
                     <Plus className="w-4 h-4 ml-2" />
-                    إضافة خدمة
+                    {t("onboarding.services.addService")}
                   </Button>
                 </div>
 
@@ -925,7 +950,7 @@ export default function Onboarding() {
                 {onboardingData.services && onboardingData.services.length > 0 && (
                   <div className="space-y-2">
                     <h3 className="font-semibold">
-                      الخدمات ({onboardingData.services.length}/20)
+                      {t("onboarding.services.serviceList", { count: `${onboardingData.services.length}/20` })}
                     </h3>
                     {onboardingData.services.map((svc) => (
                       <div
@@ -963,7 +988,7 @@ export default function Onboarding() {
               <div className="space-y-6">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-800">
-                    💡 يمكنك إعداد طرق الدفع الآن أو تخطي هذه الخطوة وإعدادها لاحقاً
+                    {t("onboarding.payment.optionalNote")}
                   </p>
                 </div>
 
@@ -974,7 +999,7 @@ export default function Onboarding() {
                       <div>
                         <h3 className="font-semibold text-lg">Stripe</h3>
                         <p className="text-sm text-gray-600">
-                          قبول المدفوعات عبر البطاقات الائتمانية
+                          {t("onboarding.payment.stripe.description")}
                         </p>
                       </div>
                       <Checkbox
@@ -991,9 +1016,9 @@ export default function Onboarding() {
                       />
                     </div>
                     <div className="text-xs text-gray-500">
-                      <p>✓ Visa, Mastercard, Amex</p>
-                      <p>✓ رسوم: 2.9% + 2 NOK لكل معاملة</p>
-                      <p>✓ تحويل فوري إلى حسابك</p>
+                      <p>{t("onboarding.payment.stripe.feature1")}</p>
+                      <p>{t("onboarding.payment.stripe.feature2")}</p>
+                      <p>{t("onboarding.payment.stripe.feature3")}</p>
                     </div>
                   </div>
 
@@ -1003,7 +1028,7 @@ export default function Onboarding() {
                       <div>
                         <h3 className="font-semibold text-lg">Vipps</h3>
                         <p className="text-sm text-gray-600">
-                          طريقة الدفع الأكثر شعبية في النرويج
+                          {t("onboarding.payment.vipps.description")}
                         </p>
                       </div>
                       <Checkbox
@@ -1020,17 +1045,16 @@ export default function Onboarding() {
                       />
                     </div>
                     <div className="text-xs text-gray-500">
-                      <p>✓ دفع سريع عبر الموبايل</p>
-                      <p>✓ رسوم: 1% + 1 NOK لكل معاملة</p>
-                      <p>✓ موثوق من 4 مليون نرويجي</p>
+                      <p>{t("onboarding.payment.vipps.feature1")}</p>
+                      <p>{t("onboarding.payment.vipps.feature2")}</p>
+                      <p>{t("onboarding.payment.vipps.feature3")}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-gray-50 border rounded-lg p-4">
                   <p className="text-sm text-gray-700">
-                    📝 <strong>ملاحظة:</strong> سيتم توجيهك لإكمال إعداد الحساب مع مزود الدفع
-                    بعد التسجيل من لوحة التحكم.
+                    {t("onboarding.payment.setupNote")}
                   </p>
                 </div>
               </div>
@@ -1041,89 +1065,89 @@ export default function Onboarding() {
               <div className="space-y-6">
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                   <p className="text-sm text-green-800">
-                    ✅ تقريباً انتهينا! راجع المعلومات أدناه قبل إكمال التسجيل
+                    {t("onboarding.review.almostDone")}
                   </p>
                 </div>
 
                 {/* Salon Info Summary */}
                 <div className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-lg">معلومات الصالون</h3>
+                    <h3 className="font-semibold text-lg">{t("onboarding.review.salonInfo")}</h3>
                     <Button variant="ghost" size="sm" onClick={() => setCurrentStep(1)}>
                       <Edit2 className="w-4 h-4" />
                     </Button>
                   </div>
                   <div className="space-y-2 text-sm">
-                    <p><strong>الاسم:</strong> {onboardingData.salonInfo?.salonName}</p>
-                    <p><strong>النطاق:</strong> {onboardingData.salonInfo?.subdomain}.stylora.no</p>
-                    <p><strong>العنوان:</strong> {onboardingData.salonInfo?.address}, {onboardingData.salonInfo?.city}</p>
-                    <p><strong>الهاتف:</strong> {onboardingData.salonInfo?.phone}</p>
-                    <p><strong>البريد:</strong> {onboardingData.salonInfo?.email}</p>
+                    <p><strong>{t("onboarding.review.name")}:</strong> {onboardingData.salonInfo?.salonName}</p>
+                    <p><strong>{t("onboarding.review.domain")}:</strong> {onboardingData.salonInfo?.subdomain}.stylora.no</p>
+                    <p><strong>{t("onboarding.review.address")}:</strong> {onboardingData.salonInfo?.address}, {onboardingData.salonInfo?.city}</p>
+                    <p><strong>{t("onboarding.review.phone")}:</strong> {onboardingData.salonInfo?.phone}</p>
+                    <p><strong>{t("onboarding.review.email")}:</strong> {onboardingData.salonInfo?.email}</p>
                   </div>
                 </div>
 
                 {/* Owner Account Summary */}
                 <div className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-lg">حساب المالك</h3>
+                    <h3 className="font-semibold text-lg">{t("onboarding.review.ownerAccount")}</h3>
                     <Button variant="ghost" size="sm" onClick={() => setCurrentStep(2)}>
                       <Edit2 className="w-4 h-4" />
                     </Button>
                   </div>
                   <div className="space-y-2 text-sm">
-                    <p><strong>الاسم:</strong> {onboardingData.ownerAccount?.ownerName}</p>
-                    <p><strong>البريد:</strong> {onboardingData.ownerAccount?.ownerEmail}</p>
-                    <p><strong>كلمة المرور:</strong> ••••••••</p>
+                    <p><strong>{t("onboarding.review.name")}:</strong> {onboardingData.ownerAccount?.ownerName}</p>
+                    <p><strong>{t("onboarding.review.email")}:</strong> {onboardingData.ownerAccount?.ownerEmail}</p>
+                    <p><strong>{t("onboarding.review.password")}:</strong> ••••••••</p>
                   </div>
                 </div>
 
                 {/* Business Hours Summary */}
                 <div className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-lg">ساعات العمل</h3>
+                    <h3 className="font-semibold text-lg">{t("onboarding.review.businessHours")}</h3>
                     <Button variant="ghost" size="sm" onClick={() => setCurrentStep(3)}>
                       <Edit2 className="w-4 h-4" />
                     </Button>
                   </div>
                   <div className="text-sm">
-                    <p>الاثنين - الجمعة: 09:00 - 18:00</p>
-                    <p>السبت: 10:00 - 16:00</p>
-                    <p>الأحد: مغلق</p>
+                    <p>{t("onboarding.review.weekdayHours")}</p>
+                    <p>{t("onboarding.review.saturdayHours")}</p>
+                    <p>{t("onboarding.review.sundayHours")}</p>
                   </div>
                 </div>
 
                 {/* Employees Summary */}
                 <div className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-lg">الموظفون</h3>
+                    <h3 className="font-semibold text-lg">{t("onboarding.review.employees")}</h3>
                     <Button variant="ghost" size="sm" onClick={() => setCurrentStep(4)}>
                       <Edit2 className="w-4 h-4" />
                     </Button>
                   </div>
                   <p className="text-sm">
                     {onboardingData.employees && onboardingData.employees.length > 0
-                      ? `${onboardingData.employees.length} موظف`
-                      : "لم يتم إضافة موظفين"}
+                      ? t("onboarding.review.employeeCount", { count: onboardingData.employees.length })
+                      : t("onboarding.review.noEmployees")}
                   </p>
                 </div>
 
                 {/* Services Summary */}
                 <div className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-lg">الخدمات</h3>
+                    <h3 className="font-semibold text-lg">{t("onboarding.review.services")}</h3>
                     <Button variant="ghost" size="sm" onClick={() => setCurrentStep(5)}>
                       <Edit2 className="w-4 h-4" />
                     </Button>
                   </div>
                   <p className="text-sm">
-                    {onboardingData.services?.length || 0} خدمة
+                    {t("onboarding.review.serviceCount", { count: onboardingData.services?.length || 0 })}
                   </p>
                 </div>
 
                 {/* Payment Settings Summary */}
                 <div className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-lg">طرق الدفع</h3>
+                    <h3 className="font-semibold text-lg">{t("onboarding.review.paymentMethods")}</h3>
                     <Button variant="ghost" size="sm" onClick={() => setCurrentStep(6)}>
                       <Edit2 className="w-4 h-4" />
                     </Button>
@@ -1147,13 +1171,13 @@ export default function Onboarding() {
                       onCheckedChange={(checked) => setAcceptedTerms(!!checked)}
                     />
                     <Label htmlFor="terms" className="text-sm leading-relaxed">
-                      أوافق على{" "}
+                      {t("onboarding.review.termsLabel")}{" "}
                       <a href="/terms" target="_blank" className="text-purple-600 hover:underline">
-                        الشروط والأحكام
+                        {t("onboarding.review.termsLink")}
                       </a>{" "}
                       و{" "}
                       <a href="/privacy" target="_blank" className="text-purple-600 hover:underline">
-                        سياسة الخصوصية
+                        {t("onboarding.review.privacyLink")}
                       </a>
                     </Label>
                   </div>
@@ -1170,16 +1194,16 @@ export default function Onboarding() {
             onClick={handleBack}
             disabled={currentStep === 1 || completeOnboarding.isPending}
           >
-            السابق
+            {t("onboarding.navigation.previous")}
           </Button>
           <Button
             onClick={handleNext}
             disabled={completeOnboarding.isPending}
             className="bg-gradient-to-r from-purple-600 to-orange-500 hover:from-purple-700 hover:to-orange-600"
           >
-            {completeOnboarding.isPending && "جاري الإنشاء..."}
-            {!completeOnboarding.isPending && currentStep === 7 && "إنهاء التسجيل"}
-            {!completeOnboarding.isPending && currentStep < 7 && "التالي"}
+            {completeOnboarding.isPending && t("onboarding.navigation.creating")}
+            {!completeOnboarding.isPending && currentStep === 7 && t("onboarding.navigation.finishRegistration")}
+            {!completeOnboarding.isPending && currentStep < 7 && t("onboarding.navigation.next")}
           </Button>
         </div>
       </div>
