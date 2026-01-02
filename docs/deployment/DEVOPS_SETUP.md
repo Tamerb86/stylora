@@ -111,7 +111,7 @@ SENTRY_DSN=https://your-dsn@sentry.io/project-id
 NODE_ENV=production
 SENTRY_TRACES_SAMPLE_RATE=0.1  # 10% of transactions
 SENTRY_PROFILES_SAMPLE_RATE=0.1  # 10% profiling
-SENTRY_RELEASE=barbertime@1.0.0  # Optional
+SENTRY_RELEASE=stylora@1.0.0  # Optional
 ```
 
 ### Frontend Setup
@@ -367,7 +367,7 @@ VITE_SENTRY_TRACES_SAMPLE_RATE=0.1
 # App Configuration
 VITE_APP_TITLE=Stylora
 VITE_APP_LOGO=/logo.png
-VITE_APP_ID=barbertime
+VITE_APP_ID=stylora
 ```
 
 ---

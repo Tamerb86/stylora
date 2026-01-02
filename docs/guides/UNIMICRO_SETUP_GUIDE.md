@@ -6,7 +6,7 @@
 2. [Fordeler](#fordeler)
 3. [Forutsetninger](#forutsetninger)
 4. [Steg 1: Opprett API-klient i Unimicro](#steg-1-opprett-api-klient-i-unimicro)
-5. [Steg 2: Konfigurer Stylora](#steg-2-konfigurer-barbertime)
+5. [Steg 2: Konfigurer Stylora](#steg-2-konfigurer-stylora)
 6. [Steg 3: Test tilkoblingen](#steg-3-test-tilkoblingen)
 7. [Steg 4: Velg synkroniseringsfrekvens](#steg-4-velg-synkroniseringsfrekvens)
 8. [Bruk](#bruk)

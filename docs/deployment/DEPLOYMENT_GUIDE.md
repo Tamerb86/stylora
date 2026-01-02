@@ -111,7 +111,7 @@ DATABASE_URL=mysql://user:password@host:3306/database_name
 JWT_SECRET=your-super-secret-jwt-key-change-this
 
 # App Configuration
-VITE_APP_ID=barbertime
+VITE_APP_ID=stylora
 VITE_APP_TITLE=Stylora
 NODE_ENV=production
 PORT=3000

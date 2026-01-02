@@ -6,7 +6,7 @@ The Stylora application was experiencing "Database connection error" when trying
 ## Root Cause
 - The application code uses `process.env.DATABASE_URL` to connect to MySQL
 - Railway MySQL service provides `MYSQL_URL` and `MYSQL_PUBLIC_URL` variables
-- The barbertime service did not have a `DATABASE_URL` variable that references the MySQL service
+- The stylora service did not have a `DATABASE_URL` variable that references the MySQL service
 
 ## Solution
 
@@ -51,7 +51,7 @@ Wait for the deployment to complete (you'll see "Online" status).
 
 - `mysql.railway.internal` is Railway's **private network** address
 - It only works when services are in the **same Railway project**
-- By using Variable Reference `${{MySQL.MYSQL_URL}}`, the barbertime service can access the MySQL service through the private network
+- By using Variable Reference `${{MySQL.MYSQL_URL}}`, the stylora service can access the MySQL service through the private network
 - This is faster and more secure than using the public URL
 
 ## Alternative: Using Public URL
@@ -71,7 +71,7 @@ mysql://root:rQskZdQhNxeaTZCOxWFGKQCYZBGcyHlJ@containers-us-west-xxx.railway.app
 
 ## Verification Checklist
 
-- [ ] `DATABASE_URL` variable added to barbertime service
+- [ ] `DATABASE_URL` variable added to stylora service
 - [ ] Variable references `${{MySQL.MYSQL_URL}}`
 - [ ] Application redeployed successfully
 - [ ] iZettle OAuth connection works without errors

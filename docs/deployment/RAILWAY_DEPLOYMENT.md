@@ -28,7 +28,7 @@ Railway هو أسهل خيار لنشر Stylora لأنه يوفر:
 1. اذهب إلى [supabase.com](https://supabase.com)
 2. أنشئ حساب جديد
 3. أنشئ مشروع جديد:
-   - اختر اسم المشروع: `barbertime`
+   - اختر اسم المشروع: `stylora`
    - اختر المنطقة الأقرب لك
    - اختر كلمة سر قوية لقاعدة البيانات
 
@@ -50,7 +50,7 @@ Railway هو أسهل خيار لنشر Stylora لأنه يوفر:
 
 ```bash
 # 1. إنشاء repository جديد على GitHub
-# اذهب إلى github.com وأنشئ repository باسم "barbertime"
+# اذهب إلى github.com وأنشئ repository باسم "stylora"
 
 # 2. رفع الكود
 cd /path/to/stylora-website
@@ -69,7 +69,7 @@ git push -u origin main
 1. اذهب إلى [railway.app](https://railway.app)
 2. اضغط **Start a New Project**
 3. اختر **Deploy from GitHub repo**
-4. اختر repository `barbertime`
+4. اختر repository `stylora`
 5. Railway سيبدأ بالـ build تلقائياً
 
 ---
@@ -97,7 +97,7 @@ DATABASE_URL=${{MySQL.DATABASE_URL}}
 JWT_SECRET=your-super-secret-jwt-key-min-32-chars
 
 # App Configuration
-VITE_APP_ID=barbertime
+VITE_APP_ID=stylora
 VITE_APP_TITLE=Stylora
 NODE_ENV=production
 PORT=3000
