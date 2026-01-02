@@ -13,10 +13,32 @@ const IZETTLE_REDIRECT_URI = process.env.IZETTLE_REDIRECT_URI || "";
 const ENCRYPTION_KEY = process.env.JWT_SECRET || "default-encryption-key-change-me";
 
 /**
- * Generate iZettle OAuth authorization URL
+ * Generate HMAC signature for OAuth state parameter
+ */
+function generateStateSignature(payload: string): string {
+  const hmac = crypto.createHmac("sha256", ENCRYPTION_KEY);
+  hmac.update(payload);
+  return hmac.digest("base64url");
+}
+
+/**
+ * Verify HMAC signature for OAuth state parameter
+ */
+function verifyStateSignature(payload: string, signature: string): boolean {
+  const expectedSignature = generateStateSignature(payload);
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
+  );
+}
+
+/**
+ * Generate iZettle OAuth authorization URL with signed state
  */
 export function getAuthorizationUrl(tenantId: string): string {
-  const state = Buffer.from(JSON.stringify({ tenantId, timestamp: Date.now() })).toString("base64");
+  const payload = Buffer.from(JSON.stringify({ tenantId, timestamp: Date.now() })).toString("base64url");
+  const signature = generateStateSignature(payload);
+  const state = `${payload}.${signature}`;
   
   const params = new URLSearchParams({
     response_type: "code",
@@ -27,6 +49,36 @@ export function getAuthorizationUrl(tenantId: string): string {
   });
 
   return `https://oauth.zettle.com/authorize?${params.toString()}`;
+}
+
+/**
+ * Verify and decode OAuth state parameter
+ */
+export function verifyAndDecodeState(state: string): { tenantId: string; timestamp: number } | null {
+  try {
+    const [payload, signature] = state.split(".");
+    if (!payload || !signature) {
+      return null;
+    }
+    
+    // Verify HMAC signature
+    if (!verifyStateSignature(payload, signature)) {
+      return null;
+    }
+    
+    // Decode payload
+    const decoded = JSON.parse(Buffer.from(payload, "base64url").toString());
+    
+    // Check timestamp (reject if older than 10 minutes)
+    const now = Date.now();
+    if (now - decoded.timestamp > 10 * 60 * 1000) {
+      return null;
+    }
+    
+    return decoded;
+  } catch (error) {
+    return null;
+  }
 }
 
 /**

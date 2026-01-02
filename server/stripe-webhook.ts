@@ -38,12 +38,9 @@ export async function handleStripeWebhook(req: Request, res: Response) {
   let event;
 
   try {
-    // Verify webhook signature
-    // rawBody is attached by the route handler before JSON parsing
-    const rawBody = (req as any).rawBody ?? req.body;
-    
+    // Verify webhook signature using raw body
     event = stripe.webhooks.constructEvent(
-      rawBody,
+      req.body,
       sig,
       ENV.stripeWebhookSecret
     );

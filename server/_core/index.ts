@@ -45,9 +45,33 @@ const generalLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   skip: (req) => {
-    // Skip rate limiting for webhooks
-    return req.path.includes("/webhook") || req.path.includes("/callback");
+    // Skip rate limiting for specific webhook and callback paths only
+    return req.path === "/api/stripe/webhook" || req.path === "/api/vipps/callback";
   },
+});
+
+  // Upload rate limiter - 30 requests per minute for file uploads
+  const uploadLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 30,
+    message: {
+      error: "For mange opplastingsforespørsler. Vennligst vent litt.",
+      retryAfter: "1 minutt",
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  // Webhook/callback rate limiter - lighter limits for payment webhooks
+const webhookLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100, // Allow up to 100 webhook calls per minute
+  message: {
+    error: "For mange webhook forespørsler.",
+    retryAfter: "1 minutt",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
 // Strict rate limiter for authentication - 20 requests per 15 minutes
@@ -98,7 +122,8 @@ async function startServer() {
   const server = createServer(app);
 
   // Trust proxy for rate limiting behind reverse proxy
-  app.set('trust proxy', 1);
+  // Use environment variable or default to 1 for standard reverse proxy setup
+  app.set('trust proxy', process.env.TRUST_PROXY ? Number(process.env.TRUST_PROXY) : 1);
 
   // ============================================================================
   // SECURITY MIDDLEWARE
@@ -106,8 +131,19 @@ async function startServer() {
   
   // Helmet for HTTP security headers
   // Disable CSP in development to avoid blocking React scripts
+  // Enable proper CSP in production with specific directives
+  const isDev = process.env.NODE_ENV === "development";
+  
   app.use(helmet({
-    contentSecurityPolicy: false, // Disabled - React needs inline scripts
+    contentSecurityPolicy: isDev ? false : {
+      useDefaults: true,
+      directives: {
+        "script-src": ["'self'", "https://js.stripe.com"],
+        "frame-src": ["'self'", "https://js.stripe.com"],
+        "connect-src": ["'self'"],
+        "img-src": ["'self'", "data:", "https:"],
+      },
+    },
     crossOriginEmbedderPolicy: false, // Allow embedding for Stripe
     crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow cross-origin resources
   }));
@@ -121,16 +157,13 @@ async function startServer() {
   // Register this route BEFORE the JSON body parser
   app.post(
     "/api/stripe/webhook",
+    webhookLimiter,
     express.raw({ type: "application/json" }),
-    (req, res) => {
-      // Attach raw body for signature verification
-      (req as any).rawBody = req.body;
-      handleStripeWebhook(req, res);
-    }
+    handleStripeWebhook
   );
   
   // Vipps callback endpoint (must be registered before JSON parser)
-  app.post("/api/vipps/callback", express.json(), handleVippsCallback);
+  app.post("/api/vipps/callback", webhookLimiter, express.json(), handleVippsCallback);
   
   // iZettle OAuth callback endpoint
   app.get("/api/izettle/callback", async (req, res) => {
@@ -145,31 +178,23 @@ async function startServer() {
         return res.redirect("/izettle/callback?izettle=error&message=" + encodeURIComponent("Missing code or state parameter"));
       }
       
-      // Decode state to get tenantId
-      let stateData;
-      let tenantId;
-      try {
-        stateData = JSON.parse(Buffer.from(state, "base64").toString());
-        tenantId = stateData.tenantId;
-        console.log("[iZettle Callback] Decoded state:", { tenantId });
-      } catch (error) {
-        console.error("[iZettle Callback] Failed to decode state:", error);
-        return res.redirect("/izettle/callback?izettle=error&message=" + encodeURIComponent("Invalid state parameter"));
+      // Verify and decode state with HMAC signature
+      const { verifyAndDecodeState } = await import("../services/izettle");
+      const stateData = verifyAndDecodeState(state);
+      
+      if (!stateData || !stateData.tenantId) {
+        console.error("[iZettle Callback] Invalid or expired state parameter");
+        return res.redirect("/izettle/callback?izettle=error&message=" + encodeURIComponent("Invalid or expired state parameter"));
       }
       
-      if (!tenantId) {
-        console.error("[iZettle Callback] No tenantId in state:", stateData);
-        return res.redirect("/izettle/callback?izettle=error&message=" + encodeURIComponent("Missing tenant information"));
-      }
+      const tenantId = stateData.tenantId;
+      console.log("[iZettle Callback] Verified state:", { tenantId });
       
       // Exchange code for tokens
       console.log("[iZettle Callback] Exchanging code for tokens...");
       const { exchangeCodeForToken, encryptToken } = await import("../services/izettle");
       const tokens = await exchangeCodeForToken(code);
       console.log("[iZettle Callback] Tokens received successfully");
-      console.log("[iZettle Callback] Access token length:", tokens.access_token.length);
-      console.log("[iZettle Callback] Access token first 30 chars:", tokens.access_token.substring(0, 30));
-      console.log("[iZettle Callback] Access token last 20 chars:", tokens.access_token.substring(tokens.access_token.length - 20));
       
       // Save tokens to database
       console.log("[iZettle Callback] Saving tokens to database for tenant:", tenantId);
@@ -215,8 +240,6 @@ async function startServer() {
             console.log("[iZettle Callback] Updating existing provider:", existing.id);
             const encryptedAccessToken = encryptToken(tokens.access_token);
             const encryptedRefreshToken = encryptToken(tokens.refresh_token);
-            console.log("[iZettle Callback] Encrypted access token length:", encryptedAccessToken.length);
-            console.log("[iZettle Callback] Encrypted access token preview:", encryptedAccessToken.substring(0, 50));
             await dbInstance
               .update(paymentProviders)
               .set({
@@ -300,17 +323,45 @@ async function startServer() {
     }
   });
   
-  // Storage upload endpoint
-  app.post("/api/storage/upload", express.raw({ type: "*/*", limit: "10mb" }), async (req, res) => {
+  // Storage upload endpoint with authentication and validation
+  const ALLOWED_UPLOAD_TYPES = new Set([
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "application/pdf",
+  ]);
+  
+  app.post("/api/storage/upload", uploadLimiter, express.raw({ type: "*/*", limit: "10mb" }), async (req, res) => {
     try {
+      // Authentication check
+      const { authenticateRequest } = await import("./auth-simple");
+      try {
+        await authenticateRequest(req);
+      } catch (authError) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      // Validate content type
+      const contentType = String(req.headers["content-type"] || "");
+      if (!ALLOWED_UPLOAD_TYPES.has(contentType)) {
+        return res.status(415).json({ error: "Unsupported file type. Allowed: JPEG, PNG, WEBP, PDF" });
+      }
+      
+      // Validate body
+      if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+        return res.status(400).json({ error: "Empty body" });
+      }
+      
       const { storagePut } = await import("../storage");
       const { nanoid } = await import("nanoid");
       
-      // Get content type from header
-      const contentType = req.headers["content-type"] || "application/octet-stream";
+      // Map content type to file extension
+      const ext = contentType === "image/jpeg" ? "jpg"
+        : contentType === "image/png" ? "png"
+        : contentType === "image/webp" ? "webp"
+        : "pdf";
       
       // Generate unique filename
-      const ext = contentType.split("/")[1] || "bin";
       const filename = `uploads/${nanoid()}.${ext}`;
       
       // Upload to S3
@@ -371,33 +422,55 @@ Sitemap: https://www.stylora.no/sitemap.xml`;
   if (process.env.SENTRY_DSN) {
     app.use((err: any, req: any, res: any, next: any) => {
       Sentry.captureException(err);
+      console.error("Error:", err);
+      res.status(500).json({ error: 'Internal server error' });
+    });
+  } else {
+    // Unified error handler without Sentry
+    app.use((err: any, req: any, res: any, next: any) => {
+      console.error("Error:", err);
       res.status(500).json({ error: 'Internal server error' });
     });
   }
 
   const preferredPort = parseInt(process.env.PORT || "3000");
-  const port = await findAvailablePort(preferredPort);
+  
+  // In production, use direct port binding without scanning
+  // In development, scan for available port to avoid conflicts
+  const port = process.env.NODE_ENV === "production"
+    ? preferredPort
+    : await findAvailablePort(preferredPort);
 
-  if (port !== preferredPort) {
+  if (port !== preferredPort && process.env.NODE_ENV !== "production") {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
 
   server.listen(port, async () => {
     console.log(`Server running on http://localhost:${port}/`);
     
-    // Start notification scheduler for SMS reminders
-    startNotificationScheduler();
+    // Only start schedulers if this is a worker instance or not specified
+    // This prevents duplicate scheduler jobs when running multiple instances
+    const instanceType = process.env.INSTANCE_TYPE;
     
-    // Start database backup scheduler
-    scheduleBackups();
-    
-    // Start auto clock-out scheduler
-    const { startAutoClockOutScheduler } = await import("../autoClockOutScheduler");
-    startAutoClockOutScheduler();
-    
-    // Start email notification scheduler
-    const { startEmailScheduler } = await import("../emailScheduler");
-    startEmailScheduler();
+    if (!instanceType || instanceType === "worker") {
+      console.log("[Scheduler] Starting schedulers (INSTANCE_TYPE:", instanceType || "not set", ")");
+      
+      // Start notification scheduler for SMS reminders
+      startNotificationScheduler();
+      
+      // Start database backup scheduler
+      scheduleBackups();
+      
+      // Start auto clock-out scheduler
+      const { startAutoClockOutScheduler } = await import("../autoClockOutScheduler");
+      startAutoClockOutScheduler();
+      
+      // Start email notification scheduler
+      const { startEmailScheduler } = await import("../emailScheduler");
+      startEmailScheduler();
+    } else {
+      console.log("[Scheduler] Skipping schedulers (INSTANCE_TYPE:", instanceType, ")");
+    }
   });
 }
 
