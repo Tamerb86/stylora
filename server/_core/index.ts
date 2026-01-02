@@ -103,19 +103,17 @@ const uploadLimiter = rateLimit({
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
-    const server = net.createServer();
-    server.listen(port, () => {
-      server.close(() => resolve(true));
+    const srv = net.createServer();
+    srv.listen(port, () => {
+      srv.close(() => resolve(true));
     });
-    server.on("error", () => resolve(false));
+    srv.on("error", () => resolve(false));
   });
 }
 
 async function findAvailablePort(startPort: number = 3000): Promise<number> {
   for (let port = startPort; port < startPort + 20; port++) {
-    if (await isPortAvailable(port)) {
-      return port;
-    }
+    if (await isPortAvailable(port)) return port;
   }
   throw new Error(`No available port found starting from ${startPort}`);
 }
@@ -125,7 +123,6 @@ async function startServer() {
   const server = createServer(app);
 
   // Trust proxy for rate limiting behind reverse proxy
-  // Use environment variable or default to 1 for standard reverse proxy setup
   app.set(
     "trust proxy",
     process.env.TRUST_PROXY ? Number(process.env.TRUST_PROXY) : 1
@@ -136,8 +133,6 @@ async function startServer() {
   // ============================================================================
 
   // Helmet for HTTP security headers
-  // Disable CSP in development to avoid blocking React scripts
-  // Enable proper CSP in production with specific directives
   const isDev = process.env.NODE_ENV === "development";
 
   app.use(
@@ -153,7 +148,12 @@ async function startServer() {
                 "https://js.stripe.com",
                 "https://checkout.stripe.com",
               ],
-              "connect-src": ["'self'", "https://api.stripe.com"],
+              // Stripe sometimes uses this domain for telemetry/requests
+              "connect-src": [
+                "'self'",
+                "https://api.stripe.com",
+                "https://gator.stripe.com",
+              ],
               "img-src": ["'self'", "data:", "https:"],
             },
           },
@@ -196,10 +196,7 @@ async function startServer() {
       });
 
       if (!code || !state) {
-        console.error("[iZettle Callback] Missing parameters:", {
-          code,
-          state,
-        });
+        console.error("[iZettle Callback] Missing parameters:", { code, state });
         return res.redirect(
           "/izettle/callback?izettle=error&message=" +
             encodeURIComponent("Missing code or state parameter")
@@ -256,7 +253,7 @@ async function startServer() {
         const { eq, and } = await import("drizzle-orm");
 
         // Check if provider already exists (with tenantId filter)
-        let existing;
+        let existing: any;
         try {
           console.log(
             "[iZettle Callback] Querying existing provider for tenant:",
@@ -282,30 +279,24 @@ async function startServer() {
         } catch (dbError: any) {
           console.error(
             "[iZettle Callback] Database query failed:",
-            dbError.message
+            dbError?.message
           );
-          console.error(
-            "[iZettle Callback] This is likely because the table is empty. Will try to insert new record."
-          );
-          existing = null; // Treat as not found and proceed with insert
+          existing = null;
         }
 
         const expiresAt = new Date(Date.now() + tokens.expires_in * 1000);
 
         try {
           if (existing) {
-            // Update existing
             console.log(
               "[iZettle Callback] Updating existing provider:",
               existing.id
             );
-            const encryptedAccessToken = encryptToken(tokens.access_token);
-            const encryptedRefreshToken = encryptToken(tokens.refresh_token);
             await dbInstance
               .update(paymentProviders)
               .set({
-                accessToken: encryptedAccessToken,
-                refreshToken: encryptedRefreshToken,
+                accessToken: encryptToken(tokens.access_token),
+                refreshToken: encryptToken(tokens.refresh_token),
                 tokenExpiresAt: expiresAt,
                 isActive: true,
                 updatedAt: new Date(),
@@ -313,14 +304,7 @@ async function startServer() {
               .where(eq(paymentProviders.id, existing.id));
             console.log("[iZettle Callback] Provider updated successfully");
           } else {
-            // Insert new
             console.log("[iZettle Callback] Creating new provider entry");
-            console.log("[iZettle Callback] Insert data:", {
-              tenantId: tenantId || "platform-admin-tenant",
-              providerType: "izettle",
-              hasAccessToken: true,
-              hasRefreshToken: true,
-            });
 
             const insertResult = await dbInstance
               .insert(paymentProviders)
@@ -339,12 +323,8 @@ async function startServer() {
               });
 
             console.log("[iZettle Callback] Insert result:", insertResult);
-            console.log(
-              "[iZettle Callback] Insert result keys:",
-              Object.keys(insertResult)
-            );
 
-            // Verify the insert by querying back
+            // Verify insert
             const [verifyProvider] = await dbInstance
               .select()
               .from(paymentProviders)
@@ -361,25 +341,25 @@ async function startServer() {
 
             if (verifyProvider) {
               console.log(
-                "[iZettle Callback] ✅ Verification successful - Provider saved with ID:",
+                "[iZettle Callback] ✅ Provider saved with ID:",
                 verifyProvider.id
               );
             } else {
               console.error(
-                "[iZettle Callback] ❌ Verification failed - Provider not found after insert!"
+                "[iZettle Callback] ❌ Provider not found after insert!"
               );
               throw new Error("Failed to verify provider insertion");
             }
           }
         } catch (dbError: any) {
           console.error("[iZettle Callback] Database save failed:", {
-            message: dbError.message,
-            code: dbError.code,
-            errno: dbError.errno,
-            sqlState: dbError.sqlState,
-            sqlMessage: dbError.sqlMessage,
-            sql: dbError.sql,
-            stack: dbError.stack,
+            message: dbError?.message,
+            code: dbError?.code,
+            errno: dbError?.errno,
+            sqlState: dbError?.sqlState,
+            sqlMessage: dbError?.sqlMessage,
+            sql: dbError?.sql,
+            stack: dbError?.stack,
           });
           return res.redirect(
             "/izettle/callback?izettle=error&message=" +
@@ -389,22 +369,20 @@ async function startServer() {
       } catch (dbError: any) {
         console.error(
           "[iZettle Callback] Database operation failed:",
-          dbError.message
+          dbError?.message
         );
-        console.error("[iZettle Callback] Error stack:", dbError.stack);
         return res.redirect(
           "/izettle/callback?izettle=error&message=" +
             encodeURIComponent("Database error. Please try again.")
         );
       }
 
-      // Redirect to confirmation page with success message
       res.redirect("/izettle/callback?izettle=connected");
     } catch (error: any) {
       console.error("iZettle callback error:", error);
       res.redirect(
         "/izettle/callback?izettle=error&message=" +
-          encodeURIComponent(error.message)
+          encodeURIComponent(error?.message || "Unknown error")
       );
     }
   });
@@ -445,10 +423,6 @@ async function startServer() {
           });
         }
 
-        // TODO: Add file magic number validation to verify actual file format
-        // This would check file headers to ensure the content matches the declared MIME type
-        // and prevent malicious files with correct MIME types but harmful content
-
         // Validate body
         if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
           return res.status(400).json({ error: "Empty body" });
@@ -457,7 +431,6 @@ async function startServer() {
         const { storagePut } = await import("../storage");
         const { nanoid } = await import("nanoid");
 
-        // Map content type to file extension
         const extensionMap: Record<string, string> = {
           "image/jpeg": "jpg",
           "image/png": "png",
@@ -467,22 +440,17 @@ async function startServer() {
 
         const ext = extensionMap[contentType];
         if (!ext) {
-          // Should never happen due to ALLOWED_UPLOAD_TYPES check, but fail safe
           return res
             .status(500)
             .json({ error: "Failed to determine file extension" });
         }
 
-        // Generate unique filename
         const filename = `uploads/${nanoid()}.${ext}`;
-
-        // Upload to S3
         const { url } = await storagePut(filename, req.body, contentType);
-
         res.json({ url });
       } catch (error: any) {
         console.error("Storage upload error:", error);
-        res.status(500).json({ error: error.message || "Upload failed" });
+        res.status(500).json({ error: error?.message || "Upload failed" });
       }
     }
   );
@@ -490,10 +458,11 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
-  // Simple email/password authentication routes
+
+  // Auth routes
   registerAuthRoutes(app);
-  // Refresh token endpoint
   registerRefreshEndpoint(app);
+
   // SEO routes - sitemap and robots.txt
   app.get("/sitemap.xml", async (req, res) => {
     try {
@@ -539,7 +508,6 @@ Sitemap: https://www.stylora.no/sitemap.xml`;
       res.status(500).json({ error: "Internal server error" });
     });
   } else {
-    // Unified error handler without Sentry
     app.use((err: any, req: any, res: any, next: any) => {
       console.error("Error:", err);
       res.status(500).json({ error: "Internal server error" });
@@ -548,8 +516,6 @@ Sitemap: https://www.stylora.no/sitemap.xml`;
 
   const preferredPort = parseInt(process.env.PORT || "3000");
 
-  // In production, use direct port binding without scanning
-  // In development, scan for available port to avoid conflicts
   const port =
     process.env.NODE_ENV === "production"
       ? preferredPort
@@ -562,8 +528,6 @@ Sitemap: https://www.stylora.no/sitemap.xml`;
   server.listen(port, async () => {
     console.log(`Server running on http://localhost:${port}/`);
 
-    // Only start schedulers if this is a worker instance or not specified
-    // This prevents duplicate scheduler jobs when running multiple instances
     const instanceType = process.env.INSTANCE_TYPE;
 
     if (!instanceType || instanceType === "worker") {
