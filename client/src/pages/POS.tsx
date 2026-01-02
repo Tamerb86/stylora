@@ -39,6 +39,7 @@ import {
   WifiOff,
   AlertCircle,
 } from "lucide-react";
+import { safeToFixed } from "@/lib/utils";
 
 // Cart item type
 type CartItem = {
@@ -690,7 +691,7 @@ export default function POS() {
                             </p>
                           </div>
                           <p className="font-bold text-orange-600">
-                            {parseFloat(product.retailPrice).toFixed(0)} kr
+                            {safeToFixed(parseFloat(product.retailPrice) || 0, 0)} kr
                           </p>
                         </div>
                         <Button
@@ -701,7 +702,7 @@ export default function POS() {
                               itemType: "product",
                               name: product.name,
                               quantity: 1,
-                              unitPrice: parseFloat(product.retailPrice),
+                              unitPrice: parseFloat(product.retailPrice) || 0,
                               vatRate: 25,
                             })
                           }
@@ -938,15 +939,15 @@ export default function POS() {
               <div className="space-y-2 mb-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal:</span>
-                  <span className="font-medium">{subtotal.toFixed(2)} kr</span>
+                  <span className="font-medium">{safeToFixed(subtotal, 2)} kr</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">MVA (25%):</span>
-                  <span className="font-medium">{vatAmount.toFixed(2)} kr</span>
+                  <span className="font-medium">{safeToFixed(vatAmount, 2)} kr</span>
                 </div>
                 <div className="flex justify-between text-lg font-bold border-t pt-2">
                   <span>Total:</span>
-                  <span className="text-blue-600">{total.toFixed(2)} kr</span>
+                  <span className="text-blue-600">{safeToFixed(total, 2)} kr</span>
                 </div>
               </div>
 
@@ -1108,7 +1109,7 @@ export default function POS() {
                 <div className="flex justify-between text-lg border-t pt-2">
                   <span className="font-bold">Total:</span>
                   <span className="font-bold text-green-600">
-                    {lastTotal.toFixed(2)} kr
+                    {safeToFixed(lastTotal, 2)} kr
                   </span>
                 </div>
               </div>

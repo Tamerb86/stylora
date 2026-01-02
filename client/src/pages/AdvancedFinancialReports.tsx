@@ -8,6 +8,7 @@ import { BarChart, Bar, PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianG
 import { TrendingUp, Users, DollarSign, ShoppingCart, Download, Calendar } from "lucide-react";
 import { format, subDays, startOfMonth, endOfMonth, startOfYear, endOfYear, subMonths } from "date-fns";
 import { nb } from "date-fns/locale";
+import { safeToFixed } from "@/lib/utils";
 
 const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899", "#14b8a6", "#f97316"];
 
@@ -105,7 +106,7 @@ function AdvancedFinancialReportsContent() {
     if (!salesByEmployee) return [];
     return salesByEmployee.map((item) => ({
       name: item.employeeName || "Ukjent",
-      revenue: parseFloat(item.totalRevenue),
+      revenue: parseFloat(item.totalRevenue) || 0,
       orders: item.orderCount,
     }));
   }, [salesByEmployee]);
@@ -114,7 +115,7 @@ function AdvancedFinancialReportsContent() {
     if (!salesByService) return [];
     return salesByService.map((item) => ({
       name: item.serviceName || "Ukjent",
-      value: parseFloat(item.totalRevenue),
+      value: parseFloat(item.totalRevenue) || 0,
       count: item.itemCount,
     }));
   }, [salesByService]);
@@ -123,7 +124,7 @@ function AdvancedFinancialReportsContent() {
     if (!revenueTrends) return [];
     return revenueTrends.map((item) => ({
       period: item.period,
-      revenue: parseFloat(item.revenue),
+      revenue: parseFloat(item.revenue) || 0,
       orders: item.orderCount,
     }));
   }, [revenueTrends]);
@@ -247,7 +248,7 @@ function AdvancedFinancialReportsContent() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-blue-900 dark:text-blue-100">
-              {summaryLoading ? "..." : `${parseFloat(summary?.totalRevenue || "0").toFixed(2)} kr`}
+              {summaryLoading ? "..." : `${safeToFixed(parseFloat(summary?.totalRevenue || "0"), 2)} kr`}
             </div>
           </CardContent>
         </Card>
@@ -275,7 +276,7 @@ function AdvancedFinancialReportsContent() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-purple-900 dark:text-purple-100">
-              {summaryLoading ? "..." : `${parseFloat(summary?.averageOrderValue || "0").toFixed(2)} kr`}
+              {summaryLoading ? "..." : `${safeToFixed(parseFloat(summary?.averageOrderValue || "0"), 2)} kr`}
             </div>
           </CardContent>
         </Card>
@@ -374,7 +375,7 @@ function AdvancedFinancialReportsContent() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={(entry) => `${entry.name}: ${entry.value.toFixed(0)} kr`}
+                  label={(entry) => `${entry.name}: ${safeToFixed(entry.value, 0)} kr`}
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
@@ -419,9 +420,9 @@ function AdvancedFinancialReportsContent() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-lg">{parseFloat(performer.totalRevenue).toFixed(2)} kr</p>
+                      <p className="font-bold text-lg">{safeToFixed(parseFloat(performer.totalRevenue), 2)} kr</p>
                       <p className="text-sm text-muted-foreground">
-                        Snitt: {parseFloat(performer.averageOrderValue).toFixed(2)} kr
+                        Snitt: {safeToFixed(parseFloat(performer.averageOrderValue), 2)} kr
                       </p>
                     </div>
                   </div>
@@ -455,9 +456,9 @@ function AdvancedFinancialReportsContent() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-lg">{parseFloat(service.totalRevenue).toFixed(2)} kr</p>
+                      <p className="font-bold text-lg">{safeToFixed(parseFloat(service.totalRevenue), 2)} kr</p>
                       <p className="text-sm text-muted-foreground">
-                        Snitt: {parseFloat(service.averagePrice).toFixed(2)} kr
+                        Snitt: {safeToFixed(parseFloat(service.averagePrice), 2)} kr
                       </p>
                     </div>
                   </div>

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { toast } from "sonner";
 import { TrendingUp, TrendingDown, DollarSign, PieChart, Plus, Trash2, Calendar, FileText, Download } from "lucide-react";
 import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
+import { safeToFixed } from "@/lib/utils";
 
 const EXPENSE_CATEGORIES = [
   { value: "rent", label: "Husleie" },
@@ -322,7 +323,7 @@ function FinancialContent() {
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${(summary?.profitMargin || 0) >= 0 ? "text-green-600" : "text-red-600"}`}>
-              {(summary?.profitMargin || 0).toFixed(1)}%
+              {safeToFixed(summary?.profitMargin || 0, 1)}%
             </div>
             <p className="text-xs text-muted-foreground">Fortjenestemargin</p>
           </CardContent>
@@ -347,7 +348,7 @@ function FinancialContent() {
                     <div className="flex items-center justify-between text-sm">
                       <span className="font-medium">{category?.label || item.category}</span>
                       <span className="text-muted-foreground">
-                        {formatCurrency(parseFloat(item.total))} ({percentage.toFixed(1)}%)
+                        {formatCurrency(parseFloat(item.total) || 0)} ({safeToFixed(percentage, 1)}%)
                       </span>
                     </div>
                     <div className="h-2 bg-secondary rounded-full overflow-hidden">
