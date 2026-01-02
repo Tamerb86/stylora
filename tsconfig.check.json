@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "server/_core/auth-simple.ts",
+    "client/src/pages/Login.tsx",
+    "server/auth.login.test.ts"
+  ]
+}
