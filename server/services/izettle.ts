@@ -28,6 +28,8 @@ function verifyStateSignature(payload: string, signature: string): boolean {
   const expectedSignature = generateStateSignature(payload);
   
   // Check length before timing-safe comparison to prevent errors
+  // Note: This length check is safe as signature length is deterministic
+  // for a given HMAC algorithm (SHA-256 -> base64url -> 43 chars)
   if (signature.length !== expectedSignature.length) {
     return false;
   }

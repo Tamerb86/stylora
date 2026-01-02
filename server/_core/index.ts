@@ -140,8 +140,8 @@ async function startServer() {
       useDefaults: true,
       directives: {
         "script-src": ["'self'", "https://js.stripe.com"],
-        "frame-src": ["'self'", "https://js.stripe.com"],
-        "connect-src": ["'self'"],
+        "frame-src": ["'self'", "https://js.stripe.com", "https://checkout.stripe.com"],
+        "connect-src": ["'self'", "https://api.stripe.com"],
         "img-src": ["'self'", "data:", "https:"],
       },
     },
@@ -354,6 +354,10 @@ async function startServer() {
         return res.status(415).json({ error: "Unsupported file type. Allowed: JPEG, PNG, WEBP, PDF" });
       }
       
+      // TODO: Add file magic number validation to verify actual file format
+      // This would check file headers to ensure the content matches the declared MIME type
+      // and prevent malicious files with correct MIME types but harmful content
+      
       // Validate body
       if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
         return res.status(400).json({ error: "Empty body" });
@@ -363,10 +367,18 @@ async function startServer() {
       const { nanoid } = await import("nanoid");
       
       // Map content type to file extension
-      const ext = contentType === "image/jpeg" ? "jpg"
-        : contentType === "image/png" ? "png"
-        : contentType === "image/webp" ? "webp"
-        : "pdf";
+      const extensionMap: Record<string, string> = {
+        "image/jpeg": "jpg",
+        "image/png": "png",
+        "image/webp": "webp",
+        "application/pdf": "pdf",
+      };
+      
+      const ext = extensionMap[contentType];
+      if (!ext) {
+        // Should never happen due to ALLOWED_UPLOAD_TYPES check, but fail safe
+        return res.status(500).json({ error: "Failed to determine file extension" });
+      }
       
       // Generate unique filename
       const filename = `uploads/${nanoid()}.${ext}`;
