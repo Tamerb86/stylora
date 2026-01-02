@@ -4,7 +4,7 @@
  */
 
 import { SignJWT, jwtVerify } from "jose";
-import { COOKIE_NAME, THIRTY_DAYS_MS, REFRESH_TOKEN_COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+import { COOKIE_NAME, THIRTY_DAYS_MS, NINETY_DAYS_MS, REFRESH_TOKEN_COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import type { Request, Response, Express } from "express";
 import { parse as parseCookieHeader } from "cookie";
 import * as db from "../db";
@@ -212,22 +212,40 @@ export function registerAuthRoutes(app: Express) {
         return;
       }
 
-      // Get user from database
-      const dbInstance = await db.getDb();
-      if (!dbInstance) {
-        console.error("[Auth] Database not available for login");
-        res.status(500).json({ error: "Tjenesten er midlertidig utilgjengelig. Prøv igjen senere." });
+      // Get database instance with better error handling
+      let dbInstance;
+      try {
+        dbInstance = await db.getDb();
+        if (!dbInstance) {
+          throw new Error("Failed to establish database connection: connection returned null");
+        }
+      } catch (dbError) {
+        console.error("[Auth] Database connection error:", dbError);
+        res.status(500).json({ 
+          error: "Tjenesten er midlertidig utilgjengelig", 
+          hint: "Vi har problemer med å koble til databasen. Vennligst prøv igjen om noen minutter."
+        });
         return;
       }
 
       // Case-insensitive email lookup using parameterized SQL
       // Security note: Drizzle ORM automatically sanitizes ${} parameters in sql`` templates
       // to prevent SQL injection. The trimmedEmail is safely parameterized.
-      const [user] = await dbInstance
-        .select()
-        .from(users)
-        .where(sql`LOWER(${users.email}) = LOWER(${trimmedEmail})`)
-        .limit(1);
+      let user;
+      try {
+        [user] = await dbInstance
+          .select()
+          .from(users)
+          .where(sql`LOWER(${users.email}) = LOWER(${trimmedEmail})`)
+          .limit(1);
+      } catch (queryError) {
+        console.error("[Auth] Database query error during login:", queryError);
+        res.status(500).json({ 
+          error: "En databasefeil oppstod",
+          hint: "Det oppstod en feil ved oppslag i brukerdatabasen. Vennligst prøv igjen senere."
+        });
+        return;
+      }
 
       if (!user) {
         console.warn("[Auth] Login attempt for non-existent user:", trimmedEmail);
@@ -274,12 +292,22 @@ export function registerAuthRoutes(app: Express) {
       // - Caching tenant status (requires invalidation strategy)
       // - Including tenant data in user query with JOIN
       // - Moving this check to middleware for all authenticated routes
-      const tenant = await db.getTenantById(user.tenantId);
-      if (!tenant) {
-        console.error("[Auth] User's tenant not found:", user.tenantId);
+      let tenant;
+      try {
+        tenant = await db.getTenantById(user.tenantId);
+        if (!tenant) {
+          console.error("[Auth] User's tenant not found:", user.tenantId);
+          res.status(500).json({ 
+            error: "Kontokonfigurasjonsfeil",
+            hint: "Det er et problem med kontoen din. Kontakt support for hjelp."
+          });
+          return;
+        }
+      } catch (tenantError) {
+        console.error("[Auth] Error fetching tenant:", tenantError);
         res.status(500).json({ 
-          error: "Kontokonfigurasjonsfeil",
-          hint: "Det er et problem med kontoen din. Kontakt support for hjelp."
+          error: "Kunne ikke hente kontoinformasjon",
+          hint: "En feil oppstod ved oppslag av kontoinformasjon. Vennligst prøv igjen."
         });
         return;
       }
@@ -305,19 +333,28 @@ export function registerAuthRoutes(app: Express) {
         expiresInMs: THIRTY_DAYS_MS,
       });
 
-      // Create refresh token (90 days)
-      const { createRefreshToken } = await import("./refresh-tokens");
-      const refreshToken = await createRefreshToken(
-        user.id,
-        user.tenantId,
-        req.ip,
-        req.headers["user-agent"]
-      );
+      // Create refresh token (90 days) - handle failures gracefully
+      let refreshToken: string | null = null;
+      try {
+        const { createRefreshToken } = await import("./refresh-tokens");
+        refreshToken = await createRefreshToken(
+          user.id,
+          user.tenantId,
+          req.ip,
+          req.headers["user-agent"]
+        );
+      } catch (refreshError) {
+        // Log the error but don't fail the login
+        console.error("[Auth] Failed to create refresh token:", refreshError);
+        // Continue with session token only - user can still log in
+      }
 
       // Set cookies
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: THIRTY_DAYS_MS });
-      res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { ...cookieOptions, maxAge: 90 * 24 * 60 * 60 * 1000 }); // 90 days
+      if (refreshToken) {
+        res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, { ...cookieOptions, maxAge: NINETY_DAYS_MS });
+      }
 
       console.log("[Auth] Successful login for user:", user.id, "email:", user.email);
       res.json({ 
