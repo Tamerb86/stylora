@@ -148,6 +148,13 @@
     },
     "overrides": {
       "tailwindcss>nanoid": "3.3.7"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@tailwindcss/oxide",
+      "bcrypt",
+      "core-js",
+      "esbuild",
+      "sharp"
+    ]
   }
 }
