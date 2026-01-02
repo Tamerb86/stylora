@@ -3,14 +3,17 @@
 ## Test Results with Long Text
 
 When testing with longer text values:
+
 - **Title**: No overflow (null result - selector issue)
 - **Value**: ⚠️ **OVERFLOW DETECTED** (scrollWidth > clientWidth)
 - **Description**: ⚠️ **OVERFLOW DETECTED** (scrollWidth > clientWidth)
 
 ## Root Cause
+
 The Card component structure is correct, but we're missing **text wrapping and truncation** classes:
 
 ### Current Implementation:
+
 ```tsx
 <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
 <div className="text-3xl font-bold mb-1">{stat.value}</div>
@@ -18,11 +21,13 @@ The Card component structure is correct, but we're missing **text wrapping and t
 ```
 
 ### Problem:
+
 - No `truncate` or `line-clamp` classes
 - No `break-words` for long values
 - Text can overflow horizontally
 
 ## Solution Required
+
 Add proper text handling classes:
 
 1. **Title**: Should truncate with ellipsis if too long
@@ -30,6 +35,7 @@ Add proper text handling classes:
 3. **Description**: Should wrap to multiple lines if needed
 
 ### Recommended Fix:
+
 ```tsx
 <CardTitle className="text-sm font-medium truncate">{stat.title}</CardTitle>
 <div className="text-3xl font-bold mb-1 break-words">{stat.value}</div>
@@ -37,6 +43,7 @@ Add proper text handling classes:
 ```
 
 This will ensure:
+
 - Titles truncate with "..." if too long
 - Values break into multiple lines for long numbers
 - Descriptions can show up to 2 lines before truncating

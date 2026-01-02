@@ -8,7 +8,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Search, User, Calendar, Receipt, Scissors, Loader2 } from "lucide-react";
+import {
+  Search,
+  User,
+  Calendar,
+  Receipt,
+  Scissors,
+  Loader2,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface GlobalSearchProps {
@@ -16,10 +23,13 @@ interface GlobalSearchProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
+export default function GlobalSearch({
+  open,
+  onOpenChange,
+}: GlobalSearchProps) {
   const [query, setQuery] = useState("");
   const [, setLocation] = useLocation();
-  
+
   const { data, isLoading } = trpc.search.global.useQuery(
     { query },
     { enabled: query.length >= 2 }
@@ -38,12 +48,12 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
     toast.success("Navigert til resultat");
   };
 
-  const hasResults = data && (
-    data.customers.length > 0 ||
-    data.appointments.length > 0 ||
-    data.orders.length > 0 ||
-    data.services.length > 0
-  );
+  const hasResults =
+    data &&
+    (data.customers.length > 0 ||
+      data.appointments.length > 0 ||
+      data.orders.length > 0 ||
+      data.services.length > 0);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -59,7 +69,7 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
           <Input
             placeholder="Søk etter kunder, avtaler, ordre eller tjenester..."
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={e => setQuery(e.target.value)}
             className="w-full"
             autoFocus
           />
@@ -96,7 +106,7 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
                     Kunder ({data.customers.length})
                   </h3>
                   <div className="space-y-1">
-                    {data.customers.map((customer) => (
+                    {data.customers.map(customer => (
                       <button
                         key={customer.id}
                         onClick={() => handleNavigate("/customers")}
@@ -106,7 +116,8 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
                           {customer.firstName} {customer.lastName}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {customer.phone} {customer.email && `• ${customer.email}`}
+                          {customer.phone}{" "}
+                          {customer.email && `• ${customer.email}`}
                         </div>
                       </button>
                     ))}
@@ -122,7 +133,7 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
                     Avtaler ({data.appointments.length})
                   </h3>
                   <div className="space-y-1">
-                    {data.appointments.map((item) => (
+                    {data.appointments.map(item => (
                       <button
                         key={item.appointment.id}
                         onClick={() => handleNavigate("/appointments")}
@@ -132,8 +143,13 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
                           {item.customer?.firstName} {item.customer?.lastName}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {new Date(item.appointment.startTime).toLocaleDateString("nb-NO")} kl.{" "}
-                          {new Date(item.appointment.startTime).toLocaleTimeString("nb-NO", {
+                          {new Date(
+                            item.appointment.startTime
+                          ).toLocaleDateString("nb-NO")}{" "}
+                          kl.{" "}
+                          {new Date(
+                            item.appointment.startTime
+                          ).toLocaleTimeString("nb-NO", {
                             hour: "2-digit",
                             minute: "2-digit",
                           })}
@@ -153,7 +169,7 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
                     Ordre ({data.orders.length})
                   </h3>
                   <div className="space-y-1">
-                    {data.orders.map((item) => (
+                    {data.orders.map(item => (
                       <button
                         key={item.order.id}
                         onClick={() => handleNavigate("/orders")}
@@ -182,7 +198,7 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
                     Tjenester ({data.services.length})
                   </h3>
                   <div className="space-y-1">
-                    {data.services.map((service) => (
+                    {data.services.map(service => (
                       <button
                         key={service.id}
                         onClick={() => handleNavigate("/services")}
@@ -203,8 +219,10 @@ export default function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) 
 
         <div className="px-4 py-3 border-t bg-muted/30">
           <p className="text-xs text-muted-foreground">
-            Tips: Bruk <kbd className="px-2 py-1 bg-background border rounded">Ctrl</kbd> +{" "}
-            <kbd className="px-2 py-1 bg-background border rounded">K</kbd> for å åpne søk
+            Tips: Bruk{" "}
+            <kbd className="px-2 py-1 bg-background border rounded">Ctrl</kbd> +{" "}
+            <kbd className="px-2 py-1 bg-background border rounded">K</kbd> for
+            å åpne søk
           </p>
         </div>
       </DialogContent>

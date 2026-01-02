@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,7 +22,7 @@ export function BookingSettingsSection() {
       utils.salonSettings.getBookingSettings.invalidate();
       toast.success("Bookinginnstillinger lagret!");
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Feil ved lagring: ${error.message}`);
     },
   });
@@ -41,7 +47,9 @@ export function BookingSettingsSection() {
         <CardContent className="py-8">
           <div className="flex items-center justify-center">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            <span className="ml-2 text-muted-foreground">Laster bookinginnstillinger...</span>
+            <span className="ml-2 text-muted-foreground">
+              Laster bookinginnstillinger...
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -74,8 +82,8 @@ export function BookingSettingsSection() {
           </div>
           <Switch
             checked={localState.requirePrepayment}
-            onCheckedChange={(checked) =>
-              setLocalState((prev) =>
+            onCheckedChange={checked =>
+              setLocalState(prev =>
                 prev ? { ...prev, requirePrepayment: checked } : prev
               )
             }
@@ -89,7 +97,8 @@ export function BookingSettingsSection() {
               Avbestillingsvindu (timer)
             </Label>
             <div className="text-sm text-muted-foreground mt-1">
-              Avbestillinger innenfor dette vinduet vil bli merket som sen avbestilling
+              Avbestillinger innenfor dette vinduet vil bli merket som sen
+              avbestilling
             </div>
           </div>
           <Input
@@ -99,8 +108,8 @@ export function BookingSettingsSection() {
             max={168}
             className="w-24 text-right"
             value={localState.cancellationWindowHours}
-            onChange={(e) =>
-              setLocalState((prev) =>
+            onChange={e =>
+              setLocalState(prev =>
                 prev
                   ? {
                       ...prev,

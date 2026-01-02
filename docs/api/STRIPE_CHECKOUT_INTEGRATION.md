@@ -9,13 +9,16 @@ This document describes the Stripe Checkout integration for appointment prepayme
 ## What Was Implemented
 
 ### 1. **Stripe SDK Installation**
+
 - Package: `stripe@20.0.0`
 - Installed via: `pnpm add stripe`
 
 ### 2. **Environment Configuration**
+
 **File:** `server/_core/env.ts`
 
 Added three Stripe environment variables:
+
 ```typescript
 export const ENV = {
   // ... existing fields
@@ -28,6 +31,7 @@ export const ENV = {
 These are automatically injected by the Stylora platform and don't need manual configuration.
 
 ### 3. **Stripe Client Helper**
+
 **File:** `server/stripe.ts` (NEW)
 
 ```typescript
@@ -46,18 +50,20 @@ export const stripe = new Stripe(ENV.stripeSecretKey, {
 This file exports a single Stripe instance that can be imported throughout the server code.
 
 ### 4. **Database Helpers**
+
 **File:** `server/db.ts` (EXTENDED)
 
 Added payment-related database functions:
 
-| Function | Description |
-|----------|-------------|
-| `createPayment(data)` | Insert a new payment record |
-| `getPaymentById(id)` | Fetch payment by ID |
+| Function                                  | Description                         |
+| ----------------------------------------- | ----------------------------------- |
+| `createPayment(data)`                     | Insert a new payment record         |
+| `getPaymentById(id)`                      | Fetch payment by ID                 |
 | `getPaymentsByAppointment(appointmentId)` | Get all payments for an appointment |
-| `getPaymentsByTenant(tenantId)` | Get all payments for a tenant |
+| `getPaymentsByTenant(tenantId)`           | Get all payments for a tenant       |
 
 ### 5. **Payments Router**
+
 **File:** `server/routers.ts` (EXTENDED)
 
 Added new `payments` router with one procedure:
@@ -68,20 +74,22 @@ Added new `payments` router with one procedure:
 **Auth:** `tenantProcedure` (requires authenticated user with tenantId)
 
 **Input:**
+
 ```typescript
 {
-  appointmentId: number;    // ID of the appointment to pay for
-  successUrl: string;       // URL to redirect after successful payment
-  cancelUrl: string;        // URL to redirect if payment is canceled
+  appointmentId: number; // ID of the appointment to pay for
+  successUrl: string; // URL to redirect after successful payment
+  cancelUrl: string; // URL to redirect if payment is canceled
 }
 ```
 
 **Output:**
+
 ```typescript
 {
-  url: string;              // Stripe Checkout URL to redirect user to
-  paymentId: number;        // Database payment record ID
-  sessionId: string;        // Stripe Checkout Session ID (cs_test_...)
+  url: string; // Stripe Checkout URL to redirect user to
+  paymentId: number; // Database payment record ID
+  sessionId: string; // Stripe Checkout Session ID (cs_test_...)
 }
 ```
 
@@ -93,13 +101,14 @@ Added new `payments` router with one procedure:
 4. **Creates Stripe session** - Generates a Checkout session with:
    - Mode: `payment` (one-time payment, not subscription)
    - Currency: `nok` (Norwegian Krone)
-   - Amount: Total in øre (NOK * 100)
+   - Amount: Total in øre (NOK \* 100)
    - Product name: `Timebestilling #{appointmentId}`
    - Metadata: `tenantId`, `appointmentId`, `type: "appointment_payment"`
 5. **Stores payment record** - Inserts into `payments` table with status `pending`
 6. **Returns checkout URL** - Frontend redirects user to this URL
 
 **Multi-tenant enforcement:**
+
 - Appointment must belong to the user's tenant
 - Payment record includes `tenantId`
 - Cross-tenant access is blocked
@@ -110,14 +119,14 @@ Added new `payments` router with one procedure:
 
 The `payments` table was extended with these columns:
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `appointmentId` | INT NULL | Links payment to appointment |
-| `currency` | VARCHAR(3) | Payment currency (default: NOK) |
-| `paymentGateway` | ENUM('stripe', 'vipps') | Which gateway was used |
-| `gatewayPaymentId` | VARCHAR(255) | Stripe Payment Intent ID |
-| `gatewaySessionId` | VARCHAR(255) | Stripe Checkout Session ID |
-| `gatewayMetadata` | JSON | Additional gateway data |
+| Column             | Type                    | Description                     |
+| ------------------ | ----------------------- | ------------------------------- |
+| `appointmentId`    | INT NULL                | Links payment to appointment    |
+| `currency`         | VARCHAR(3)              | Payment currency (default: NOK) |
+| `paymentGateway`   | ENUM('stripe', 'vipps') | Which gateway was used          |
+| `gatewayPaymentId` | VARCHAR(255)            | Stripe Payment Intent ID        |
+| `gatewaySessionId` | VARCHAR(255)            | Stripe Checkout Session ID      |
+| `gatewayMetadata`  | JSON                    | Additional gateway data         |
 
 **Note:** The `orderId` column was also made nullable to support appointment payments without orders.
 
@@ -170,6 +179,7 @@ function AppointmentPaymentButton({ appointmentId }: { appointmentId: number }) 
 After payment, Stripe redirects to your success or cancel URL. You should create these pages:
 
 **Success Page (`/booking/success`):**
+
 ```typescript
 import { useSearchParams } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -194,6 +204,7 @@ export function BookingSuccess() {
 ```
 
 **Cancel Page (`/booking/cancel`):**
+
 ```typescript
 export function BookingCancel() {
   return (
@@ -231,6 +242,7 @@ Three test cases are implemented:
    - Verifies cross-tenant access is blocked
 
 **Run tests:**
+
 ```bash
 pnpm test server/payments.test.ts
 ```
@@ -240,9 +252,11 @@ pnpm test server/payments.test.ts
 ## What's NOT Implemented (Future Work)
 
 ### ❌ Stripe Webhook Handler
+
 **Why needed:** To update payment status when Stripe confirms payment
 
 **What to implement:**
+
 1. Express endpoint: `POST /api/stripe/webhook`
 2. Verify webhook signature
 3. Handle events:
@@ -252,25 +266,31 @@ pnpm test server/payments.test.ts
 4. Update appointment status to `confirmed` after successful payment
 
 ### ❌ POS (Point of Sale) System
+
 **Why needed:** For in-person cash/card payments
 
 **What to implement:**
+
 1. `payments.recordCashPayment` mutation
 2. `payments.recordCardPayment` mutation
 3. POS UI for staff to record payments
 
 ### ❌ Refund Processing
+
 **Why needed:** To handle cancellations and refunds
 
 **What to implement:**
+
 1. `payments.refund` mutation
 2. Stripe refund API integration
 3. Refund record in database
 
 ### ❌ Payment History UI
+
 **Why needed:** For admins to view all payments
 
 **What to implement:**
+
 1. `payments.list` query with filters
 2. Admin page showing payment history
 3. Export to CSV/Excel
@@ -279,20 +299,20 @@ pnpm test server/payments.test.ts
 
 ## Files Created
 
-| File | Purpose |
-|------|---------|
-| `server/stripe.ts` | Stripe client initialization |
-| `server/payments.test.ts` | Unit tests for payments router |
-| `STRIPE_CHECKOUT_INTEGRATION.md` | This documentation |
+| File                             | Purpose                        |
+| -------------------------------- | ------------------------------ |
+| `server/stripe.ts`               | Stripe client initialization   |
+| `server/payments.test.ts`        | Unit tests for payments router |
+| `STRIPE_CHECKOUT_INTEGRATION.md` | This documentation             |
 
 ## Files Modified
 
-| File | Changes |
-|------|---------|
-| `server/_core/env.ts` | Added Stripe environment variables |
-| `server/db.ts` | Added payment database helpers |
-| `server/routers.ts` | Added payments router with createCheckoutSession |
-| `package.json` | Added `stripe@20.0.0` dependency |
+| File                  | Changes                                          |
+| --------------------- | ------------------------------------------------ |
+| `server/_core/env.ts` | Added Stripe environment variables               |
+| `server/db.ts`        | Added payment database helpers                   |
+| `server/routers.ts`   | Added payments router with createCheckoutSession |
+| `package.json`        | Added `stripe@20.0.0` dependency                 |
 
 ---
 
@@ -358,6 +378,7 @@ console.log(result.url); // https://checkout.stripe.com/...
 ## Support
 
 For questions or issues:
+
 - Check Stripe Dashboard: https://dashboard.stripe.com
 - Review Stripe API docs: https://stripe.com/docs/api
 - Test mode uses `sk_test_...` keys and `cs_test_...` session IDs

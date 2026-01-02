@@ -44,7 +44,7 @@ describe("customers router", () => {
     const caller = appRouter.createCaller(ctx);
 
     const customers = await caller.customers.list();
-    
+
     expect(Array.isArray(customers)).toBe(true);
   });
 
@@ -71,7 +71,7 @@ describe("services router", () => {
     const caller = appRouter.createCaller(ctx);
 
     const services = await caller.services.list();
-    
+
     expect(Array.isArray(services)).toBe(true);
   });
 
@@ -96,7 +96,7 @@ describe("dashboard router", () => {
     const caller = appRouter.createCaller(ctx);
 
     const stats = await caller.dashboard.todayStats();
-    
+
     expect(stats).toHaveProperty("todayAppointments");
     expect(stats).toHaveProperty("todayRevenue");
     expect(stats).toHaveProperty("pendingAppointments");

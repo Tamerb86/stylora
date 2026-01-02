@@ -1,11 +1,15 @@
 /**
  * Fiken Customer Sync Module
- * 
+ *
  * Handles syncing customers between Stylora and Fiken
  */
 
 import { getDb } from "../db";
-import { customers, fikenCustomerMapping, fikenSyncLog } from "../../drizzle/schema";
+import {
+  customers,
+  fikenCustomerMapping,
+  fikenSyncLog,
+} from "../../drizzle/schema";
 import { eq, and, isNull } from "drizzle-orm";
 import { FikenClient, FikenContact } from "./client";
 
@@ -26,8 +30,8 @@ export function mapCustomerToFiken(customer: {
   email?: string | null;
   phone?: string | null;
 }): Partial<FikenContact> {
-  const fullName = customer.lastName 
-    ? `${customer.firstName} ${customer.lastName}` 
+  const fullName = customer.lastName
+    ? `${customer.firstName} ${customer.lastName}`
     : customer.firstName;
 
   return {
@@ -58,10 +62,9 @@ export async function syncCustomerToFiken(
     const [customer] = await db
       .select()
       .from(customers)
-      .where(and(
-        eq(customers.id, customerId),
-        eq(customers.tenantId, tenantId)
-      ))
+      .where(
+        and(eq(customers.id, customerId), eq(customers.tenantId, tenantId))
+      )
       .limit(1);
 
     if (!customer) {
@@ -76,10 +79,12 @@ export async function syncCustomerToFiken(
     const [existingMapping] = await db
       .select()
       .from(fikenCustomerMapping)
-      .where(and(
-        eq(fikenCustomerMapping.tenantId, tenantId),
-        eq(fikenCustomerMapping.customerId, customerId)
-      ))
+      .where(
+        and(
+          eq(fikenCustomerMapping.tenantId, tenantId),
+          eq(fikenCustomerMapping.customerId, customerId)
+        )
+      )
       .limit(1);
 
     // Initialize Fiken client
@@ -89,7 +94,7 @@ export async function syncCustomerToFiken(
     if (existingMapping) {
       // Update existing contact in Fiken
       const contactData = mapCustomerToFiken(customer);
-      
+
       await fikenClient.updateContact(
         existingMapping.fikenContactId,
         contactData
@@ -132,16 +137,19 @@ export async function syncCustomerToFiken(
       };
     }
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
 
     // Log error in mapping table if mapping exists
     const [existingMapping] = await db
       .select()
       .from(fikenCustomerMapping)
-      .where(and(
-        eq(fikenCustomerMapping.tenantId, tenantId),
-        eq(fikenCustomerMapping.customerId, customerId)
-      ))
+      .where(
+        and(
+          eq(fikenCustomerMapping.tenantId, tenantId),
+          eq(fikenCustomerMapping.customerId, customerId)
+        )
+      )
       .limit(1);
 
     if (existingMapping) {
@@ -200,34 +208,42 @@ export async function bulkSyncCustomers(
       customersToSync = await db
         .select()
         .from(customers)
-        .where(and(
-          eq(customers.tenantId, tenantId),
-          eq(customers.deletedAt, null as any)
-        ));
-      
+        .where(
+          and(
+            eq(customers.tenantId, tenantId),
+            eq(customers.deletedAt, null as any)
+          )
+        );
+
       customersToSync = customersToSync.filter(c => customerIds.includes(c.id));
     } else {
       // Sync all unsynced customers
       const syncedCustomerIds = await db
         .select({ customerId: fikenCustomerMapping.customerId })
         .from(fikenCustomerMapping)
-        .where(and(
-          eq(fikenCustomerMapping.tenantId, tenantId),
-          eq(fikenCustomerMapping.status, "synced")
-        ));
+        .where(
+          and(
+            eq(fikenCustomerMapping.tenantId, tenantId),
+            eq(fikenCustomerMapping.status, "synced")
+          )
+        );
 
       const syncedIds = syncedCustomerIds.map(m => m.customerId);
 
       customersToSync = await db
         .select()
         .from(customers)
-        .where(and(
-          eq(customers.tenantId, tenantId),
-          eq(customers.deletedAt, null as any)
-        ));
+        .where(
+          and(
+            eq(customers.tenantId, tenantId),
+            eq(customers.deletedAt, null as any)
+          )
+        );
 
       if (syncedIds.length > 0) {
-        customersToSync = customersToSync.filter(c => !syncedIds.includes(c.id));
+        customersToSync = customersToSync.filter(
+          c => !syncedIds.includes(c.id)
+        );
       }
     }
 
@@ -247,15 +263,22 @@ export async function bulkSyncCustomers(
     await db.insert(fikenSyncLog).values({
       tenantId,
       operation: "customer_sync",
-      status: totalFailed === 0 ? "success" : totalFailed === totalProcessed ? "failed" : "partial",
+      status:
+        totalFailed === 0
+          ? "success"
+          : totalFailed === totalProcessed
+            ? "failed"
+            : "partial",
       itemsProcessed: totalProcessed,
       itemsFailed: totalFailed,
       details: {
         customerIds: results.map(r => r.customerId),
-        errors: results.filter(r => !r.success).map(r => ({
-          id: r.customerId,
-          error: r.error || "Unknown error",
-        })),
+        errors: results
+          .filter(r => !r.success)
+          .map(r => ({
+            id: r.customerId,
+            error: r.error || "Unknown error",
+          })),
       },
       duration,
       triggeredBy: "manual",
@@ -269,7 +292,8 @@ export async function bulkSyncCustomers(
     };
   } catch (error) {
     const duration = Date.now() - startTime;
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
 
     // Log failed sync
     await db.insert(fikenSyncLog).values({
@@ -290,7 +314,9 @@ export async function bulkSyncCustomers(
 /**
  * Get unsynced customers count
  */
-export async function getUnsyncedCustomersCount(tenantId: string): Promise<number> {
+export async function getUnsyncedCustomersCount(
+  tenantId: string
+): Promise<number> {
   const db = await getDb();
   if (!db) return 0;
 
@@ -298,22 +324,28 @@ export async function getUnsyncedCustomersCount(tenantId: string): Promise<numbe
   const allCustomers = await db
     .select({ id: customers.id })
     .from(customers)
-    .where(and(
-      eq(customers.tenantId, tenantId),
-      eq(customers.deletedAt, null as any)
-    ));
+    .where(
+      and(
+        eq(customers.tenantId, tenantId),
+        eq(customers.deletedAt, null as any)
+      )
+    );
 
   // Get synced customer IDs
   const syncedCustomers = await db
     .select({ customerId: fikenCustomerMapping.customerId })
     .from(fikenCustomerMapping)
-    .where(and(
-      eq(fikenCustomerMapping.tenantId, tenantId),
-      eq(fikenCustomerMapping.status, "synced")
-    ));
+    .where(
+      and(
+        eq(fikenCustomerMapping.tenantId, tenantId),
+        eq(fikenCustomerMapping.status, "synced")
+      )
+    );
 
   const syncedIds = syncedCustomers.map(m => m.customerId);
-  const unsyncedCount = allCustomers.filter(c => !syncedIds.includes(c.id)).length;
+  const unsyncedCount = allCustomers.filter(
+    c => !syncedIds.includes(c.id)
+  ).length;
 
   return unsyncedCount;
 }

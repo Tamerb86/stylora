@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { loadStripeTerminal, Terminal, Reader } from "@stripe/terminal-js";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -11,21 +17,26 @@ interface StripeTerminalContextType {
   discoverReaders: () => Promise<Reader[]>;
   connectReader: (reader: Reader) => Promise<void>;
   disconnectReader: () => Promise<void>;
-  processPayment: (amount: number, currency?: string) => Promise<{ 
-    success: boolean; 
-    paymentIntentId?: string; 
+  processPayment: (
+    amount: number,
+    currency?: string
+  ) => Promise<{
+    success: boolean;
+    paymentIntentId?: string;
     cardBrand?: string;
     lastFour?: string;
-    error?: string 
+    error?: string;
   }>;
 }
 
-const StripeTerminalContext = createContext<StripeTerminalContextType | undefined>(undefined);
+const StripeTerminalContext = createContext<
+  StripeTerminalContextType | undefined
+>(undefined);
 
-export function StripeTerminalProvider({ 
+export function StripeTerminalProvider({
   children,
-  providerId 
-}: { 
+  providerId,
+}: {
   children: ReactNode;
   providerId?: number;
 }) {
@@ -34,23 +45,25 @@ export function StripeTerminalProvider({
   const [isInitialized, setIsInitialized] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
 
-  const createConnectionTokenMutation = trpc.stripeTerminal.createConnectionToken.useMutation();
-  const createPaymentIntentMutation = trpc.stripeTerminal.createPaymentIntent.useMutation();
+  const createConnectionTokenMutation =
+    trpc.stripeTerminal.createConnectionToken.useMutation();
+  const createPaymentIntentMutation =
+    trpc.stripeTerminal.createPaymentIntent.useMutation();
 
   // Initialize Stripe Terminal SDK
   useEffect(() => {
     const initTerminal = async () => {
       try {
         const StripeTerminal = await loadStripeTerminal();
-        
+
         if (!StripeTerminal) {
           throw new Error("Failed to load Stripe Terminal SDK");
         }
-        
+
         const terminalInstance = StripeTerminal.create({
           onFetchConnectionToken: async () => {
-            const result = await createConnectionTokenMutation.mutateAsync({ 
-              providerId 
+            const result = await createConnectionTokenMutation.mutateAsync({
+              providerId,
             });
             return result.secret;
           },
@@ -82,12 +95,16 @@ export function StripeTerminalProvider({
         simulated: process.env.NODE_ENV === "development", // Use simulated readers in dev
       });
 
-      if ('error' in discoverResult && discoverResult.error) {
+      if ("error" in discoverResult && discoverResult.error) {
         toast.error(`Discovery failed: ${discoverResult.error.message}`);
         return [];
       }
 
-      return ('discoveredReaders' in discoverResult && discoverResult.discoveredReaders) || [];
+      return (
+        ("discoveredReaders" in discoverResult &&
+          discoverResult.discoveredReaders) ||
+        []
+      );
     } catch (error: any) {
       toast.error(`Discovery error: ${error.message}`);
       return [];
@@ -104,9 +121,9 @@ export function StripeTerminalProvider({
     try {
       const connectResult = await terminal.connectReader(reader);
 
-      if ('error' in connectResult && connectResult.error) {
+      if ("error" in connectResult && connectResult.error) {
         toast.error(`Connection failed: ${connectResult.error.message}`);
-      } else if ('reader' in connectResult && connectResult.reader) {
+      } else if ("reader" in connectResult && connectResult.reader) {
         setConnectedReader(connectResult.reader);
         toast.success(`Connected to ${reader.label || "reader"}`);
       }
@@ -134,17 +151,17 @@ export function StripeTerminalProvider({
   const processPayment = async (
     amount: number,
     currency: string = "nok"
-  ): Promise<{ 
-    success: boolean; 
-    paymentIntentId?: string; 
+  ): Promise<{
+    success: boolean;
+    paymentIntentId?: string;
     cardBrand?: string;
     lastFour?: string;
-    error?: string 
+    error?: string;
   }> => {
     if (!terminal || !connectedReader) {
-      return { 
-        success: false, 
-        error: "Terminal not connected" 
+      return {
+        success: false,
+        error: "Terminal not connected",
       };
     }
 
@@ -161,17 +178,17 @@ export function StripeTerminalProvider({
         paymentIntent.clientSecret!
       );
 
-      if ('error' in collectResult && collectResult.error) {
-        return { 
-          success: false, 
-          error: collectResult.error.message 
+      if ("error" in collectResult && collectResult.error) {
+        return {
+          success: false,
+          error: collectResult.error.message,
         };
       }
 
-      if (!('paymentIntent' in collectResult) || !collectResult.paymentIntent) {
+      if (!("paymentIntent" in collectResult) || !collectResult.paymentIntent) {
         return {
           success: false,
-          error: "Failed to collect payment method"
+          error: "Failed to collect payment method",
         };
       }
 
@@ -180,34 +197,43 @@ export function StripeTerminalProvider({
         collectResult.paymentIntent
       );
 
-      if ('error' in processResult && processResult.error) {
-        return { 
-          success: false, 
-          error: processResult.error.message 
+      if ("error" in processResult && processResult.error) {
+        return {
+          success: false,
+          error: processResult.error.message,
         };
       }
 
-      if ('paymentIntent' in processResult && processResult.paymentIntent?.status === "succeeded") {
+      if (
+        "paymentIntent" in processResult &&
+        processResult.paymentIntent?.status === "succeeded"
+      ) {
         const paymentIntent = processResult.paymentIntent;
         const charges = paymentIntent.charges?.data?.[0];
         const paymentMethodDetails = charges?.payment_method_details;
-        
-        return { 
-          success: true, 
+
+        return {
+          success: true,
           paymentIntentId: paymentIntent.id,
-          cardBrand: paymentMethodDetails?.card_present?.brand || paymentMethodDetails?.type || "Unknown",
-          lastFour: paymentMethodDetails?.card_present?.last4 || undefined
+          cardBrand:
+            paymentMethodDetails?.card_present?.brand ||
+            paymentMethodDetails?.type ||
+            "Unknown",
+          lastFour: paymentMethodDetails?.card_present?.last4 || undefined,
         };
       }
 
-      return { 
-        success: false, 
-        error: 'paymentIntent' in processResult ? `Payment status: ${processResult.paymentIntent?.status}` : "Payment failed" 
+      return {
+        success: false,
+        error:
+          "paymentIntent" in processResult
+            ? `Payment status: ${processResult.paymentIntent?.status}`
+            : "Payment failed",
       };
     } catch (error: any) {
-      return { 
-        success: false, 
-        error: error.message || "Payment failed" 
+      return {
+        success: false,
+        error: error.message || "Payment failed",
       };
     }
   };
@@ -233,7 +259,9 @@ export function StripeTerminalProvider({
 export function useStripeTerminal() {
   const context = useContext(StripeTerminalContext);
   if (context === undefined) {
-    throw new Error("useStripeTerminal must be used within a StripeTerminalProvider");
+    throw new Error(
+      "useStripeTerminal must be used within a StripeTerminalProvider"
+    );
   }
   return context;
 }

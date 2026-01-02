@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { 
-  createTestTenant, 
-  createTestService, 
+import {
+  createTestTenant,
+  createTestService,
   createTestEmployee,
   createTestCustomer,
-  cleanupTestTenant 
+  cleanupTestTenant,
 } from "./test-helpers";
 import { appRouter } from "./routers";
 import { getDb } from "./db";
@@ -37,7 +37,8 @@ describe("Cancellation & Refund System", () => {
 
     // Update tenant with cancellation window
     const { tenants } = await import("../drizzle/schema");
-    await dbInstance.update(tenants)
+    await dbInstance
+      .update(tenants)
       .set({ cancellationWindowHours: 24 })
       .where(eq(tenants.id, testTenantId));
 
@@ -130,8 +131,9 @@ describe("Cancellation & Refund System", () => {
     // Update appointment to be in 2 hours (late cancellation)
     const soon = new Date();
     soon.setHours(soon.getHours() + 2);
-    
-    await dbInstance.update(appointments)
+
+    await dbInstance
+      .update(appointments)
       .set({
         appointmentDate: soon,
         startTime: `${soon.getHours().toString().padStart(2, "0")}:00:00`,

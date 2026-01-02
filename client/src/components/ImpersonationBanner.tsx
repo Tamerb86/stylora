@@ -6,15 +6,15 @@ import { useLocation } from "wouter";
 export function ImpersonationBanner() {
   const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
-  
+
   const clearImpersonation = trpc.saasAdmin.clearImpersonation.useMutation({
-    onSuccess: async (data) => {
+    onSuccess: async data => {
       // Invalidate auth to refresh user state
       await utils.auth.me.invalidate();
       // Redirect to SaaS admin panel
       window.location.href = data.redirectUrl;
     },
-    onError: (error) => {
+    onError: error => {
       alert(`Feil ved avslutning av innlogging: ${error.message}`);
     },
   });

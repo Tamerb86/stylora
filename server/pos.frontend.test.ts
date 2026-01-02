@@ -13,7 +13,7 @@ describe("POS Frontend Simulation", () => {
 
     // Create test tenant
     const { tenants, users, services } = await import("../drizzle/schema");
-    
+
     const [tenant] = await dbInstance.insert(tenants).values({
       id: `test-frontend-${Date.now()}`,
       name: "Test Salon Frontend",

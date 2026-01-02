@@ -4,13 +4,13 @@ This document lists the current known limitations and areas that may need attent
 
 ## 1. External Service Dependencies
 
-| Service | Status | Notes |
-|---------|--------|-------|
-| **Stripe** | ✅ Ready | Requires API keys configuration |
-| **Vipps** | ✅ Ready | Requires merchant credentials |
+| Service                   | Status     | Notes                                                |
+| ------------------------- | ---------- | ---------------------------------------------------- |
+| **Stripe**                | ✅ Ready   | Requires API keys configuration                      |
+| **Vipps**                 | ✅ Ready   | Requires merchant credentials                        |
 | **iZettle/PayPal Reader** | ⚠️ Limited | Only works with PayPal Reader (not iZettle Reader 2) |
-| **Google Maps** | ✅ Ready | Requires Google Maps API key |
-| **OpenAI** | ✅ Ready | Requires API key for image/voice features |
+| **Google Maps**           | ✅ Ready   | Requires Google Maps API key                         |
+| **OpenAI**                | ✅ Ready   | Requires API key for image/voice features            |
 
 ## 2. iZettle/PayPal Reader Limitation
 
@@ -25,6 +25,7 @@ This document lists the current known limitations and areas that may need attent
 **Issue:** SMS notifications require external provider setup.
 
 **Supported Providers:**
+
 - Twilio (recommended)
 - PSWinCom
 - LinkMobility
@@ -36,6 +37,7 @@ This document lists the current known limitations and areas that may need attent
 **Issue:** Email delivery depends on SMTP configuration.
 
 **Recommendations:**
+
 - Use AWS SES for production (high deliverability)
 - Use Gmail SMTP for testing only (rate limits apply)
 - Configure SPF/DKIM records for best deliverability
@@ -45,6 +47,7 @@ This document lists the current known limitations and areas that may need attent
 **Issue:** Automated backups require S3-compatible storage.
 
 **Options:**
+
 - AWS S3
 - Backblaze B2 (free 10GB)
 - DigitalOcean Spaces
@@ -54,6 +57,7 @@ This document lists the current known limitations and areas that may need attent
 ## 6. Multi-Language Support
 
 **Current Languages:**
+
 - Norwegian (default)
 - Arabic (RTL supported)
 - English

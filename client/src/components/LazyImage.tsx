@@ -1,26 +1,31 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 
 interface LazyImageProps {
   src: string;
   alt: string;
   className?: string;
-  loading?: 'lazy' | 'eager';
+  loading?: "lazy" | "eager";
 }
 
-export default function LazyImage({ src, alt, className = '', loading = 'lazy' }: LazyImageProps) {
+export default function LazyImage({
+  src,
+  alt,
+  className = "",
+  loading = "lazy",
+}: LazyImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    if (loading === 'eager') {
+    if (loading === "eager") {
       setIsInView(true);
       return;
     }
 
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
+      entries => {
+        entries.forEach(entry => {
           if (entry.isIntersecting) {
             setIsInView(true);
             observer.disconnect();
@@ -28,7 +33,7 @@ export default function LazyImage({ src, alt, className = '', loading = 'lazy' }
         });
       },
       {
-        rootMargin: '50px',
+        rootMargin: "50px",
       }
     );
 
@@ -47,14 +52,14 @@ export default function LazyImage({ src, alt, className = '', loading = 'lazy' }
       {!isLoaded && (
         <div className="absolute inset-0 bg-gray-200 animate-pulse"></div>
       )}
-      
+
       {/* Actual image */}
       {isInView && (
         <img
           src={src}
           alt={alt}
           className={`${className} transition-opacity duration-300 ${
-            isLoaded ? 'opacity-100' : 'opacity-0'
+            isLoaded ? "opacity-100" : "opacity-0"
           }`}
           onLoad={() => setIsLoaded(true)}
           loading={loading}

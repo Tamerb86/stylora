@@ -17,12 +17,15 @@ export interface PaymentResult {
 
 export function useStripeTerminal() {
   const [terminal, setTerminal] = useState<any>(null);
-  const [connectedReader, setConnectedReader] = useState<StripeTerminalReader | null>(null);
+  const [connectedReader, setConnectedReader] =
+    useState<StripeTerminalReader | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const connectionTokenMutation = trpc.stripeTerminal.createConnectionToken.useMutation();
-  const createPaymentIntentMutation = trpc.stripeTerminal.createPaymentIntent.useMutation();
+  const connectionTokenMutation =
+    trpc.stripeTerminal.createConnectionToken.useMutation();
+  const createPaymentIntentMutation =
+    trpc.stripeTerminal.createPaymentIntent.useMutation();
 
   // Initialize Stripe Terminal SDK
   useEffect(() => {
@@ -88,7 +91,9 @@ export function useStripeTerminal() {
   }, [terminal, isInitialized]);
 
   // Discover readers
-  const discoverReaders = useCallback(async (): Promise<StripeTerminalReader[]> => {
+  const discoverReaders = useCallback(async (): Promise<
+    StripeTerminalReader[]
+  > => {
     if (!terminal) {
       throw new Error("Terminal not initialized");
     }
@@ -108,19 +113,22 @@ export function useStripeTerminal() {
   }, [terminal]);
 
   // Connect to a reader
-  const connectReader = useCallback(async (reader: StripeTerminalReader): Promise<void> => {
-    if (!terminal) {
-      throw new Error("Terminal not initialized");
-    }
+  const connectReader = useCallback(
+    async (reader: StripeTerminalReader): Promise<void> => {
+      if (!terminal) {
+        throw new Error("Terminal not initialized");
+      }
 
-    const connectResult = await terminal.connectReader(reader);
+      const connectResult = await terminal.connectReader(reader);
 
-    if (connectResult.error) {
-      throw new Error(connectResult.error.message);
-    }
+      if (connectResult.error) {
+        throw new Error(connectResult.error.message);
+      }
 
-    setConnectedReader(connectResult.reader);
-  }, [terminal]);
+      setConnectedReader(connectResult.reader);
+    },
+    [terminal]
+  );
 
   // Disconnect from reader
   const disconnectReader = useCallback(async (): Promise<void> => {
@@ -133,68 +141,76 @@ export function useStripeTerminal() {
   }, [terminal]);
 
   // Process payment
-  const processPayment = useCallback(async (
-    amount: number,
-    currency: string = "nok",
-    metadata: Record<string, string> = {}
-  ): Promise<PaymentResult> => {
-    if (!terminal) {
-      return {
-        success: false,
-        error: "Terminal not initialized",
-      };
-    }
-
-    if (!connectedReader) {
-      return {
-        success: false,
-        error: "No reader connected. Please connect a reader first.",
-      };
-    }
-
-    setIsProcessing(true);
-
-    try {
-      // Create payment intent on backend
-      const paymentIntentResult = await createPaymentIntentMutation.mutateAsync({
-        amount,
-        currency,
-        metadata,
-      });
-
-      if (!paymentIntentResult.clientSecret) {
-        throw new Error("Failed to create payment intent");
+  const processPayment = useCallback(
+    async (
+      amount: number,
+      currency: string = "nok",
+      metadata: Record<string, string> = {}
+    ): Promise<PaymentResult> => {
+      if (!terminal) {
+        return {
+          success: false,
+          error: "Terminal not initialized",
+        };
       }
 
-      // Collect payment method using the reader
-      const collectResult = await terminal.collectPaymentMethod(paymentIntentResult.clientSecret);
-
-      if (collectResult.error) {
-        throw new Error(collectResult.error.message);
+      if (!connectedReader) {
+        return {
+          success: false,
+          error: "No reader connected. Please connect a reader first.",
+        };
       }
 
-      // Process the payment
-      const processResult = await terminal.processPayment(collectResult.paymentIntent);
+      setIsProcessing(true);
 
-      if (processResult.error) {
-        throw new Error(processResult.error.message);
+      try {
+        // Create payment intent on backend
+        const paymentIntentResult =
+          await createPaymentIntentMutation.mutateAsync({
+            amount,
+            currency,
+            metadata,
+          });
+
+        if (!paymentIntentResult.clientSecret) {
+          throw new Error("Failed to create payment intent");
+        }
+
+        // Collect payment method using the reader
+        const collectResult = await terminal.collectPaymentMethod(
+          paymentIntentResult.clientSecret
+        );
+
+        if (collectResult.error) {
+          throw new Error(collectResult.error.message);
+        }
+
+        // Process the payment
+        const processResult = await terminal.processPayment(
+          collectResult.paymentIntent
+        );
+
+        if (processResult.error) {
+          throw new Error(processResult.error.message);
+        }
+
+        // Payment successful
+        return {
+          success: true,
+          paymentIntentId: processResult.paymentIntent.id,
+        };
+      } catch (error: any) {
+        console.error("Payment processing error:", error);
+        return {
+          success: false,
+          error: error.message || "Payment failed",
+        };
+      } finally {
+        setIsProcessing(false);
       }
-
-      // Payment successful
-      return {
-        success: true,
-        paymentIntentId: processResult.paymentIntent.id,
-      };
-    } catch (error: any) {
-      console.error("Payment processing error:", error);
-      return {
-        success: false,
-        error: error.message || "Payment failed",
-      };
-    } finally {
-      setIsProcessing(false);
-    }
-  }, [terminal, connectedReader, createPaymentIntentMutation]);
+    },
+    [terminal, connectedReader, createPaymentIntentMutation]
+  );
 
   // Cancel payment
   const cancelPayment = useCallback(async (): Promise<void> => {

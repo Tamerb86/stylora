@@ -8,16 +8,16 @@ import { sendAppointmentConfirmationIfPossible } from "./notifications-appointme
 
 /**
  * Stripe Webhook Handler
- * 
+ *
  * Handles incoming webhook events from Stripe to update payment and appointment status.
- * 
+ *
  * Supported events:
  * - checkout.session.completed: When customer completes payment
- * 
+ *
  * Security:
  * - Verifies webhook signature using STRIPE_WEBHOOK_SECRET
  * - Enforces multi-tenant isolation using metadata.tenantId
- * 
+ *
  * @param req Express request (must have raw body for signature verification)
  * @param res Express response
  */
@@ -44,10 +44,13 @@ export async function handleStripeWebhook(req: Request, res: Response) {
       sig,
       ENV.stripeWebhookSecret
     );
-    
+
     console.log(`[Stripe Webhook] Verified event: ${event.type} (${event.id})`);
   } catch (err: any) {
-    console.error("[Stripe Webhook] Signature verification failed:", err.message);
+    console.error(
+      "[Stripe Webhook] Signature verification failed:",
+      err.message
+    );
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -62,7 +65,9 @@ export async function handleStripeWebhook(req: Request, res: Response) {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as any;
 
-      console.log(`[Stripe Webhook] Processing checkout.session.completed: ${session.id}`);
+      console.log(
+        `[Stripe Webhook] Processing checkout.session.completed: ${session.id}`
+      );
 
       // Extract metadata set during createCheckoutSession
       const metadata = session.metadata || {};
@@ -70,7 +75,9 @@ export async function handleStripeWebhook(req: Request, res: Response) {
       const appointmentIdStr = metadata.appointmentId as string | undefined;
 
       if (!tenantId || !appointmentIdStr) {
-        console.warn("[Stripe Webhook] Missing tenantId or appointmentId in session.metadata");
+        console.warn(
+          "[Stripe Webhook] Missing tenantId or appointmentId in session.metadata"
+        );
         return res.status(200).send("OK - No metadata");
       }
 
@@ -88,7 +95,9 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         );
 
       if (!paymentRow) {
-        console.warn(`[Stripe Webhook] Payment not found for session ${session.id} and tenant ${tenantId}`);
+        console.warn(
+          `[Stripe Webhook] Payment not found for session ${session.id} and tenant ${tenantId}`
+        );
       } else {
         // Extract Payment Intent ID from session
         const paymentIntentId =
@@ -107,7 +116,9 @@ export async function handleStripeWebhook(req: Request, res: Response) {
           })
           .where(eq(payments.id, paymentRow.id));
 
-        console.log(`[Stripe Webhook] Updated payment ${paymentRow.id} to completed`);
+        console.log(
+          `[Stripe Webhook] Updated payment ${paymentRow.id} to completed`
+        );
       }
 
       // 2) Update the appointment status to "confirmed" (if not canceled)
@@ -122,9 +133,13 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         );
 
       if (!appointment) {
-        console.warn(`[Stripe Webhook] Appointment ${appointmentId} not found for tenant ${tenantId}`);
+        console.warn(
+          `[Stripe Webhook] Appointment ${appointmentId} not found for tenant ${tenantId}`
+        );
       } else if (appointment.status === "canceled") {
-        console.log(`[Stripe Webhook] Appointment ${appointmentId} is canceled, not updating status`);
+        console.log(
+          `[Stripe Webhook] Appointment ${appointmentId} is canceled, not updating status`
+        );
       } else {
         // Update appointment status to "confirmed"
         await db
@@ -134,12 +149,19 @@ export async function handleStripeWebhook(req: Request, res: Response) {
           })
           .where(eq(appointments.id, appointment.id));
 
-        console.log(`[Stripe Webhook] Updated appointment ${appointmentId} to confirmed`);
+        console.log(
+          `[Stripe Webhook] Updated appointment ${appointmentId} to confirmed`
+        );
 
         // Send confirmation email (non-blocking)
-        sendAppointmentConfirmationIfPossible(appointmentId, tenantId).catch((err) => {
-          console.error("[Stripe Webhook] Failed to send confirmation email:", err);
-        });
+        sendAppointmentConfirmationIfPossible(appointmentId, tenantId).catch(
+          err => {
+            console.error(
+              "[Stripe Webhook] Failed to send confirmation email:",
+              err
+            );
+          }
+        );
       }
 
       return res.status(200).send("OK - Processed");
@@ -148,7 +170,6 @@ export async function handleStripeWebhook(req: Request, res: Response) {
     // Log other event types for future implementation
     console.log(`[Stripe Webhook] Unhandled event type: ${event.type}`);
     return res.status(200).send("OK - Unhandled event");
-
   } catch (err) {
     console.error("[Stripe Webhook] Error processing webhook:", err);
     return res.status(500).send("Webhook handler error");

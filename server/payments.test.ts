@@ -4,7 +4,7 @@ import * as db from "./db";
 
 /**
  * Test suite for payments router - Stripe Checkout integration
- * 
+ *
  * Tests the createCheckoutSession mutation that creates a Stripe Checkout
  * session for appointment prepayment.
  */
@@ -23,10 +23,17 @@ describe("Payments Router - Stripe Checkout", () => {
     }
 
     // Create test tenant
-    const { tenants, users, customers, services, appointments, appointmentServices } = await import("../drizzle/schema");
-    
+    const {
+      tenants,
+      users,
+      customers,
+      services,
+      appointments,
+      appointmentServices,
+    } = await import("../drizzle/schema");
+
     testTenantId = `test-tenant-${Date.now()}`;
-    
+
     await dbInstance.insert(tenants).values({
       id: testTenantId,
       name: "Test Salon",
@@ -122,7 +129,7 @@ describe("Payments Router - Stripe Checkout", () => {
 
     // Verify Stripe session URL is returned
     expect(result.url).toMatch(/^https:\/\/checkout\.stripe\.com/);
-    
+
     // Verify session ID format
     expect(result.sessionId).toMatch(/^cs_test_/);
 
@@ -179,7 +186,7 @@ describe("Payments Router - Stripe Checkout", () => {
 
     const { tenants } = await import("../drizzle/schema");
     const otherTenantId = `other-tenant-${Date.now()}`;
-    
+
     await dbInstance.insert(tenants).values({
       id: otherTenantId,
       name: "Other Salon",

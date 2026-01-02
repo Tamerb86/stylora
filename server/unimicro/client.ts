@@ -24,7 +24,12 @@ export class UnimicroClient {
   private refreshToken: string | null = null;
   private tokenExpiresAt: Date | null = null;
 
-  constructor(tenantId: string, accessToken?: string, refreshToken?: string, tokenExpiresAt?: Date) {
+  constructor(
+    tenantId: string,
+    accessToken?: string,
+    refreshToken?: string,
+    tokenExpiresAt?: Date
+  ) {
     this.tenantId = tenantId;
     this.accessToken = accessToken || null;
     this.refreshToken = refreshToken || null;
@@ -40,7 +45,7 @@ export class UnimicroClient {
 
     // Add request interceptor to inject access token
     this.axiosInstance.interceptors.request.use(
-      async (config) => {
+      async config => {
         // Refresh token if expired
         if (this.isTokenExpired()) {
           await this.refreshAccessToken();
@@ -52,13 +57,13 @@ export class UnimicroClient {
 
         return config;
       },
-      (error) => Promise.reject(error)
+      error => Promise.reject(error)
     );
 
     // Add response interceptor for error handling
     this.axiosInstance.interceptors.response.use(
-      (response) => response,
-      async (error) => {
+      response => response,
+      async error => {
         // If 401 Unauthorized, try to refresh token once
         if (error.response?.status === 401 && !error.config._retry) {
           error.config._retry = true;
@@ -93,7 +98,7 @@ export class UnimicroClient {
     try {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
-      
+
       const [settings] = await db
         .select()
         .from(unimicroSettings)
@@ -121,7 +126,9 @@ export class UnimicroClient {
 
       this.accessToken = response.data.access_token;
       this.refreshToken = response.data.refresh_token || this.refreshToken;
-      this.tokenExpiresAt = new Date(Date.now() + response.data.expires_in * 1000);
+      this.tokenExpiresAt = new Date(
+        Date.now() + response.data.expires_in * 1000
+      );
 
       // Update tokens in database
       await db
@@ -134,7 +141,9 @@ export class UnimicroClient {
         .where(eq(unimicroSettings.tenantId, this.tenantId));
     } catch (error: any) {
       console.error("[Unimicro] Token refresh failed:", error.message);
-      throw new Error(`Failed to refresh Unimicro access token: ${error.message}`);
+      throw new Error(
+        `Failed to refresh Unimicro access token: ${error.message}`
+      );
     }
   }
 
@@ -142,10 +151,13 @@ export class UnimicroClient {
    * Authenticate with Unimicro using client credentials
    * This is for server-to-server authentication (certificate-based flow)
    */
-  static async authenticate(tenantId: string, config: UnimicroConfig): Promise<UnimicroClient> {
+  static async authenticate(
+    tenantId: string,
+    config: UnimicroConfig
+  ): Promise<UnimicroClient> {
     const db = await getDb();
     if (!db) throw new Error("Database not available");
-    
+
     try {
       const response = await axios.post(
         `${UNIMICRO_AUTH_URL}/connect/token`,
@@ -180,10 +192,20 @@ export class UnimicroClient {
         })
         .where(eq(unimicroSettings.tenantId, tenantId));
 
-      return new UnimicroClient(tenantId, accessToken, refreshToken, tokenExpiresAt);
+      return new UnimicroClient(
+        tenantId,
+        accessToken,
+        refreshToken,
+        tokenExpiresAt
+      );
     } catch (error: any) {
-      console.error("[Unimicro] Authentication failed:", error.response?.data || error.message);
-      throw new Error(`Unimicro authentication failed: ${error.response?.data?.error_description || error.message}`);
+      console.error(
+        "[Unimicro] Authentication failed:",
+        error.response?.data || error.message
+      );
+      throw new Error(
+        `Unimicro authentication failed: ${error.response?.data?.error_description || error.message}`
+      );
     }
   }
 
@@ -199,7 +221,7 @@ export class UnimicroClient {
 
       const db = await getDb();
       if (!db) throw new Error("Database not available");
-      
+
       // Log successful test
       await db.insert(unimicroSyncLog).values({
         tenantId: this.tenantId,
@@ -270,10 +292,12 @@ export class UnimicroClient {
 /**
  * Get or create Unimicro client for a tenant
  */
-export async function getUnimicroClient(tenantId: string): Promise<UnimicroClient> {
+export async function getUnimicroClient(
+  tenantId: string
+): Promise<UnimicroClient> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   const [settings] = await db
     .select()
     .from(unimicroSettings)
@@ -285,7 +309,9 @@ export async function getUnimicroClient(tenantId: string): Promise<UnimicroClien
   }
 
   if (!settings.accessToken || !settings.refreshToken) {
-    throw new Error("Unimicro authentication tokens not found. Please authenticate first.");
+    throw new Error(
+      "Unimicro authentication tokens not found. Please authenticate first."
+    );
   }
 
   return new UnimicroClient(

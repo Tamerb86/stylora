@@ -39,9 +39,7 @@
       "indexes": {
         "appointment_idx": {
           "name": "appointment_idx",
-          "columns": [
-            "appointmentId"
-          ],
+          "columns": ["appointmentId"],
           "isUnique": false
         }
       },
@@ -49,9 +47,7 @@
       "compositePrimaryKeys": {
         "appointmentServices_id": {
           "name": "appointmentServices_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -188,28 +184,17 @@
       "indexes": {
         "tenant_appointments_idx": {
           "name": "tenant_appointments_idx",
-          "columns": [
-            "tenantId",
-            "appointmentDate",
-            "employeeId"
-          ],
+          "columns": ["tenantId", "appointmentDate", "employeeId"],
           "isUnique": false
         },
         "customer_appointments_idx": {
           "name": "customer_appointments_idx",
-          "columns": [
-            "customerId",
-            "appointmentDate"
-          ],
+          "columns": ["customerId", "appointmentDate"],
           "isUnique": false
         },
         "employee_schedule_idx": {
           "name": "employee_schedule_idx",
-          "columns": [
-            "employeeId",
-            "appointmentDate",
-            "startTime"
-          ],
+          "columns": ["employeeId", "appointmentDate", "startTime"],
           "isUnique": false
         }
       },
@@ -217,17 +202,13 @@
       "compositePrimaryKeys": {
         "appointments_id": {
           "name": "appointments_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "appointments_managementToken_unique": {
           "name": "appointments_managementToken_unique",
-          "columns": [
-            "managementToken"
-          ]
+          "columns": ["managementToken"]
         }
       },
       "checkConstraint": {}
@@ -317,18 +298,12 @@
       "indexes": {
         "tenant_logs_idx": {
           "name": "tenant_logs_idx",
-          "columns": [
-            "tenantId",
-            "createdAt"
-          ],
+          "columns": ["tenantId", "createdAt"],
           "isUnique": false
         },
         "entity_idx": {
           "name": "entity_idx",
-          "columns": [
-            "entityType",
-            "entityId"
-          ],
+          "columns": ["entityType", "entityId"],
           "isUnique": false
         }
       },
@@ -336,9 +311,7 @@
       "compositePrimaryKeys": {
         "auditLogs_id": {
           "name": "auditLogs_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -492,11 +465,7 @@
       "indexes": {
         "tenant_campaigns_idx": {
           "name": "tenant_campaigns_idx",
-          "columns": [
-            "tenantId",
-            "status",
-            "createdAt"
-          ],
+          "columns": ["tenantId", "status", "createdAt"],
           "isUnique": false
         }
       },
@@ -504,9 +473,7 @@
       "compositePrimaryKeys": {
         "bulkCampaigns_id": {
           "name": "bulkCampaigns_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -579,10 +546,7 @@
       "indexes": {
         "tenant_day_idx": {
           "name": "tenant_day_idx",
-          "columns": [
-            "tenantId",
-            "dayOfWeek"
-          ],
+          "columns": ["tenantId", "dayOfWeek"],
           "isUnique": false
         }
       },
@@ -590,18 +554,13 @@
       "compositePrimaryKeys": {
         "businessHours_id": {
           "name": "businessHours_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "unique_tenant_day": {
           "name": "unique_tenant_day",
-          "columns": [
-            "tenantId",
-            "dayOfWeek"
-          ]
+          "columns": ["tenantId", "dayOfWeek"]
         }
       },
       "checkConstraint": {}
@@ -692,17 +651,12 @@
       "indexes": {
         "campaign_recipients_idx": {
           "name": "campaign_recipients_idx",
-          "columns": [
-            "campaignId",
-            "status"
-          ],
+          "columns": ["campaignId", "status"],
           "isUnique": false
         },
         "customer_recipients_idx": {
           "name": "customer_recipients_idx",
-          "columns": [
-            "customerId"
-          ],
+          "columns": ["customerId"],
           "isUnique": false
         }
       },
@@ -710,9 +664,7 @@
       "compositePrimaryKeys": {
         "campaignRecipients_id": {
           "name": "campaignRecipients_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -867,17 +819,13 @@
       "compositePrimaryKeys": {
         "communicationSettings_id": {
           "name": "communicationSettings_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "communicationSettings_tenantId_unique": {
           "name": "communicationSettings_tenantId_unique",
-          "columns": [
-            "tenantId"
-          ]
+          "columns": ["tenantId"]
         }
       },
       "checkConstraint": {}
@@ -962,10 +910,7 @@
       "indexes": {
         "tenant_templates_idx": {
           "name": "tenant_templates_idx",
-          "columns": [
-            "tenantId",
-            "type"
-          ],
+          "columns": ["tenantId", "type"],
           "isUnique": false
         }
       },
@@ -973,9 +918,7 @@
       "compositePrimaryKeys": {
         "communicationTemplates_id": {
           "name": "communicationTemplates_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1081,23 +1024,17 @@
       "indexes": {
         "tenant_idx": {
           "name": "tenant_idx",
-          "columns": [
-            "tenantId"
-          ],
+          "columns": ["tenantId"],
           "isUnique": false
         },
         "status_idx": {
           "name": "status_idx",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         },
         "created_at_idx": {
           "name": "created_at_idx",
-          "columns": [
-            "createdAt"
-          ],
+          "columns": ["createdAt"],
           "isUnique": false
         }
       },
@@ -1105,9 +1042,7 @@
       "compositePrimaryKeys": {
         "contactMessages_id": {
           "name": "contactMessages_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1275,26 +1210,17 @@
       "indexes": {
         "tenant_customers_idx": {
           "name": "tenant_customers_idx",
-          "columns": [
-            "tenantId",
-            "deletedAt"
-          ],
+          "columns": ["tenantId", "deletedAt"],
           "isUnique": false
         },
         "phone_idx": {
           "name": "phone_idx",
-          "columns": [
-            "tenantId",
-            "phone"
-          ],
+          "columns": ["tenantId", "phone"],
           "isUnique": false
         },
         "email_idx": {
           "name": "email_idx",
-          "columns": [
-            "tenantId",
-            "email"
-          ],
+          "columns": ["tenantId", "email"],
           "isUnique": false
         }
       },
@@ -1302,9 +1228,7 @@
       "compositePrimaryKeys": {
         "customers_id": {
           "name": "customers_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1390,10 +1314,7 @@
       "indexes": {
         "tenant_backups_idx": {
           "name": "tenant_backups_idx",
-          "columns": [
-            "tenantId",
-            "createdAt"
-          ],
+          "columns": ["tenantId", "createdAt"],
           "isUnique": false
         }
       },
@@ -1401,9 +1322,7 @@
       "compositePrimaryKeys": {
         "databaseBackups_id": {
           "name": "databaseBackups_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1499,10 +1418,7 @@
       "indexes": {
         "tenant_type_idx": {
           "name": "tenant_type_idx",
-          "columns": [
-            "tenantId",
-            "templateType"
-          ],
+          "columns": ["tenantId", "templateType"],
           "isUnique": true
         }
       },
@@ -1510,9 +1426,7 @@
       "compositePrimaryKeys": {
         "emailTemplates_id": {
           "name": "emailTemplates_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1575,17 +1489,12 @@
       "indexes": {
         "tenant_email_idx": {
           "name": "tenant_email_idx",
-          "columns": [
-            "tenantId",
-            "email"
-          ],
+          "columns": ["tenantId", "email"],
           "isUnique": false
         },
         "token_idx": {
           "name": "token_idx",
-          "columns": [
-            "token"
-          ],
+          "columns": ["token"],
           "isUnique": false
         }
       },
@@ -1593,17 +1502,13 @@
       "compositePrimaryKeys": {
         "emailVerifications_id": {
           "name": "emailVerifications_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "emailVerifications_token_unique": {
           "name": "emailVerifications_token_unique",
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "checkConstraint": {}
@@ -1710,18 +1615,12 @@
       "indexes": {
         "tenant_leaves_idx": {
           "name": "tenant_leaves_idx",
-          "columns": [
-            "tenantId",
-            "status"
-          ],
+          "columns": ["tenantId", "status"],
           "isUnique": false
         },
         "employee_leaves_idx": {
           "name": "employee_leaves_idx",
-          "columns": [
-            "employeeId",
-            "startDate"
-          ],
+          "columns": ["employeeId", "startDate"],
           "isUnique": false
         }
       },
@@ -1729,9 +1628,7 @@
       "compositePrimaryKeys": {
         "employeeLeaves_id": {
           "name": "employeeLeaves_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1801,10 +1698,7 @@
       "indexes": {
         "employee_schedule_idx": {
           "name": "employee_schedule_idx",
-          "columns": [
-            "employeeId",
-            "dayOfWeek"
-          ],
+          "columns": ["employeeId", "dayOfWeek"],
           "isUnique": false
         }
       },
@@ -1812,9 +1706,7 @@
       "compositePrimaryKeys": {
         "employeeSchedules_id": {
           "name": "employeeSchedules_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -1900,23 +1792,17 @@
       "indexes": {
         "expenses_tenant_idx": {
           "name": "expenses_tenant_idx",
-          "columns": [
-            "tenant_id"
-          ],
+          "columns": ["tenant_id"],
           "isUnique": false
         },
         "expenses_date_idx": {
           "name": "expenses_date_idx",
-          "columns": [
-            "expense_date"
-          ],
+          "columns": ["expense_date"],
           "isUnique": false
         },
         "expenses_category_idx": {
           "name": "expenses_category_idx",
-          "columns": [
-            "category"
-          ],
+          "columns": ["category"],
           "isUnique": false
         }
       },
@@ -1924,9 +1810,7 @@
       "compositePrimaryKeys": {
         "expenses_id": {
           "name": "expenses_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -2014,24 +1898,17 @@
       "indexes": {
         "fiken_customer_tenant_customer_idx": {
           "name": "fiken_customer_tenant_customer_idx",
-          "columns": [
-            "tenantId",
-            "customerId"
-          ],
+          "columns": ["tenantId", "customerId"],
           "isUnique": true
         },
         "fiken_contact_id_idx": {
           "name": "fiken_contact_id_idx",
-          "columns": [
-            "fikenContactId"
-          ],
+          "columns": ["fikenContactId"],
           "isUnique": false
         },
         "fiken_customer_status_idx": {
           "name": "fiken_customer_status_idx",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         }
       },
@@ -2039,9 +1916,7 @@
       "compositePrimaryKeys": {
         "fikenCustomerMapping_id": {
           "name": "fikenCustomerMapping_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -2149,24 +2024,17 @@
       "indexes": {
         "fiken_invoice_tenant_order_idx": {
           "name": "fiken_invoice_tenant_order_idx",
-          "columns": [
-            "tenantId",
-            "orderId"
-          ],
+          "columns": ["tenantId", "orderId"],
           "isUnique": false
         },
         "fiken_invoice_id_idx": {
           "name": "fiken_invoice_id_idx",
-          "columns": [
-            "fikenInvoiceId"
-          ],
+          "columns": ["fikenInvoiceId"],
           "isUnique": false
         },
         "fiken_invoice_status_idx": {
           "name": "fiken_invoice_status_idx",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         }
       },
@@ -2174,9 +2042,7 @@
       "compositePrimaryKeys": {
         "fikenInvoiceMapping_id": {
           "name": "fikenInvoiceMapping_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -2264,25 +2130,17 @@
       "indexes": {
         "fiken_product_tenant_product_idx": {
           "name": "fiken_product_tenant_product_idx",
-          "columns": [
-            "tenantId",
-            "productId"
-          ],
+          "columns": ["tenantId", "productId"],
           "isUnique": false
         },
         "fiken_product_tenant_service_idx": {
           "name": "fiken_product_tenant_service_idx",
-          "columns": [
-            "tenantId",
-            "serviceId"
-          ],
+          "columns": ["tenantId", "serviceId"],
           "isUnique": false
         },
         "fiken_product_id_idx": {
           "name": "fiken_product_id_idx",
-          "columns": [
-            "fikenProductId"
-          ],
+          "columns": ["fikenProductId"],
           "isUnique": false
         }
       },
@@ -2290,9 +2148,7 @@
       "compositePrimaryKeys": {
         "fikenProductMapping_id": {
           "name": "fikenProductMapping_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -2461,9 +2317,7 @@
       "indexes": {
         "fiken_settings_tenant_idx": {
           "name": "fiken_settings_tenant_idx",
-          "columns": [
-            "tenantId"
-          ],
+          "columns": ["tenantId"],
           "isUnique": false
         }
       },
@@ -2471,17 +2325,13 @@
       "compositePrimaryKeys": {
         "fikenSettings_id": {
           "name": "fikenSettings_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "fikenSettings_tenantId_unique": {
           "name": "fikenSettings_tenantId_unique",
-          "columns": [
-            "tenantId"
-          ]
+          "columns": ["tenantId"]
         }
       },
       "checkConstraint": {}
@@ -2574,25 +2424,17 @@
       "indexes": {
         "fiken_log_tenant_operation_idx": {
           "name": "fiken_log_tenant_operation_idx",
-          "columns": [
-            "tenantId",
-            "operation",
-            "createdAt"
-          ],
+          "columns": ["tenantId", "operation", "createdAt"],
           "isUnique": false
         },
         "fiken_log_status_idx": {
           "name": "fiken_log_status_idx",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         },
         "fiken_log_created_idx": {
           "name": "fiken_log_created_idx",
-          "columns": [
-            "createdAt"
-          ],
+          "columns": ["createdAt"],
           "isUnique": false
         }
       },
@@ -2600,9 +2442,7 @@
       "compositePrimaryKeys": {
         "fikenSyncLog_id": {
           "name": "fikenSyncLog_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -2669,18 +2509,12 @@
       "indexes": {
         "tenant_customer_loyalty_idx": {
           "name": "tenant_customer_loyalty_idx",
-          "columns": [
-            "tenantId",
-            "customerId"
-          ],
+          "columns": ["tenantId", "customerId"],
           "isUnique": false
         },
         "customer_loyalty_unique_idx": {
           "name": "customer_loyalty_unique_idx",
-          "columns": [
-            "tenantId",
-            "customerId"
-          ],
+          "columns": ["tenantId", "customerId"],
           "isUnique": true
         }
       },
@@ -2688,9 +2522,7 @@
       "compositePrimaryKeys": {
         "loyaltyPoints_id": {
           "name": "loyaltyPoints_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -2789,25 +2621,17 @@
       "indexes": {
         "tenant_customer_redemptions_idx": {
           "name": "tenant_customer_redemptions_idx",
-          "columns": [
-            "tenantId",
-            "customerId"
-          ],
+          "columns": ["tenantId", "customerId"],
           "isUnique": false
         },
         "redemptions_status_idx": {
           "name": "redemptions_status_idx",
-          "columns": [
-            "status",
-            "expiresAt"
-          ],
+          "columns": ["status", "expiresAt"],
           "isUnique": false
         },
         "redemption_code_idx": {
           "name": "redemption_code_idx",
-          "columns": [
-            "code"
-          ],
+          "columns": ["code"],
           "isUnique": true
         }
       },
@@ -2815,17 +2639,13 @@
       "compositePrimaryKeys": {
         "loyaltyRedemptions_id": {
           "name": "loyaltyRedemptions_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "loyaltyRedemptions_code_unique": {
           "name": "loyaltyRedemptions_code_unique",
-          "columns": [
-            "code"
-          ]
+          "columns": ["code"]
         }
       },
       "checkConstraint": {}
@@ -2919,10 +2739,7 @@
       "indexes": {
         "tenant_rewards_idx": {
           "name": "tenant_rewards_idx",
-          "columns": [
-            "tenantId",
-            "isActive"
-          ],
+          "columns": ["tenantId", "isActive"],
           "isUnique": false
         }
       },
@@ -2930,9 +2747,7 @@
       "compositePrimaryKeys": {
         "loyaltyRewards_id": {
           "name": "loyaltyRewards_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -3016,17 +2831,12 @@
       "indexes": {
         "tenant_customer_transactions_idx": {
           "name": "tenant_customer_transactions_idx",
-          "columns": [
-            "tenantId",
-            "customerId"
-          ],
+          "columns": ["tenantId", "customerId"],
           "isUnique": false
         },
         "transactions_created_idx": {
           "name": "transactions_created_idx",
-          "columns": [
-            "createdAt"
-          ],
+          "columns": ["createdAt"],
           "isUnique": false
         }
       },
@@ -3034,9 +2844,7 @@
       "compositePrimaryKeys": {
         "loyaltyTransactions_id": {
           "name": "loyaltyTransactions_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -3165,19 +2973,12 @@
       "indexes": {
         "tenant_notifications_idx": {
           "name": "tenant_notifications_idx",
-          "columns": [
-            "tenantId",
-            "status",
-            "scheduledAt"
-          ],
+          "columns": ["tenantId", "status", "scheduledAt"],
           "isUnique": false
         },
         "pending_idx": {
           "name": "pending_idx",
-          "columns": [
-            "status",
-            "scheduledAt"
-          ],
+          "columns": ["status", "scheduledAt"],
           "isUnique": false
         }
       },
@@ -3185,9 +2986,7 @@
       "compositePrimaryKeys": {
         "notifications_id": {
           "name": "notifications_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -3274,9 +3073,7 @@
       "indexes": {
         "order_idx": {
           "name": "order_idx",
-          "columns": [
-            "orderId"
-          ],
+          "columns": ["orderId"],
           "isUnique": false
         }
       },
@@ -3284,9 +3081,7 @@
       "compositePrimaryKeys": {
         "orderItems_id": {
           "name": "orderItems_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -3404,18 +3199,12 @@
       "indexes": {
         "tenant_orders_idx": {
           "name": "tenant_orders_idx",
-          "columns": [
-            "tenantId",
-            "orderDate"
-          ],
+          "columns": ["tenantId", "orderDate"],
           "isUnique": false
         },
         "employee_sales_idx": {
           "name": "employee_sales_idx",
-          "columns": [
-            "employeeId",
-            "orderDate"
-          ],
+          "columns": ["employeeId", "orderDate"],
           "isUnique": false
         }
       },
@@ -3423,9 +3212,7 @@
       "compositePrimaryKeys": {
         "orders_id": {
           "name": "orders_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -3562,10 +3349,7 @@
       "indexes": {
         "tenant_providers_idx": {
           "name": "tenant_providers_idx",
-          "columns": [
-            "tenantId",
-            "isActive"
-          ],
+          "columns": ["tenantId", "isActive"],
           "isUnique": false
         }
       },
@@ -3573,9 +3357,7 @@
       "compositePrimaryKeys": {
         "paymentProviders_id": {
           "name": "paymentProviders_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -3717,9 +3499,7 @@
       "indexes": {
         "tenant_idx": {
           "name": "tenant_idx",
-          "columns": [
-            "tenantId"
-          ],
+          "columns": ["tenantId"],
           "isUnique": false
         }
       },
@@ -3727,17 +3507,13 @@
       "compositePrimaryKeys": {
         "paymentSettings_id": {
           "name": "paymentSettings_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "paymentSettings_tenantId_unique": {
           "name": "paymentSettings_tenantId_unique",
-          "columns": [
-            "tenantId"
-          ]
+          "columns": ["tenantId"]
         }
       },
       "checkConstraint": {}
@@ -3849,23 +3625,17 @@
       "indexes": {
         "tenant_splits_idx": {
           "name": "tenant_splits_idx",
-          "columns": [
-            "tenantId"
-          ],
+          "columns": ["tenantId"],
           "isUnique": false
         },
         "order_splits_idx": {
           "name": "order_splits_idx",
-          "columns": [
-            "orderId"
-          ],
+          "columns": ["orderId"],
           "isUnique": false
         },
         "payment_idx": {
           "name": "payment_idx",
-          "columns": [
-            "paymentId"
-          ],
+          "columns": ["paymentId"],
           "isUnique": false
         }
       },
@@ -3873,9 +3643,7 @@
       "compositePrimaryKeys": {
         "paymentSplits_id": {
           "name": "paymentSplits_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -4060,38 +3828,27 @@
       "indexes": {
         "tenant_payments_idx": {
           "name": "tenant_payments_idx",
-          "columns": [
-            "tenantId",
-            "createdAt"
-          ],
+          "columns": ["tenantId", "createdAt"],
           "isUnique": false
         },
         "gateway_payment_idx": {
           "name": "gateway_payment_idx",
-          "columns": [
-            "gatewayPaymentId"
-          ],
+          "columns": ["gatewayPaymentId"],
           "isUnique": false
         },
         "appointment_payment_idx": {
           "name": "appointment_payment_idx",
-          "columns": [
-            "appointmentId"
-          ],
+          "columns": ["appointmentId"],
           "isUnique": false
         },
         "order_payment_idx": {
           "name": "order_payment_idx",
-          "columns": [
-            "orderId"
-          ],
+          "columns": ["orderId"],
           "isUnique": false
         },
         "status_idx": {
           "name": "status_idx",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         }
       },
@@ -4099,9 +3856,7 @@
       "compositePrimaryKeys": {
         "payments_id": {
           "name": "payments_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -4151,9 +3906,7 @@
       "indexes": {
         "tenant_categories_idx": {
           "name": "tenant_categories_idx",
-          "columns": [
-            "tenantId"
-          ],
+          "columns": ["tenantId"],
           "isUnique": false
         }
       },
@@ -4161,9 +3914,7 @@
       "compositePrimaryKeys": {
         "productCategories_id": {
           "name": "productCategories_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -4303,18 +4054,12 @@
       "indexes": {
         "tenant_products_idx": {
           "name": "tenant_products_idx",
-          "columns": [
-            "tenantId",
-            "isActive"
-          ],
+          "columns": ["tenantId", "isActive"],
           "isUnique": false
         },
         "low_stock_idx": {
           "name": "low_stock_idx",
-          "columns": [
-            "tenantId",
-            "stockQuantity"
-          ],
+          "columns": ["tenantId", "stockQuantity"],
           "isUnique": false
         }
       },
@@ -4322,17 +4067,13 @@
       "compositePrimaryKeys": {
         "products_id": {
           "name": "products_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "sku_idx": {
           "name": "sku_idx",
-          "columns": [
-            "sku"
-          ]
+          "columns": ["sku"]
         }
       },
       "checkConstraint": {}
@@ -4445,10 +4186,7 @@
       "indexes": {
         "tenant_recurrences_idx": {
           "name": "tenant_recurrences_idx",
-          "columns": [
-            "tenantId",
-            "isActive"
-          ],
+          "columns": ["tenantId", "isActive"],
           "isUnique": false
         }
       },
@@ -4456,9 +4194,7 @@
       "compositePrimaryKeys": {
         "recurrenceRules_id": {
           "name": "recurrenceRules_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -4571,30 +4307,22 @@
       "indexes": {
         "tenant_refunds_idx": {
           "name": "tenant_refunds_idx",
-          "columns": [
-            "tenantId"
-          ],
+          "columns": ["tenantId"],
           "isUnique": false
         },
         "payment_idx": {
           "name": "payment_idx",
-          "columns": [
-            "paymentId"
-          ],
+          "columns": ["paymentId"],
           "isUnique": false
         },
         "order_idx": {
           "name": "order_idx",
-          "columns": [
-            "orderId"
-          ],
+          "columns": ["orderId"],
           "isUnique": false
         },
         "appointment_idx": {
           "name": "appointment_idx",
-          "columns": [
-            "appointmentId"
-          ],
+          "columns": ["appointmentId"],
           "isUnique": false
         }
       },
@@ -4602,9 +4330,7 @@
       "compositePrimaryKeys": {
         "refunds_id": {
           "name": "refunds_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -4668,10 +4394,7 @@
       "indexes": {
         "tenant_holidays_idx": {
           "name": "tenant_holidays_idx",
-          "columns": [
-            "tenantId",
-            "date"
-          ],
+          "columns": ["tenantId", "date"],
           "isUnique": false
         }
       },
@@ -4679,9 +4402,7 @@
       "compositePrimaryKeys": {
         "salonHolidays_id": {
           "name": "salonHolidays_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -4754,9 +4475,7 @@
       "indexes": {
         "salon_settings_tenant_idx": {
           "name": "salon_settings_tenant_idx",
-          "columns": [
-            "tenantId"
-          ],
+          "columns": ["tenantId"],
           "isUnique": false
         }
       },
@@ -4764,17 +4483,13 @@
       "compositePrimaryKeys": {
         "salonSettings_id": {
           "name": "salonSettings_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "salonSettings_tenantId_unique": {
           "name": "salonSettings_tenantId_unique",
-          "columns": [
-            "tenantId"
-          ]
+          "columns": ["tenantId"]
         }
       },
       "checkConstraint": {}
@@ -4823,9 +4538,7 @@
       "indexes": {
         "tenant_categories_idx": {
           "name": "tenant_categories_idx",
-          "columns": [
-            "tenantId"
-          ],
+          "columns": ["tenantId"],
           "isUnique": false
         }
       },
@@ -4833,9 +4546,7 @@
       "compositePrimaryKeys": {
         "serviceCategories_id": {
           "name": "serviceCategories_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -4930,10 +4641,7 @@
       "indexes": {
         "tenant_services_idx": {
           "name": "tenant_services_idx",
-          "columns": [
-            "tenantId",
-            "isActive"
-          ],
+          "columns": ["tenantId", "isActive"],
           "isUnique": false
         }
       },
@@ -4941,9 +4649,7 @@
       "compositePrimaryKeys": {
         "services_id": {
           "name": "services_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -5003,18 +4709,13 @@
       "compositePrimaryKeys": {
         "settings_id": {
           "name": "settings_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "unique_tenant_setting": {
           "name": "unique_tenant_setting",
-          "columns": [
-            "tenantId",
-            "settingKey"
-          ]
+          "columns": ["tenantId", "settingKey"]
         }
       },
       "checkConstraint": {}
@@ -5100,9 +4801,7 @@
       "compositePrimaryKeys": {
         "subscriptionPlans_id": {
           "name": "subscriptionPlans_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -5182,16 +4881,12 @@
       "indexes": {
         "tenant_subscription_idx": {
           "name": "tenant_subscription_idx",
-          "columns": [
-            "tenantId"
-          ],
+          "columns": ["tenantId"],
           "isUnique": false
         },
         "stripe_subscription_idx": {
           "name": "stripe_subscription_idx",
-          "columns": [
-            "stripeSubscriptionId"
-          ],
+          "columns": ["stripeSubscriptionId"],
           "isUnique": false
         }
       },
@@ -5199,9 +4894,7 @@
       "compositePrimaryKeys": {
         "tenantSubscriptions_id": {
           "name": "tenantSubscriptions_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -5430,16 +5123,12 @@
       "indexes": {
         "subdomain_idx": {
           "name": "subdomain_idx",
-          "columns": [
-            "subdomain"
-          ],
+          "columns": ["subdomain"],
           "isUnique": false
         },
         "status_idx": {
           "name": "status_idx",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         }
       },
@@ -5447,17 +5136,13 @@
       "compositePrimaryKeys": {
         "tenants_id": {
           "name": "tenants_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "tenants_subdomain_unique": {
           "name": "tenants_subdomain_unique",
-          "columns": [
-            "subdomain"
-          ]
+          "columns": ["subdomain"]
         }
       },
       "checkConstraint": {}
@@ -5563,18 +5248,12 @@
       "indexes": {
         "tenant_employee_timesheet_idx": {
           "name": "tenant_employee_timesheet_idx",
-          "columns": [
-            "tenantId",
-            "employeeId",
-            "workDate"
-          ],
+          "columns": ["tenantId", "employeeId", "workDate"],
           "isUnique": false
         },
         "timesheet_work_date_idx": {
           "name": "timesheet_work_date_idx",
-          "columns": [
-            "workDate"
-          ],
+          "columns": ["workDate"],
           "isUnique": false
         }
       },
@@ -5582,9 +5261,7 @@
       "compositePrimaryKeys": {
         "timesheets_id": {
           "name": "timesheets_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -5665,17 +5342,12 @@
       "indexes": {
         "unimicro_customer_tenant_customer_idx": {
           "name": "unimicro_customer_tenant_customer_idx",
-          "columns": [
-            "tenantId",
-            "customerId"
-          ],
+          "columns": ["tenantId", "customerId"],
           "isUnique": true
         },
         "unimicro_customer_id_idx": {
           "name": "unimicro_customer_id_idx",
-          "columns": [
-            "unimicroCustomerId"
-          ],
+          "columns": ["unimicroCustomerId"],
           "isUnique": false
         }
       },
@@ -5683,9 +5355,7 @@
       "compositePrimaryKeys": {
         "unimicroCustomerMapping_id": {
           "name": "unimicroCustomerMapping_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -5772,24 +5442,17 @@
       "indexes": {
         "unimicro_invoice_tenant_order_idx": {
           "name": "unimicro_invoice_tenant_order_idx",
-          "columns": [
-            "tenantId",
-            "orderId"
-          ],
+          "columns": ["tenantId", "orderId"],
           "isUnique": false
         },
         "unimicro_invoice_id_idx": {
           "name": "unimicro_invoice_id_idx",
-          "columns": [
-            "unimicroInvoiceId"
-          ],
+          "columns": ["unimicroInvoiceId"],
           "isUnique": false
         },
         "unimicro_invoice_status_idx": {
           "name": "unimicro_invoice_status_idx",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         }
       },
@@ -5797,9 +5460,7 @@
       "compositePrimaryKeys": {
         "unimicroInvoiceMapping_id": {
           "name": "unimicroInvoiceMapping_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -5966,9 +5627,7 @@
       "indexes": {
         "unimicro_settings_tenant_idx": {
           "name": "unimicro_settings_tenant_idx",
-          "columns": [
-            "tenantId"
-          ],
+          "columns": ["tenantId"],
           "isUnique": false
         }
       },
@@ -5976,17 +5635,13 @@
       "compositePrimaryKeys": {
         "unimicroSettings_id": {
           "name": "unimicroSettings_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "unimicroSettings_tenantId_unique": {
           "name": "unimicroSettings_tenantId_unique",
-          "columns": [
-            "tenantId"
-          ]
+          "columns": ["tenantId"]
         }
       },
       "checkConstraint": {}
@@ -6079,25 +5734,17 @@
       "indexes": {
         "unimicro_log_tenant_operation_idx": {
           "name": "unimicro_log_tenant_operation_idx",
-          "columns": [
-            "tenantId",
-            "operation",
-            "createdAt"
-          ],
+          "columns": ["tenantId", "operation", "createdAt"],
           "isUnique": false
         },
         "unimicro_log_status_idx": {
           "name": "unimicro_log_status_idx",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         },
         "unimicro_log_created_idx": {
           "name": "unimicro_log_created_idx",
-          "columns": [
-            "createdAt"
-          ],
+          "columns": ["createdAt"],
           "isUnique": false
         }
       },
@@ -6105,9 +5752,7 @@
       "compositePrimaryKeys": {
         "unimicroSyncLog_id": {
           "name": "unimicroSyncLog_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},
@@ -6301,17 +5946,12 @@
       "indexes": {
         "tenant_users_idx": {
           "name": "tenant_users_idx",
-          "columns": [
-            "tenantId",
-            "isActive"
-          ],
+          "columns": ["tenantId", "isActive"],
           "isUnique": false
         },
         "open_id_idx": {
           "name": "open_id_idx",
-          "columns": [
-            "openId"
-          ],
+          "columns": ["openId"],
           "isUnique": false
         }
       },
@@ -6319,17 +5959,13 @@
       "compositePrimaryKeys": {
         "users_id": {
           "name": "users_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {
         "users_openId_unique": {
           "name": "users_openId_unique",
-          "columns": [
-            "openId"
-          ]
+          "columns": ["openId"]
         }
       },
       "checkConstraint": {}
@@ -6450,18 +6086,12 @@
       "indexes": {
         "tenant_queue_idx": {
           "name": "tenant_queue_idx",
-          "columns": [
-            "tenantId",
-            "status",
-            "position"
-          ],
+          "columns": ["tenantId", "status", "position"],
           "isUnique": false
         },
         "queue_status_idx": {
           "name": "queue_status_idx",
-          "columns": [
-            "status"
-          ],
+          "columns": ["status"],
           "isUnique": false
         }
       },
@@ -6469,9 +6099,7 @@
       "compositePrimaryKeys": {
         "walkInQueue_id": {
           "name": "walkInQueue_id",
-          "columns": [
-            "id"
-          ]
+          "columns": ["id"]
         }
       },
       "uniqueConstraints": {},

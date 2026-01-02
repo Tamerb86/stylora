@@ -1,12 +1,28 @@
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Building2, Clock, Bell, CreditCard, Globe, Palette, Printer, MessageSquare, Database } from "lucide-react";
+import {
+  Building2,
+  Clock,
+  Bell,
+  CreditCard,
+  Globe,
+  Palette,
+  Printer,
+  MessageSquare,
+  Database,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { BookingSettingsSection } from "@/components/BookingSettingsSection";
@@ -23,7 +39,9 @@ import { useUIMode } from "@/contexts/UIModeContext";
 function ResetOnboardingButton() {
   const resetMutation = trpc.auth.resetOnboarding.useMutation({
     onSuccess: () => {
-      toast.success("Omvisning startet på nytt! Last inn siden på nytt for å se den.");
+      toast.success(
+        "Omvisning startet på nytt! Last inn siden på nytt for å se den."
+      );
       setTimeout(() => window.location.reload(), 1500);
     },
   });
@@ -47,25 +65,27 @@ export default function Settings() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [description, setDescription] = useState("");
-  
+
   const [openTime, setOpenTime] = useState("09:00");
   const [closeTime, setCloseTime] = useState("18:00");
   const [slotDuration, setSlotDuration] = useState("30");
-  
+
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications, setSmsNotifications] = useState(false);
   const [reminderHours, setReminderHours] = useState("24");
 
   // Load salon info
-  const { data: salonInfo, isLoading } = trpc.salonSettings.getSalonInfo.useQuery();
-  const updateSalonInfoMutation = trpc.salonSettings.updateSalonInfo.useMutation({
-    onSuccess: () => {
-      toast.success("Salonginformasjon lagret!");
-    },
-    onError: (error) => {
-      toast.error(error.message || "Kunne ikke lagre salonginformasjon");
-    },
-  });
+  const { data: salonInfo, isLoading } =
+    trpc.salonSettings.getSalonInfo.useQuery();
+  const updateSalonInfoMutation =
+    trpc.salonSettings.updateSalonInfo.useMutation({
+      onSuccess: () => {
+        toast.success("Salonginformasjon lagret!");
+      },
+      onError: error => {
+        toast.error(error.message || "Kunne ikke lagre salonginformasjon");
+      },
+    });
 
   // Populate form when data loads
   useEffect(() => {
@@ -99,14 +119,20 @@ export default function Settings() {
       <div className="p-6 max-w-4xl mx-auto">
         <div className="mb-6 flex items-start justify-between">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">Innstillinger</h1>
-            <p className="text-muted-foreground">Administrer salongens innstillinger</p>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
+              Innstillinger
+            </h1>
+            <p className="text-muted-foreground">
+              Administrer salongens innstillinger
+            </p>
           </div>
           <ResetOnboardingButton />
         </div>
 
         <Tabs defaultValue="salon" className="space-y-6">
-          <TabsList className={`grid w-full ${isSimpleMode ? 'grid-cols-7' : 'grid-cols-10'}`}>
+          <TabsList
+            className={`grid w-full ${isSimpleMode ? "grid-cols-7" : "grid-cols-10"}`}
+          >
             <TabsTrigger value="salon">
               <Building2 className="h-4 w-4 mr-2" />
               Salong
@@ -168,7 +194,7 @@ export default function Settings() {
                   <Input
                     id="salonName"
                     value={salonName}
-                    onChange={(e) => setSalonName(e.target.value)}
+                    onChange={e => setSalonName(e.target.value)}
                     placeholder="Navn på salonen"
                   />
                 </div>
@@ -178,7 +204,7 @@ export default function Settings() {
                   <Input
                     id="address"
                     value={address}
-                    onChange={(e) => setAddress(e.target.value)}
+                    onChange={e => setAddress(e.target.value)}
                     placeholder="Gateadresse, postnummer, sted"
                   />
                 </div>
@@ -189,7 +215,7 @@ export default function Settings() {
                     <Input
                       id="phone"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={e => setPhone(e.target.value)}
                       placeholder="+47 123 45 678"
                     />
                   </div>
@@ -199,7 +225,7 @@ export default function Settings() {
                       id="email"
                       type="email"
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      onChange={e => setEmail(e.target.value)}
                       placeholder="post@salong.no"
                     />
                   </div>
@@ -210,17 +236,19 @@ export default function Settings() {
                   <Textarea
                     id="description"
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={e => setDescription(e.target.value)}
                     placeholder="Kort beskrivelse av salonen..."
                     rows={4}
                   />
                 </div>
 
-                <Button 
+                <Button
                   onClick={handleSaveSalonInfo}
                   disabled={updateSalonInfoMutation.isPending || isLoading}
                 >
-                  {updateSalonInfoMutation.isPending ? "Lagrer..." : "Lagre endringer"}
+                  {updateSalonInfoMutation.isPending
+                    ? "Lagrer..."
+                    : "Lagre endringer"}
                 </Button>
               </CardContent>
             </Card>
@@ -268,12 +296,14 @@ export default function Settings() {
                 </div>
 
                 <div>
-                  <Label htmlFor="reminderHours">Påminnelse før avtale (timer)</Label>
+                  <Label htmlFor="reminderHours">
+                    Påminnelse før avtale (timer)
+                  </Label>
                   <Input
                     id="reminderHours"
                     type="number"
                     value={reminderHours}
-                    onChange={(e) => setReminderHours(e.target.value)}
+                    onChange={e => setReminderHours(e.target.value)}
                     placeholder="24"
                   />
                   <p className="text-sm text-muted-foreground mt-1">
@@ -283,9 +313,11 @@ export default function Settings() {
 
                 <div className="space-y-3 pt-4 border-t">
                   <h3 className="font-medium">Meldingsmaler</h3>
-                  
+
                   <div>
-                    <Label htmlFor="confirmationTemplate">Bekreftelsesmelding</Label>
+                    <Label htmlFor="confirmationTemplate">
+                      Bekreftelsesmelding
+                    </Label>
                     <Textarea
                       id="confirmationTemplate"
                       placeholder="Hei {navn}, din avtale er bekreftet for {dato} kl {tid}."
@@ -303,9 +335,7 @@ export default function Settings() {
                   </div>
                 </div>
 
-                <Button onClick={handleSaveNotifications}>
-                  Lagre varsler
-                </Button>
+                <Button onClick={handleSaveNotifications}>Lagre varsler</Button>
               </CardContent>
             </Card>
           </TabsContent>

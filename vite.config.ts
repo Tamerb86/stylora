@@ -5,8 +5,6 @@ import fs from "node:fs";
 import path from "path";
 import { defineConfig } from "vite";
 
-
-
 const plugins = [react(), tailwindcss(), jsxLocPlugin()];
 
 export default defineConfig({
@@ -27,16 +25,21 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react/jsx-runtime'],
-          'router': ['wouter'],
-          'trpc': ['@trpc/client', '@trpc/react-query', '@tanstack/react-query'],
-          'ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select', '@radix-ui/react-tooltip'],
-          'charts': ['recharts'],
+          "react-vendor": ["react", "react-dom", "react/jsx-runtime"],
+          router: ["wouter"],
+          trpc: ["@trpc/client", "@trpc/react-query", "@tanstack/react-query"],
+          ui: [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-dropdown-menu",
+            "@radix-ui/react-select",
+            "@radix-ui/react-tooltip",
+          ],
+          charts: ["recharts"],
         },
       },
     },
     cssCodeSplit: true,
-    minify: 'esbuild',
+    minify: "esbuild",
   },
   server: {
     host: true,

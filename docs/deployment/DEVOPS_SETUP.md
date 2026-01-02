@@ -25,16 +25,19 @@ The project uses GitHub Actions for automated testing and deployment to Railway.
 #### 1. CI Workflow (`.github/workflows/ci.yml`)
 
 **Triggers:**
+
 - Push to `main` or `develop` branches
 - Pull requests to `main` or `develop`
 
 **Jobs:**
+
 - **Test**: Runs vitest test suite
 - **Type Check**: TypeScript type checking (with increased memory)
 - **Build**: Builds the application and uploads artifacts
 - **Lint**: Code formatting check with Prettier
 
 **Configuration:**
+
 ```yaml
 Node.js Version: 22.x
 Package Manager: pnpm 10
@@ -44,14 +47,17 @@ Memory Limit: 4GB for TypeScript
 #### 2. Deploy Workflow (`.github/workflows/deploy.yml`)
 
 **Triggers:**
+
 - Push to `main` branch
 - Manual workflow dispatch
 
 **Jobs:**
+
 - **Deploy**: Deploys to Railway production
 - **Post-Deploy**: Health checks and smoke tests
 
 **Required Secrets:**
+
 - `RAILWAY_TOKEN`: Railway API token
 - `RAILWAY_SERVICE_NAME`: Railway service name
 - `CODECOV_TOKEN` (optional): For test coverage reports
@@ -59,10 +65,11 @@ Memory Limit: 4GB for TypeScript
 ### Setup Instructions
 
 1. **Generate Railway Token:**
+
    ```bash
    # Install Railway CLI
    npm install -g @railway/cli
-   
+
    # Login and generate token
    railway login
    railway tokens create
@@ -76,6 +83,7 @@ Memory Limit: 4GB for TypeScript
      - `CODECOV_TOKEN` (optional): For code coverage
 
 3. **Test the Pipeline:**
+
    ```bash
    # Make a test commit
    git commit --allow-empty -m "Test CI/CD pipeline"
@@ -99,6 +107,7 @@ Sentry is configured for both frontend and backend error tracking with session r
 **File:** `server/config/sentry.ts`
 
 **Features:**
+
 - Error tracking
 - Performance monitoring
 - Request tracing
@@ -106,6 +115,7 @@ Sentry is configured for both frontend and backend error tracking with session r
 - Sensitive data filtering
 
 **Environment Variables:**
+
 ```bash
 SENTRY_DSN=https://your-dsn@sentry.io/project-id
 NODE_ENV=production
@@ -119,12 +129,14 @@ SENTRY_RELEASE=stylora@1.0.0  # Optional
 **File:** `client/src/lib/sentry.ts`
 
 **Features:**
+
 - Error tracking
 - Session replay (with privacy masks)
 - Performance monitoring
 - User context tracking
 
 **Environment Variables:**
+
 ```bash
 VITE_SENTRY_DSN=https://your-dsn@sentry.io/project-id
 VITE_SENTRY_ENVIRONMENT=production
@@ -166,6 +178,7 @@ VITE_SENTRY_REPLAYS_ERROR_SAMPLE_RATE=1.0  # 100% on errors
 ### Usage Examples
 
 **Backend:**
+
 ```typescript
 import { captureException, setUserContext } from "@/config/sentry";
 
@@ -182,6 +195,7 @@ try {
 ```
 
 **Frontend:**
+
 ```typescript
 import { captureException, setUserContext } from "@/lib/sentry";
 
@@ -244,6 +258,7 @@ Automated daily backups to S3-compatible storage (Backblaze B2, AWS S3, etc.) wi
 #### Option 2: AWS S3
 
 1. **Create S3 Bucket:**
+
    ```bash
    aws s3 mb s3://stylora-backups --region us-east-1
    ```
@@ -285,6 +300,7 @@ console.log(result);
 ### Restore Procedure
 
 1. **Download Backup:**
+
    ```bash
    # Using AWS CLI (works with Backblaze B2 too)
    aws s3 cp s3://stylora-backups/backups/database-2024-01-15.sql.gz . \
@@ -292,6 +308,7 @@ console.log(result);
    ```
 
 2. **Decompress:**
+
    ```bash
    gunzip database-2024-01-15.sql.gz
    ```
@@ -377,6 +394,7 @@ VITE_APP_ID=stylora
 ### Automatic Deployment (Recommended)
 
 1. **Push to Main Branch:**
+
    ```bash
    git push origin main
    ```
@@ -420,6 +438,7 @@ railway run pnpm db:push
 **Endpoint:** `GET /health`
 
 **Response:**
+
 ```json
 {
   "status": "ok",
@@ -469,6 +488,7 @@ railway run pnpm db:push
 **Problem:** Tests failing in CI but passing locally
 
 **Solution:**
+
 ```bash
 # Run tests with same Node version as CI
 nvm use 22
@@ -481,6 +501,7 @@ env | grep VITE_
 **Problem:** Deployment fails
 
 **Solution:**
+
 ```bash
 # Check Railway logs
 railway logs --service stylora-production
@@ -497,6 +518,7 @@ railway up
 **Problem:** Too many errors
 
 **Solution:**
+
 1. Adjust sample rates in environment variables
 2. Add more errors to `ignoreErrors` list
 3. Filter by environment (development vs production)
@@ -504,6 +526,7 @@ railway up
 **Problem:** No errors appearing
 
 **Solution:**
+
 1. Verify `SENTRY_DSN` is set correctly
 2. Check Sentry project settings
 3. Test error capture:
@@ -517,6 +540,7 @@ railway up
 **Problem:** Backup fails with S3 error
 
 **Solution:**
+
 1. Verify S3 credentials:
    ```bash
    railway variables | grep BACKUP_
@@ -531,6 +555,7 @@ railway up
 **Problem:** Backup takes too long
 
 **Solution:**
+
 1. Database is too large
 2. Consider incremental backups
 3. Increase backup frequency but reduce retention
@@ -543,6 +568,7 @@ railway up
 Already fixed with `NODE_OPTIONS='--max-old-space-size=4096'` in package.json.
 
 If still failing:
+
 ```bash
 # Increase memory further
 NODE_OPTIONS='--max-old-space-size=8192' pnpm check

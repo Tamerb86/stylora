@@ -83,6 +83,7 @@ Vipps needs to know where to send payment status updates. Configure your callbac
 4. Add fallback URL: `https://yourdomain.com/booking/confirmation`
 
 **For local testing:**
+
 - Use a tunneling service like ngrok: `ngrok http 3000`
 - Update callback URL to: `https://your-ngrok-url.ngrok.io/api/vipps/callback`
 
@@ -134,7 +135,7 @@ trpc.payments.createVippsPayment.useMutation({
   appointmentId: 123,
   callbackUrl: "https://yourdomain.com/api/vipps/callback",
   fallbackUrl: "https://yourdomain.com/booking/confirmation",
-  mobileNumber: "48059528" // Optional, 8 digits without country code
+  mobileNumber: "48059528", // Optional, 8 digits without country code
 });
 ```
 
@@ -143,7 +144,7 @@ trpc.payments.createVippsPayment.useMutation({
 ```typescript
 // tRPC endpoint
 trpc.payments.getVippsPaymentStatus.useQuery({
-  vippsOrderId: "apt-123-abc123"
+  vippsOrderId: "apt-123-abc123",
 });
 ```
 
@@ -182,21 +183,22 @@ if (data?.available) {
 
 ## Payment States
 
-| Vipps Status | Description | System Action |
-|--------------|-------------|---------------|
-| `INITIATE` | Payment created | Keep as `pending` |
-| `REGISTER` | User opened Vipps | Keep as `pending` |
-| `RESERVE` | Payment approved | Mark as `completed`, confirm appointment |
-| `SALE` | Payment captured | Mark as `completed`, confirm appointment |
-| `CANCEL` | User cancelled | Mark as `failed` |
-| `VOID` | Reserved payment voided | Mark as `failed` |
-| `REFUND` | Payment refunded | Mark as `refunded` |
+| Vipps Status | Description             | System Action                            |
+| ------------ | ----------------------- | ---------------------------------------- |
+| `INITIATE`   | Payment created         | Keep as `pending`                        |
+| `REGISTER`   | User opened Vipps       | Keep as `pending`                        |
+| `RESERVE`    | Payment approved        | Mark as `completed`, confirm appointment |
+| `SALE`       | Payment captured        | Mark as `completed`, confirm appointment |
+| `CANCEL`     | User cancelled          | Mark as `failed`                         |
+| `VOID`       | Reserved payment voided | Mark as `failed`                         |
+| `REFUND`     | Payment refunded        | Mark as `refunded`                       |
 
 ## Troubleshooting
 
 ### Issue: "Vipps credentials not configured"
 
 **Solution**: Check that all environment variables are set correctly:
+
 ```bash
 echo $VIPPS_CLIENT_ID
 echo $VIPPS_CLIENT_SECRET
@@ -207,6 +209,7 @@ echo $VIPPS_MERCHANT_SERIAL_NUMBER
 ### Issue: "Failed to get Vipps access token"
 
 **Possible causes**:
+
 - Incorrect credentials
 - Subscription key expired
 - API URL wrong (test vs production)
@@ -216,11 +219,13 @@ echo $VIPPS_MERCHANT_SERIAL_NUMBER
 ### Issue: Callbacks not received
 
 **Possible causes**:
+
 - Callback URL not accessible from internet
 - Firewall blocking Vipps IPs
 - Callback URL not configured in Vipps portal
 
 **Solution**:
+
 1. Test callback URL with curl: `curl -X POST https://yourdomain.com/api/vipps/callback`
 2. Check server logs for incoming requests
 3. Use ngrok for local testing
@@ -229,11 +234,13 @@ echo $VIPPS_MERCHANT_SERIAL_NUMBER
 ### Issue: Payment stuck in "pending"
 
 **Possible causes**:
+
 - Callback failed or not received
 - Database update failed
 - Network timeout
 
 **Solution**:
+
 1. Check server logs for callback errors
 2. Manually check payment status: `trpc.payments.getVippsPaymentStatus`
 3. Use Vipps portal to check payment status
@@ -271,6 +278,7 @@ tail -f /path/to/logs | grep "Vipps Callback"
 ## Cost and Fees
 
 Vipps charges per transaction. Typical fees:
+
 - **Transaction fee**: ~1-2% + fixed fee per transaction
 - **Monthly fee**: May apply depending on agreement
 - **Setup fee**: One-time fee for merchant account
@@ -280,6 +288,7 @@ Contact Vipps sales for exact pricing for your business.
 ## Compliance
 
 Vipps integration complies with:
+
 - **PSD2**: European payment services directive
 - **GDPR**: Data protection regulation
 - **PCI DSS**: Payment card industry standards (Vipps is PCI certified)

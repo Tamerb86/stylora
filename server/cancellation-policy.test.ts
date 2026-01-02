@@ -12,7 +12,9 @@ describe("Cancellation & No-Show Policy", () => {
     const dbInstance = await db.getDb();
     if (!dbInstance) throw new Error("DB not initialized");
 
-    const { tenants, customers, users, services } = await import("../drizzle/schema");
+    const { tenants, customers, users, services } = await import(
+      "../drizzle/schema"
+    );
 
     // Create test tenant with policy settings
     const tenantId = `test-tenant-${Date.now()}`;
@@ -62,21 +64,33 @@ describe("Cancellation & No-Show Policy", () => {
     const dbInstance = await db.getDb();
     if (!dbInstance) return;
 
-    const { tenants, customers, users, services, appointments } = await import("../drizzle/schema");
+    const { tenants, customers, users, services, appointments } = await import(
+      "../drizzle/schema"
+    );
     const { eq } = await import("drizzle-orm");
 
     // Clean up test data
-    await dbInstance.delete(appointments).where(eq(appointments.tenantId, testTenantId));
-    await dbInstance.delete(services).where(eq(services.tenantId, testTenantId));
+    await dbInstance
+      .delete(appointments)
+      .where(eq(appointments.tenantId, testTenantId));
+    await dbInstance
+      .delete(services)
+      .where(eq(services.tenantId, testTenantId));
     await dbInstance.delete(users).where(eq(users.tenantId, testTenantId));
-    await dbInstance.delete(customers).where(eq(customers.tenantId, testTenantId));
+    await dbInstance
+      .delete(customers)
+      .where(eq(customers.tenantId, testTenantId));
     await dbInstance.delete(tenants).where(eq(tenants.id, testTenantId));
   });
 
   describe("Late Cancellation Detection", () => {
     it("should mark cancellation as late when inside cancellation window", async () => {
       const ctx = {
-        user: { id: testEmployeeId, tenantId: testTenantId, role: "employee" as const },
+        user: {
+          id: testEmployeeId,
+          tenantId: testTenantId,
+          role: "employee" as const,
+        },
         tenantId: testTenantId,
         req: {} as any,
       };
@@ -120,7 +134,11 @@ describe("Cancellation & No-Show Policy", () => {
 
     it("should NOT mark cancellation as late when outside cancellation window", async () => {
       const ctx = {
-        user: { id: testEmployeeId, tenantId: testTenantId, role: "employee" as const },
+        user: {
+          id: testEmployeeId,
+          tenantId: testTenantId,
+          role: "employee" as const,
+        },
         tenantId: testTenantId,
         req: {} as any,
       };
@@ -166,7 +184,11 @@ describe("Cancellation & No-Show Policy", () => {
   describe("No-Show Tracking", () => {
     it("should count no-shows for a customer", async () => {
       const ctx = {
-        user: { id: testEmployeeId, tenantId: testTenantId, role: "employee" as const },
+        user: {
+          id: testEmployeeId,
+          tenantId: testTenantId,
+          role: "employee" as const,
+        },
         tenantId: testTenantId,
         req: {} as any,
       };
@@ -221,7 +243,11 @@ describe("Cancellation & No-Show Policy", () => {
       });
 
       const ctx = {
-        user: { id: testEmployeeId, tenantId: testTenantId, role: "employee" as const },
+        user: {
+          id: testEmployeeId,
+          tenantId: testTenantId,
+          role: "employee" as const,
+        },
         tenantId: testTenantId,
         req: {} as any,
       };
@@ -245,7 +271,8 @@ describe("Cancellation & No-Show Policy", () => {
       const dbInstance = await db.getDb();
       if (!dbInstance) throw new Error("DB not initialized");
 
-      const { tenants, customers, users, services, appointments } = await import("../drizzle/schema");
+      const { tenants, customers, users, services, appointments } =
+        await import("../drizzle/schema");
       const { eq } = await import("drizzle-orm");
 
       // Create tenant with 48-hour cancellation window
@@ -256,9 +283,9 @@ describe("Cancellation & No-Show Policy", () => {
         subdomain: `custom-${Date.now()}`,
         cancellationWindowHours: 48, // 48-hour window
         noShowThresholdForPrepayment: 3,
-      emailVerified: true,
-      emailVerifiedAt: new Date(),
-    });
+        emailVerified: true,
+        emailVerifiedAt: new Date(),
+      });
 
       // Create customer, employee, service for this tenant
       const [customer] = await dbInstance.insert(customers).values({
@@ -286,7 +313,11 @@ describe("Cancellation & No-Show Policy", () => {
       });
 
       const ctx = {
-        user: { id: employee.insertId, tenantId: customTenantId, role: "employee" as const },
+        user: {
+          id: employee.insertId,
+          tenantId: customTenantId,
+          role: "employee" as const,
+        },
         tenantId: customTenantId,
         req: {} as any,
       };
@@ -322,10 +353,16 @@ describe("Cancellation & No-Show Policy", () => {
       expect(appointment.isLateCancellation).toBe(true);
 
       // Clean up
-      await dbInstance.delete(appointments).where(eq(appointments.tenantId, customTenantId));
-      await dbInstance.delete(services).where(eq(services.tenantId, customTenantId));
+      await dbInstance
+        .delete(appointments)
+        .where(eq(appointments.tenantId, customTenantId));
+      await dbInstance
+        .delete(services)
+        .where(eq(services.tenantId, customTenantId));
       await dbInstance.delete(users).where(eq(users.tenantId, customTenantId));
-      await dbInstance.delete(customers).where(eq(customers.tenantId, customTenantId));
+      await dbInstance
+        .delete(customers)
+        .where(eq(customers.tenantId, customTenantId));
       await dbInstance.delete(tenants).where(eq(tenants.id, customTenantId));
     });
   });

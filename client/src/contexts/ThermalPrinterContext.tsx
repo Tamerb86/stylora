@@ -1,6 +1,15 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { toast } from "sonner";
-import { generateReceiptESCPOS, generateTestReceiptESCPOS } from "@/utils/escpos";
+import {
+  generateReceiptESCPOS,
+  generateTestReceiptESCPOS,
+} from "@/utils/escpos";
 
 // Type declarations for WebUSB and Web Serial API
 declare global {
@@ -27,7 +36,10 @@ interface USBDevice {
   close(): Promise<void>;
   selectConfiguration(configurationValue: number): Promise<void>;
   claimInterface(interfaceNumber: number): Promise<void>;
-  transferOut(endpointNumber: number, data: BufferSource): Promise<USBOutTransferResult>;
+  transferOut(
+    endpointNumber: number,
+    data: BufferSource
+  ): Promise<USBOutTransferResult>;
 }
 
 interface USBConfiguration {
@@ -103,11 +115,15 @@ export interface ReceiptData {
   footerText?: string;
 }
 
-const ThermalPrinterContext = createContext<ThermalPrinterContextType | undefined>(undefined);
+const ThermalPrinterContext = createContext<
+  ThermalPrinterContextType | undefined
+>(undefined);
 
 export function ThermalPrinterProvider({ children }: { children: ReactNode }) {
   const [isSupported, setIsSupported] = useState(false);
-  const [connectedPrinter, setConnectedPrinter] = useState<PrinterInfo | null>(null);
+  const [connectedPrinter, setConnectedPrinter] = useState<PrinterInfo | null>(
+    null
+  );
   const [isConnecting, setIsConnecting] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
   const [isOpeningDrawer, setIsOpeningDrawer] = useState(false);
@@ -120,14 +136,18 @@ export function ThermalPrinterProvider({ children }: { children: ReactNode }) {
     setIsSupported(hasUSB || hasSerial);
 
     if (!hasUSB && !hasSerial) {
-      console.warn("WebUSB and Web Serial API are not supported in this browser");
+      console.warn(
+        "WebUSB and Web Serial API are not supported in this browser"
+      );
     }
   }, []);
 
   const detectPrinters = async () => {
     // This is called when user clicks "Søk etter skriver"
     // The actual device selection happens in connectPrinter
-    toast.info("Klikk 'Koble til USB' eller 'Koble til Serial' for å velge skriver");
+    toast.info(
+      "Klikk 'Koble til USB' eller 'Koble til Serial' for å velge skriver"
+    );
   };
 
   const connectPrinter = async (type: "usb" | "serial") => {
@@ -156,7 +176,7 @@ export function ThermalPrinterProvider({ children }: { children: ReactNode }) {
         });
 
         await usbDevice.open();
-        
+
         // Select configuration and claim interface
         if (usbDevice.configuration === null) {
           await usbDevice.selectConfiguration(1);
@@ -171,7 +191,9 @@ export function ThermalPrinterProvider({ children }: { children: ReactNode }) {
           productId: usbDevice.productId,
         });
 
-        toast.success(`Tilkoblet: ${usbDevice.productName || "USB Thermal Printer"}`);
+        toast.success(
+          `Tilkoblet: ${usbDevice.productName || "USB Thermal Printer"}`
+        );
       } else if (type === "serial") {
         if (!("serial" in navigator)) {
           throw new Error("Web Serial API er ikke støttet i denne nettleseren");
@@ -230,15 +252,19 @@ export function ThermalPrinterProvider({ children }: { children: ReactNode }) {
       if (connectedPrinter.type === "usb") {
         const usbDevice = device as USBDevice;
         // Find OUT endpoint (typically endpoint 1 or 2)
-        const endpoint = usbDevice.configuration?.interfaces[0]?.alternate?.endpoints.find(
-          (ep: USBEndpoint) => ep.direction === "out"
-        );
+        const endpoint =
+          usbDevice.configuration?.interfaces[0]?.alternate?.endpoints.find(
+            (ep: USBEndpoint) => ep.direction === "out"
+          );
 
         if (!endpoint) {
           throw new Error("Kunne ikke finne OUT endpoint");
         }
 
-        await usbDevice.transferOut(endpoint.endpointNumber, data.buffer as BufferSource);
+        await usbDevice.transferOut(
+          endpoint.endpointNumber,
+          data.buffer as BufferSource
+        );
       } else if (connectedPrinter.type === "serial") {
         const port = device as SerialPort;
         const writer = port.writable?.getWriter();
@@ -268,7 +294,7 @@ export function ThermalPrinterProvider({ children }: { children: ReactNode }) {
       // Generate ESC/POS commands
       const escPosData = generateReceiptESCPOS(receiptData);
       await sendToPrinter(escPosData);
-      
+
       toast.success("Kvittering skrevet ut!");
       return true;
     } catch (error: any) {
@@ -313,9 +339,11 @@ export function ThermalPrinterProvider({ children }: { children: ReactNode }) {
       // ESC p m t1 t2 (0x1B 0x70 m t1 t2)
       // m = pin number (0 or 1), t1 = on time, t2 = off time
       const openDrawerCommand = new Uint8Array([
-        0x1b, 0x70, 0x00, // ESC p 0 (pin 2)
-        0x19,             // t1 = 25ms on time
-        0xfa,             // t2 = 250ms off time
+        0x1b,
+        0x70,
+        0x00, // ESC p 0 (pin 2)
+        0x19, // t1 = 25ms on time
+        0xfa, // t2 = 250ms off time
       ]);
 
       await sendToPrinter(openDrawerCommand);
@@ -353,9 +381,9 @@ export function ThermalPrinterProvider({ children }: { children: ReactNode }) {
 export function useThermalPrinter() {
   const context = useContext(ThermalPrinterContext);
   if (!context) {
-    throw new Error("useThermalPrinter must be used within ThermalPrinterProvider");
+    throw new Error(
+      "useThermalPrinter must be used within ThermalPrinterProvider"
+    );
   }
   return context;
 }
-
-

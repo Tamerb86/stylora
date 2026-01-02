@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { 
-  createTestTenant, 
-  createTestService, 
+import {
+  createTestTenant,
+  createTestService,
   createTestEmployee,
-  cleanupTestTenant 
+  cleanupTestTenant,
 } from "./test-helpers";
 import { appRouter } from "./routers";
 import * as db from "./db";
@@ -12,7 +12,7 @@ import { appointments, customers } from "../drizzle/schema";
 
 /**
  * Test suite for public booking with payment integration
- * 
+ *
  * Tests the combined endpoint that creates a booking and starts Stripe Checkout
  */
 
@@ -45,7 +45,11 @@ describe("Public Booking with Payment", () => {
     testServiceId = serviceId;
 
     // Create public context
-    caller = appRouter.createCaller({ user: null, req: {} as any, res: {} as any });
+    caller = appRouter.createCaller({
+      user: null,
+      req: {} as any,
+      res: {} as any,
+    });
   });
 
   it("should create booking and return checkout URL", async () => {
@@ -143,40 +147,43 @@ describe("Public Booking with Payment", () => {
     const existingPhone = "+4712341234";
 
     // First booking - creates customer
-    const firstResult = await caller.publicBooking.createBookingAndStartPayment({
-      tenantId: testTenantId,
-      serviceId: testServiceId,
-      employeeId: testEmployeeId,
-      date: "2025-12-17",
-      time: "10:00",
-      customerInfo: {
-        firstName: "Returning",
-        lastName: "Customer",
-        phone: existingPhone,
-        email: "returning@example.com",
-      },
-      successUrl: "https://example.com/success",
-      cancelUrl: "https://example.com/cancel",
-    });
+    const firstResult = await caller.publicBooking.createBookingAndStartPayment(
+      {
+        tenantId: testTenantId,
+        serviceId: testServiceId,
+        employeeId: testEmployeeId,
+        date: "2025-12-17",
+        time: "10:00",
+        customerInfo: {
+          firstName: "Returning",
+          lastName: "Customer",
+          phone: existingPhone,
+          email: "returning@example.com",
+        },
+        successUrl: "https://example.com/success",
+        cancelUrl: "https://example.com/cancel",
+      }
+    );
 
     const firstCustomerId = firstResult.customerId;
 
     // Second booking - reuses customer
-    const secondResult = await caller.publicBooking.createBookingAndStartPayment({
-      tenantId: testTenantId,
-      serviceId: testServiceId,
-      employeeId: testEmployeeId,
-      date: "2025-12-18",
-      time: "11:00",
-      customerInfo: {
-        firstName: "Returning",
-        lastName: "Customer",
-        phone: existingPhone,
-        email: "returning@example.com",
-      },
-      successUrl: "https://example.com/success",
-      cancelUrl: "https://example.com/cancel",
-    });
+    const secondResult =
+      await caller.publicBooking.createBookingAndStartPayment({
+        tenantId: testTenantId,
+        serviceId: testServiceId,
+        employeeId: testEmployeeId,
+        date: "2025-12-18",
+        time: "11:00",
+        customerInfo: {
+          firstName: "Returning",
+          lastName: "Customer",
+          phone: existingPhone,
+          email: "returning@example.com",
+        },
+        successUrl: "https://example.com/success",
+        cancelUrl: "https://example.com/cancel",
+      });
 
     // Should reuse the same customer
     expect(secondResult.customerId).toBe(firstCustomerId);

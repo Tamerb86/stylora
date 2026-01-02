@@ -1,21 +1,27 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { 
-  Globe, 
-  Copy, 
-  Check, 
-  ExternalLink, 
-  QrCode, 
+import {
+  Globe,
+  Copy,
+  Check,
+  ExternalLink,
+  QrCode,
   AlertCircle,
   Loader2,
   CheckCircle2,
-  XCircle
+  XCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,30 +29,38 @@ export function DomainSettingsTab() {
   const [isEditing, setIsEditing] = useState(false);
   const [newSubdomain, setNewSubdomain] = useState("");
   const [copied, setCopied] = useState(false);
-  const [checkDebounce, setCheckDebounce] = useState<NodeJS.Timeout | null>(null);
+  const [checkDebounce, setCheckDebounce] = useState<NodeJS.Timeout | null>(
+    null
+  );
 
   // Queries
-  const { data: domainInfo, isLoading, refetch } = trpc.salonSettings.getDomainInfo.useQuery();
-  
-  const { data: availabilityData, isLoading: isChecking } = trpc.salonSettings.checkSubdomainAvailability.useQuery(
-    { subdomain: newSubdomain },
-    { 
-      enabled: false, // Manual trigger only
-    }
-  );
+  const {
+    data: domainInfo,
+    isLoading,
+    refetch,
+  } = trpc.salonSettings.getDomainInfo.useQuery();
+
+  const { data: availabilityData, isLoading: isChecking } =
+    trpc.salonSettings.checkSubdomainAvailability.useQuery(
+      { subdomain: newSubdomain },
+      {
+        enabled: false, // Manual trigger only
+      }
+    );
 
   // Mutations
   const utils = trpc.useUtils();
-  const updateSubdomainMutation = trpc.salonSettings.updateSubdomain.useMutation({
-    onSuccess: () => {
-      toast.success("Subdomain oppdatert!");
-      setIsEditing(false);
-      refetch();
-    },
-    onError: (error) => {
-      toast.error(error.message || "Kunne ikke oppdatere subdomain");
-    },
-  });
+  const updateSubdomainMutation =
+    trpc.salonSettings.updateSubdomain.useMutation({
+      onSuccess: () => {
+        toast.success("Subdomain oppdatert!");
+        setIsEditing(false);
+        refetch();
+      },
+      onError: error => {
+        toast.error(error.message || "Kunne ikke oppdatere subdomain");
+      },
+    });
 
   const handleCopy = () => {
     if (domainInfo) {
@@ -61,7 +75,7 @@ export function DomainSettingsTab() {
     // Clean input (lowercase, no spaces, only alphanumeric and hyphens)
     const cleaned = value.toLowerCase().replace(/[^a-z0-9-]/g, "");
     setNewSubdomain(cleaned);
-    
+
     // Debounce availability check
     if (checkDebounce) {
       clearTimeout(checkDebounce);
@@ -69,7 +83,9 @@ export function DomainSettingsTab() {
 
     if (cleaned.length >= 3 && cleaned !== domainInfo?.subdomain) {
       const timeout = setTimeout(() => {
-        utils.salonSettings.checkSubdomainAvailability.fetch({ subdomain: cleaned });
+        utils.salonSettings.checkSubdomainAvailability.fetch({
+          subdomain: cleaned,
+        });
       }, 500);
       setCheckDebounce(timeout);
     }
@@ -80,9 +96,11 @@ export function DomainSettingsTab() {
       toast.error("Subdomain må være minst 3 tegn");
       return;
     }
-    
+
     if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(newSubdomain)) {
-      toast.error("Ugyldig format. Bruk kun små bokstaver, tall og bindestreker (ikke i start/slutt)");
+      toast.error(
+        "Ugyldig format. Bruk kun små bokstaver, tall og bindestreker (ikke i start/slutt)"
+      );
       return;
     }
 
@@ -111,18 +129,17 @@ export function DomainSettingsTab() {
     return (
       <Alert>
         <AlertCircle className="w-4 h-4" />
-        <AlertDescription>
-          Kunne ikke laste domeneinformasjon
-        </AlertDescription>
+        <AlertDescription>Kunne ikke laste domeneinformasjon</AlertDescription>
       </Alert>
     );
   }
 
   const isAvailable = availabilityData?.available ?? null;
-  const canSave = newSubdomain.length >= 3 && 
-                  newSubdomain !== domainInfo.subdomain && 
-                  isAvailable === true &&
-                  /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(newSubdomain);
+  const canSave =
+    newSubdomain.length >= 3 &&
+    newSubdomain !== domainInfo.subdomain &&
+    isAvailable === true &&
+    /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(newSubdomain);
 
   return (
     <div className="space-y-6">
@@ -142,26 +159,38 @@ export function DomainSettingsTab() {
           <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border border-blue-200">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Nåværende subdomene</p>
-                <p className="text-2xl font-bold text-blue-600">{domainInfo.subdomain}</p>
+                <p className="text-sm text-muted-foreground mb-1">
+                  Nåværende subdomene
+                </p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {domainInfo.subdomain}
+                </p>
               </div>
-              <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-300">
+              <Badge
+                variant="secondary"
+                className="bg-green-100 text-green-700 border-green-300"
+              >
                 <CheckCircle2 className="w-3 h-3 mr-1" />
                 Aktiv
               </Badge>
             </div>
-            
+
             {domainInfo.lastUpdated && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <AlertCircle className="w-4 h-4" />
-                <span>Sist oppdatert: {new Date(domainInfo.lastUpdated).toLocaleDateString('nb-NO')}</span>
+                <span>
+                  Sist oppdatert:{" "}
+                  {new Date(domainInfo.lastUpdated).toLocaleDateString("nb-NO")}
+                </span>
               </div>
             )}
           </div>
 
           {/* Booking URL Section */}
           <div>
-            <Label className="text-base font-semibold mb-3 block">Lenke til bookingside</Label>
+            <Label className="text-base font-semibold mb-3 block">
+              Lenke til bookingside
+            </Label>
             <div className="flex gap-2">
               <div className="flex-1 relative">
                 <Input
@@ -199,7 +228,11 @@ export function DomainSettingsTab() {
               <p className="text-sm text-muted-foreground mb-3">
                 La kundene skanne koden for rask tilgang til bookingsiden
               </p>
-              <Button variant="outline" size="sm" onClick={() => toast.info("QR-kode funksjon kommer snart!")}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => toast.info("QR-kode funksjon kommer snart!")}
+              >
                 <QrCode className="w-4 h-4 mr-2" />
                 Last ned QR-kode
               </Button>
@@ -208,7 +241,7 @@ export function DomainSettingsTab() {
 
           {/* Edit Button */}
           {!isEditing && (
-            <Button 
+            <Button
               onClick={handleEdit}
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
@@ -225,7 +258,8 @@ export function DomainSettingsTab() {
           <CardHeader>
             <CardTitle className="text-blue-600">Rediger subdomene</CardTitle>
             <CardDescription>
-              Velg et nytt subdomene for salonen din (3-63 tegn, små bokstaver, tall og bindestreker)
+              Velg et nytt subdomene for salonen din (3-63 tegn, små bokstaver,
+              tall og bindestreker)
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -233,8 +267,9 @@ export function DomainSettingsTab() {
             <Alert className="bg-yellow-50 border-yellow-300">
               <AlertCircle className="w-4 h-4 text-yellow-600" />
               <AlertDescription className="text-yellow-800">
-                <strong>Advarsel:</strong> Endring av subdomene vil påvirke alle lenker som er delt med kunder. 
-                Sørg for å oppdatere lenkene i alt markedsføringsmateriell.
+                <strong>Advarsel:</strong> Endring av subdomene vil påvirke alle
+                lenker som er delt med kunder. Sørg for å oppdatere lenkene i
+                alt markedsføringsmateriell.
               </AlertDescription>
             </Alert>
 
@@ -246,16 +281,18 @@ export function DomainSettingsTab() {
                   <Input
                     id="new-subdomain"
                     value={newSubdomain}
-                    onChange={(e) => handleSubdomainChange(e.target.value)}
+                    onChange={e => handleSubdomainChange(e.target.value)}
                     placeholder="min-salong"
                     className="font-mono"
                   />
                   {isChecking && (
                     <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-blue-600" />
                   )}
-                  {!isChecking && isAvailable === true && newSubdomain !== domainInfo.subdomain && (
-                    <CheckCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />
-                  )}
+                  {!isChecking &&
+                    isAvailable === true &&
+                    newSubdomain !== domainInfo.subdomain && (
+                      <CheckCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-green-600" />
+                    )}
                   {!isChecking && isAvailable === false && (
                     <XCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-red-600" />
                   )}
@@ -264,14 +301,16 @@ export function DomainSettingsTab() {
                   .stylora.no
                 </div>
               </div>
-              
+
               {/* Availability Status */}
-              {!isChecking && isAvailable === true && newSubdomain !== domainInfo.subdomain && (
-                <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  Tilgjengelig! Du kan bruke dette subdomenet
-                </p>
-              )}
+              {!isChecking &&
+                isAvailable === true &&
+                newSubdomain !== domainInfo.subdomain && (
+                  <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" />
+                    Tilgjengelig! Du kan bruke dette subdomenet
+                  </p>
+                )}
               {!isChecking && isAvailable === false && (
                 <p className="text-sm text-red-600 mt-2 flex items-center gap-1">
                   <XCircle className="w-3 h-3" />
@@ -288,7 +327,9 @@ export function DomainSettingsTab() {
 
             {/* Preview */}
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <p className="text-sm text-muted-foreground mb-1">Forhåndsvisning av ny lenke</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                Forhåndsvisning av ny lenke
+              </p>
               <p className="font-mono text-blue-600 font-semibold">
                 https://{newSubdomain || "subdomene"}.stylora.no/book
               </p>

@@ -1,6 +1,6 @@
 /**
  * Fiken API Client
- * 
+ *
  * Handles OAuth2 authentication and API requests to Fiken accounting system
  * Documentation: https://api.fiken.no/api/v2/docs/
  */
@@ -133,7 +133,11 @@ export class FikenClient {
   /**
    * Generate OAuth2 authorization URL
    */
-  static getAuthorizationUrl(clientId: string, redirectUri: string, state: string): string {
+  static getAuthorizationUrl(
+    clientId: string,
+    redirectUri: string,
+    state: string
+  ): string {
     const params = new URLSearchParams({
       response_type: "code",
       client_id: clientId,
@@ -153,13 +157,15 @@ export class FikenClient {
     clientSecret: string,
     redirectUri: string
   ): Promise<FikenOAuthTokens> {
-    const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+    const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString(
+      "base64"
+    );
 
     const response = await fetch(`${FIKEN_OAUTH_BASE}/token`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": `Basic ${credentials}`,
+        Authorization: `Basic ${credentials}`,
       },
       body: new URLSearchParams({
         grant_type: "authorization_code",
@@ -170,7 +176,9 @@ export class FikenClient {
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(`Failed to exchange code for token: ${error.error_description || error.error}`);
+      throw new Error(
+        `Failed to exchange code for token: ${error.error_description || error.error}`
+      );
     }
 
     return await response.json();
@@ -184,13 +192,15 @@ export class FikenClient {
       throw new Error("Cannot refresh token: missing credentials");
     }
 
-    const credentials = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString("base64");
+    const credentials = Buffer.from(
+      `${this.clientId}:${this.clientSecret}`
+    ).toString("base64");
 
     const response = await fetch(`${FIKEN_OAUTH_BASE}/token`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        "Authorization": `Basic ${credentials}`,
+        Authorization: `Basic ${credentials}`,
       },
       body: new URLSearchParams({
         grant_type: "refresh_token",
@@ -200,20 +210,22 @@ export class FikenClient {
 
     if (!response.ok) {
       const error = await response.json();
-      
+
       // Log failed refresh attempt
       const db = await getDb();
       if (db) {
         await db.insert(fikenSyncLog).values({
-        tenantId: this.tenantId,
-        operation: "oauth_refresh",
-        status: "failed",
+          tenantId: this.tenantId,
+          operation: "oauth_refresh",
+          status: "failed",
           errorMessage: error.error_description || error.error,
           triggeredBy: "auto",
         });
       }
 
-      throw new Error(`Failed to refresh token: ${error.error_description || error.error}`);
+      throw new Error(
+        `Failed to refresh token: ${error.error_description || error.error}`
+      );
     }
 
     const tokens: FikenOAuthTokens = await response.json();
@@ -243,7 +255,7 @@ export class FikenClient {
     const dbForLog = await getDb();
     if (dbForLog) {
       await dbForLog.insert(fikenSyncLog).values({
-      tenantId: this.tenantId,
+        tenantId: this.tenantId,
         operation: "oauth_refresh",
         status: "success",
         triggeredBy: "auto",
@@ -264,7 +276,7 @@ export class FikenClient {
 
     const url = `${FIKEN_BASE_URL}${endpoint}`;
     const headers = {
-      "Authorization": `Bearer ${this.accessToken}`,
+      Authorization: `Bearer ${this.accessToken}`,
       "Content-Type": "application/json",
       "X-Request-ID": crypto.randomUUID(),
       ...options.headers,
@@ -278,13 +290,13 @@ export class FikenClient {
     // Handle 401 Unauthorized - try to refresh token once
     if (response.status === 401 && this.refreshToken) {
       await this.refreshAccessToken();
-      
+
       // Retry request with new token
       const retryResponse = await fetch(url, {
         ...options,
         headers: {
           ...headers,
-          "Authorization": `Bearer ${this.accessToken}`,
+          Authorization: `Bearer ${this.accessToken}`,
         },
       });
 
@@ -371,10 +383,13 @@ export class FikenClient {
       throw new Error("Company slug not provided");
     }
 
-    return await this.request<FikenContact>(`/companies/${slug}/contacts/${contactId}`, {
-      method: "PUT",
-      body: JSON.stringify(contact),
-    });
+    return await this.request<FikenContact>(
+      `/companies/${slug}/contacts/${contactId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(contact),
+      }
+    );
   }
 
   /**
@@ -440,14 +455,19 @@ export class FikenClient {
   /**
    * Test connection to Fiken API
    */
-  async testConnection(): Promise<{ success: boolean; companyName?: string; error?: string }> {
+  async testConnection(): Promise<{
+    success: boolean;
+    companyName?: string;
+    error?: string;
+  }> {
     try {
       const companies = await this.getCompanies();
-      
+
       if (companies.length === 0) {
         return {
           success: false,
-          error: "No companies found. Please ensure you have access to at least one company in Fiken.",
+          error:
+            "No companies found. Please ensure you have access to at least one company in Fiken.",
         };
       }
 

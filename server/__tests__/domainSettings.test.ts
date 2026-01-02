@@ -19,28 +19,24 @@ describe("Domain Settings", () => {
     // Create test tenant with unique subdomain
     testTenantId = randomUUID();
     testSubdomain = `test-domain-${Date.now()}`;
-    await db
-      .insert(tenants)
-      .values({
-        id: testTenantId,
-        name: "Test Domain Salon",
-        subdomain: testSubdomain,
-        email: `domain-test-${Date.now()}@example.com`,
-        phone: "12345678",
-        orgNumber: "123456789",
-      });
+    await db.insert(tenants).values({
+      id: testTenantId,
+      name: "Test Domain Salon",
+      subdomain: testSubdomain,
+      email: `domain-test-${Date.now()}@example.com`,
+      phone: "12345678",
+      orgNumber: "123456789",
+    });
 
     // Create test admin user
     testUserId = `test-domain-admin-${nanoid()}`;
-    await db
-      .insert(users)
-      .values({
-        openId: testUserId,
-        name: "Domain Test Admin",
-        email: `domain-admin-${Date.now()}@example.com`,
-        tenantId: testTenantId,
-        role: "admin",
-      });
+    await db.insert(users).values({
+      openId: testUserId,
+      name: "Domain Test Admin",
+      email: `domain-admin-${Date.now()}@example.com`,
+      tenantId: testTenantId,
+      role: "admin",
+    });
   });
 
   describe("getDomainInfo", () => {
@@ -62,7 +58,9 @@ describe("Domain Settings", () => {
 
       expect(result).toBeDefined();
       expect(result.subdomain).toBe(testSubdomain);
-      expect(result.bookingUrl).toBe(`https://${testSubdomain}.stylora.no/book`);
+      expect(result.bookingUrl).toBe(
+        `https://${testSubdomain}.stylora.no/book`
+      );
       expect(result.lastUpdated).toBeDefined();
     });
 
@@ -80,8 +78,10 @@ describe("Domain Settings", () => {
       };
 
       const caller = appRouter.createCaller(ctx);
-      
-      await expect(caller.salonSettings.getDomainInfo()).rejects.toThrow("No tenant access");
+
+      await expect(caller.salonSettings.getDomainInfo()).rejects.toThrow(
+        "No tenant access"
+      );
     });
   });
 
@@ -101,8 +101,8 @@ describe("Domain Settings", () => {
 
       const caller = appRouter.createCaller(ctx);
       const unusedSubdomain = `unused-${Date.now()}`;
-      const result = await caller.salonSettings.checkSubdomainAvailability({ 
-        subdomain: unusedSubdomain 
+      const result = await caller.salonSettings.checkSubdomainAvailability({
+        subdomain: unusedSubdomain,
       });
 
       expect(result.available).toBe(true);
@@ -124,9 +124,9 @@ describe("Domain Settings", () => {
         email: `taken-${Date.now()}@example.com`,
         phone: "87654321",
         orgNumber: "987654321",
-      emailVerified: true,
-      emailVerifiedAt: new Date(),
-    });
+        emailVerified: true,
+        emailVerifiedAt: new Date(),
+      });
 
       const ctx: Context = {
         user: {
@@ -141,8 +141,8 @@ describe("Domain Settings", () => {
       };
 
       const caller = appRouter.createCaller(ctx);
-      const result = await caller.salonSettings.checkSubdomainAvailability({ 
-        subdomain: takenSubdomain 
+      const result = await caller.salonSettings.checkSubdomainAvailability({
+        subdomain: takenSubdomain,
       });
 
       expect(result.available).toBe(false);
@@ -162,8 +162,8 @@ describe("Domain Settings", () => {
       };
 
       const caller = appRouter.createCaller(ctx);
-      const result = await caller.salonSettings.checkSubdomainAvailability({ 
-        subdomain: testSubdomain 
+      const result = await caller.salonSettings.checkSubdomainAvailability({
+        subdomain: testSubdomain,
       });
 
       // Should be available because it's the current tenant's own subdomain
@@ -187,9 +187,9 @@ describe("Domain Settings", () => {
 
       const caller = appRouter.createCaller(ctx);
       const newSubdomain = `updated-${Date.now()}`;
-      
-      const result = await caller.salonSettings.updateSubdomain({ 
-        subdomain: newSubdomain 
+
+      const result = await caller.salonSettings.updateSubdomain({
+        subdomain: newSubdomain,
       });
 
       expect(result.success).toBe(true);
@@ -215,7 +215,7 @@ describe("Domain Settings", () => {
       };
 
       const caller = appRouter.createCaller(ctx);
-      
+
       await expect(
         caller.salonSettings.updateSubdomain({ subdomain: "ab" })
       ).rejects.toThrow();
@@ -235,7 +235,7 @@ describe("Domain Settings", () => {
       };
 
       const caller = appRouter.createCaller(ctx);
-      
+
       await expect(
         caller.salonSettings.updateSubdomain({ subdomain: "Invalid_Domain!" })
       ).rejects.toThrow();
@@ -255,7 +255,7 @@ describe("Domain Settings", () => {
       };
 
       const caller = appRouter.createCaller(ctx);
-      
+
       await expect(
         caller.salonSettings.updateSubdomain({ subdomain: "-invalid" })
       ).rejects.toThrow();
@@ -275,7 +275,7 @@ describe("Domain Settings", () => {
       };
 
       const caller = appRouter.createCaller(ctx);
-      
+
       await expect(
         caller.salonSettings.updateSubdomain({ subdomain: "invalid-" })
       ).rejects.toThrow();
@@ -297,9 +297,9 @@ describe("Domain Settings", () => {
         email: `existing-${Date.now()}@example.com`,
         phone: "11111111",
         orgNumber: "111111111",
-      emailVerified: true,
-      emailVerifiedAt: new Date(),
-    });
+        emailVerified: true,
+        emailVerifiedAt: new Date(),
+      });
 
       const ctx: Context = {
         user: {
@@ -314,7 +314,7 @@ describe("Domain Settings", () => {
       };
 
       const caller = appRouter.createCaller(ctx);
-      
+
       await expect(
         caller.salonSettings.updateSubdomain({ subdomain: existingSubdomain })
       ).rejects.toThrow("Subdomain is already taken");
@@ -357,7 +357,7 @@ describe("Domain Settings", () => {
       };
 
       const caller = appRouter.createCaller(ctx);
-      
+
       await expect(
         caller.salonSettings.updateSubdomain({ subdomain: `new-${Date.now()}` })
       ).rejects.toThrow("Admin access required");

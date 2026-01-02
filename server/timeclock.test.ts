@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { createTestTenant, createTestEmployee, cleanupTestTenant } from "./test-helpers";
+import {
+  createTestTenant,
+  createTestEmployee,
+  cleanupTestTenant,
+} from "./test-helpers";
 import { appRouter } from "./routers";
 import * as db from "./db";
 import { timesheets } from "../drizzle/schema";
@@ -21,7 +25,11 @@ describe("Time Clock System", () => {
   });
 
   it("should allow employee to clock in with valid PIN", async () => {
-    const caller = appRouter.createCaller({ user: null, req: {} as any, res: {} as any });
+    const caller = appRouter.createCaller({
+      user: null,
+      req: {} as any,
+      res: {} as any,
+    });
 
     const result = await caller.employee.clockIn({
       pin: testPin,
@@ -49,7 +57,11 @@ describe("Time Clock System", () => {
   });
 
   it("should reject clock in with invalid PIN", async () => {
-    const caller = appRouter.createCaller({ user: null, req: {} as any, res: {} as any });
+    const caller = appRouter.createCaller({
+      user: null,
+      req: {} as any,
+      res: {} as any,
+    });
 
     await expect(
       caller.employee.clockIn({
@@ -60,7 +72,11 @@ describe("Time Clock System", () => {
   });
 
   it("should prevent duplicate clock-ins", async () => {
-    const caller = appRouter.createCaller({ user: null, req: {} as any, res: {} as any });
+    const caller = appRouter.createCaller({
+      user: null,
+      req: {} as any,
+      res: {} as any,
+    });
 
     // First clock in
     await caller.employee.clockIn({
@@ -78,7 +94,11 @@ describe("Time Clock System", () => {
   });
 
   it("should allow employee to clock out and calculate hours", async () => {
-    const caller = appRouter.createCaller({ user: null, req: {} as any, res: {} as any });
+    const caller = appRouter.createCaller({
+      user: null,
+      req: {} as any,
+      res: {} as any,
+    });
 
     // Clock in first
     await caller.employee.clockIn({
@@ -118,7 +138,11 @@ describe("Time Clock System", () => {
   });
 
   it("should reject clock out without clock in", async () => {
-    const caller = appRouter.createCaller({ user: null, req: {} as any, res: {} as any });
+    const caller = appRouter.createCaller({
+      user: null,
+      req: {} as any,
+      res: {} as any,
+    });
 
     await expect(
       caller.employee.clockOut({
@@ -132,7 +156,7 @@ describe("Time Clock System", () => {
     const dbInstance = await db.getDb();
     if (!dbInstance) throw new Error("Database not available");
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
 
     // Create a timesheet entry
     await dbInstance.insert(timesheets).values({
@@ -145,7 +169,11 @@ describe("Time Clock System", () => {
     });
 
     const caller = appRouter.createCaller({
-      user: { id: testEmployeeId, tenantId: testTenantId, role: "employee" } as any,
+      user: {
+        id: testEmployeeId,
+        tenantId: testTenantId,
+        role: "employee",
+      } as any,
       req: {} as any,
       res: {} as any,
     });

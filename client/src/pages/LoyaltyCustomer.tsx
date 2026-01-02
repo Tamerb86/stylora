@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,47 +18,66 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Star, Gift, TrendingUp, Clock, CheckCircle, XCircle, Sparkles } from "lucide-react";
+import {
+  Star,
+  Gift,
+  TrendingUp,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Sparkles,
+} from "lucide-react";
 import { format } from "date-fns";
 import { nb } from "date-fns/locale";
 import { toast } from "sonner";
 
 export default function LoyaltyCustomer() {
-  const [selectedTab, setSelectedTab] = useState<"rewards" | "history" | "redemptions">("rewards");
+  const [selectedTab, setSelectedTab] = useState<
+    "rewards" | "history" | "redemptions"
+  >("rewards");
   const [redeemDialogOpen, setRedeemDialogOpen] = useState(false);
   const [selectedReward, setSelectedReward] = useState<any>(null);
 
   // Get tenant ID from URL or context
-  const tenantId = new URLSearchParams(window.location.search).get("tenantId") || "demo-tenant-stylora";
+  const tenantId =
+    new URLSearchParams(window.location.search).get("tenantId") ||
+    "demo-tenant-stylora";
 
   // Fetch customer points
-  const { data: pointsData, isLoading: pointsLoading, refetch: refetchPoints } = trpc.loyalty.getCustomerPoints.useQuery({
+  const {
+    data: pointsData,
+    isLoading: pointsLoading,
+    refetch: refetchPoints,
+  } = trpc.loyalty.getCustomerPoints.useQuery({
     tenantId,
   });
 
   // Fetch available rewards
-  const { data: rewards = [], isLoading: rewardsLoading } = trpc.loyalty.getAvailableRewards.useQuery({
-    tenantId,
-  });
+  const { data: rewards = [], isLoading: rewardsLoading } =
+    trpc.loyalty.getAvailableRewards.useQuery({
+      tenantId,
+    });
 
   // Fetch transaction history
-  const { data: transactions = [], isLoading: transactionsLoading } = trpc.loyalty.getTransactionHistory.useQuery({
-    tenantId,
-  });
+  const { data: transactions = [], isLoading: transactionsLoading } =
+    trpc.loyalty.getTransactionHistory.useQuery({
+      tenantId,
+    });
 
   // Fetch active redemptions
-  const { data: redemptions = [], isLoading: redemptionsLoading } = trpc.loyalty.getActiveRedemptions.useQuery({
-    tenantId,
-  });
+  const { data: redemptions = [], isLoading: redemptionsLoading } =
+    trpc.loyalty.getActiveRedemptions.useQuery({
+      tenantId,
+    });
 
   // Redeem reward mutation
   const redeemMutation = trpc.loyalty.redeemReward.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success(data.message);
       setRedeemDialogOpen(false);
       refetchPoints();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "Failed to redeem reward");
     },
   });
@@ -108,7 +133,7 @@ export default function LoyaltyCustomer() {
       </Card>
 
       {/* Tabs */}
-      <Tabs value={selectedTab} onValueChange={(v) => setSelectedTab(v as any)}>
+      <Tabs value={selectedTab} onValueChange={v => setSelectedTab(v as any)}>
         <TabsList className="grid w-full grid-cols-3 mb-6">
           <TabsTrigger value="rewards">
             <Gift className="h-4 w-4 mr-2" />
@@ -127,12 +152,16 @@ export default function LoyaltyCustomer() {
         {/* Rewards Tab */}
         <TabsContent value="rewards">
           {rewardsLoading ? (
-            <div className="text-center py-12 text-gray-500">Laster belønninger...</div>
+            <div className="text-center py-12 text-gray-500">
+              Laster belønninger...
+            </div>
           ) : rewards.length === 0 ? (
             <Card>
               <CardContent className="text-center py-12">
                 <Gift className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                <p className="text-gray-600">Ingen belønninger tilgjengelig for øyeblikket</p>
+                <p className="text-gray-600">
+                  Ingen belønninger tilgjengelig for øyeblikket
+                </p>
               </CardContent>
             </Card>
           ) : (
@@ -145,12 +174,19 @@ export default function LoyaltyCustomer() {
                     : `${reward.discountValue} kr rabatt`;
 
                 return (
-                  <Card key={reward.id} className={!canAfford ? "opacity-60" : ""}>
+                  <Card
+                    key={reward.id}
+                    className={!canAfford ? "opacity-60" : ""}
+                  >
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <CardTitle className="text-lg">{reward.name}</CardTitle>
-                          <CardDescription className="mt-1">{reward.description}</CardDescription>
+                          <CardTitle className="text-lg">
+                            {reward.name}
+                          </CardTitle>
+                          <CardDescription className="mt-1">
+                            {reward.description}
+                          </CardDescription>
                         </div>
                         <Badge variant="secondary" className="ml-2">
                           {reward.pointsCost} poeng
@@ -160,7 +196,9 @@ export default function LoyaltyCustomer() {
                     <CardContent>
                       <div className="space-y-3">
                         <div className="bg-purple-50 border border-purple-200 rounded-md p-3 text-center">
-                          <p className="text-2xl font-bold text-purple-600">{discountText}</p>
+                          <p className="text-2xl font-bold text-purple-600">
+                            {discountText}
+                          </p>
                         </div>
 
                         <Button
@@ -168,7 +206,9 @@ export default function LoyaltyCustomer() {
                           disabled={!canAfford}
                           onClick={() => handleRedeemClick(reward)}
                         >
-                          {canAfford ? "Løs inn" : `Trenger ${reward.pointsCost - currentPoints} poeng til`}
+                          {canAfford
+                            ? "Løs inn"
+                            : `Trenger ${reward.pointsCost - currentPoints} poeng til`}
                         </Button>
 
                         <p className="text-xs text-gray-500 text-center">
@@ -186,7 +226,9 @@ export default function LoyaltyCustomer() {
         {/* History Tab */}
         <TabsContent value="history">
           {transactionsLoading ? (
-            <div className="text-center py-12 text-gray-500">Laster historikk...</div>
+            <div className="text-center py-12 text-gray-500">
+              Laster historikk...
+            </div>
           ) : transactions.length === 0 ? (
             <Card>
               <CardContent className="text-center py-12">
@@ -203,24 +245,41 @@ export default function LoyaltyCustomer() {
                     const isPositive = transaction.points > 0;
 
                     return (
-                      <div key={transaction.id} className="p-4 hover:bg-gray-50 transition-colors">
+                      <div
+                        key={transaction.id}
+                        className="p-4 hover:bg-gray-50 transition-colors"
+                      >
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-3">
                             <div
                               className={`p-2 rounded-full ${
-                                isEarn ? "bg-green-100 text-green-600" : "bg-purple-100 text-purple-600"
+                                isEarn
+                                  ? "bg-green-100 text-green-600"
+                                  : "bg-purple-100 text-purple-600"
                               }`}
                             >
-                              {isEarn ? <TrendingUp className="h-5 w-5" /> : <Gift className="h-5 w-5" />}
+                              {isEarn ? (
+                                <TrendingUp className="h-5 w-5" />
+                              ) : (
+                                <Gift className="h-5 w-5" />
+                              )}
                             </div>
                             <div>
-                              <p className="font-medium">{transaction.reason}</p>
+                              <p className="font-medium">
+                                {transaction.reason}
+                              </p>
                               <p className="text-sm text-gray-500">
-                                {format(new Date(transaction.createdAt), "d. MMM yyyy 'kl.' HH:mm", { locale: nb })}
+                                {format(
+                                  new Date(transaction.createdAt),
+                                  "d. MMM yyyy 'kl.' HH:mm",
+                                  { locale: nb }
+                                )}
                               </p>
                             </div>
                           </div>
-                          <div className={`text-lg font-semibold ${isPositive ? "text-green-600" : "text-red-600"}`}>
+                          <div
+                            className={`text-lg font-semibold ${isPositive ? "text-green-600" : "text-red-600"}`}
+                          >
                             {isPositive ? "+" : ""}
                             {transaction.points}
                           </div>
@@ -237,13 +296,17 @@ export default function LoyaltyCustomer() {
         {/* Redemptions Tab */}
         <TabsContent value="redemptions">
           {redemptionsLoading ? (
-            <div className="text-center py-12 text-gray-500">Laster kupongkoder...</div>
+            <div className="text-center py-12 text-gray-500">
+              Laster kupongkoder...
+            </div>
           ) : redemptions.length === 0 ? (
             <Card>
               <CardContent className="text-center py-12">
                 <Sparkles className="h-16 w-16 mx-auto mb-4 text-gray-400" />
                 <p className="text-gray-600">Du har ingen aktive kupongkoder</p>
-                <p className="text-sm text-gray-500 mt-2">Løs inn belønninger for å få kupongkoder</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  Løs inn belønninger for å få kupongkoder
+                </p>
               </CardContent>
             </Card>
           ) : (
@@ -256,12 +319,19 @@ export default function LoyaltyCustomer() {
                     : `${redemption.discountValue} kr rabatt`;
 
                 return (
-                  <Card key={redemption.id} className={isExpired ? "opacity-60" : ""}>
+                  <Card
+                    key={redemption.id}
+                    className={isExpired ? "opacity-60" : ""}
+                  >
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div>
-                          <CardTitle className="text-lg">{redemption.rewardName}</CardTitle>
-                          <CardDescription>{redemption.rewardDescription}</CardDescription>
+                          <CardTitle className="text-lg">
+                            {redemption.rewardName}
+                          </CardTitle>
+                          <CardDescription>
+                            {redemption.rewardDescription}
+                          </CardDescription>
                         </div>
                         <Badge variant={isExpired ? "destructive" : "default"}>
                           {isExpired ? "Utløpt" : "Aktiv"}
@@ -271,20 +341,28 @@ export default function LoyaltyCustomer() {
                     <CardContent>
                       <div className="space-y-3">
                         <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-md p-4">
-                          <p className="text-xs text-gray-600 mb-1">Kupongkode</p>
+                          <p className="text-xs text-gray-600 mb-1">
+                            Kupongkode
+                          </p>
                           <p className="text-2xl font-mono font-bold text-purple-600 tracking-wider">
                             {redemption.code}
                           </p>
                         </div>
 
                         <div className="bg-purple-50 border border-purple-200 rounded-md p-3 text-center">
-                          <p className="text-xl font-bold text-purple-600">{discountText}</p>
+                          <p className="text-xl font-bold text-purple-600">
+                            {discountText}
+                          </p>
                         </div>
 
                         <div className="text-sm text-gray-600">
                           <p>
                             <strong>Utløper:</strong>{" "}
-                            {format(new Date(redemption.expiresAt), "d. MMM yyyy", { locale: nb })}
+                            {format(
+                              new Date(redemption.expiresAt),
+                              "d. MMM yyyy",
+                              { locale: nb }
+                            )}
                           </p>
                           <p className="mt-1 text-xs text-gray-500">
                             Vis denne koden til personalet når du betaler
@@ -314,30 +392,45 @@ export default function LoyaltyCustomer() {
             <div className="space-y-4 py-4">
               <div className="bg-gray-50 rounded-lg p-4">
                 <h3 className="font-semibold mb-2">{selectedReward.name}</h3>
-                <p className="text-sm text-gray-600 mb-3">{selectedReward.description}</p>
+                <p className="text-sm text-gray-600 mb-3">
+                  {selectedReward.description}
+                </p>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Kostnad:</span>
-                  <Badge variant="secondary">{selectedReward.pointsCost} poeng</Badge>
+                  <Badge variant="secondary">
+                    {selectedReward.pointsCost} poeng
+                  </Badge>
                 </div>
                 <div className="flex items-center justify-between mt-2">
-                  <span className="text-sm text-gray-600">Dine poeng etter:</span>
-                  <span className="font-semibold">{currentPoints - selectedReward.pointsCost} poeng</span>
+                  <span className="text-sm text-gray-600">
+                    Dine poeng etter:
+                  </span>
+                  <span className="font-semibold">
+                    {currentPoints - selectedReward.pointsCost} poeng
+                  </span>
                 </div>
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
                 <p className="text-sm text-blue-800">
-                  Du vil motta en unik kupongkode som kan brukes i {selectedReward.validityDays} dager.
+                  Du vil motta en unik kupongkode som kan brukes i{" "}
+                  {selectedReward.validityDays} dager.
                 </p>
               </div>
             </div>
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRedeemDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setRedeemDialogOpen(false)}
+            >
               Avbryt
             </Button>
-            <Button onClick={handleRedeemConfirm} disabled={redeemMutation.isPending}>
+            <Button
+              onClick={handleRedeemConfirm}
+              disabled={redeemMutation.isPending}
+            >
               {redeemMutation.isPending ? "Løser inn..." : "Bekreft innløsning"}
             </Button>
           </DialogFooter>

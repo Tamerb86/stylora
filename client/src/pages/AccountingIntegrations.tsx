@@ -12,17 +12,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { 
-  Building2, 
-  CheckCircle, 
-  ExternalLink, 
-  Settings, 
+import {
+  Building2,
+  CheckCircle,
+  ExternalLink,
+  Settings,
   Zap,
   AlertCircle,
   ArrowRight,
   FileText,
   RefreshCw,
-  Shield
+  Shield,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -42,7 +42,8 @@ const accountingProviders: AccountingProvider[] = [
   {
     id: "unimicro",
     name: "Unimicro",
-    description: "Komplett regnskapssystem for små og mellomstore bedrifter. Automatisk synkronisering av kunder, fakturaer og betalinger.",
+    description:
+      "Komplett regnskapssystem for små og mellomstore bedrifter. Automatisk synkronisering av kunder, fakturaer og betalinger.",
     logo: "🏢",
     status: "available",
     features: [
@@ -58,7 +59,8 @@ const accountingProviders: AccountingProvider[] = [
   {
     id: "fiken",
     name: "Fiken",
-    description: "Norges mest populære regnskapsprogram for små bedrifter. Enkelt og brukervennlig med automatisk bokføring.",
+    description:
+      "Norges mest populære regnskapsprogram for små bedrifter. Enkelt og brukervennlig med automatisk bokføring.",
     logo: "📊",
     status: "available",
     features: [
@@ -74,7 +76,8 @@ const accountingProviders: AccountingProvider[] = [
   {
     id: "visma",
     name: "Visma eAccounting",
-    description: "Skybasert regnskapsprogram fra Visma. Perfekt for bedrifter som ønsker fleksibilitet og mobilitet.",
+    description:
+      "Skybasert regnskapsprogram fra Visma. Perfekt for bedrifter som ønsker fleksibilitet og mobilitet.",
     logo: "💼",
     status: "coming_soon",
     features: [
@@ -88,21 +91,18 @@ const accountingProviders: AccountingProvider[] = [
   {
     id: "tripletex",
     name: "Tripletex",
-    description: "Komplett ERP-system med regnskap, prosjektstyring og timeføring. Ideelt for voksende bedrifter.",
+    description:
+      "Komplett ERP-system med regnskap, prosjektstyring og timeføring. Ideelt for voksende bedrifter.",
     logo: "📈",
     status: "coming_soon",
-    features: [
-      "Prosjektstyring",
-      "Timeføring",
-      "Fakturering",
-      "Rapportering",
-    ],
+    features: ["Prosjektstyring", "Timeføring", "Fakturering", "Rapportering"],
     website: "https://tripletex.no",
   },
   {
     id: "dnb",
     name: "DNB Regnskap",
-    description: "Regnskapsløsning fra DNB med direkte bankintegrasjon. Sømløs kobling til din DNB-konto.",
+    description:
+      "Regnskapsløsning fra DNB med direkte bankintegrasjon. Sømløs kobling til din DNB-konto.",
     logo: "🏦",
     status: "coming_soon",
     features: [
@@ -116,7 +116,8 @@ const accountingProviders: AccountingProvider[] = [
   {
     id: "sparebank1",
     name: "SpareBank 1 Regnskap",
-    description: "Regnskapsprogram fra SpareBank 1 med enkel bankkobling og automatisk avstemming.",
+    description:
+      "Regnskapsprogram fra SpareBank 1 med enkel bankkobling og automatisk avstemming.",
     logo: "🔴",
     status: "coming_soon",
     features: [
@@ -130,7 +131,8 @@ const accountingProviders: AccountingProvider[] = [
   {
     id: "poweroffice",
     name: "PowerOffice Go",
-    description: "Moderne skybasert regnskapssystem med fokus på automatisering og brukervennlighet.",
+    description:
+      "Moderne skybasert regnskapssystem med fokus på automatisering og brukervennlighet.",
     logo: "⚡",
     status: "coming_soon",
     features: [
@@ -144,7 +146,8 @@ const accountingProviders: AccountingProvider[] = [
   {
     id: "24sevenoffice",
     name: "24SevenOffice",
-    description: "Alt-i-ett forretningssystem med regnskap, CRM og prosjektstyring i én løsning.",
+    description:
+      "Alt-i-ett forretningssystem med regnskap, CRM og prosjektstyring i én løsning.",
     logo: "🌐",
     status: "coming_soon",
     features: [
@@ -158,12 +161,19 @@ const accountingProviders: AccountingProvider[] = [
 ];
 
 export default function AccountingIntegrations() {
-  const [selectedProvider, setSelectedProvider] = useState<AccountingProvider | null>(null);
+  const [selectedProvider, setSelectedProvider] =
+    useState<AccountingProvider | null>(null);
   const [infoDialog, setInfoDialog] = useState(false);
 
-  const connectedProviders = accountingProviders.filter(p => p.status === "connected");
-  const availableProviders = accountingProviders.filter(p => p.status === "available");
-  const comingSoonProviders = accountingProviders.filter(p => p.status === "coming_soon");
+  const connectedProviders = accountingProviders.filter(
+    p => p.status === "connected"
+  );
+  const availableProviders = accountingProviders.filter(
+    p => p.status === "available"
+  );
+  const comingSoonProviders = accountingProviders.filter(
+    p => p.status === "coming_soon"
+  );
 
   const handleConnect = (provider: AccountingProvider) => {
     if (provider.settingsPath) {
@@ -175,7 +185,9 @@ export default function AccountingIntegrations() {
   };
 
   const handleRequestIntegration = () => {
-    toast.success("Forespørsel sendt! Vi vil kontakte deg når integrasjonen er klar.");
+    toast.success(
+      "Forespørsel sendt! Vi vil kontakte deg når integrasjonen er klar."
+    );
     setInfoDialog(false);
   };
 
@@ -194,7 +206,8 @@ export default function AccountingIntegrations() {
               Regnskapsintegrasjoner
             </h1>
             <p className="text-muted-foreground mt-2">
-              Koble Stylora til ditt regnskapsprogram for automatisk synkronisering av data
+              Koble Stylora til ditt regnskapsprogram for automatisk
+              synkronisering av data
             </p>
           </div>
         </div>
@@ -206,7 +219,9 @@ export default function AccountingIntegrations() {
               <Zap className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-lg">Hvorfor koble til regnskap?</h3>
+              <h3 className="font-semibold text-lg">
+                Hvorfor koble til regnskap?
+              </h3>
               <div className="grid gap-3 mt-3 md:grid-cols-3">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-green-500" />
@@ -245,14 +260,19 @@ export default function AccountingIntegrations() {
               Tilkoblede systemer
             </h2>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {connectedProviders.map((provider) => (
-                <Card key={provider.id} className="p-6 border-0 shadow-lg border-l-4 border-l-green-500">
+              {connectedProviders.map(provider => (
+                <Card
+                  key={provider.id}
+                  className="p-6 border-0 shadow-lg border-l-4 border-l-green-500"
+                >
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <span className="text-3xl">{provider.logo}</span>
                       <div>
                         <h3 className="font-semibold">{provider.name}</h3>
-                        <Badge variant="default" className="bg-green-500 mt-1">Tilkoblet</Badge>
+                        <Badge variant="default" className="bg-green-500 mt-1">
+                          Tilkoblet
+                        </Badge>
                       </div>
                     </div>
                     <Link href={provider.settingsPath || "#"}>
@@ -275,19 +295,29 @@ export default function AccountingIntegrations() {
             Tilgjengelige integrasjoner
           </h2>
           <div className="grid gap-4 md:grid-cols-2">
-            {availableProviders.map((provider) => (
-              <Card key={provider.id} className="p-6 border-0 shadow-lg hover:shadow-xl transition-shadow">
+            {availableProviders.map(provider => (
+              <Card
+                key={provider.id}
+                className="p-6 border-0 shadow-lg hover:shadow-xl transition-shadow"
+              >
                 <div className="flex items-start gap-4">
                   <span className="text-4xl">{provider.logo}</span>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold text-lg">{provider.name}</h3>
                       {provider.popular && (
-                        <Badge variant="secondary" className="bg-orange-100 text-orange-700">Populær</Badge>
+                        <Badge
+                          variant="secondary"
+                          className="bg-orange-100 text-orange-700"
+                        >
+                          Populær
+                        </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">{provider.description}</p>
-                    
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {provider.description}
+                    </p>
+
                     <div className="flex flex-wrap gap-2 mt-3">
                       {provider.features.slice(0, 3).map((feature, idx) => (
                         <Badge key={idx} variant="outline" className="text-xs">
@@ -297,14 +327,18 @@ export default function AccountingIntegrations() {
                     </div>
 
                     <div className="flex items-center gap-2 mt-4">
-                      <Button 
+                      <Button
                         onClick={() => handleConnect(provider)}
                         className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                       >
                         Koble til
                         <ArrowRight className="h-4 w-4 ml-1" />
                       </Button>
-                      <a href={provider.website} target="_blank" rel="noopener noreferrer">
+                      <a
+                        href={provider.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         <Button variant="outline" size="icon">
                           <ExternalLink className="h-4 w-4" />
                         </Button>
@@ -324,8 +358,11 @@ export default function AccountingIntegrations() {
             Kommer snart
           </h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {comingSoonProviders.map((provider) => (
-              <Card key={provider.id} className="p-6 border-0 shadow-lg opacity-80">
+            {comingSoonProviders.map(provider => (
+              <Card
+                key={provider.id}
+                className="p-6 border-0 shadow-lg opacity-80"
+              >
                 <div className="flex items-start gap-4">
                   <span className="text-3xl grayscale">{provider.logo}</span>
                   <div className="flex-1">
@@ -333,11 +370,13 @@ export default function AccountingIntegrations() {
                       <h3 className="font-semibold">{provider.name}</h3>
                       <Badge variant="secondary">Kommer snart</Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{provider.description}</p>
-                    
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                      {provider.description}
+                    </p>
+
                     <div className="flex items-center gap-2 mt-3">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => {
                           setSelectedProvider(provider);
@@ -346,7 +385,11 @@ export default function AccountingIntegrations() {
                       >
                         Gi meg beskjed
                       </Button>
-                      <a href={provider.website} target="_blank" rel="noopener noreferrer">
+                      <a
+                        href={provider.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         <Button variant="ghost" size="sm">
                           <ExternalLink className="h-4 w-4" />
                         </Button>
@@ -368,9 +411,9 @@ export default function AccountingIntegrations() {
             <div>
               <h3 className="font-semibold text-lg">Sikker dataoverføring</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Alle integrasjoner bruker sikre API-tilkoblinger med kryptert dataoverføring. 
-                Dine data lagres aldri hos tredjeparter uten ditt samtykke, og du kan når som helst 
-                koble fra en integrasjon.
+                Alle integrasjoner bruker sikre API-tilkoblinger med kryptert
+                dataoverføring. Dine data lagres aldri hos tredjeparter uten
+                ditt samtykke, og du kan når som helst koble fra en integrasjon.
               </p>
             </div>
           </div>
@@ -386,10 +429,9 @@ export default function AccountingIntegrations() {
               {selectedProvider?.name}
             </DialogTitle>
             <DialogDescription>
-              {selectedProvider?.status === "coming_soon" 
+              {selectedProvider?.status === "coming_soon"
                 ? "Denne integrasjonen er under utvikling. Registrer din interesse for å bli varslet når den er klar."
-                : selectedProvider?.description
-              }
+                : selectedProvider?.description}
             </DialogDescription>
           </DialogHeader>
 
@@ -418,7 +460,11 @@ export default function AccountingIntegrations() {
                 Varsle meg når klar
               </Button>
             ) : (
-              <a href={selectedProvider?.website} target="_blank" rel="noopener noreferrer">
+              <a
+                href={selectedProvider?.website}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Button>
                   Besøk {selectedProvider?.name}
                   <ExternalLink className="h-4 w-4 ml-1" />

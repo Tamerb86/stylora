@@ -5,7 +5,7 @@ import { eq, and, or } from "drizzle-orm";
 
 /**
  * Phase 31: Walk-in Queue Priority System Tests
- * 
+ *
  * Tests the enhanced walk-in queue system with:
  * - Priority levels (normal, urgent, vip)
  * - Dynamic wait time calculation
@@ -241,19 +241,23 @@ describe("Walk-in Queue Priority System", () => {
 
       // Verify we have at least 3 customers (may include customers from previous tests)
       expect(queue.length).toBeGreaterThanOrEqual(3);
-      
+
       // Verify sorted order is correct - VIP comes first, then urgent, then normal
       expect(sortedQueue[0].priority).toBe("vip");
-      
+
       // Find our test customers in the sorted queue
       const testVip = sortedQueue.find(c => c.customerName === "VIP Priority");
-      const testUrgent = sortedQueue.find(c => c.customerName === "Urgent Priority");
-      const testNormal = sortedQueue.find(c => c.customerName === "Normal Priority");
-      
+      const testUrgent = sortedQueue.find(
+        c => c.customerName === "Urgent Priority"
+      );
+      const testNormal = sortedQueue.find(
+        c => c.customerName === "Normal Priority"
+      );
+
       expect(testVip).toBeDefined();
       expect(testUrgent).toBeDefined();
       expect(testNormal).toBeDefined();
-      
+
       // Verify priorities are correct
       expect(testVip?.priority).toBe("vip");
       expect(testUrgent?.priority).toBe("urgent");
@@ -383,13 +387,11 @@ describe("Walk-in Queue Priority System", () => {
 
       const busyBarberIds = new Set(
         busyBarbers
-          .map((b) => b.employeeId)
+          .map(b => b.employeeId)
           .filter((id): id is number => id !== null)
       );
 
-      const availableBarbers = allBarbers.filter(
-        (b) => !busyBarberIds.has(b.id)
-      );
+      const availableBarbers = allBarbers.filter(b => !busyBarberIds.has(b.id));
 
       // We have 1 test barber and no one is serving
       expect(allBarbers.length).toBeGreaterThanOrEqual(1);

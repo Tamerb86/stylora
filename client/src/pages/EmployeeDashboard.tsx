@@ -3,12 +3,36 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import DashboardLayout from "@/components/DashboardLayout";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Calendar as CalendarIcon, Clock, User, Scissors, Phone, Mail, CheckCircle, XCircle, AlertCircle, LogOut } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  Clock,
+  User,
+  Scissors,
+  Phone,
+  Mail,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  LogOut,
+} from "lucide-react";
 import { getLoginUrl } from "@/const";
 
 export default function EmployeeDashboard() {
@@ -21,12 +45,18 @@ export default function EmployeeDashboard() {
 
 function EmployeeDashboardContent() {
   const { user, logout, loading } = useAuth();
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
   const [noteText, setNoteText] = useState("");
   const [showNoteDialog, setShowNoteDialog] = useState(false);
 
-  const { data: appointments, isLoading, refetch } = trpc.employee.myAppointments.useQuery({
+  const {
+    data: appointments,
+    isLoading,
+    refetch,
+  } = trpc.employee.myAppointments.useQuery({
     date: selectedDate,
   });
 
@@ -35,7 +65,7 @@ function EmployeeDashboardContent() {
       toast.success("Status oppdatert");
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Feil: ${error.message}`);
     },
   });
@@ -48,7 +78,7 @@ function EmployeeDashboardContent() {
       setSelectedAppointment(null);
       refetch();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Feil: ${error.message}`);
     },
   });
@@ -78,13 +108,13 @@ function EmployeeDashboardContent() {
         <Card className="w-full max-w-md mx-4">
           <CardHeader>
             <CardTitle>Logg inn</CardTitle>
-            <CardDescription>Du må logge inn for å se dine avtaler</CardDescription>
+            <CardDescription>
+              Du må logge inn for å se dine avtaler
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <a href={getLoginUrl()}>
-              <Button className="w-full">
-                Logg inn
-              </Button>
+              <Button className="w-full">Logg inn</Button>
             </a>
           </CardContent>
         </Card>
@@ -95,16 +125,41 @@ function EmployeeDashboardContent() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "confirmed":
-        return <Badge className="bg-blue-500"><CheckCircle className="w-3 h-3 mr-1" />Bekreftet</Badge>;
+        return (
+          <Badge className="bg-blue-500">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Bekreftet
+          </Badge>
+        );
       case "completed":
-        return <Badge className="bg-green-500"><CheckCircle className="w-3 h-3 mr-1" />Fullført</Badge>;
+        return (
+          <Badge className="bg-green-500">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Fullført
+          </Badge>
+        );
       case "canceled":
-        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Avlyst</Badge>;
+        return (
+          <Badge variant="destructive">
+            <XCircle className="w-3 h-3 mr-1" />
+            Avlyst
+          </Badge>
+        );
       case "no_show":
-        return <Badge variant="destructive"><AlertCircle className="w-3 h-3 mr-1" />Møtte ikke</Badge>;
+        return (
+          <Badge variant="destructive">
+            <AlertCircle className="w-3 h-3 mr-1" />
+            Møtte ikke
+          </Badge>
+        );
       case "pending":
       default:
-        return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" />Venter</Badge>;
+        return (
+          <Badge variant="secondary">
+            <Clock className="w-3 h-3 mr-1" />
+            Venter
+          </Badge>
+        );
     }
   };
 
@@ -124,17 +179,17 @@ function EmployeeDashboardContent() {
   const goToPreviousDay = () => {
     const date = new Date(selectedDate);
     date.setDate(date.getDate() - 1);
-    setSelectedDate(date.toISOString().split('T')[0]);
+    setSelectedDate(date.toISOString().split("T")[0]);
   };
 
   const goToNextDay = () => {
     const date = new Date(selectedDate);
     date.setDate(date.getDate() + 1);
-    setSelectedDate(date.toISOString().split('T')[0]);
+    setSelectedDate(date.toISOString().split("T")[0]);
   };
 
   const goToToday = () => {
-    setSelectedDate(new Date().toISOString().split('T')[0]);
+    setSelectedDate(new Date().toISOString().split("T")[0]);
   };
 
   return (
@@ -162,8 +217,15 @@ function EmployeeDashboardContent() {
                 ← Forrige dag
               </Button>
               <div className="text-center flex-1">
-                <p className="text-lg font-semibold">{formatDate(selectedDate)}</p>
-                <Button variant="link" size="sm" onClick={goToToday} className="text-xs">
+                <p className="text-lg font-semibold">
+                  {formatDate(selectedDate)}
+                </p>
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={goToToday}
+                  className="text-xs"
+                >
                   Gå til i dag
                 </Button>
               </div>
@@ -185,14 +247,21 @@ function EmployeeDashboardContent() {
           <Card>
             <CardContent className="py-12 text-center">
               <CalendarIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-              <p className="text-lg font-medium mb-2">Ingen avtaler denne dagen</p>
-              <p className="text-sm text-muted-foreground">Du har ingen planlagte avtaler for {formatDate(selectedDate)}</p>
+              <p className="text-lg font-medium mb-2">
+                Ingen avtaler denne dagen
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Du har ingen planlagte avtaler for {formatDate(selectedDate)}
+              </p>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-4">
             {appointments.map((appointment: any) => (
-              <Card key={appointment.id} className="hover:shadow-md transition-shadow">
+              <Card
+                key={appointment.id}
+                className="hover:shadow-md transition-shadow"
+              >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
@@ -201,10 +270,13 @@ function EmployeeDashboardContent() {
                       </div>
                       <div>
                         <CardTitle className="text-xl">
-                          {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
+                          {formatTime(appointment.startTime)} -{" "}
+                          {formatTime(appointment.endTime)}
                         </CardTitle>
                         <CardDescription className="mt-1">
-                          {appointment.services?.map((s: any) => s?.name).join(", ") || "Ingen tjeneste"}
+                          {appointment.services
+                            ?.map((s: any) => s?.name)
+                            .join(", ") || "Ingen tjeneste"}
                         </CardDescription>
                       </div>
                     </div>
@@ -216,12 +288,18 @@ function EmployeeDashboardContent() {
                   <div className="bg-muted/50 p-4 rounded-lg mb-4">
                     <div className="flex items-center gap-2 mb-2">
                       <User className="w-4 h-4 text-muted-foreground" />
-                      <span className="font-medium">{appointment.customer?.firstName} {appointment.customer?.lastName}</span>
+                      <span className="font-medium">
+                        {appointment.customer?.firstName}{" "}
+                        {appointment.customer?.lastName}
+                      </span>
                     </div>
                     {appointment.customer?.phone && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                         <Phone className="w-4 h-4" />
-                        <a href={`tel:${appointment.customer.phone}`} className="hover:text-primary">
+                        <a
+                          href={`tel:${appointment.customer.phone}`}
+                          className="hover:text-primary"
+                        >
                           {appointment.customer.phone}
                         </a>
                       </div>
@@ -229,7 +307,10 @@ function EmployeeDashboardContent() {
                     {appointment.customer?.email && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Mail className="w-4 h-4" />
-                        <a href={`mailto:${appointment.customer.email}`} className="hover:text-primary">
+                        <a
+                          href={`mailto:${appointment.customer.email}`}
+                          className="hover:text-primary"
+                        >
                           {appointment.customer.email}
                         </a>
                       </div>
@@ -257,7 +338,9 @@ function EmployeeDashboardContent() {
                   {appointment.notes && (
                     <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                       <p className="text-sm font-medium mb-1">Notater:</p>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">{appointment.notes}</p>
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        {appointment.notes}
+                      </p>
                     </div>
                   )}
 
@@ -266,19 +349,30 @@ function EmployeeDashboardContent() {
                     {appointment.status === "pending" && (
                       <Button
                         size="sm"
-                        onClick={() => updateStatus.mutate({ appointmentId: appointment.id, status: "confirmed" })}
+                        onClick={() =>
+                          updateStatus.mutate({
+                            appointmentId: appointment.id,
+                            status: "confirmed",
+                          })
+                        }
                         disabled={updateStatus.isPending}
                       >
                         <CheckCircle className="w-4 h-4 mr-1" />
                         Bekreft
                       </Button>
                     )}
-                    {(appointment.status === "pending" || appointment.status === "confirmed") && (
+                    {(appointment.status === "pending" ||
+                      appointment.status === "confirmed") && (
                       <Button
                         size="sm"
                         variant="default"
                         className="bg-green-600 hover:bg-green-700"
-                        onClick={() => updateStatus.mutate({ appointmentId: appointment.id, status: "completed" })}
+                        onClick={() =>
+                          updateStatus.mutate({
+                            appointmentId: appointment.id,
+                            status: "completed",
+                          })
+                        }
                         disabled={updateStatus.isPending}
                       >
                         <CheckCircle className="w-4 h-4 mr-1" />
@@ -295,17 +389,23 @@ function EmployeeDashboardContent() {
                     >
                       Legg til notat
                     </Button>
-                    {appointment.status !== "canceled" && appointment.status !== "completed" && (
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => updateStatus.mutate({ appointmentId: appointment.id, status: "canceled" })}
-                        disabled={updateStatus.isPending}
-                      >
-                        <XCircle className="w-4 h-4 mr-1" />
-                        Avlys
-                      </Button>
-                    )}
+                    {appointment.status !== "canceled" &&
+                      appointment.status !== "completed" && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() =>
+                            updateStatus.mutate({
+                              appointmentId: appointment.id,
+                              status: "canceled",
+                            })
+                          }
+                          disabled={updateStatus.isPending}
+                        >
+                          <XCircle className="w-4 h-4 mr-1" />
+                          Avlys
+                        </Button>
+                      )}
                   </div>
                 </CardContent>
               </Card>
@@ -325,7 +425,7 @@ function EmployeeDashboardContent() {
           </DialogHeader>
           <Textarea
             value={noteText}
-            onChange={(e) => setNoteText(e.target.value)}
+            onChange={e => setNoteText(e.target.value)}
             placeholder="Skriv notat her..."
             rows={4}
           />

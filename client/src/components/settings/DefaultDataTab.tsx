@@ -1,20 +1,26 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { 
-  Scissors, 
-  Package, 
-  Download, 
-  CheckCircle2, 
+import {
+  Scissors,
+  Package,
+  Download,
+  CheckCircle2,
   AlertCircle,
   Loader2,
   ChevronDown,
   ChevronUp,
-  Sparkles
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
@@ -41,25 +47,27 @@ export function DefaultDataTab() {
   const utils = trpc.useUtils();
 
   // Get preview data
-  const { data: preview, isLoading: previewLoading } = trpc.salonSettings.getDefaultDataPreview.useQuery();
+  const { data: preview, isLoading: previewLoading } =
+    trpc.salonSettings.getDefaultDataPreview.useQuery();
 
   // Load default data mutation
-  const loadDefaultDataMutation = trpc.salonSettings.loadDefaultData.useMutation({
-    onSuccess: (result) => {
-      toast.success(result.message, {
-        description: `Tjenester: ${result.stats.servicesAdded}, Produkter: ${result.stats.productsAdded}`,
-        duration: 5000,
-      });
-      // Invalidate services and products queries
-      utils.services.list.invalidate();
-      utils.products.list.invalidate();
-    },
-    onError: (error) => {
-      toast.error("Kunne ikke laste inn standarddata", {
-        description: error.message,
-      });
-    },
-  });
+  const loadDefaultDataMutation =
+    trpc.salonSettings.loadDefaultData.useMutation({
+      onSuccess: result => {
+        toast.success(result.message, {
+          description: `Tjenester: ${result.stats.servicesAdded}, Produkter: ${result.stats.productsAdded}`,
+          duration: 5000,
+        });
+        // Invalidate services and products queries
+        utils.services.list.invalidate();
+        utils.products.list.invalidate();
+      },
+      onError: error => {
+        toast.error("Kunne ikke laste inn standarddata", {
+          description: error.message,
+        });
+      },
+    });
 
   const handleLoadDefaultData = () => {
     if (!loadServices && !loadProducts) {
@@ -93,7 +101,8 @@ export function DefaultDataTab() {
             <div>
               <CardTitle className="text-xl">Kom raskt i gang!</CardTitle>
               <CardDescription className="text-base">
-                Last inn ferdiglagde tjenester og produkter som er vanlige i frisør- og barbersalonger
+                Last inn ferdiglagde tjenester og produkter som er vanlige i
+                frisør- og barbersalonger
               </CardDescription>
             </div>
           </div>
@@ -103,7 +112,9 @@ export function DefaultDataTab() {
             <div className="flex items-center gap-3 p-3 bg-white/60 dark:bg-white/5 rounded-lg">
               <Scissors className="h-5 w-5 text-blue-600" />
               <div>
-                <p className="font-medium">{preview?.summary.services || 0} Tjenester</p>
+                <p className="font-medium">
+                  {preview?.summary.services || 0} Tjenester
+                </p>
                 <p className="text-sm text-muted-foreground">
                   {preview?.summary.serviceCategories || 0} kategorier
                 </p>
@@ -112,7 +123,9 @@ export function DefaultDataTab() {
             <div className="flex items-center gap-3 p-3 bg-white/60 dark:bg-white/5 rounded-lg">
               <Package className="h-5 w-5 text-orange-600" />
               <div>
-                <p className="font-medium">{preview?.summary.products || 0} Produkter</p>
+                <p className="font-medium">
+                  {preview?.summary.products || 0} Produkter
+                </p>
                 <p className="text-sm text-muted-foreground">
                   {preview?.summary.productCategories || 0} kategorier
                 </p>
@@ -136,7 +149,7 @@ export function DefaultDataTab() {
             <Checkbox
               id="loadServices"
               checked={loadServices}
-              onCheckedChange={(checked) => setLoadServices(checked as boolean)}
+              onCheckedChange={checked => setLoadServices(checked as boolean)}
             />
             <div className="flex-1">
               <Label
@@ -147,10 +160,11 @@ export function DefaultDataTab() {
                 Tjenester
               </Label>
               <p className="text-sm text-muted-foreground mt-1">
-                Herreklipp, dameklipp, skjeggpleie, farging, behandlinger, styling og mer
+                Herreklipp, dameklipp, skjeggpleie, farging, behandlinger,
+                styling og mer
               </p>
               <div className="flex flex-wrap gap-2 mt-2">
-                {preview?.serviceCategories.map((cat) => (
+                {preview?.serviceCategories.map(cat => (
                   <Badge key={cat.name} variant="secondary" className="text-xs">
                     {cat.name}
                   </Badge>
@@ -164,7 +178,7 @@ export function DefaultDataTab() {
             <Checkbox
               id="loadProducts"
               checked={loadProducts}
-              onCheckedChange={(checked) => setLoadProducts(checked as boolean)}
+              onCheckedChange={checked => setLoadProducts(checked as boolean)}
             />
             <div className="flex-1">
               <Label
@@ -178,7 +192,7 @@ export function DefaultDataTab() {
                 Stylingprodukter, hårpleie, skjeggpleie, verktøy og gavekort
               </p>
               <div className="flex flex-wrap gap-2 mt-2">
-                {preview?.productCategories.map((cat) => (
+                {preview?.productCategories.map(cat => (
                   <Badge key={cat.name} variant="secondary" className="text-xs">
                     {cat.name}
                   </Badge>
@@ -197,7 +211,10 @@ export function DefaultDataTab() {
             </div>
             <Button
               onClick={handleLoadDefaultData}
-              disabled={loadDefaultDataMutation.isPending || (!loadServices && !loadProducts)}
+              disabled={
+                loadDefaultDataMutation.isPending ||
+                (!loadServices && !loadProducts)
+              }
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
             >
               {loadDefaultDataMutation.isPending ? (
@@ -225,9 +242,12 @@ export function DefaultDataTab() {
                 <div className="flex items-center gap-3">
                   <Scissors className="h-5 w-5 text-blue-600" />
                   <div>
-                    <CardTitle className="text-lg">Forhåndsvisning av tjenester</CardTitle>
+                    <CardTitle className="text-lg">
+                      Forhåndsvisning av tjenester
+                    </CardTitle>
                     <CardDescription>
-                      Se alle {preview?.summary.services || 0} tjenester som vil bli lagt til
+                      Se alle {preview?.summary.services || 0} tjenester som vil
+                      bli lagt til
                     </CardDescription>
                   </div>
                 </div>
@@ -268,7 +288,9 @@ export function DefaultDataTab() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline">{service.categoryName}</Badge>
+                            <Badge variant="outline">
+                              {service.categoryName}
+                            </Badge>
                           </TableCell>
                           <TableCell className="text-right">
                             {service.durationMinutes} min
@@ -283,7 +305,8 @@ export function DefaultDataTab() {
                 </div>
               )}
               <p className="text-sm text-muted-foreground mt-3 text-center">
-                Totalt {preview?.summary.services || 0} tjenester i {preview?.summary.serviceCategories || 0} kategorier
+                Totalt {preview?.summary.services || 0} tjenester i{" "}
+                {preview?.summary.serviceCategories || 0} kategorier
               </p>
             </CardContent>
           </CollapsibleContent>
@@ -299,9 +322,12 @@ export function DefaultDataTab() {
                 <div className="flex items-center gap-3">
                   <Package className="h-5 w-5 text-orange-600" />
                   <div>
-                    <CardTitle className="text-lg">Forhåndsvisning av produkter</CardTitle>
+                    <CardTitle className="text-lg">
+                      Forhåndsvisning av produkter
+                    </CardTitle>
                     <CardDescription>
-                      Se alle {preview?.summary.products || 0} produkter som vil bli lagt til
+                      Se alle {preview?.summary.products || 0} produkter som vil
+                      bli lagt til
                     </CardDescription>
                   </div>
                 </div>
@@ -326,8 +352,12 @@ export function DefaultDataTab() {
                       <TableRow>
                         <TableHead>Produkt</TableHead>
                         <TableHead>Kategori</TableHead>
-                        <TableHead className="text-right">Innkjøpspris</TableHead>
-                        <TableHead className="text-right">Utsalgspris</TableHead>
+                        <TableHead className="text-right">
+                          Innkjøpspris
+                        </TableHead>
+                        <TableHead className="text-right">
+                          Utsalgspris
+                        </TableHead>
                         <TableHead className="text-right">Lager</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -343,7 +373,9 @@ export function DefaultDataTab() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline">{product.categoryName}</Badge>
+                            <Badge variant="outline">
+                              {product.categoryName}
+                            </Badge>
                           </TableCell>
                           <TableCell className="text-right text-muted-foreground">
                             {formatPrice(product.costPrice)}
@@ -361,7 +393,8 @@ export function DefaultDataTab() {
                 </div>
               )}
               <p className="text-sm text-muted-foreground mt-3 text-center">
-                Totalt {preview?.summary.products || 0} produkter i {preview?.summary.productCategories || 0} kategorier
+                Totalt {preview?.summary.products || 0} produkter i{" "}
+                {preview?.summary.productCategories || 0} kategorier
               </p>
             </CardContent>
           </CollapsibleContent>

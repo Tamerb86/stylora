@@ -15,139 +15,149 @@ function generateVerificationToken(): string {
  * Send verification email to new tenant
  * Uses professional HTML template with Stylora branding
  */
-export async function sendVerificationEmail(tenantId: string, email: string): Promise<{ token: string; verificationUrl: string }> {
+export async function sendVerificationEmail(
+  tenantId: string,
+  email: string
+): Promise<{ token: string; verificationUrl: string }> {
   // Generate token
   const token = generateVerificationToken();
-  
+
   // Set expiration to 24 hours from now
   const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + 24);
-  
+
   // Store verification token in database
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   await db.insert(emailVerifications).values({
     tenantId,
     email,
     token,
     expiresAt,
   });
-  
+
   // Build verification URL
   const baseUrl = process.env.VITE_APP_URL || "http://localhost:3000";
   const verificationUrl = `${baseUrl}/verify-email?token=${token}`;
-  
+
   // Render professional email template
   const emailContent = renderVerificationEmail({
     email,
     verificationUrl,
   });
-  
+
   // Send email
   await sendEmail({
     to: email,
     subject: emailContent.subject,
     html: emailContent.html,
   });
-  
+
   // Also log for development
   console.log(`[Email] Verification email sent to: ${email}`);
   console.log(`[Email] Verification URL: ${verificationUrl}`);
-  
+
   return { token, verificationUrl };
 }
 
 /**
  * Verify email token and mark tenant as verified
  */
-export async function verifyEmailToken(token: string): Promise<{ success: boolean; message: string; tenantId?: string }> {
+export async function verifyEmailToken(
+  token: string
+): Promise<{ success: boolean; message: string; tenantId?: string }> {
   // Find verification record
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   const [verification] = await db
     .select()
     .from(emailVerifications)
     .where(eq(emailVerifications.token, token))
     .limit(1);
-  
+
   if (!verification) {
     return { success: false, message: "Ugyldig bekreftelseslenke" };
   }
-  
+
   // Check if already verified
   if (verification.verifiedAt) {
     return { success: false, message: "E-postadressen er allerede bekreftet" };
   }
-  
+
   // Check if expired
   if (new Date() > new Date(verification.expiresAt)) {
-    return { success: false, message: "Bekreftelseslenken har utløpt. Vennligst be om en ny." };
+    return {
+      success: false,
+      message: "Bekreftelseslenken har utløpt. Vennligst be om en ny.",
+    };
   }
-  
+
   // Mark as verified
   await db
     .update(emailVerifications)
     .set({ verifiedAt: new Date() })
     .where(eq(emailVerifications.id, verification.id));
-  
+
   // Update tenant
   await db
     .update(tenants)
-    .set({ 
+    .set({
       emailVerified: true,
-      emailVerifiedAt: new Date()
+      emailVerifiedAt: new Date(),
     })
     .where(eq(tenants.id, verification.tenantId));
-  
-  return { 
-    success: true, 
+
+  return {
+    success: true,
     message: "E-postadressen din er bekreftet!",
-    tenantId: verification.tenantId
+    tenantId: verification.tenantId,
   };
 }
 
 /**
  * Resend verification email
  */
-export async function resendVerificationEmail(tenantId: string): Promise<{ success: boolean; message: string }> {
+export async function resendVerificationEmail(
+  tenantId: string
+): Promise<{ success: boolean; message: string }> {
   // Get tenant
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  
+
   const [tenant] = await db
     .select()
     .from(tenants)
     .where(eq(tenants.id, tenantId))
     .limit(1);
-  
+
   if (!tenant) {
     return { success: false, message: "Fant ikke kontoen" };
   }
-  
+
   if (tenant.emailVerified) {
     return { success: false, message: "E-postadressen er allerede bekreftet" };
   }
-  
+
   if (!tenant.email) {
     return { success: false, message: "Ingen e-postadresse registrert" };
   }
-  
+
   // Delete old verification tokens for this tenant
   await db
     .delete(emailVerifications)
     .where(eq(emailVerifications.tenantId, tenantId));
-  
+
   // Send new verification email
   await sendVerificationEmail(tenantId, tenant.email);
-  
+
   return { success: true, message: "Bekreftelse-e-post sendt!" };
 }
 
 /**
  * Render professional verification email template with Stylora branding
- * 
+ *
  * Features:
  * - Blue to orange gradient matching Stylora brand
  * - Responsive design with inline CSS

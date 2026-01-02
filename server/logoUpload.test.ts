@@ -20,7 +20,8 @@ describe("Logo Upload Validation", () => {
 
   describe("uploadReceiptLogo validation", () => {
     it("should reject invalid file types", async () => {
-      const testImageBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+      const testImageBase64 =
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
 
       await expect(
         caller.salonSettings.uploadReceiptLogo({
@@ -46,7 +47,8 @@ describe("Logo Upload Validation", () => {
 
     it("should accept valid PNG image", async () => {
       // Small 1x1 PNG image (valid and under 2MB)
-      const testImageBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+      const testImageBase64 =
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
 
       // This will fail at DB level (tenant doesn't exist), but validation should pass
       try {
@@ -67,11 +69,14 @@ describe("Logo Upload Validation", () => {
     it("should include receiptLogoUrl field in branding response", async () => {
       try {
         const branding = await caller.salonSettings.getBranding();
-        
+
         // Should have receiptLogoUrl property
         expect(branding).toHaveProperty("receiptLogoUrl");
         // receiptLogoUrl can be null or a string
-        expect(branding.receiptLogoUrl === null || typeof branding.receiptLogoUrl === "string").toBe(true);
+        expect(
+          branding.receiptLogoUrl === null ||
+            typeof branding.receiptLogoUrl === "string"
+        ).toBe(true);
       } catch (error: any) {
         // If tenant doesn't exist, that's expected in test environment
         if (!error.message.includes("Database")) {

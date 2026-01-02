@@ -36,7 +36,7 @@ function getNextOccurrence(
   frequency: RecurrenceFrequency
 ): Date {
   const next = new Date(currentDate);
-  
+
   switch (frequency) {
     case "weekly":
       next.setDate(next.getDate() + 7);
@@ -48,7 +48,7 @@ function getNextOccurrence(
       next.setMonth(next.getMonth() + 1);
       break;
   }
-  
+
   return next;
 }
 
@@ -59,23 +59,23 @@ export function generateRecurrenceDates(pattern: RecurrencePattern): Date[] {
   const dates: Date[] = [];
   let currentDate = new Date(pattern.startDate);
   let count = 0;
-  
+
   // Maximum 100 occurrences to prevent infinite loops
   const maxIterations = pattern.maxOccurrences || 100;
-  
+
   while (count < maxIterations) {
     // Check if we've reached the end date
     if (pattern.endDate && currentDate > pattern.endDate) {
       break;
     }
-    
+
     dates.push(new Date(currentDate));
     count++;
-    
+
     // Get next occurrence
     currentDate = getNextOccurrence(currentDate, pattern.frequency);
   }
-  
+
   return dates;
 }
 
@@ -113,12 +113,12 @@ export async function createRecurringAppointments(
 
   // Create appointments for each date
   const appointmentIds: number[] = [];
-  
+
   for (const date of dates) {
     // Calculate start and end times
     const [hours, minutes] = data.pattern.preferredTime.split(":").map(Number);
     const startTime = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:00`;
-    
+
     const endMinutes = hours * 60 + minutes + data.duration;
     const endHours = Math.floor(endMinutes / 60);
     const endMins = endMinutes % 60;
@@ -183,7 +183,7 @@ export async function updateRecurringSeries(
 
   // Update all future appointments in the series
   const now = new Date();
-  
+
   await db
     .update(appointments)
     .set(updates)
@@ -215,7 +215,7 @@ export async function cancelRecurringSeries(
 
   // Cancel all future appointments
   const now = new Date();
-  
+
   await db
     .update(appointments)
     .set({

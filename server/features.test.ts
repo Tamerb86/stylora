@@ -43,7 +43,7 @@ describe("Products API", () => {
     const caller = appRouter.createCaller(ctx);
 
     const products = await caller.products.list();
-    
+
     expect(Array.isArray(products)).toBe(true);
   });
 

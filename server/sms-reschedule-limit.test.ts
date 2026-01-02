@@ -1,6 +1,14 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { getDb } from "./db";
-import { appointments, customers, users, tenants, services, appointmentServices, employeeSchedules } from "../drizzle/schema";
+import {
+  appointments,
+  customers,
+  users,
+  tenants,
+  services,
+  appointmentServices,
+  employeeSchedules,
+} from "../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
@@ -105,9 +113,15 @@ describe("SMS Notifications & Reschedule Limit", () => {
     if (!db) return;
 
     // Cleanup
-    await db.delete(appointmentServices).where(eq(appointmentServices.appointmentId, testAppointmentId));
-    await db.delete(appointments).where(eq(appointments.tenantId, testTenantId));
-    await db.delete(employeeSchedules).where(eq(employeeSchedules.employeeId, testEmployeeId));
+    await db
+      .delete(appointmentServices)
+      .where(eq(appointmentServices.appointmentId, testAppointmentId));
+    await db
+      .delete(appointments)
+      .where(eq(appointments.tenantId, testTenantId));
+    await db
+      .delete(employeeSchedules)
+      .where(eq(employeeSchedules.employeeId, testEmployeeId));
     await db.delete(services).where(eq(services.tenantId, testTenantId));
     await db.delete(customers).where(eq(customers.tenantId, testTenantId));
     await db.delete(users).where(eq(users.tenantId, testTenantId));
@@ -255,6 +269,8 @@ describe("SMS Notifications & Reschedule Limit", () => {
     expect(created.rescheduleCount).toBe(0);
 
     // Cleanup
-    await db.delete(appointments).where(eq(appointments.id, newAppointment.insertId));
+    await db
+      .delete(appointments)
+      .where(eq(appointments.id, newAppointment.insertId));
   });
 });

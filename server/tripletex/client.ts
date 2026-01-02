@@ -84,9 +84,9 @@ export class TripletexClient {
     const response = await fetch(url, {
       method,
       headers: {
-        "Authorization": this.getAuthHeader(),
+        Authorization: this.getAuthHeader(),
         "Content-Type": "application/json",
-        "Accept": "application/json",
+        Accept: "application/json",
       },
       body: body ? JSON.stringify(body) : undefined,
     });
@@ -141,9 +141,12 @@ export class TripletexClient {
     const queryParams = new URLSearchParams();
     if (params?.id) queryParams.set("id", params.id);
     if (params?.email) queryParams.set("email", params.email);
-    if (params?.organizationNumber) queryParams.set("organizationNumber", params.organizationNumber);
-    if (params?.from !== undefined) queryParams.set("from", params.from.toString());
-    if (params?.count !== undefined) queryParams.set("count", params.count.toString());
+    if (params?.organizationNumber)
+      queryParams.set("organizationNumber", params.organizationNumber);
+    if (params?.from !== undefined)
+      queryParams.set("from", params.from.toString());
+    if (params?.count !== undefined)
+      queryParams.set("count", params.count.toString());
 
     const endpoint = `/customer?${queryParams}`;
     return this.request<TripletexCustomer[]>("GET", endpoint);
@@ -153,11 +156,16 @@ export class TripletexClient {
     return this.request<TripletexCustomer>("GET", `/customer/${id}`);
   }
 
-  async createCustomer(customer: TripletexCustomer): Promise<TripletexCustomer> {
+  async createCustomer(
+    customer: TripletexCustomer
+  ): Promise<TripletexCustomer> {
     return this.request<TripletexCustomer>("POST", "/customer", customer);
   }
 
-  async updateCustomer(id: number, customer: Partial<TripletexCustomer>): Promise<TripletexCustomer> {
+  async updateCustomer(
+    id: number,
+    customer: Partial<TripletexCustomer>
+  ): Promise<TripletexCustomer> {
     return this.request<TripletexCustomer>("PUT", `/customer/${id}`, customer);
   }
 
@@ -169,8 +177,10 @@ export class TripletexClient {
   }): Promise<TripletexOrder[]> {
     const queryParams = new URLSearchParams();
     if (params?.customerId) queryParams.set("customerId", params.customerId);
-    if (params?.from !== undefined) queryParams.set("from", params.from.toString());
-    if (params?.count !== undefined) queryParams.set("count", params.count.toString());
+    if (params?.from !== undefined)
+      queryParams.set("from", params.from.toString());
+    if (params?.count !== undefined)
+      queryParams.set("count", params.count.toString());
 
     const endpoint = `/order?${queryParams}`;
     return this.request<TripletexOrder[]>("GET", endpoint);
@@ -189,22 +199,34 @@ export class TripletexClient {
     count?: number;
   }): Promise<TripletexInvoice[]> {
     const queryParams = new URLSearchParams();
-    if (params?.invoiceDateFrom) queryParams.set("invoiceDateFrom", params.invoiceDateFrom);
-    if (params?.invoiceDateTo) queryParams.set("invoiceDateTo", params.invoiceDateTo);
+    if (params?.invoiceDateFrom)
+      queryParams.set("invoiceDateFrom", params.invoiceDateFrom);
+    if (params?.invoiceDateTo)
+      queryParams.set("invoiceDateTo", params.invoiceDateTo);
     if (params?.customerId) queryParams.set("customerId", params.customerId);
-    if (params?.from !== undefined) queryParams.set("from", params.from.toString());
-    if (params?.count !== undefined) queryParams.set("count", params.count.toString());
+    if (params?.from !== undefined)
+      queryParams.set("from", params.from.toString());
+    if (params?.count !== undefined)
+      queryParams.set("count", params.count.toString());
 
     const endpoint = `/invoice?${queryParams}`;
     return this.request<TripletexInvoice[]>("GET", endpoint);
   }
 
-  async createInvoice(orderId: number, invoiceDate: string, sendToCustomer: boolean = false): Promise<TripletexInvoice> {
+  async createInvoice(
+    orderId: number,
+    invoiceDate: string,
+    sendToCustomer: boolean = false
+  ): Promise<TripletexInvoice> {
     const params = new URLSearchParams({
       invoiceDate,
       sendToCustomer: sendToCustomer.toString(),
     });
-    return this.request<TripletexInvoice>("PUT", `/order/${orderId}/:invoice?${params}`, {});
+    return this.request<TripletexInvoice>(
+      "PUT",
+      `/order/${orderId}/:invoice?${params}`,
+      {}
+    );
   }
 
   // Company Info
@@ -228,7 +250,9 @@ export class TripletexClient {
 }
 
 // Helper to get Tripletex client for a tenant
-export async function getTripletexClient(tenantId: string): Promise<TripletexClient | null> {
+export async function getTripletexClient(
+  tenantId: string
+): Promise<TripletexClient | null> {
   const dbInstance = await getDb();
   if (!dbInstance) return null;
 
@@ -242,6 +266,6 @@ export async function getTripletexClient(tenantId: string): Promise<TripletexCli
 
   // Get Tripletex config from tenant settings
   // In production, you would store these in a secure settings table
-  
+
   return null;
 }

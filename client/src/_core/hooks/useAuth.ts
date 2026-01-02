@@ -47,10 +47,7 @@ export function useAuth(options?: UseAuthOptions) {
     // Safely store user info in localStorage
     try {
       if (meQuery.data) {
-        localStorage.setItem(
-          "stylora-user-info",
-          JSON.stringify(meQuery.data)
-        );
+        localStorage.setItem("stylora-user-info", JSON.stringify(meQuery.data));
       } else {
         localStorage.removeItem("stylora-user-info");
       }
@@ -79,7 +76,7 @@ export function useAuth(options?: UseAuthOptions) {
     if (typeof window === "undefined") return;
     if (window.location.pathname === redirectPath) return;
 
-    window.location.href = redirectPath
+    window.location.href = redirectPath;
   }, [
     redirectOnUnauthenticated,
     redirectPath,

@@ -5,16 +5,39 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
-import { 
-  CheckCircle2, Building2, User, Clock, Users, Scissors, CreditCard, FileCheck,
-  Plus, Trash2, Edit2, Check, X
+import {
+  CheckCircle2,
+  Building2,
+  User,
+  Clock,
+  Users,
+  Scissors,
+  CreditCard,
+  FileCheck,
+  Plus,
+  Trash2,
+  Edit2,
+  Check,
+  X,
 } from "lucide-react";
 import { useLocation } from "wouter";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { useTranslation } from "react-i18next";
@@ -24,7 +47,10 @@ const createSchemas = (t: (key: string) => string) => {
   // Step 1: Salon Information
   const salonInfoSchema = z.object({
     salonName: z.string().min(2, t("onboarding.salonInfo.salonNameRequired")),
-    subdomain: z.string().min(3, t("onboarding.salonInfo.subdomainRequired")).regex(/^[a-z0-9-]+$/, t("onboarding.salonInfo.subdomainPattern")),
+    subdomain: z
+      .string()
+      .min(3, t("onboarding.salonInfo.subdomainRequired"))
+      .regex(/^[a-z0-9-]+$/, t("onboarding.salonInfo.subdomainPattern")),
     address: z.string().min(5, t("onboarding.salonInfo.addressRequired")),
     city: z.string().min(2, t("onboarding.salonInfo.cityRequired")),
     phone: z.string().min(8, t("onboarding.salonInfo.phoneRequired")),
@@ -32,15 +58,21 @@ const createSchemas = (t: (key: string) => string) => {
   });
 
   // Step 2: Owner Account
-  const ownerAccountSchema = z.object({
-    ownerName: z.string().min(2, t("onboarding.ownerAccount.fullNameRequired")),
-    ownerEmail: z.string().email(t("onboarding.ownerAccount.emailInvalid")),
-    password: z.string().min(8, t("onboarding.ownerAccount.passwordMinLength")),
-    confirmPassword: z.string(),
-  }).refine((data) => data.password === data.confirmPassword, {
-    message: t("onboarding.ownerAccount.passwordsMismatch"),
-    path: ["confirmPassword"],
-  });
+  const ownerAccountSchema = z
+    .object({
+      ownerName: z
+        .string()
+        .min(2, t("onboarding.ownerAccount.fullNameRequired")),
+      ownerEmail: z.string().email(t("onboarding.ownerAccount.emailInvalid")),
+      password: z
+        .string()
+        .min(8, t("onboarding.ownerAccount.passwordMinLength")),
+      confirmPassword: z.string(),
+    })
+    .refine(data => data.password === data.confirmPassword, {
+      message: t("onboarding.ownerAccount.passwordsMismatch"),
+      path: ["confirmPassword"],
+    });
 
   return { salonInfoSchema, ownerAccountSchema };
 };
@@ -99,39 +131,50 @@ type OnboardingData = {
 export default function Onboarding() {
   const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(1);
-  const [onboardingData, setOnboardingData] = useState<Partial<OnboardingData>>({
-    employees: [],
-    services: [],
-    paymentSettings: { stripeEnabled: false, vippsEnabled: false },
-  });
+  const [onboardingData, setOnboardingData] = useState<Partial<OnboardingData>>(
+    {
+      employees: [],
+      services: [],
+      paymentSettings: { stripeEnabled: false, vippsEnabled: false },
+    }
+  );
   const [, setLocation] = useLocation();
-  
+
   // Create schemas with current translations (memoized)
-  const { salonInfoSchema, ownerAccountSchema } = useMemo(() => createSchemas(t), [t]);
+  const { salonInfoSchema, ownerAccountSchema } = useMemo(
+    () => createSchemas(t),
+    [t]
+  );
 
   // Define steps with translations (memoized)
-  const steps = useMemo(() => [
-    { id: 1, name: t("onboarding.steps.salonInfo"), icon: Building2 },
-    { id: 2, name: t("onboarding.steps.ownerAccount"), icon: User },
-    { id: 3, name: t("onboarding.steps.businessHours"), icon: Clock },
-    { id: 4, name: t("onboarding.steps.employees"), icon: Users },
-    { id: 5, name: t("onboarding.steps.services"), icon: Scissors },
-    { id: 6, name: t("onboarding.steps.paymentSettings"), icon: CreditCard },
-    { id: 7, name: t("onboarding.steps.review"), icon: FileCheck },
-  ], [t]);
+  const steps = useMemo(
+    () => [
+      { id: 1, name: t("onboarding.steps.salonInfo"), icon: Building2 },
+      { id: 2, name: t("onboarding.steps.ownerAccount"), icon: User },
+      { id: 3, name: t("onboarding.steps.businessHours"), icon: Clock },
+      { id: 4, name: t("onboarding.steps.employees"), icon: Users },
+      { id: 5, name: t("onboarding.steps.services"), icon: Scissors },
+      { id: 6, name: t("onboarding.steps.paymentSettings"), icon: CreditCard },
+      { id: 7, name: t("onboarding.steps.review"), icon: FileCheck },
+    ],
+    [t]
+  );
 
   // Service colors with translations (memoized)
-  const serviceColors = useMemo(() => [
-    { value: "#667eea", label: t("onboarding.services.colorOptions.purple") },
-    { value: "#f56565", label: t("onboarding.services.colorOptions.red") },
-    { value: "#48bb78", label: t("onboarding.services.colorOptions.green") },
-    { value: "#ed8936", label: t("onboarding.services.colorOptions.orange") },
-    { value: "#4299e1", label: t("onboarding.services.colorOptions.blue") },
-    { value: "#9f7aea", label: t("onboarding.services.colorOptions.violet") },
-    { value: "#ed64a6", label: t("onboarding.services.colorOptions.pink") },
-    { value: "#38b2ac", label: t("onboarding.services.colorOptions.teal") },
-  ], [t]);
-  
+  const serviceColors = useMemo(
+    () => [
+      { value: "#667eea", label: t("onboarding.services.colorOptions.purple") },
+      { value: "#f56565", label: t("onboarding.services.colorOptions.red") },
+      { value: "#48bb78", label: t("onboarding.services.colorOptions.green") },
+      { value: "#ed8936", label: t("onboarding.services.colorOptions.orange") },
+      { value: "#4299e1", label: t("onboarding.services.colorOptions.blue") },
+      { value: "#9f7aea", label: t("onboarding.services.colorOptions.violet") },
+      { value: "#ed64a6", label: t("onboarding.services.colorOptions.pink") },
+      { value: "#38b2ac", label: t("onboarding.services.colorOptions.teal") },
+    ],
+    [t]
+  );
+
   // Employee form state
   const [newEmployee, setNewEmployee] = useState<Partial<Employee>>({
     name: "",
@@ -144,10 +187,13 @@ export default function Onboarding() {
       accessReports: false,
     },
   });
-  
+
   // Get default category translation (memoized with fallback)
-  const defaultCategory = useMemo(() => t("onboarding.services.defaultCategory") || "General Services", [t]);
-  
+  const defaultCategory = useMemo(
+    () => t("onboarding.services.defaultCategory") || "General Services",
+    [t]
+  );
+
   // Service form state
   const [newService, setNewService] = useState<Partial<Service>>({
     name: "",
@@ -157,7 +203,7 @@ export default function Onboarding() {
     description: "",
     color: "#667eea",
   });
-  
+
   const [serviceCategories, setServiceCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -166,9 +212,13 @@ export default function Onboarding() {
   useEffect(() => {
     if (defaultCategory) {
       // Only initialize if categories are empty (first load)
-      setServiceCategories(prev => prev.length === 0 ? [defaultCategory] : prev);
+      setServiceCategories(prev =>
+        prev.length === 0 ? [defaultCategory] : prev
+      );
       // Only update newService category if it's still empty
-      setNewService(prev => prev.category === "" ? { ...prev, category: defaultCategory } : prev);
+      setNewService(prev =>
+        prev.category === "" ? { ...prev, category: defaultCategory } : prev
+      );
     }
   }, [defaultCategory]);
 
@@ -207,14 +257,16 @@ export default function Onboarding() {
   });
 
   const completeOnboarding = trpc.onboarding.complete.useMutation({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success(t("onboarding.messages.accountCreated"));
-      toast.info(t("onboarding.messages.welcomeEmailSent", { email: data.email }));
+      toast.info(
+        t("onboarding.messages.welcomeEmailSent", { email: data.email })
+      );
       setTimeout(() => {
         setLocation("/login");
       }, 2000);
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(t("onboarding.messages.error", { message: error.message }));
     },
   });
@@ -225,7 +277,7 @@ export default function Onboarding() {
       toast.error(t("onboarding.employees.nameAndEmailRequired"));
       return;
     }
-    
+
     if (onboardingData.employees && onboardingData.employees.length >= 10) {
       toast.error(t("onboarding.employees.maxEmployeesReached"));
       return;
@@ -244,7 +296,7 @@ export default function Onboarding() {
       },
     };
 
-    setOnboardingData((prev) => ({
+    setOnboardingData(prev => ({
       ...prev,
       employees: [...(prev.employees || []), employee],
     }));
@@ -265,9 +317,9 @@ export default function Onboarding() {
   };
 
   const removeEmployee = (id: string) => {
-    setOnboardingData((prev) => ({
+    setOnboardingData(prev => ({
       ...prev,
-      employees: prev.employees?.filter((e) => e.id !== id),
+      employees: prev.employees?.filter(e => e.id !== id),
     }));
     toast.success(t("onboarding.employees.employeeRemoved"));
   };
@@ -278,7 +330,7 @@ export default function Onboarding() {
       toast.error(t("onboarding.services.serviceNameRequired"));
       return;
     }
-    
+
     if (onboardingData.services && onboardingData.services.length >= 20) {
       toast.error(t("onboarding.services.maxServicesReached"));
       return;
@@ -294,7 +346,7 @@ export default function Onboarding() {
       color: newService.color || "#667eea",
     };
 
-    setOnboardingData((prev) => ({
+    setOnboardingData(prev => ({
       ...prev,
       services: [...(prev.services || []), service],
     }));
@@ -312,9 +364,9 @@ export default function Onboarding() {
   };
 
   const removeService = (id: string) => {
-    setOnboardingData((prev) => ({
+    setOnboardingData(prev => ({
       ...prev,
-      services: prev.services?.filter((s) => s.id !== id),
+      services: prev.services?.filter(s => s.id !== id),
     }));
     toast.success(t("onboarding.services.serviceRemoved"));
   };
@@ -324,7 +376,7 @@ export default function Onboarding() {
       toast.error(t("onboarding.services.categoryRequired"));
       return;
     }
-    
+
     if (serviceCategories.includes(newCategory.trim())) {
       toast.error(t("onboarding.services.categoryExists"));
       return;
@@ -338,18 +390,18 @@ export default function Onboarding() {
 
   const handleNext = () => {
     if (currentStep === 1) {
-      salonInfoForm.handleSubmit((data) => {
-        setOnboardingData((prev) => ({ ...prev, salonInfo: data }));
+      salonInfoForm.handleSubmit(data => {
+        setOnboardingData(prev => ({ ...prev, salonInfo: data }));
         setCurrentStep(2);
       })();
     } else if (currentStep === 2) {
-      ownerAccountForm.handleSubmit((data) => {
-        setOnboardingData((prev) => ({ ...prev, ownerAccount: data }));
+      ownerAccountForm.handleSubmit(data => {
+        setOnboardingData(prev => ({ ...prev, ownerAccount: data }));
         setCurrentStep(3);
       })();
     } else if (currentStep === 3) {
-      businessHoursForm.handleSubmit((data) => {
-        setOnboardingData((prev) => ({ ...prev, businessHours: data }));
+      businessHoursForm.handleSubmit(data => {
+        setOnboardingData(prev => ({ ...prev, businessHours: data }));
         setCurrentStep(4);
       })();
     } else if (currentStep === 4) {
@@ -405,14 +457,14 @@ export default function Onboarding() {
         <div className="mb-8">
           <Progress value={progress} className="h-2" />
           <div className="flex justify-between mt-4">
-            {steps.map((step) => {
+            {steps.map(step => {
               const Icon = step.icon;
               const isCompleted = step.id < currentStep;
               const isCurrent = step.id === currentStep;
-              
+
               return (
-                <div 
-                  key={step.id} 
+                <div
+                  key={step.id}
                   className="flex flex-col items-center cursor-pointer"
                   onClick={() => goToStep(step.id)}
                 >
@@ -421,13 +473,19 @@ export default function Onboarding() {
                       isCompleted
                         ? "bg-green-500 text-white"
                         : isCurrent
-                        ? "bg-gradient-to-r from-purple-600 to-orange-500 text-white"
-                        : "bg-gray-200 text-gray-400"
+                          ? "bg-gradient-to-r from-purple-600 to-orange-500 text-white"
+                          : "bg-gray-200 text-gray-400"
                     }`}
                   >
-                    {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
+                    {isCompleted ? (
+                      <CheckCircle2 className="w-5 h-5" />
+                    ) : (
+                      <Icon className="w-5 h-5" />
+                    )}
                   </div>
-                  <span className={`text-xs hidden md:block ${isCurrent ? "font-semibold" : ""}`}>
+                  <span
+                    className={`text-xs hidden md:block ${isCurrent ? "font-semibold" : ""}`}
+                  >
                     {step.name}
                   </span>
                 </div>
@@ -439,14 +497,19 @@ export default function Onboarding() {
         {/* Step Content */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">{steps[currentStep - 1].name}</CardTitle>
+            <CardTitle className="text-2xl">
+              {steps[currentStep - 1].name}
+            </CardTitle>
             <CardDescription>
               {currentStep === 1 && t("onboarding.stepDescriptions.salonInfo")}
-              {currentStep === 2 && t("onboarding.stepDescriptions.ownerAccount")}
-              {currentStep === 3 && t("onboarding.stepDescriptions.businessHours")}
+              {currentStep === 2 &&
+                t("onboarding.stepDescriptions.ownerAccount")}
+              {currentStep === 3 &&
+                t("onboarding.stepDescriptions.businessHours")}
               {currentStep === 4 && t("onboarding.stepDescriptions.employees")}
               {currentStep === 5 && t("onboarding.stepDescriptions.services")}
-              {currentStep === 6 && t("onboarding.stepDescriptions.paymentSettings")}
+              {currentStep === 6 &&
+                t("onboarding.stepDescriptions.paymentSettings")}
               {currentStep === 7 && t("onboarding.stepDescriptions.review")}
             </CardDescription>
           </CardHeader>
@@ -455,7 +518,9 @@ export default function Onboarding() {
             {currentStep === 1 && (
               <form className="space-y-4">
                 <div>
-                  <Label htmlFor="salonName">{t("onboarding.salonInfo.salonName")} *</Label>
+                  <Label htmlFor="salonName">
+                    {t("onboarding.salonInfo.salonName")} *
+                  </Label>
                   <Input
                     id="salonName"
                     {...salonInfoForm.register("salonName")}
@@ -469,15 +534,21 @@ export default function Onboarding() {
                 </div>
 
                 <div>
-                  <Label htmlFor="subdomain">{t("onboarding.salonInfo.subdomain")} *</Label>
+                  <Label htmlFor="subdomain">
+                    {t("onboarding.salonInfo.subdomain")} *
+                  </Label>
                   <div className="flex items-center gap-2">
                     <Input
                       id="subdomain"
                       {...salonInfoForm.register("subdomain")}
-                      placeholder={t("onboarding.salonInfo.subdomainPlaceholder")}
+                      placeholder={t(
+                        "onboarding.salonInfo.subdomainPlaceholder"
+                      )}
                       className="flex-1"
                     />
-                    <span className="text-sm text-gray-500">{t("onboarding.salonInfo.subdomainSuffix")}</span>
+                    <span className="text-sm text-gray-500">
+                      {t("onboarding.salonInfo.subdomainSuffix")}
+                    </span>
                   </div>
                   {salonInfoForm.formState.errors.subdomain && (
                     <p className="text-sm text-red-500 mt-1">
@@ -491,7 +562,9 @@ export default function Onboarding() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="address">{t("onboarding.salonInfo.address")} *</Label>
+                    <Label htmlFor="address">
+                      {t("onboarding.salonInfo.address")} *
+                    </Label>
                     <Input
                       id="address"
                       {...salonInfoForm.register("address")}
@@ -505,7 +578,9 @@ export default function Onboarding() {
                   </div>
 
                   <div>
-                    <Label htmlFor="city">{t("onboarding.salonInfo.city")} *</Label>
+                    <Label htmlFor="city">
+                      {t("onboarding.salonInfo.city")} *
+                    </Label>
                     <Input
                       id="city"
                       {...salonInfoForm.register("city")}
@@ -521,7 +596,9 @@ export default function Onboarding() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="phone">{t("onboarding.salonInfo.phone")} *</Label>
+                    <Label htmlFor="phone">
+                      {t("onboarding.salonInfo.phone")} *
+                    </Label>
                     <Input
                       id="phone"
                       {...salonInfoForm.register("phone")}
@@ -535,7 +612,9 @@ export default function Onboarding() {
                   </div>
 
                   <div>
-                    <Label htmlFor="email">{t("onboarding.salonInfo.email")} *</Label>
+                    <Label htmlFor="email">
+                      {t("onboarding.salonInfo.email")} *
+                    </Label>
                     <Input
                       id="email"
                       type="email"
@@ -556,11 +635,15 @@ export default function Onboarding() {
             {currentStep === 2 && (
               <form className="space-y-4">
                 <div>
-                  <Label htmlFor="ownerName">{t("onboarding.ownerAccount.fullName")} *</Label>
+                  <Label htmlFor="ownerName">
+                    {t("onboarding.ownerAccount.fullName")} *
+                  </Label>
                   <Input
                     id="ownerName"
                     {...ownerAccountForm.register("ownerName")}
-                    placeholder={t("onboarding.ownerAccount.fullNamePlaceholder")}
+                    placeholder={t(
+                      "onboarding.ownerAccount.fullNamePlaceholder"
+                    )}
                   />
                   {ownerAccountForm.formState.errors.ownerName && (
                     <p className="text-sm text-red-500 mt-1">
@@ -570,7 +653,9 @@ export default function Onboarding() {
                 </div>
 
                 <div>
-                  <Label htmlFor="ownerEmail">{t("onboarding.ownerAccount.email")} *</Label>
+                  <Label htmlFor="ownerEmail">
+                    {t("onboarding.ownerAccount.email")} *
+                  </Label>
                   <Input
                     id="ownerEmail"
                     type="email"
@@ -585,7 +670,9 @@ export default function Onboarding() {
                 </div>
 
                 <div>
-                  <Label htmlFor="password">{t("onboarding.ownerAccount.password")} *</Label>
+                  <Label htmlFor="password">
+                    {t("onboarding.ownerAccount.password")} *
+                  </Label>
                   <Input
                     id="password"
                     type="password"
@@ -600,7 +687,9 @@ export default function Onboarding() {
                 </div>
 
                 <div>
-                  <Label htmlFor="confirmPassword">{t("onboarding.ownerAccount.confirmPassword")} *</Label>
+                  <Label htmlFor="confirmPassword">
+                    {t("onboarding.ownerAccount.confirmPassword")} *
+                  </Label>
                   <Input
                     id="confirmPassword"
                     type="password"
@@ -609,7 +698,10 @@ export default function Onboarding() {
                   />
                   {ownerAccountForm.formState.errors.confirmPassword && (
                     <p className="text-sm text-red-500 mt-1">
-                      {ownerAccountForm.formState.errors.confirmPassword.message}
+                      {
+                        ownerAccountForm.formState.errors.confirmPassword
+                          .message
+                      }
                     </p>
                   )}
                 </div>
@@ -623,7 +715,14 @@ export default function Onboarding() {
                   {t("onboarding.businessHours.title")}
                 </p>
 
-                {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"].map((day) => {
+                {[
+                  "monday",
+                  "tuesday",
+                  "wednesday",
+                  "thursday",
+                  "friday",
+                  "saturday",
+                ].map(day => {
                   const dayNames: Record<string, string> = {
                     monday: t("onboarding.businessHours.monday"),
                     tuesday: t("onboarding.businessHours.tuesday"),
@@ -634,7 +733,10 @@ export default function Onboarding() {
                   };
 
                   return (
-                    <div key={day} className="grid grid-cols-3 gap-4 items-center">
+                    <div
+                      key={day}
+                      className="grid grid-cols-3 gap-4 items-center"
+                    >
                       <Label>{dayNames[day]}</Label>
                       <div>
                         <Input
@@ -659,7 +761,9 @@ export default function Onboarding() {
                     {...businessHoursForm.register("sundayClosed")}
                     className="w-4 h-4"
                   />
-                  <Label htmlFor="sundayClosed">{t("onboarding.businessHours.sundayClosed")}</Label>
+                  <Label htmlFor="sundayClosed">
+                    {t("onboarding.businessHours.sundayClosed")}
+                  </Label>
                 </div>
               </form>
             )}
@@ -675,14 +779,21 @@ export default function Onboarding() {
 
                 {/* Add Employee Form */}
                 <div className="border rounded-lg p-4 space-y-4">
-                  <h3 className="font-semibold text-lg">{t("onboarding.employees.addNewEmployee")}</h3>
-                  
+                  <h3 className="font-semibold text-lg">
+                    {t("onboarding.employees.addNewEmployee")}
+                  </h3>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label>{t("onboarding.employees.name")} *</Label>
                       <Input
                         value={newEmployee.name}
-                        onChange={(e) => setNewEmployee({ ...newEmployee, name: e.target.value })}
+                        onChange={e =>
+                          setNewEmployee({
+                            ...newEmployee,
+                            name: e.target.value,
+                          })
+                        }
                         placeholder={t("onboarding.employees.namePlaceholder")}
                       />
                     </div>
@@ -691,7 +802,12 @@ export default function Onboarding() {
                       <Input
                         type="email"
                         value={newEmployee.email}
-                        onChange={(e) => setNewEmployee({ ...newEmployee, email: e.target.value })}
+                        onChange={e =>
+                          setNewEmployee({
+                            ...newEmployee,
+                            email: e.target.value,
+                          })
+                        }
                         placeholder={t("onboarding.employees.emailPlaceholder")}
                       />
                     </div>
@@ -702,7 +818,12 @@ export default function Onboarding() {
                       <Label>{t("onboarding.employees.phone")}</Label>
                       <Input
                         value={newEmployee.phone}
-                        onChange={(e) => setNewEmployee({ ...newEmployee, phone: e.target.value })}
+                        onChange={e =>
+                          setNewEmployee({
+                            ...newEmployee,
+                            phone: e.target.value,
+                          })
+                        }
                         placeholder={t("onboarding.salonInfo.phonePlaceholder")}
                       />
                     </div>
@@ -710,35 +831,51 @@ export default function Onboarding() {
                       <Label>{t("onboarding.employees.role")}</Label>
                       <Select
                         value={newEmployee.role}
-                        onValueChange={(value: any) => setNewEmployee({ ...newEmployee, role: value })}
+                        onValueChange={(value: any) =>
+                          setNewEmployee({ ...newEmployee, role: value })
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="employee">{t("onboarding.employees.roleEmployee")}</SelectItem>
-                          <SelectItem value="manager">{t("onboarding.employees.roleManager")}</SelectItem>
-                          <SelectItem value="admin">{t("onboarding.employees.roleAdmin")}</SelectItem>
+                          <SelectItem value="employee">
+                            {t("onboarding.employees.roleEmployee")}
+                          </SelectItem>
+                          <SelectItem value="manager">
+                            {t("onboarding.employees.roleManager")}
+                          </SelectItem>
+                          <SelectItem value="admin">
+                            {t("onboarding.employees.roleAdmin")}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
 
                   <div>
-                    <Label className="mb-2 block">{t("onboarding.employees.permissions")}</Label>
+                    <Label className="mb-2 block">
+                      {t("onboarding.employees.permissions")}
+                    </Label>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Checkbox
                           id="viewAppointments"
                           checked={newEmployee.permissions?.viewAppointments}
-                          onCheckedChange={(checked) =>
+                          onCheckedChange={checked =>
                             setNewEmployee({
                               ...newEmployee,
-                              permissions: { ...newEmployee.permissions!, viewAppointments: !!checked },
+                              permissions: {
+                                ...newEmployee.permissions!,
+                                viewAppointments: !!checked,
+                              },
                             })
                           }
                         />
-                        <Label htmlFor="viewAppointments" className="font-normal">
+                        <Label
+                          htmlFor="viewAppointments"
+                          className="font-normal"
+                        >
                           {t("onboarding.employees.viewAppointments")}
                         </Label>
                       </div>
@@ -746,14 +883,20 @@ export default function Onboarding() {
                         <Checkbox
                           id="manageCustomers"
                           checked={newEmployee.permissions?.manageCustomers}
-                          onCheckedChange={(checked) =>
+                          onCheckedChange={checked =>
                             setNewEmployee({
                               ...newEmployee,
-                              permissions: { ...newEmployee.permissions!, manageCustomers: !!checked },
+                              permissions: {
+                                ...newEmployee.permissions!,
+                                manageCustomers: !!checked,
+                              },
                             })
                           }
                         />
-                        <Label htmlFor="manageCustomers" className="font-normal">
+                        <Label
+                          htmlFor="manageCustomers"
+                          className="font-normal"
+                        >
                           {t("onboarding.employees.manageCustomers")}
                         </Label>
                       </div>
@@ -761,10 +904,13 @@ export default function Onboarding() {
                         <Checkbox
                           id="accessReports"
                           checked={newEmployee.permissions?.accessReports}
-                          onCheckedChange={(checked) =>
+                          onCheckedChange={checked =>
                             setNewEmployee({
                               ...newEmployee,
-                              permissions: { ...newEmployee.permissions!, accessReports: !!checked },
+                              permissions: {
+                                ...newEmployee.permissions!,
+                                accessReports: !!checked,
+                              },
                             })
                           }
                         />
@@ -782,36 +928,42 @@ export default function Onboarding() {
                 </div>
 
                 {/* Employees List */}
-                {onboardingData.employees && onboardingData.employees.length > 0 && (
-                  <div className="space-y-2">
-                    <h3 className="font-semibold">
-                      {t("onboarding.employees.employeeList", { count: `${onboardingData.employees.length}/10` })}
-                    </h3>
-                    {onboardingData.employees.map((emp) => (
-                      <div
-                        key={emp.id}
-                        className="flex items-center justify-between p-3 border rounded-lg"
-                      >
-                        <div>
-                          <p className="font-medium">{emp.name}</p>
-                          <p className="text-sm text-gray-600">{emp.email}</p>
-                          <p className="text-xs text-gray-500">
-                            {emp.role === "employee" && t("onboarding.employees.roleEmployee")}
-                            {emp.role === "manager" && t("onboarding.employees.roleManager")}
-                            {emp.role === "admin" && t("onboarding.employees.roleAdmin")}
-                          </p>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeEmployee(emp.id)}
+                {onboardingData.employees &&
+                  onboardingData.employees.length > 0 && (
+                    <div className="space-y-2">
+                      <h3 className="font-semibold">
+                        {t("onboarding.employees.employeeList", {
+                          count: `${onboardingData.employees.length}/10`,
+                        })}
+                      </h3>
+                      {onboardingData.employees.map(emp => (
+                        <div
+                          key={emp.id}
+                          className="flex items-center justify-between p-3 border rounded-lg"
                         >
-                          <Trash2 className="w-4 h-4 text-red-500" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                          <div>
+                            <p className="font-medium">{emp.name}</p>
+                            <p className="text-sm text-gray-600">{emp.email}</p>
+                            <p className="text-xs text-gray-500">
+                              {emp.role === "employee" &&
+                                t("onboarding.employees.roleEmployee")}
+                              {emp.role === "manager" &&
+                                t("onboarding.employees.roleManager")}
+                              {emp.role === "admin" &&
+                                t("onboarding.employees.roleAdmin")}
+                            </p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeEmployee(emp.id)}
+                          >
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
               </div>
             )}
 
@@ -826,11 +978,13 @@ export default function Onboarding() {
 
                 {/* Add Category */}
                 <div className="border rounded-lg p-4 space-y-3">
-                  <h3 className="font-semibold">{t("onboarding.services.addNewCategory")}</h3>
+                  <h3 className="font-semibold">
+                    {t("onboarding.services.addNewCategory")}
+                  </h3>
                   <div className="flex gap-2">
                     <Input
                       value={newCategory}
-                      onChange={(e) => setNewCategory(e.target.value)}
+                      onChange={e => setNewCategory(e.target.value)}
                       placeholder={t("onboarding.services.categoryPlaceholder")}
                       className="flex-1"
                     />
@@ -839,7 +993,7 @@ export default function Onboarding() {
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {serviceCategories.map((cat) => (
+                    {serviceCategories.map(cat => (
                       <span
                         key={cat}
                         className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm"
@@ -852,28 +1006,36 @@ export default function Onboarding() {
 
                 {/* Add Service Form */}
                 <div className="border rounded-lg p-4 space-y-4">
-                  <h3 className="font-semibold text-lg">{t("onboarding.services.addNewService")}</h3>
-                  
+                  <h3 className="font-semibold text-lg">
+                    {t("onboarding.services.addNewService")}
+                  </h3>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label>{t("onboarding.services.serviceName")} *</Label>
                       <Input
                         value={newService.name}
-                        onChange={(e) => setNewService({ ...newService, name: e.target.value })}
-                        placeholder={t("onboarding.services.serviceNamePlaceholder")}
+                        onChange={e =>
+                          setNewService({ ...newService, name: e.target.value })
+                        }
+                        placeholder={t(
+                          "onboarding.services.serviceNamePlaceholder"
+                        )}
                       />
                     </div>
                     <div>
                       <Label>{t("onboarding.services.category")}</Label>
                       <Select
                         value={newService.category}
-                        onValueChange={(value) => setNewService({ ...newService, category: value })}
+                        onValueChange={value =>
+                          setNewService({ ...newService, category: value })
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {serviceCategories.map((cat) => (
+                          {serviceCategories.map(cat => (
                             <SelectItem key={cat} value={cat}>
                               {cat}
                             </SelectItem>
@@ -889,7 +1051,12 @@ export default function Onboarding() {
                       <Input
                         type="number"
                         value={newService.duration}
-                        onChange={(e) => setNewService({ ...newService, duration: parseInt(e.target.value) })}
+                        onChange={e =>
+                          setNewService({
+                            ...newService,
+                            duration: parseInt(e.target.value),
+                          })
+                        }
                         min="5"
                         step="5"
                       />
@@ -899,7 +1066,12 @@ export default function Onboarding() {
                       <Input
                         type="number"
                         value={newService.price}
-                        onChange={(e) => setNewService({ ...newService, price: parseInt(e.target.value) })}
+                        onChange={e =>
+                          setNewService({
+                            ...newService,
+                            price: parseInt(e.target.value),
+                          })
+                        }
                         min="0"
                         step="10"
                       />
@@ -908,13 +1080,15 @@ export default function Onboarding() {
                       <Label>{t("onboarding.services.color")}</Label>
                       <Select
                         value={newService.color}
-                        onValueChange={(value) => setNewService({ ...newService, color: value })}
+                        onValueChange={value =>
+                          setNewService({ ...newService, color: value })
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {serviceColors.map((color) => (
+                          {serviceColors.map(color => (
                             <SelectItem key={color.value} value={color.value}>
                               <div className="flex items-center gap-2">
                                 <div
@@ -934,8 +1108,15 @@ export default function Onboarding() {
                     <Label>{t("onboarding.services.description")}</Label>
                     <Textarea
                       value={newService.description}
-                      onChange={(e) => setNewService({ ...newService, description: e.target.value })}
-                      placeholder={t("onboarding.services.descriptionPlaceholder")}
+                      onChange={e =>
+                        setNewService({
+                          ...newService,
+                          description: e.target.value,
+                        })
+                      }
+                      placeholder={t(
+                        "onboarding.services.descriptionPlaceholder"
+                      )}
                       rows={2}
                     />
                   </div>
@@ -947,39 +1128,43 @@ export default function Onboarding() {
                 </div>
 
                 {/* Services List */}
-                {onboardingData.services && onboardingData.services.length > 0 && (
-                  <div className="space-y-2">
-                    <h3 className="font-semibold">
-                      {t("onboarding.services.serviceList", { count: `${onboardingData.services.length}/20` })}
-                    </h3>
-                    {onboardingData.services.map((svc) => (
-                      <div
-                        key={svc.id}
-                        className="flex items-center justify-between p-3 border rounded-lg"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className="w-4 h-4 rounded"
-                            style={{ backgroundColor: svc.color }}
-                          />
-                          <div>
-                            <p className="font-medium">{svc.name}</p>
-                            <p className="text-sm text-gray-600">
-                              {svc.category} • {svc.duration} دقيقة • {svc.price} NOK
-                            </p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeService(svc.id)}
+                {onboardingData.services &&
+                  onboardingData.services.length > 0 && (
+                    <div className="space-y-2">
+                      <h3 className="font-semibold">
+                        {t("onboarding.services.serviceList", {
+                          count: `${onboardingData.services.length}/20`,
+                        })}
+                      </h3>
+                      {onboardingData.services.map(svc => (
+                        <div
+                          key={svc.id}
+                          className="flex items-center justify-between p-3 border rounded-lg"
                         >
-                          <Trash2 className="w-4 h-4 text-red-500" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                          <div className="flex items-center gap-3">
+                            <div
+                              className="w-4 h-4 rounded"
+                              style={{ backgroundColor: svc.color }}
+                            />
+                            <div>
+                              <p className="font-medium">{svc.name}</p>
+                              <p className="text-sm text-gray-600">
+                                {svc.category} • {svc.duration} دقيقة •{" "}
+                                {svc.price} NOK
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeService(svc.id)}
+                          >
+                            <Trash2 className="w-4 h-4 text-red-500" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
               </div>
             )}
 
@@ -1004,7 +1189,7 @@ export default function Onboarding() {
                       </div>
                       <Checkbox
                         checked={onboardingData.paymentSettings?.stripeEnabled}
-                        onCheckedChange={(checked) =>
+                        onCheckedChange={checked =>
                           setOnboardingData({
                             ...onboardingData,
                             paymentSettings: {
@@ -1033,7 +1218,7 @@ export default function Onboarding() {
                       </div>
                       <Checkbox
                         checked={onboardingData.paymentSettings?.vippsEnabled}
-                        onCheckedChange={(checked) =>
+                        onCheckedChange={checked =>
                           setOnboardingData({
                             ...onboardingData,
                             paymentSettings: {
@@ -1072,40 +1257,83 @@ export default function Onboarding() {
                 {/* Salon Info Summary */}
                 <div className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-lg">{t("onboarding.review.salonInfo")}</h3>
-                    <Button variant="ghost" size="sm" onClick={() => setCurrentStep(1)}>
+                    <h3 className="font-semibold text-lg">
+                      {t("onboarding.review.salonInfo")}
+                    </h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCurrentStep(1)}
+                    >
                       <Edit2 className="w-4 h-4" />
                     </Button>
                   </div>
                   <div className="space-y-2 text-sm">
-                    <p><strong>{t("onboarding.review.name")}:</strong> {onboardingData.salonInfo?.salonName}</p>
-                    <p><strong>{t("onboarding.review.domain")}:</strong> {onboardingData.salonInfo?.subdomain}.stylora.no</p>
-                    <p><strong>{t("onboarding.review.address")}:</strong> {onboardingData.salonInfo?.address}, {onboardingData.salonInfo?.city}</p>
-                    <p><strong>{t("onboarding.review.phone")}:</strong> {onboardingData.salonInfo?.phone}</p>
-                    <p><strong>{t("onboarding.review.email")}:</strong> {onboardingData.salonInfo?.email}</p>
+                    <p>
+                      <strong>{t("onboarding.review.name")}:</strong>{" "}
+                      {onboardingData.salonInfo?.salonName}
+                    </p>
+                    <p>
+                      <strong>{t("onboarding.review.domain")}:</strong>{" "}
+                      {onboardingData.salonInfo?.subdomain}.stylora.no
+                    </p>
+                    <p>
+                      <strong>{t("onboarding.review.address")}:</strong>{" "}
+                      {onboardingData.salonInfo?.address},{" "}
+                      {onboardingData.salonInfo?.city}
+                    </p>
+                    <p>
+                      <strong>{t("onboarding.review.phone")}:</strong>{" "}
+                      {onboardingData.salonInfo?.phone}
+                    </p>
+                    <p>
+                      <strong>{t("onboarding.review.email")}:</strong>{" "}
+                      {onboardingData.salonInfo?.email}
+                    </p>
                   </div>
                 </div>
 
                 {/* Owner Account Summary */}
                 <div className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-lg">{t("onboarding.review.ownerAccount")}</h3>
-                    <Button variant="ghost" size="sm" onClick={() => setCurrentStep(2)}>
+                    <h3 className="font-semibold text-lg">
+                      {t("onboarding.review.ownerAccount")}
+                    </h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCurrentStep(2)}
+                    >
                       <Edit2 className="w-4 h-4" />
                     </Button>
                   </div>
                   <div className="space-y-2 text-sm">
-                    <p><strong>{t("onboarding.review.name")}:</strong> {onboardingData.ownerAccount?.ownerName}</p>
-                    <p><strong>{t("onboarding.review.email")}:</strong> {onboardingData.ownerAccount?.ownerEmail}</p>
-                    <p><strong>{t("onboarding.review.password")}:</strong> ••••••••</p>
+                    <p>
+                      <strong>{t("onboarding.review.name")}:</strong>{" "}
+                      {onboardingData.ownerAccount?.ownerName}
+                    </p>
+                    <p>
+                      <strong>{t("onboarding.review.email")}:</strong>{" "}
+                      {onboardingData.ownerAccount?.ownerEmail}
+                    </p>
+                    <p>
+                      <strong>{t("onboarding.review.password")}:</strong>{" "}
+                      ••••••••
+                    </p>
                   </div>
                 </div>
 
                 {/* Business Hours Summary */}
                 <div className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-lg">{t("onboarding.review.businessHours")}</h3>
-                    <Button variant="ghost" size="sm" onClick={() => setCurrentStep(3)}>
+                    <h3 className="font-semibold text-lg">
+                      {t("onboarding.review.businessHours")}
+                    </h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCurrentStep(3)}
+                    >
                       <Edit2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -1119,14 +1347,23 @@ export default function Onboarding() {
                 {/* Employees Summary */}
                 <div className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-lg">{t("onboarding.review.employees")}</h3>
-                    <Button variant="ghost" size="sm" onClick={() => setCurrentStep(4)}>
+                    <h3 className="font-semibold text-lg">
+                      {t("onboarding.review.employees")}
+                    </h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCurrentStep(4)}
+                    >
                       <Edit2 className="w-4 h-4" />
                     </Button>
                   </div>
                   <p className="text-sm">
-                    {onboardingData.employees && onboardingData.employees.length > 0
-                      ? t("onboarding.review.employeeCount", { count: onboardingData.employees.length })
+                    {onboardingData.employees &&
+                    onboardingData.employees.length > 0
+                      ? t("onboarding.review.employeeCount", {
+                          count: onboardingData.employees.length,
+                        })
                       : t("onboarding.review.noEmployees")}
                   </p>
                 </div>
@@ -1134,30 +1371,50 @@ export default function Onboarding() {
                 {/* Services Summary */}
                 <div className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-lg">{t("onboarding.review.services")}</h3>
-                    <Button variant="ghost" size="sm" onClick={() => setCurrentStep(5)}>
+                    <h3 className="font-semibold text-lg">
+                      {t("onboarding.review.services")}
+                    </h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCurrentStep(5)}
+                    >
                       <Edit2 className="w-4 h-4" />
                     </Button>
                   </div>
                   <p className="text-sm">
-                    {t("onboarding.review.serviceCount", { count: onboardingData.services?.length || 0 })}
+                    {t("onboarding.review.serviceCount", {
+                      count: onboardingData.services?.length || 0,
+                    })}
                   </p>
                 </div>
 
                 {/* Payment Settings Summary */}
                 <div className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-lg">{t("onboarding.review.paymentMethods")}</h3>
-                    <Button variant="ghost" size="sm" onClick={() => setCurrentStep(6)}>
+                    <h3 className="font-semibold text-lg">
+                      {t("onboarding.review.paymentMethods")}
+                    </h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setCurrentStep(6)}
+                    >
                       <Edit2 className="w-4 h-4" />
                     </Button>
                   </div>
                   <div className="text-sm space-y-1">
                     <p>
-                      Stripe: {onboardingData.paymentSettings?.stripeEnabled ? "✓ مفعل" : "✗ غير مفعل"}
+                      Stripe:{" "}
+                      {onboardingData.paymentSettings?.stripeEnabled
+                        ? "✓ مفعل"
+                        : "✗ غير مفعل"}
                     </p>
                     <p>
-                      Vipps: {onboardingData.paymentSettings?.vippsEnabled ? "✓ مفعل" : "✗ غير مفعل"}
+                      Vipps:{" "}
+                      {onboardingData.paymentSettings?.vippsEnabled
+                        ? "✓ مفعل"
+                        : "✗ غير مفعل"}
                     </p>
                   </div>
                 </div>
@@ -1168,15 +1425,23 @@ export default function Onboarding() {
                     <Checkbox
                       id="terms"
                       checked={acceptedTerms}
-                      onCheckedChange={(checked) => setAcceptedTerms(!!checked)}
+                      onCheckedChange={checked => setAcceptedTerms(!!checked)}
                     />
                     <Label htmlFor="terms" className="text-sm leading-relaxed">
                       {t("onboarding.review.termsLabel")}{" "}
-                      <a href="/terms" target="_blank" className="text-purple-600 hover:underline">
+                      <a
+                        href="/terms"
+                        target="_blank"
+                        className="text-purple-600 hover:underline"
+                      >
                         {t("onboarding.review.termsLink")}
                       </a>{" "}
                       و{" "}
-                      <a href="/privacy" target="_blank" className="text-purple-600 hover:underline">
+                      <a
+                        href="/privacy"
+                        target="_blank"
+                        className="text-purple-600 hover:underline"
+                      >
                         {t("onboarding.review.privacyLink")}
                       </a>
                     </Label>
@@ -1201,9 +1466,14 @@ export default function Onboarding() {
             disabled={completeOnboarding.isPending}
             className="bg-gradient-to-r from-purple-600 to-orange-500 hover:from-purple-700 hover:to-orange-600"
           >
-            {completeOnboarding.isPending && t("onboarding.navigation.creating")}
-            {!completeOnboarding.isPending && currentStep === 7 && t("onboarding.navigation.finishRegistration")}
-            {!completeOnboarding.isPending && currentStep < 7 && t("onboarding.navigation.next")}
+            {completeOnboarding.isPending &&
+              t("onboarding.navigation.creating")}
+            {!completeOnboarding.isPending &&
+              currentStep === 7 &&
+              t("onboarding.navigation.finishRegistration")}
+            {!completeOnboarding.isPending &&
+              currentStep < 7 &&
+              t("onboarding.navigation.next")}
           </Button>
         </div>
       </div>

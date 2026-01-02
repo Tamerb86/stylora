@@ -1,6 +1,6 @@
 /**
  * Fiken Sync Integration Tests
- * 
+ *
  * Tests for payment sync, product sync, and scheduled syncs
  */
 
@@ -79,8 +79,14 @@ describe("Fiken Sync Integration", () => {
       if (!db) throw new Error("Database not available");
 
       // Test that we can set different sync frequencies
-      const validFrequencies = ["manual", "hourly", "daily", "weekly", "monthly"];
-      
+      const validFrequencies = [
+        "manual",
+        "hourly",
+        "daily",
+        "weekly",
+        "monthly",
+      ];
+
       // Just verify the field exists by querying
       const [settings] = await db
         .select({
@@ -139,14 +145,14 @@ describe("Fiken Sync Integration", () => {
   describe("Sync Module Exports", () => {
     it("should export payment sync functions", async () => {
       const paymentsModule = await import("./fiken/payments");
-      
+
       expect(paymentsModule.syncPaymentToFiken).toBeDefined();
       expect(typeof paymentsModule.syncPaymentToFiken).toBe("function");
     });
 
     it("should export product sync functions", async () => {
       const productsModule = await import("./fiken/products");
-      
+
       expect(productsModule.syncServiceToFiken).toBeDefined();
       expect(productsModule.syncProductToFiken).toBeDefined();
       expect(productsModule.bulkSyncServices).toBeDefined();
@@ -157,7 +163,7 @@ describe("Fiken Sync Integration", () => {
 
     it("should export scheduler functions", async () => {
       const schedulerModule = await import("./fiken/scheduler");
-      
+
       expect(schedulerModule.startFikenScheduler).toBeDefined();
       expect(schedulerModule.stopFikenScheduler).toBeDefined();
       expect(schedulerModule.shutdownFikenSchedulers).toBeDefined();
@@ -168,8 +174,8 @@ describe("Fiken Sync Integration", () => {
 
   describe("Scheduler Configuration", () => {
     it("should have valid sync intervals", async () => {
-      const { SYNC_INTERVALS } = await import("./fiken/scheduler") as any;
-      
+      const { SYNC_INTERVALS } = (await import("./fiken/scheduler")) as any;
+
       // If SYNC_INTERVALS is exported (it's not, but we can test the logic)
       // For now, just verify the module loads
       expect(true).toBe(true);

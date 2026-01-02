@@ -9,6 +9,7 @@
 ## ✅ Pre-Deployment Verification
 
 ### 1. Code Quality & Testing
+
 - [x] All critical tests passing (48/48 tests)
 - [x] TypeScript errors resolved
 - [x] No console errors in browser
@@ -16,6 +17,7 @@
 - [x] Git repository clean (no uncommitted changes)
 
 ### 2. Database Readiness
+
 - [x] All migrations executed successfully
 - [x] Unimicro tables created (unimicroSettings, unimicroInvoiceMapping, etc.)
 - [x] Schema matches production requirements
@@ -23,6 +25,7 @@
 - [x] Foreign key constraints verified
 
 ### 3. Integration Status
+
 - [x] **Unimicro:** 20/20 tests passing ✅
 - [x] **Fiken:** 13/13 tests passing ✅
 - [x] **POS Financial:** 10/10 tests passing ✅
@@ -36,6 +39,7 @@
 ## 🔐 Environment Variables Check
 
 ### Critical Variables (Required)
+
 ```bash
 # Database
 ✅ DATABASE_URL=mysql://...
@@ -48,6 +52,7 @@
 ```
 
 ### Email Service (Required for notifications)
+
 ```bash
 # AWS SES (Primary)
 ⚠️ AWS_SES_REGION=eu-north-1
@@ -63,6 +68,7 @@
 ```
 
 ### Payment Providers (Optional but recommended)
+
 ```bash
 # Stripe
 ⚠️ STRIPE_SECRET_KEY=sk_live_...
@@ -76,6 +82,7 @@
 ```
 
 ### Accounting Systems (Optional)
+
 ```bash
 # Fiken
 ⚠️ FIKEN_API_KEY=...
@@ -86,6 +93,7 @@
 ```
 
 ### SMS Providers (Choose one)
+
 ```bash
 # PSWinCom (Norwegian)
 ⚠️ PSWINCOM_USERNAME=...
@@ -100,6 +108,7 @@
 ```
 
 ### Monitoring & Error Tracking (Recommended)
+
 ```bash
 # Sentry
 ⚠️ SENTRY_DSN=https://...@sentry.io/...
@@ -119,6 +128,7 @@
 ## 📦 Deployment Steps
 
 ### Step 1: Prepare Railway Environment
+
 ```bash
 # 1. Login to Railway
 railway login
@@ -136,6 +146,7 @@ railway variables
 ```
 
 ### Step 2: Database Migration
+
 ```bash
 # Run migrations on production database
 pnpm db:push
@@ -145,6 +156,7 @@ pnpm db:push
 ```
 
 ### Step 3: Deploy Application
+
 ```bash
 # Option A: Deploy via GitHub (Recommended)
 git push origin main
@@ -155,6 +167,7 @@ railway up
 ```
 
 ### Step 4: Verify Deployment
+
 ```bash
 # Check deployment status
 railway status
@@ -171,12 +184,14 @@ curl https://your-app.railway.app/api/health
 ## 🧪 Post-Deployment Testing
 
 ### 1. Health Checks
+
 - [ ] Application loads without errors
 - [ ] Database connection successful
 - [ ] API endpoints responding
 - [ ] Static assets loading correctly
 
 ### 2. Integration Testing
+
 - [ ] **Unimicro Sync:** Test manual sync from admin panel
 - [ ] **Email Service:** Send test email from Settings → Notifications
 - [ ] **SMS Service:** Send test SMS notification
@@ -184,6 +199,7 @@ curl https://your-app.railway.app/api/health
 - [ ] **Fiken Sync:** Verify invoice sync working
 
 ### 3. User Flow Testing
+
 - [ ] **Admin Login:** Test with demo account
 - [ ] **Create Appointment:** Book test appointment
 - [ ] **Customer Management:** Add/edit customer
@@ -193,6 +209,7 @@ curl https://your-app.railway.app/api/health
 - [ ] **Public Booking:** Test booking flow (if enabled)
 
 ### 4. Performance Testing
+
 - [ ] Page load times < 2 seconds
 - [ ] API response times < 500ms
 - [ ] Database queries optimized
@@ -203,15 +220,16 @@ curl https://your-app.railway.app/api/health
 ## 📊 Monitoring Setup (24-Hour Watch)
 
 ### Unimicro Sync Monitoring
+
 ```sql
 -- Check sync logs for errors
-SELECT * FROM unimicroSyncLog 
-WHERE status = 'failed' 
-ORDER BY syncStartedAt DESC 
+SELECT * FROM unimicroSyncLog
+WHERE status = 'failed'
+ORDER BY syncStartedAt DESC
 LIMIT 10;
 
 -- Monitor sync frequency
-SELECT 
+SELECT
   DATE(syncStartedAt) as date,
   COUNT(*) as sync_count,
   SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as successful,
@@ -222,9 +240,10 @@ GROUP BY DATE(syncStartedAt);
 ```
 
 ### Email/SMS Delivery Monitoring
+
 ```sql
 -- Check notification delivery rates
-SELECT 
+SELECT
   notificationType,
   COUNT(*) as total,
   SUM(CASE WHEN status = 'sent' THEN 1 ELSE 0 END) as sent,
@@ -236,6 +255,7 @@ GROUP BY notificationType;
 ```
 
 ### Application Error Monitoring
+
 ```bash
 # Monitor Railway logs for errors
 railway logs --filter "ERROR"
@@ -251,6 +271,7 @@ railway logs --filter "ERROR"
 ### If Critical Issues Occur:
 
 #### Option 1: Rollback to Previous Checkpoint
+
 ```bash
 # Via Dashboard UI
 # 1. Go to Management UI → Code
@@ -262,6 +283,7 @@ railway rollback
 ```
 
 #### Option 2: Restore Database Backup
+
 ```bash
 # 1. Download latest backup from Backblaze B2
 # 2. Restore to database
@@ -273,6 +295,7 @@ railway restart
 ```
 
 #### Option 3: Emergency Hotfix
+
 ```bash
 # 1. Create hotfix branch
 git checkout -b hotfix/critical-issue
@@ -293,6 +316,7 @@ railway up
 ## 📝 Success Criteria
 
 ### Deployment Successful If:
+
 - ✅ Application loads without errors
 - ✅ All integrations responding correctly
 - ✅ No critical errors in logs for 1 hour
@@ -302,6 +326,7 @@ railway up
 - ✅ User flows completing without issues
 
 ### Monitor for 24 Hours:
+
 - ✅ Unimicro sync logs (check every 4 hours)
 - ✅ Email delivery rates (>95% success rate)
 - ✅ SMS delivery rates (>95% success rate)
@@ -331,9 +356,9 @@ railway up
 - [ ] Monitoring systems active
 - [ ] Team notified of deployment
 
-**Deployed By:** _________________  
-**Date:** _________________  
-**Time:** _________________  
+**Deployed By:** **\*\*\*\***\_**\*\*\*\***  
+**Date:** **\*\*\*\***\_**\*\*\*\***  
+**Time:** **\*\*\*\***\_**\*\*\*\***  
 **Deployment Version:** 5ff2b184
 
 ---

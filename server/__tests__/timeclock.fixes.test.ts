@@ -4,7 +4,7 @@ import { sql } from "drizzle-orm";
 
 /**
  * Time Clock System - Integration Tests for Fixes
- * 
+ *
  * Tests the fixes applied to the time clock system:
  * - Timezone handling
  * - Shift length validation
@@ -32,13 +32,13 @@ describe("Time Clock System - Fixes Integration Tests", () => {
       sql`INSERT INTO users (tenantId, openId, name, role, pin, isActive) 
           VALUES (${testTenantId}, 'test-emp-fixes', 'Test Employee', 'employee', '9876', 1)`
     );
-    
+
     // Retrieve the employee ID
     const [empRows] = await dbInstance.execute(
       sql`SELECT id FROM users WHERE tenantId = ${testTenantId} AND openId = 'test-emp-fixes' LIMIT 1`
     );
     testEmployeeId = (empRows as any[])[0].id;
-    testEmployeePin = '9876';
+    testEmployeePin = "9876";
   });
 
   afterAll(async () => {
@@ -46,9 +46,15 @@ describe("Time Clock System - Fixes Integration Tests", () => {
     if (!dbInstance) return;
 
     // Cleanup test data
-    await dbInstance.execute(sql`DELETE FROM timesheets WHERE tenantId = ${testTenantId}`);
-    await dbInstance.execute(sql`DELETE FROM users WHERE tenantId = ${testTenantId}`);
-    await dbInstance.execute(sql`DELETE FROM tenants WHERE id = ${testTenantId}`);
+    await dbInstance.execute(
+      sql`DELETE FROM timesheets WHERE tenantId = ${testTenantId}`
+    );
+    await dbInstance.execute(
+      sql`DELETE FROM users WHERE tenantId = ${testTenantId}`
+    );
+    await dbInstance.execute(
+      sql`DELETE FROM tenants WHERE id = ${testTenantId}`
+    );
   });
 
   describe("Timezone Handling", () => {
@@ -61,12 +67,14 @@ describe("Time Clock System - Fixes Integration Tests", () => {
         sql`SELECT timezone FROM tenants WHERE id = ${testTenantId}`
       );
       const tenantData = (tenant as any[])[0];
-      
-      expect(tenantData.timezone).toBe('Europe/Oslo');
+
+      expect(tenantData.timezone).toBe("Europe/Oslo");
 
       // Calculate workDate in Oslo timezone
       const now = new Date();
-      const osloDate = now.toLocaleDateString('sv-SE', { timeZone: 'Europe/Oslo' });
+      const osloDate = now.toLocaleDateString("sv-SE", {
+        timeZone: "Europe/Oslo",
+      });
 
       // Clock in
       await dbInstance.execute(
@@ -84,7 +92,9 @@ describe("Time Clock System - Fixes Integration Tests", () => {
             LIMIT 1`
       );
       const timesheetData = (timesheet as any[])[0];
-      const workDateStr = new Date(timesheetData.workDate).toISOString().slice(0, 10);
+      const workDateStr = new Date(timesheetData.workDate)
+        .toISOString()
+        .slice(0, 10);
 
       expect(workDateStr).toBe(osloDate);
 
@@ -103,13 +113,15 @@ describe("Time Clock System - Fixes Integration Tests", () => {
       // Create shift 2 hours ago
       const twoHoursAgo = new Date();
       twoHoursAgo.setHours(twoHoursAgo.getHours() - 2);
-      const workDate = twoHoursAgo.toLocaleDateString('sv-SE', { timeZone: 'Europe/Oslo' });
+      const workDate = twoHoursAgo.toLocaleDateString("sv-SE", {
+        timeZone: "Europe/Oslo",
+      });
 
       await dbInstance.execute(
         sql`INSERT INTO timesheets (tenantId, employeeId, clockIn, workDate) 
-            VALUES (${testTenantId}, ${testEmployeeId}, ${twoHoursAgo.toISOString().slice(0, 19).replace('T', ' ')}, ${workDate})`
+            VALUES (${testTenantId}, ${testEmployeeId}, ${twoHoursAgo.toISOString().slice(0, 19).replace("T", " ")}, ${workDate})`
       );
-      
+
       // Retrieve the timesheet ID
       const [tsRows] = await dbInstance.execute(
         sql`SELECT id FROM timesheets WHERE tenantId = ${testTenantId} AND employeeId = ${testEmployeeId} AND workDate = ${workDate} ORDER BY clockIn DESC LIMIT 1`
@@ -121,16 +133,19 @@ describe("Time Clock System - Fixes Integration Tests", () => {
         sql`SELECT clockIn FROM timesheets WHERE id = ${timesheetId}`
       );
       const shiftData = (shift as any[])[0];
-      
+
       const clockInTime = new Date(shiftData.clockIn);
       const now = new Date();
-      const shiftHours = (now.getTime() - clockInTime.getTime()) / (1000 * 60 * 60);
+      const shiftHours =
+        (now.getTime() - clockInTime.getTime()) / (1000 * 60 * 60);
 
       expect(shiftHours).toBeGreaterThanOrEqual(2);
       expect(shiftHours).toBeLessThan(2.1);
 
       // Cleanup
-      await dbInstance.execute(sql`DELETE FROM timesheets WHERE id = ${timesheetId}`);
+      await dbInstance.execute(
+        sql`DELETE FROM timesheets WHERE id = ${timesheetId}`
+      );
     });
 
     it("should detect long shifts (> 16 hours)", async () => {
@@ -140,13 +155,15 @@ describe("Time Clock System - Fixes Integration Tests", () => {
       // Create shift 18 hours ago
       const eighteenHoursAgo = new Date();
       eighteenHoursAgo.setHours(eighteenHoursAgo.getHours() - 18);
-      const workDate = eighteenHoursAgo.toLocaleDateString('sv-SE', { timeZone: 'Europe/Oslo' });
+      const workDate = eighteenHoursAgo.toLocaleDateString("sv-SE", {
+        timeZone: "Europe/Oslo",
+      });
 
       await dbInstance.execute(
         sql`INSERT INTO timesheets (tenantId, employeeId, clockIn, workDate) 
-            VALUES (${testTenantId}, ${testEmployeeId}, ${eighteenHoursAgo.toISOString().slice(0, 19).replace('T', ' ')}, ${workDate})`
+            VALUES (${testTenantId}, ${testEmployeeId}, ${eighteenHoursAgo.toISOString().slice(0, 19).replace("T", " ")}, ${workDate})`
       );
-      
+
       // Retrieve the timesheet ID
       const [tsRows2] = await dbInstance.execute(
         sql`SELECT id FROM timesheets WHERE tenantId = ${testTenantId} AND employeeId = ${testEmployeeId} AND workDate = ${workDate} ORDER BY clockIn DESC LIMIT 1`
@@ -158,16 +175,19 @@ describe("Time Clock System - Fixes Integration Tests", () => {
         sql`SELECT clockIn FROM timesheets WHERE id = ${timesheetId}`
       );
       const shiftData = (shift as any[])[0];
-      
+
       const clockInTime = new Date(shiftData.clockIn);
       const now = new Date();
-      const shiftHours = (now.getTime() - clockInTime.getTime()) / (1000 * 60 * 60);
+      const shiftHours =
+        (now.getTime() - clockInTime.getTime()) / (1000 * 60 * 60);
 
       // Should be > 16 hours (triggers warning)
       expect(shiftHours).toBeGreaterThan(16);
 
       // Cleanup
-      await dbInstance.execute(sql`DELETE FROM timesheets WHERE id = ${timesheetId}`);
+      await dbInstance.execute(
+        sql`DELETE FROM timesheets WHERE id = ${timesheetId}`
+      );
     });
   });
 
@@ -183,7 +203,9 @@ describe("Time Clock System - Fixes Integration Tests", () => {
       const clockOutTime = new Date();
       clockOutTime.setHours(17, 30, 0, 0); // 17:30:00
 
-      const workDate = clockInTime.toLocaleDateString('sv-SE', { timeZone: 'Europe/Oslo' });
+      const workDate = clockInTime.toLocaleDateString("sv-SE", {
+        timeZone: "Europe/Oslo",
+      });
       const expectedHours = 8.5; // 8 hours 30 minutes
 
       // Insert timesheet
@@ -192,13 +214,13 @@ describe("Time Clock System - Fixes Integration Tests", () => {
             VALUES (
               ${testTenantId}, 
               ${testEmployeeId}, 
-              ${clockInTime.toISOString().slice(0, 19).replace('T', ' ')}, 
-              ${clockOutTime.toISOString().slice(0, 19).replace('T', ' ')},
-              ROUND(TIMESTAMPDIFF(SECOND, ${clockInTime.toISOString().slice(0, 19).replace('T', ' ')}, ${clockOutTime.toISOString().slice(0, 19).replace('T', ' ')}) / 3600, 2),
+              ${clockInTime.toISOString().slice(0, 19).replace("T", " ")}, 
+              ${clockOutTime.toISOString().slice(0, 19).replace("T", " ")},
+              ROUND(TIMESTAMPDIFF(SECOND, ${clockInTime.toISOString().slice(0, 19).replace("T", " ")}, ${clockOutTime.toISOString().slice(0, 19).replace("T", " ")}) / 3600, 2),
               ${workDate}
             )`
       );
-      
+
       // Retrieve the timesheet ID
       const [tsRows3] = await dbInstance.execute(
         sql`SELECT id FROM timesheets WHERE tenantId = ${testTenantId} AND employeeId = ${testEmployeeId} AND workDate = ${workDate} ORDER BY clockIn DESC LIMIT 1`
@@ -211,24 +233,31 @@ describe("Time Clock System - Fixes Integration Tests", () => {
       );
       const timesheetData = (timesheet as any[])[0];
 
-      expect(parseFloat(timesheetData.totalHours)).toBeCloseTo(expectedHours, 2);
+      expect(parseFloat(timesheetData.totalHours)).toBeCloseTo(
+        expectedHours,
+        2
+      );
 
       // Cleanup
-      await dbInstance.execute(sql`DELETE FROM timesheets WHERE id = ${timesheetId}`);
+      await dbInstance.execute(
+        sql`DELETE FROM timesheets WHERE id = ${timesheetId}`
+      );
     });
 
     it("should handle very short shifts (< 1 minute)", async () => {
       const dbInstance = await getDb();
       if (!dbInstance) throw new Error("Database not available");
 
-      const workDate = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Oslo' });
+      const workDate = new Date().toLocaleDateString("sv-SE", {
+        timeZone: "Europe/Oslo",
+      });
 
       // Clock in
       await dbInstance.execute(
         sql`INSERT INTO timesheets (tenantId, employeeId, clockIn, workDate) 
             VALUES (${testTenantId}, ${testEmployeeId}, NOW(), ${workDate})`
       );
-      
+
       // Retrieve the timesheet ID
       const [tsRows4] = await dbInstance.execute(
         sql`SELECT id FROM timesheets WHERE tenantId = ${testTenantId} AND employeeId = ${testEmployeeId} AND workDate = ${workDate} ORDER BY clockIn DESC LIMIT 1`
@@ -256,7 +285,9 @@ describe("Time Clock System - Fixes Integration Tests", () => {
       expect(parseFloat(timesheetData.totalHours)).toBeLessThan(0.01); // Less than 0.01 hours (36 seconds)
 
       // Cleanup
-      await dbInstance.execute(sql`DELETE FROM timesheets WHERE id = ${timesheetId}`);
+      await dbInstance.execute(
+        sql`DELETE FROM timesheets WHERE id = ${timesheetId}`
+      );
     });
   });
 
@@ -265,7 +296,9 @@ describe("Time Clock System - Fixes Integration Tests", () => {
       const dbInstance = await getDb();
       if (!dbInstance) throw new Error("Database not available");
 
-      const workDate = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Oslo' });
+      const workDate = new Date().toLocaleDateString("sv-SE", {
+        timeZone: "Europe/Oslo",
+      });
 
       // Clock in
       await dbInstance.execute(
@@ -285,7 +318,7 @@ describe("Time Clock System - Fixes Integration Tests", () => {
       const activeList = activeEmployees as any[];
 
       expect(activeList.length).toBeGreaterThan(0);
-      expect(activeList[0].employeeName).toBe('Test Employee');
+      expect(activeList[0].employeeName).toBe("Test Employee");
       expect(activeList[0].clockIn).toBeDefined();
 
       // Cleanup

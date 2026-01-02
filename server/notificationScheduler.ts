@@ -1,13 +1,19 @@
 /**
  * Notification Scheduler
- * 
+ *
  * Checks for upcoming appointments and sends SMS reminders 24 hours before.
  * Runs as a background job every hour.
  */
 
 import { getDb } from "./db";
 import { sendSMS, formatAppointmentReminder } from "./sms";
-import { appointments, customers, notifications, users, tenants } from "../drizzle/schema";
+import {
+  appointments,
+  customers,
+  notifications,
+  users,
+  tenants,
+} from "../drizzle/schema";
 import { and, eq, gte, lte, sql } from "drizzle-orm";
 
 /**
@@ -24,7 +30,9 @@ export async function processAppointmentReminders(): Promise<{
     return { processed: 0, sent: 0, failed: 0 };
   }
 
-  console.log(`[Scheduler] Checking for appointment reminders at ${new Date().toISOString()}`);
+  console.log(
+    `[Scheduler] Checking for appointment reminders at ${new Date().toISOString()}`
+  );
 
   // Calculate time window: 24 hours from now (+/- 1 hour for scheduling tolerance)
   const now = new Date();
@@ -54,7 +62,9 @@ export async function processAppointmentReminders(): Promise<{
         )
       );
 
-    console.log(`[Scheduler] Found ${upcomingAppointments.length} appointments to process`);
+    console.log(
+      `[Scheduler] Found ${upcomingAppointments.length} appointments to process`
+    );
 
     let processed = 0;
     let sent = 0;
@@ -83,7 +93,9 @@ export async function processAppointmentReminders(): Promise<{
         .limit(1);
 
       if (existingNotification.length > 0) {
-        console.log(`[Scheduler] Reminder already sent for appointment #${appointment.id}`);
+        console.log(
+          `[Scheduler] Reminder already sent for appointment #${appointment.id}`
+        );
         continue;
       }
 
@@ -130,14 +142,20 @@ export async function processAppointmentReminders(): Promise<{
 
       if (result.success) {
         sent++;
-        console.log(`[Scheduler] ✅ Sent reminder to ${customer.firstName} (${customer.phone}) for appointment #${appointment.id}`);
+        console.log(
+          `[Scheduler] ✅ Sent reminder to ${customer.firstName} (${customer.phone}) for appointment #${appointment.id}`
+        );
       } else {
         failed++;
-        console.error(`[Scheduler] ❌ Failed to send reminder for appointment #${appointment.id}: ${result.error}`);
+        console.error(
+          `[Scheduler] ❌ Failed to send reminder for appointment #${appointment.id}: ${result.error}`
+        );
       }
     }
 
-    console.log(`[Scheduler] Completed: ${processed} processed, ${sent} sent, ${failed} failed`);
+    console.log(
+      `[Scheduler] Completed: ${processed} processed, ${sent} sent, ${failed} failed`
+    );
 
     return { processed, sent, failed };
   } catch (error) {
@@ -154,19 +172,21 @@ export function startNotificationScheduler() {
   console.log("[Scheduler] Starting notification scheduler...");
 
   // Run immediately on startup
-  processAppointmentReminders().catch((error) => {
+  processAppointmentReminders().catch(error => {
     console.error("[Scheduler] Error in initial run:", error);
   });
 
   // Then run every hour
   const intervalMs = 60 * 60 * 1000; // 1 hour
   setInterval(() => {
-    processAppointmentReminders().catch((error) => {
+    processAppointmentReminders().catch(error => {
       console.error("[Scheduler] Error in scheduled run:", error);
     });
   }, intervalMs);
 
-  console.log(`[Scheduler] Scheduler started, will run every ${intervalMs / 1000 / 60} minutes`);
+  console.log(
+    `[Scheduler] Scheduler started, will run every ${intervalMs / 1000 / 60} minutes`
+  );
 }
 
 /**

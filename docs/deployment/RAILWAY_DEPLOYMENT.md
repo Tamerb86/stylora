@@ -3,6 +3,7 @@
 ## 🚂 لماذا Railway؟
 
 Railway هو أسهل خيار لنشر Stylora لأنه يوفر:
+
 - ✅ **قاعدة بيانات MySQL + استضافة** في مكان واحد
 - ✅ **إعداد سريع جداً** - أقل من 10 دقائق
 - ✅ **أسعار معقولة** - $5-25/شهر
@@ -202,6 +203,7 @@ railway logs --follow
 ```
 
 ### في Railway Dashboard:
+
 - اذهب إلى **Deployments** لرؤية تاريخ النشر
 - اذهب إلى **Metrics** لرؤية استخدام الموارد
 - اذهب إلى **Logs** لرؤية application logs
@@ -211,11 +213,13 @@ railway logs --follow
 ## 💰 التكلفة المتوقعة - Expected Costs
 
 ### Railway:
+
 - **Hobby Plan**: $5/شهر (500 ساعة تنفيذ)
 - **Pro Plan**: $20/شهر (unlimited)
 - **Database**: $5-10/شهر (حسب الاستخدام)
 
 ### الخدمات الأخرى:
+
 - **Supabase**: $0 (Free tier) أو $25/شهر (Pro)
 - **Stripe**: 2.9% + $0.30 لكل معاملة
 - **AWS S3**: $1-5/شهر
@@ -318,11 +322,13 @@ railway variables
 ## 📞 الدعم - Support
 
 ### Railway Support:
+
 - [Railway Docs](https://docs.railway.app)
 - [Railway Discord](https://discord.gg/railway)
 - [Railway Status](https://status.railway.app)
 
 ### Supabase Support:
+
 - [Supabase Docs](https://supabase.com/docs)
 - [Supabase Discord](https://discord.supabase.com)
 

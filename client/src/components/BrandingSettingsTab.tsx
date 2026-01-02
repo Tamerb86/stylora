@@ -9,7 +9,11 @@ import { Upload, Palette, Type, Eye, Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export function BrandingSettingsTab() {
-  const { data: branding, isLoading, refetch } = trpc.salonSettings.getBranding.useQuery();
+  const {
+    data: branding,
+    isLoading,
+    refetch,
+  } = trpc.salonSettings.getBranding.useQuery();
   const updateBranding = trpc.salonSettings.updateBranding.useMutation();
 
   // Local state for live preview
@@ -17,7 +21,9 @@ export function BrandingSettingsTab() {
   const [primaryColor, setPrimaryColor] = useState("#2563eb");
   const [accentColor, setAccentColor] = useState("#ea580c");
   const [welcomeTitle, setWelcomeTitle] = useState("Velkommen!");
-  const [welcomeSubtitle, setWelcomeSubtitle] = useState("Bestill din time på nett.");
+  const [welcomeSubtitle, setWelcomeSubtitle] = useState(
+    "Bestill din time på nett."
+  );
   const [showStaffSection, setShowStaffSection] = useState(true);
   const [showSummaryCard, setShowSummaryCard] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
@@ -31,7 +37,9 @@ export function BrandingSettingsTab() {
       setPrimaryColor(branding.primaryColor || "#2563eb");
       setAccentColor(branding.accentColor || "#ea580c");
       setWelcomeTitle(branding.welcomeTitle || "Velkommen!");
-      setWelcomeSubtitle(branding.welcomeSubtitle || "Bestill din time på nett.");
+      setWelcomeSubtitle(
+        branding.welcomeSubtitle || "Bestill din time på nett."
+      );
       setShowStaffSection(branding.showStaffSection ?? true);
       setShowSummaryCard(branding.showSummaryCard ?? true);
     }
@@ -191,13 +199,13 @@ export function BrandingSettingsTab() {
                     id="primaryColor"
                     type="color"
                     value={primaryColor}
-                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    onChange={e => setPrimaryColor(e.target.value)}
                     className="w-20 h-10 cursor-pointer"
                   />
                   <Input
                     type="text"
                     value={primaryColor}
-                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    onChange={e => setPrimaryColor(e.target.value)}
                     placeholder="#2563eb"
                     className="flex-1"
                   />
@@ -211,13 +219,13 @@ export function BrandingSettingsTab() {
                     id="accentColor"
                     type="color"
                     value={accentColor}
-                    onChange={(e) => setAccentColor(e.target.value)}
+                    onChange={e => setAccentColor(e.target.value)}
                     className="w-20 h-10 cursor-pointer"
                   />
                   <Input
                     type="text"
                     value={accentColor}
-                    onChange={(e) => setAccentColor(e.target.value)}
+                    onChange={e => setAccentColor(e.target.value)}
                     placeholder="#ea580c"
                     className="flex-1"
                   />
@@ -239,7 +247,7 @@ export function BrandingSettingsTab() {
                 <Input
                   id="welcomeTitle"
                   value={welcomeTitle}
-                  onChange={(e) => setWelcomeTitle(e.target.value)}
+                  onChange={e => setWelcomeTitle(e.target.value)}
                   placeholder="Velkommen!"
                   maxLength={100}
                   className="mt-2"
@@ -251,7 +259,7 @@ export function BrandingSettingsTab() {
                 <Input
                   id="welcomeSubtitle"
                   value={welcomeSubtitle}
-                  onChange={(e) => setWelcomeSubtitle(e.target.value)}
+                  onChange={e => setWelcomeSubtitle(e.target.value)}
                   placeholder="Bestill din time på nett."
                   maxLength={200}
                   className="mt-2"

@@ -1,17 +1,65 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { Calendar, TrendingUp, Users, Briefcase, DollarSign, Activity } from "lucide-react";
-import { format, subDays, subMonths, startOfMonth, endOfMonth, startOfYear, endOfYear } from "date-fns";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import {
+  Calendar,
+  TrendingUp,
+  Users,
+  Briefcase,
+  DollarSign,
+  Activity,
+} from "lucide-react";
+import {
+  format,
+  subDays,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+} from "date-fns";
 import { safeToFixed } from "@/lib/utils";
 
 type DateRange = "7days" | "30days" | "thisMonth" | "lastMonth" | "thisYear";
 
-const COLORS = ["#1e3a5f", "#ff6b35", "#4a90e2", "#50c878", "#f4a261", "#e76f51"];
+const COLORS = [
+  "#1e3a5f",
+  "#ff6b35",
+  "#4a90e2",
+  "#50c878",
+  "#f4a261",
+  "#e76f51",
+];
 
 const STATUS_LABELS: Record<string, string> = {
   pending: "Ventende",
@@ -66,52 +114,78 @@ function AnalyticsContent() {
 
   const dateRangeValues = getDateRangeValues();
 
-  const { data: customerGrowth, isLoading: loadingCustomers } = trpc.analytics.customerGrowth.useQuery(dateRangeValues);
-  const { data: employeePerformance, isLoading: loadingEmployees } = trpc.analytics.employeePerformance.useQuery(dateRangeValues);
-  const { data: topServices, isLoading: loadingServices } = trpc.analytics.topServices.useQuery(dateRangeValues);
-  const { data: revenueTrends, isLoading: loadingRevenue } = trpc.analytics.revenueTrends.useQuery(dateRangeValues);
-  const { data: statusDistribution, isLoading: loadingStatus } = trpc.analytics.appointmentStatusDistribution.useQuery(dateRangeValues);
+  const { data: customerGrowth, isLoading: loadingCustomers } =
+    trpc.analytics.customerGrowth.useQuery(dateRangeValues);
+  const { data: employeePerformance, isLoading: loadingEmployees } =
+    trpc.analytics.employeePerformance.useQuery(dateRangeValues);
+  const { data: topServices, isLoading: loadingServices } =
+    trpc.analytics.topServices.useQuery(dateRangeValues);
+  const { data: revenueTrends, isLoading: loadingRevenue } =
+    trpc.analytics.revenueTrends.useQuery(dateRangeValues);
+  const { data: statusDistribution, isLoading: loadingStatus } =
+    trpc.analytics.appointmentStatusDistribution.useQuery(dateRangeValues);
 
-  const customerGrowthData = customerGrowth?.map((item) => ({
-    date: format(new Date(item.date), "dd.MM"),
-    kunder: item.count,
-  })) || [];
+  const customerGrowthData =
+    customerGrowth?.map(item => ({
+      date: format(new Date(item.date), "dd.MM"),
+      kunder: item.count,
+    })) || [];
 
-  const employeePerformanceData = employeePerformance?.map((item) => ({
-    navn: item.employeeName || "Ukjent",
-    avtaler: item.appointmentCount,
-    inntekt: parseFloat(item.totalRevenue),
-  })) || [];
+  const employeePerformanceData =
+    employeePerformance?.map(item => ({
+      navn: item.employeeName || "Ukjent",
+      avtaler: item.appointmentCount,
+      inntekt: parseFloat(item.totalRevenue),
+    })) || [];
 
-  const topServicesData = topServices?.map((item) => ({
-    tjeneste: item.serviceName || "Ukjent",
-    bookinger: item.bookingCount,
-    inntekt: parseFloat(item.totalRevenue),
-  })) || [];
+  const topServicesData =
+    topServices?.map(item => ({
+      tjeneste: item.serviceName || "Ukjent",
+      bookinger: item.bookingCount,
+      inntekt: parseFloat(item.totalRevenue),
+    })) || [];
 
-  const revenueTrendsData = revenueTrends?.map((item) => ({
-    date: format(new Date(item.date), "dd.MM"),
-    inntekt: parseFloat(item.revenue),
-  })) || [];
+  const revenueTrendsData =
+    revenueTrends?.map(item => ({
+      date: format(new Date(item.date), "dd.MM"),
+      inntekt: parseFloat(item.revenue),
+    })) || [];
 
-  const statusDistributionData = statusDistribution?.map((item) => ({
-    name: item.status ? (STATUS_LABELS[item.status] || item.status) : "Ukjent",
-    value: item.count,
-  })) || [];
+  const statusDistributionData =
+    statusDistribution?.map(item => ({
+      name: item.status ? STATUS_LABELS[item.status] || item.status : "Ukjent",
+      value: item.count,
+    })) || [];
 
-  const totalRevenue = revenueTrendsData.reduce((sum, item) => sum + item.inntekt, 0);
-  const totalCustomers = customerGrowthData.reduce((sum, item) => sum + item.kunder, 0);
-  const totalAppointments = employeePerformanceData.reduce((sum, item) => sum + item.avtaler, 0);
+  const totalRevenue = revenueTrendsData.reduce(
+    (sum, item) => sum + item.inntekt,
+    0
+  );
+  const totalCustomers = customerGrowthData.reduce(
+    (sum, item) => sum + item.kunder,
+    0
+  );
+  const totalAppointments = employeePerformanceData.reduce(
+    (sum, item) => sum + item.avtaler,
+    0
+  );
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">Analyse</h1>
-          <p className="text-gray-600 mt-1">Detaljert innsikt i din virksomhet</p>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
+            Analyse
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Detaljert innsikt i din virksomhet
+          </p>
         </div>
         <div className="flex items-center gap-4">
-          <Select value={dateRange} onValueChange={(value) => setDateRange(value as DateRange)}>
+          <Select
+            value={dateRange}
+            onValueChange={value => setDateRange(value as DateRange)}
+          >
             <SelectTrigger className="w-48">
               <SelectValue />
             </SelectTrigger>
@@ -134,8 +208,12 @@ function AnalyticsContent() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{safeToFixed(totalRevenue, 2)} kr</div>
-            <p className="text-xs text-muted-foreground">Fra fullførte avtaler</p>
+            <div className="text-2xl font-bold">
+              {safeToFixed(totalRevenue, 2)} kr
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Fra fullførte avtaler
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -150,7 +228,9 @@ function AnalyticsContent() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Totale Avtaler</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Totale Avtaler
+            </CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -171,9 +251,13 @@ function AnalyticsContent() {
         </CardHeader>
         <CardContent>
           {loadingCustomers ? (
-            <div className="h-80 flex items-center justify-center text-gray-500">Laster...</div>
+            <div className="h-80 flex items-center justify-center text-gray-500">
+              Laster...
+            </div>
           ) : customerGrowthData.length === 0 ? (
-            <div className="h-80 flex items-center justify-center text-gray-500">Ingen data tilgjengelig</div>
+            <div className="h-80 flex items-center justify-center text-gray-500">
+              Ingen data tilgjengelig
+            </div>
           ) : (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={customerGrowthData}>
@@ -181,8 +265,20 @@ function AnalyticsContent() {
                 <XAxis dataKey="date" />
                 <YAxis />
                 <Tooltip />
-                <Legend wrapperStyle={{ fontSize: '16px', fontWeight: '700', color: '#000000' }} />
-                <Line type="monotone" dataKey="kunder" stroke="#1e3a5f" strokeWidth={2} name="Nye kunder" />
+                <Legend
+                  wrapperStyle={{
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    color: "#000000",
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="kunder"
+                  stroke="#1e3a5f"
+                  strokeWidth={2}
+                  name="Nye kunder"
+                />
               </LineChart>
             </ResponsiveContainer>
           )}
@@ -196,22 +292,40 @@ function AnalyticsContent() {
             <DollarSign className="h-5 w-5 text-[#ff6b35]" />
             Inntektstrend
           </CardTitle>
-          <CardDescription>Daglig inntekt fra fullførte avtaler</CardDescription>
+          <CardDescription>
+            Daglig inntekt fra fullførte avtaler
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {loadingRevenue ? (
-            <div className="h-80 flex items-center justify-center text-gray-500">Laster...</div>
+            <div className="h-80 flex items-center justify-center text-gray-500">
+              Laster...
+            </div>
           ) : revenueTrendsData.length === 0 ? (
-            <div className="h-80 flex items-center justify-center text-gray-500">Ingen data tilgjengelig</div>
+            <div className="h-80 flex items-center justify-center text-gray-500">
+              Ingen data tilgjengelig
+            </div>
           ) : (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={revenueTrendsData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
                 <YAxis />
-                <Tooltip formatter={(value) => `${value} kr`} />
-                <Legend wrapperStyle={{ fontSize: '16px', fontWeight: '700', color: '#000000' }} />
-                <Line type="monotone" dataKey="inntekt" stroke="#ff6b35" strokeWidth={2} name="Inntekt (kr)" />
+                <Tooltip formatter={value => `${value} kr`} />
+                <Legend
+                  wrapperStyle={{
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    color: "#000000",
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="inntekt"
+                  stroke="#ff6b35"
+                  strokeWidth={2}
+                  name="Inntekt (kr)"
+                />
               </LineChart>
             </ResponsiveContainer>
           )}
@@ -225,13 +339,19 @@ function AnalyticsContent() {
             <Briefcase className="h-5 w-5 text-[#4a90e2]" />
             Ansattes Ytelse
           </CardTitle>
-          <CardDescription>Fullførte avtaler og inntekt per ansatt</CardDescription>
+          <CardDescription>
+            Fullførte avtaler og inntekt per ansatt
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {loadingEmployees ? (
-            <div className="h-80 flex items-center justify-center text-gray-500">Laster...</div>
+            <div className="h-80 flex items-center justify-center text-gray-500">
+              Laster...
+            </div>
           ) : employeePerformanceData.length === 0 ? (
-            <div className="h-80 flex items-center justify-center text-gray-500">Ingen data tilgjengelig</div>
+            <div className="h-80 flex items-center justify-center text-gray-500">
+              Ingen data tilgjengelig
+            </div>
           ) : (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={employeePerformanceData}>
@@ -240,9 +360,25 @@ function AnalyticsContent() {
                 <YAxis yAxisId="left" />
                 <YAxis yAxisId="right" orientation="right" />
                 <Tooltip />
-                <Legend wrapperStyle={{ fontSize: '16px', fontWeight: '700', color: '#000000' }} />
-                <Bar yAxisId="left" dataKey="avtaler" fill="#4a90e2" name="Avtaler" />
-                <Bar yAxisId="right" dataKey="inntekt" fill="#50c878" name="Inntekt (kr)" />
+                <Legend
+                  wrapperStyle={{
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    color: "#000000",
+                  }}
+                />
+                <Bar
+                  yAxisId="left"
+                  dataKey="avtaler"
+                  fill="#4a90e2"
+                  name="Avtaler"
+                />
+                <Bar
+                  yAxisId="right"
+                  dataKey="inntekt"
+                  fill="#50c878"
+                  name="Inntekt (kr)"
+                />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -260,9 +396,13 @@ function AnalyticsContent() {
         </CardHeader>
         <CardContent>
           {loadingServices ? (
-            <div className="h-80 flex items-center justify-center text-gray-500">Laster...</div>
+            <div className="h-80 flex items-center justify-center text-gray-500">
+              Laster...
+            </div>
           ) : topServicesData.length === 0 ? (
-            <div className="h-80 flex items-center justify-center text-gray-500">Ingen data tilgjengelig</div>
+            <div className="h-80 flex items-center justify-center text-gray-500">
+              Ingen data tilgjengelig
+            </div>
           ) : (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={topServicesData} layout="vertical">
@@ -270,7 +410,13 @@ function AnalyticsContent() {
                 <XAxis type="number" />
                 <YAxis dataKey="tjeneste" type="category" width={150} />
                 <Tooltip />
-                <Legend wrapperStyle={{ fontSize: '16px', fontWeight: '700', color: '#000000' }} />
+                <Legend
+                  wrapperStyle={{
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    color: "#000000",
+                  }}
+                />
                 <Bar dataKey="bookinger" fill="#50c878" name="Bookinger" />
               </BarChart>
             </ResponsiveContainer>
@@ -289,9 +435,13 @@ function AnalyticsContent() {
         </CardHeader>
         <CardContent>
           {loadingStatus ? (
-            <div className="h-80 flex items-center justify-center text-gray-500">Laster...</div>
+            <div className="h-80 flex items-center justify-center text-gray-500">
+              Laster...
+            </div>
           ) : statusDistributionData.length === 0 ? (
-            <div className="h-80 flex items-center justify-center text-gray-500">Ingen data tilgjengelig</div>
+            <div className="h-80 flex items-center justify-center text-gray-500">
+              Ingen data tilgjengelig
+            </div>
           ) : (
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -300,13 +450,18 @@ function AnalyticsContent() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name}: ${safeToFixed(percent * 100, 0)}%`}
+                  label={({ name, percent }) =>
+                    `${name}: ${safeToFixed(percent * 100, 0)}%`
+                  }
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
                 >
                   {statusDistributionData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip />

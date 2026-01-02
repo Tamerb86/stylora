@@ -18,14 +18,14 @@ By enabling iZettle integration in Stylora, you can process payments directly fr
 
 Before you begin, ensure you have the following:
 
-| Requirement | Description |
-|------------|-------------|
-| **iZettle Business Account** | An active iZettle business account with payment processing enabled |
-| **iZettle Terminal** | At least one iZettle card reader (Reader 2, Terminal, or Pro) |
-| **Business Registration** | Your business must be registered in a supported country (Norway, Sweden, UK, etc.) |
-| **Admin Access** | Administrator access to your Stylora system |
-| **Internet Connection** | Stable internet connection for OAuth authentication |
-| **Time Required** | Approximately 15-20 minutes for complete setup |
+| Requirement                  | Description                                                                        |
+| ---------------------------- | ---------------------------------------------------------------------------------- |
+| **iZettle Business Account** | An active iZettle business account with payment processing enabled                 |
+| **iZettle Terminal**         | At least one iZettle card reader (Reader 2, Terminal, or Pro)                      |
+| **Business Registration**    | Your business must be registered in a supported country (Norway, Sweden, UK, etc.) |
+| **Admin Access**             | Administrator access to your Stylora system                                        |
+| **Internet Connection**      | Stable internet connection for OAuth authentication                                |
+| **Time Required**            | Approximately 15-20 minutes for complete setup                                     |
 
 ---
 
@@ -60,11 +60,11 @@ iZettle will verify your business information. This process typically takes **1-
 
 If you don't already have an iZettle card reader, you can order one from the iZettle website. Popular options include:
 
-| Terminal | Features | Price Range |
-|----------|----------|-------------|
-| **iZettle Reader 2** | Compact card reader, connects via Bluetooth | ~500 NOK |
-| **iZettle Terminal** | All-in-one terminal with built-in receipt printer | ~3,500 NOK |
-| **iZettle Pro** | Advanced terminal with customer display | ~5,000 NOK |
+| Terminal             | Features                                          | Price Range |
+| -------------------- | ------------------------------------------------- | ----------- |
+| **iZettle Reader 2** | Compact card reader, connects via Bluetooth       | ~500 NOK    |
+| **iZettle Terminal** | All-in-one terminal with built-in receipt printer | ~3,500 NOK  |
+| **iZettle Pro**      | Advanced terminal with customer display           | ~5,000 NOK  |
 
 ---
 
@@ -107,22 +107,22 @@ Once you have developer access:
 2. Click **"Create New Application"** or **"Register Application"**
 3. Fill in the application details:
 
-| Field | Value | Description |
-|-------|-------|-------------|
-| **Application Name** | Stylora POS Integration | A descriptive name for your integration |
-| **Application Type** | Web Application | Select web application type |
-| **Redirect URI** | `https://your-domain.com/api/izettle/callback` | OAuth callback URL (replace with your actual domain) |
-| **Description** | Point-of-sale integration for salon management | Brief description of the integration |
+| Field                | Value                                          | Description                                          |
+| -------------------- | ---------------------------------------------- | ---------------------------------------------------- |
+| **Application Name** | Stylora POS Integration                        | A descriptive name for your integration              |
+| **Application Type** | Web Application                                | Select web application type                          |
+| **Redirect URI**     | `https://your-domain.com/api/izettle/callback` | OAuth callback URL (replace with your actual domain) |
+| **Description**      | Point-of-sale integration for salon management | Brief description of the integration                 |
 
 ### 3.2 Retrieve OAuth Credentials
 
 After creating the application, iZettle will display your OAuth credentials. **Copy and save these immediately** as some values may only be shown once:
 
-| Credential | Description | Format |
-|-----------|-------------|--------|
-| **Client ID** | Your application identifier | UUID format (e.g., `a1b2c3d4-e5f6-...`) |
-| **Client Secret** | Secret key for authentication | Long alphanumeric string |
-| **API Key** | Additional API authentication key | Alphanumeric string |
+| Credential        | Description                       | Format                                  |
+| ----------------- | --------------------------------- | --------------------------------------- |
+| **Client ID**     | Your application identifier       | UUID format (e.g., `a1b2c3d4-e5f6-...`) |
+| **Client Secret** | Secret key for authentication     | Long alphanumeric string                |
+| **API Key**       | Additional API authentication key | Alphanumeric string                     |
 
 > **Security Warning:** Treat these credentials like passwords. Never share them publicly, commit them to version control, or expose them in client-side code. Store them securely in environment variables or a secrets manager.
 
@@ -218,11 +218,11 @@ Ensure your staff knows how to:
 
 Regularly monitor your iZettle transactions:
 
-| Platform | What You Can See |
-|----------|-----------------|
-| **Stylora Dashboard** | Real-time payment status, booking details, customer information |
-| **iZettle App** | Terminal management, transaction history, settlement reports |
-| **iZettle Web Dashboard** | Detailed analytics, export reports, refund management |
+| Platform                  | What You Can See                                                |
+| ------------------------- | --------------------------------------------------------------- |
+| **Stylora Dashboard**     | Real-time payment status, booking details, customer information |
+| **iZettle App**           | Terminal management, transaction history, settlement reports    |
+| **iZettle Web Dashboard** | Detailed analytics, export reports, refund management           |
 
 ### 6.3 Settlement Schedule
 
@@ -245,6 +245,7 @@ Settlement times may vary based on your bank and account type.
 **Cause:** OAuth callback URL mismatch or invalid credentials
 
 **Solution:**
+
 1. Verify that the Redirect URI in iZettle Developer Portal matches your Stylora domain exactly
 2. Ensure there are no trailing slashes or typos
 3. Check that your OAuth credentials are correct
@@ -255,6 +256,7 @@ Settlement times may vary based on your bank and account type.
 **Cause:** Network connectivity issues or firewall blocking OAuth requests
 
 **Solution:**
+
 1. Check your internet connection
 2. Verify that your firewall allows outbound HTTPS connections to `*.izettle.com`
 3. Try again from a different network
@@ -265,6 +267,7 @@ Settlement times may vary based on your bank and account type.
 **Cause:** Synchronization delay or API rate limiting
 
 **Solution:**
+
 1. Wait 1-2 minutes and refresh the page
 2. Check iZettle connection status in Stylora
 3. Verify that the payment was successful in the iZettle app
@@ -275,6 +278,7 @@ Settlement times may vary based on your bank and account type.
 **Cause:** iZettle terminal not paired or offline
 
 **Solution:**
+
 1. Ensure your iZettle terminal is powered on
 2. Check that the terminal is connected to Wi-Fi or mobile data
 3. Verify terminal pairing in the iZettle app
@@ -285,6 +289,7 @@ Settlement times may vary based on your bank and account type.
 **Cause:** Original transaction not yet settled or insufficient funds
 
 **Solution:**
+
 1. Verify that the original transaction has been settled (1-2 days)
 2. Check that your iZettle account has sufficient balance
 3. Ensure the refund amount does not exceed the original payment
@@ -298,14 +303,14 @@ Protecting your iZettle credentials and customer payment data is critical. Follo
 
 ### Credential Management
 
-| Best Practice | Description |
-|--------------|-------------|
-| **Never Share Credentials** | Do not share OAuth credentials via email, chat, or public channels |
-| **Use Strong Passwords** | Use a unique, strong password for your iZettle account |
-| **Enable Two-Factor Authentication** | Activate 2FA in your iZettle account settings |
-| **Rotate Credentials Regularly** | Change OAuth credentials every 6-12 months |
-| **Limit Access** | Only grant iZettle access to trusted administrators |
-| **Monitor Activity** | Regularly review transaction logs for suspicious activity |
+| Best Practice                        | Description                                                        |
+| ------------------------------------ | ------------------------------------------------------------------ |
+| **Never Share Credentials**          | Do not share OAuth credentials via email, chat, or public channels |
+| **Use Strong Passwords**             | Use a unique, strong password for your iZettle account             |
+| **Enable Two-Factor Authentication** | Activate 2FA in your iZettle account settings                      |
+| **Rotate Credentials Regularly**     | Change OAuth credentials every 6-12 months                         |
+| **Limit Access**                     | Only grant iZettle access to trusted administrators                |
+| **Monitor Activity**                 | Regularly review transaction logs for suspicious activity          |
 
 ### Compliance
 
@@ -324,12 +329,12 @@ Ensure your iZettle integration complies with:
 
 For further assistance and detailed technical documentation, refer to these official iZettle resources:
 
-| Resource | URL | Description |
-|----------|-----|-------------|
-| **iZettle Developer Portal** | [https://developer.izettle.com](https://developer.izettle.com) | Complete API documentation |
-| **iZettle Support** | [https://www.izettle.com/help](https://www.izettle.com/help) | Customer support and FAQs |
-| **iZettle Business Dashboard** | [https://my.izettle.com](https://my.izettle.com) | Manage your business account |
-| **iZettle App** | iOS App Store / Google Play | Mobile app for terminal management |
+| Resource                       | URL                                                            | Description                        |
+| ------------------------------ | -------------------------------------------------------------- | ---------------------------------- |
+| **iZettle Developer Portal**   | [https://developer.izettle.com](https://developer.izettle.com) | Complete API documentation         |
+| **iZettle Support**            | [https://www.izettle.com/help](https://www.izettle.com/help)   | Customer support and FAQs          |
+| **iZettle Business Dashboard** | [https://my.izettle.com](https://my.izettle.com)               | Manage your business account       |
+| **iZettle App**                | iOS App Store / Google Play                                    | Mobile app for terminal management |
 
 ---
 
@@ -338,10 +343,12 @@ For further assistance and detailed technical documentation, refer to these offi
 If you encounter issues not covered in this guide, contact support:
 
 **Stylora Support:**
+
 - Email: support@stylora.no
 - Help Center: [https://help.stylora.no](https://help.stylora.no)
 
 **iZettle Support:**
+
 - Phone: +47 21 93 05 00 (Norway)
 - Email: support@izettle.com
 - Live Chat: Available in iZettle app

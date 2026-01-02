@@ -89,7 +89,8 @@ class SupabaseAuthService {
       const { payload } = await jwtVerify(cookieValue, secretKey, {
         algorithms: ["HS256"],
       });
-      const { openId, appId, name, email, impersonatedTenantId } = payload as Record<string, unknown>;
+      const { openId, appId, name, email, impersonatedTenantId } =
+        payload as Record<string, unknown>;
 
       if (
         !isNonEmptyString(openId) ||
@@ -104,8 +105,11 @@ class SupabaseAuthService {
         openId,
         appId,
         name,
-        email: typeof email === 'string' ? email : undefined,
-        impersonatedTenantId: typeof impersonatedTenantId === 'string' ? impersonatedTenantId : null,
+        email: typeof email === "string" ? email : undefined,
+        impersonatedTenantId:
+          typeof impersonatedTenantId === "string"
+            ? impersonatedTenantId
+            : null,
       };
     } catch (error) {
       console.warn("[Auth] Session verification failed", String(error));
@@ -161,9 +165,9 @@ class SupabaseAuthService {
       lastSignedIn: signedInAt,
     });
 
-    return { 
-      user, 
-      impersonatedTenantId: session.impersonatedTenantId ?? null 
+    return {
+      user,
+      impersonatedTenantId: session.impersonatedTenantId ?? null,
     };
   }
 }
@@ -185,21 +189,24 @@ export function registerSupabaseAuthRoutes(app: Express) {
       }
 
       if (password.length < 8) {
-        res.status(400).json({ error: "Password must be at least 8 characters" });
+        res
+          .status(400)
+          .json({ error: "Password must be at least 8 characters" });
         return;
       }
 
       const supabase = getSupabaseAdmin();
 
       // Create user in Supabase
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: false, // Require email verification
-        user_metadata: {
-          name: name || email.split('@')[0],
-        },
-      });
+      const { data: authData, error: authError } =
+        await supabase.auth.admin.createUser({
+          email,
+          password,
+          email_confirm: false, // Require email verification
+          user_metadata: {
+            name: name || email.split("@")[0],
+          },
+        });
 
       if (authError || !authData.user) {
         console.error("[Auth] Supabase registration error:", authError);
@@ -211,17 +218,18 @@ export function registerSupabaseAuthRoutes(app: Express) {
       const openId = authData.user.id;
       await db.upsertUser({
         openId,
-        tenantId: 'default-tenant', // TODO: Implement proper tenant selection
-        role: 'employee',
-        name: name || email.split('@')[0],
+        tenantId: "default-tenant", // TODO: Implement proper tenant selection
+        role: "employee",
+        name: name || email.split("@")[0],
         email,
-        loginMethod: 'email',
+        loginMethod: "email",
         lastSignedIn: new Date(),
       });
 
-      res.json({ 
+      res.json({
         success: true,
-        message: "Registration successful. Please check your email to verify your account.",
+        message:
+          "Registration successful. Please check your email to verify your account.",
         userId: authData.user.id,
       });
     } catch (error) {
@@ -242,10 +250,11 @@ export function registerSupabaseAuthRoutes(app: Express) {
 
       // Authenticate with Supabase
       const supabase = getSupabaseClient();
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data: authData, error: authError } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
       if (authError || !authData.user) {
         console.error("[Auth] Login error:", authError);
@@ -255,25 +264,27 @@ export function registerSupabaseAuthRoutes(app: Express) {
 
       // Check if email is verified
       if (!authData.user.email_confirmed_at) {
-        res.status(403).json({ error: "Please verify your email before logging in" });
+        res
+          .status(403)
+          .json({ error: "Please verify your email before logging in" });
         return;
       }
 
       // Get or create user in our database
       const openId = authData.user.id;
       let user = await db.getUserByOpenId(openId);
-      
+
       if (!user) {
         await db.upsertUser({
           openId,
-          tenantId: 'default-tenant',
-          role: 'employee',
-          name: authData.user.user_metadata?.name || email.split('@')[0],
+          tenantId: "default-tenant",
+          role: "employee",
+          name: authData.user.user_metadata?.name || email.split("@")[0],
           email,
-          loginMethod: 'email',
+          loginMethod: "email",
           lastSignedIn: new Date(),
         });
-        
+
         user = await db.getUserByOpenId(openId);
       }
 
@@ -283,27 +294,33 @@ export function registerSupabaseAuthRoutes(app: Express) {
       }
 
       // Create session token
-      const sessionToken = await supabaseAuthService.createSessionToken({
-        openId: user.openId,
-        appId: ENV.appId,
-        name: user.name || email,
-        email: user.email || undefined,
-      }, {
-        expiresInMs: ONE_YEAR_MS,
-      });
+      const sessionToken = await supabaseAuthService.createSessionToken(
+        {
+          openId: user.openId,
+          appId: ENV.appId,
+          name: user.name || email,
+          email: user.email || undefined,
+        },
+        {
+          expiresInMs: ONE_YEAR_MS,
+        }
+      );
 
       // Set cookie
       const cookieOptions = getSessionCookieOptions(req);
-      res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      res.cookie(COOKIE_NAME, sessionToken, {
+        ...cookieOptions,
+        maxAge: ONE_YEAR_MS,
+      });
 
-      res.json({ 
+      res.json({
         success: true,
         user: {
           id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
-        }
+        },
       });
     } catch (error) {
       console.error("[Auth] Login failed", error);
@@ -322,7 +339,7 @@ export function registerSupabaseAuthRoutes(app: Express) {
   app.get("/api/auth/me", async (req: Request, res: Response) => {
     try {
       const result = await supabaseAuthService.authenticateRequest(req);
-      
+
       if (!result) {
         res.status(401).json({ error: "Not authenticated" });
         return;
@@ -336,7 +353,7 @@ export function registerSupabaseAuthRoutes(app: Express) {
           email: result.user.email,
           role: result.user.role,
           tenantId: result.user.tenantId,
-        }
+        },
       });
     } catch (error) {
       console.error("[Auth] Get user failed", error);
@@ -356,7 +373,7 @@ export function registerSupabaseAuthRoutes(app: Express) {
 
       const supabase = getSupabaseClient();
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${req.protocol}://${req.get('host')}/reset-password`,
+        redirectTo: `${req.protocol}://${req.get("host")}/reset-password`,
       });
 
       if (error) {
@@ -364,9 +381,10 @@ export function registerSupabaseAuthRoutes(app: Express) {
         // Don't reveal if email exists or not for security
       }
 
-      res.json({ 
+      res.json({
         success: true,
-        message: "If an account exists with that email, a password reset link has been sent.",
+        message:
+          "If an account exists with that email, a password reset link has been sent.",
       });
     } catch (error) {
       console.error("[Auth] Password reset failed", error);
@@ -380,12 +398,16 @@ export function registerSupabaseAuthRoutes(app: Express) {
       const { access_token, new_password } = req.body;
 
       if (!access_token || !new_password) {
-        res.status(400).json({ error: "Access token and new password are required" });
+        res
+          .status(400)
+          .json({ error: "Access token and new password are required" });
         return;
       }
 
       if (new_password.length < 8) {
-        res.status(400).json({ error: "Password must be at least 8 characters" });
+        res
+          .status(400)
+          .json({ error: "Password must be at least 8 characters" });
         return;
       }
 
@@ -400,7 +422,7 @@ export function registerSupabaseAuthRoutes(app: Express) {
         return;
       }
 
-      res.json({ 
+      res.json({
         success: true,
         message: "Password updated successfully",
       });

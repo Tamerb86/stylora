@@ -1,6 +1,6 @@
 /**
  * Branding Settings Tests (Refactored with Test Helpers)
- * 
+ *
  * This is a refactored version of branding.test.ts showing how to use
  * the centralized test helpers for cleaner, more maintainable tests.
  */
@@ -174,9 +174,9 @@ describe("Branding Settings (Refactored)", () => {
       showSummaryCard: true,
     };
 
-    await expect(
-      caller.salonSettings.updateBranding(branding)
-    ).rejects.toThrow("Admin access required");
+    await expect(caller.salonSettings.updateBranding(branding)).rejects.toThrow(
+      "Admin access required"
+    );
   });
 
   it("should allow employees to read branding", async () => {

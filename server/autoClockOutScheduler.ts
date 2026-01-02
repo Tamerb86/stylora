@@ -44,14 +44,14 @@ async function checkAndAutoClockOut() {
     .from(salonSettings);
 
   const now = new Date();
-  const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 
   for (const setting of settings) {
     if (!setting.autoClockOutTime) continue;
 
     // Check if current time matches auto clock-out time (within 1 minute window)
     const autoTime = setting.autoClockOutTime;
-    
+
     // Compare times (format: "HH:MM")
     if (currentTime === autoTime.substring(0, 5)) {
       // Auto clock-out all employees for this tenant
@@ -64,9 +64,11 @@ async function checkAndAutoClockOut() {
       );
 
       const affectedRows = (result as any).rowsAffected || 0;
-      
+
       if (affectedRows > 0) {
-        console.log(`[AutoClockOut] Clocked out ${affectedRows} employees for tenant ${setting.tenantId} at ${currentTime}`);
+        console.log(
+          `[AutoClockOut] Clocked out ${affectedRows} employees for tenant ${setting.tenantId} at ${currentTime}`
+        );
       }
     }
   }

@@ -35,8 +35,12 @@ export default function Appointments() {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
   const [notes, setNotes] = useState("");
   const [isRecurring, setIsRecurring] = useState(false);
-  const [recurringFrequency, setRecurringFrequency] = useState<"weekly" | "biweekly" | "monthly">("weekly");
-  const [recurringEndType, setRecurringEndType] = useState<"date" | "count">("date");
+  const [recurringFrequency, setRecurringFrequency] = useState<
+    "weekly" | "biweekly" | "monthly"
+  >("weekly");
+  const [recurringEndType, setRecurringEndType] = useState<"date" | "count">(
+    "date"
+  );
   const [recurringEndDate, setRecurringEndDate] = useState("");
   const [recurringCount, setRecurringCount] = useState("4");
   const [viewingAppointment, setViewingAppointment] = useState<any>(null);
@@ -51,22 +55,22 @@ export default function Appointments() {
   const futureDate = new Date();
   futureDate.setHours(0, 0, 0, 0);
   futureDate.setDate(futureDate.getDate() + 60);
-  
+
   const utils = trpc.useUtils();
-  const { data: appointments = [] } = trpc.appointments.list.useQuery({ 
-    startDate: today.toISOString(), 
-    endDate: futureDate.toISOString() 
+  const { data: appointments = [] } = trpc.appointments.list.useQuery({
+    startDate: today.toISOString(),
+    endDate: futureDate.toISOString(),
   });
   const { data: customers = [] } = trpc.customers.list.useQuery();
   const { data: services = [] } = trpc.services.list.useQuery();
   const { data: employees = [] } = trpc.employees.list.useQuery();
-  
+
   // Fetch leaves and holidays for calendar
   const { data: leaves = [] } = trpc.leaves.getForDateRange.useQuery({
     startDate: today.toISOString(),
     endDate: futureDate.toISOString(),
   });
-  
+
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
   const { data: holidays = [] } = trpc.holidays.getForMonth.useQuery({
@@ -75,25 +79,30 @@ export default function Appointments() {
   });
 
   // Fetch available slots count for calendar
-  const { data: availableSlotsCount = {} } = trpc.appointments.getAvailableSlotsCount.useQuery({
-    startDate: today.toISOString().split('T')[0],
-    endDate: futureDate.toISOString().split('T')[0],
-  });
+  const { data: availableSlotsCount = {} } =
+    trpc.appointments.getAvailableSlotsCount.useQuery({
+      startDate: today.toISOString().split("T")[0],
+      endDate: futureDate.toISOString().split("T")[0],
+    });
 
   const [conflictDialogOpen, setConflictDialogOpen] = useState(false);
   const [conflictDetails, setConflictDetails] = useState<any>(null);
 
-  const createRecurringMutation = trpc.appointments.createRecurring.useMutation({
-    onSuccess: (data) => {
-      toast.success(`${data.appointmentIds.length} gjentakende avtaler opprettet!`);
-      setIsCreateOpen(false);
-      utils.appointments.list.invalidate();
-      resetForm();
-    },
-    onError: (error: any) => {
-      toast.error(error.message || "Kunne ikke opprette gjentakende avtaler");
-    },
-  });
+  const createRecurringMutation = trpc.appointments.createRecurring.useMutation(
+    {
+      onSuccess: data => {
+        toast.success(
+          `${data.appointmentIds.length} gjentakende avtaler opprettet!`
+        );
+        setIsCreateOpen(false);
+        utils.appointments.list.invalidate();
+        resetForm();
+      },
+      onError: (error: any) => {
+        toast.error(error.message || "Kunne ikke opprette gjentakende avtaler");
+      },
+    }
+  );
 
   const createMutation = trpc.appointments.create.useMutation({
     onSuccess: () => {
@@ -107,16 +116,18 @@ export default function Appointments() {
       console.log("Error message:", error.message);
       console.log("Error data:", error.data);
       console.log("Error shape:", error.shape);
-      
+
       // Check if it's a conflict error - check both error.message and error.data
       const isConflict = error.message?.includes("APPOINTMENT_CONFLICT");
-      const conflictData = error.data?.cause?.existingAppointment || error.shape?.data?.cause?.existingAppointment;
-      
+      const conflictData =
+        error.data?.cause?.existingAppointment ||
+        error.shape?.data?.cause?.existingAppointment;
+
       if (isConflict && conflictData) {
         // Play alert sound
-        const audio = new Audio('/sounds/alert.wav');
-        audio.play().catch(err => console.log('Could not play sound:', err));
-        
+        const audio = new Audio("/sounds/alert.wav");
+        audio.play().catch(err => console.log("Could not play sound:", err));
+
         setConflictDetails(conflictData);
         setConflictDialogOpen(true);
       } else {
@@ -131,7 +142,7 @@ export default function Appointments() {
       setIsViewOpen(false);
       utils.appointments.list.invalidate();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error("Kunne ikke oppdatere status: " + error.message);
     },
   });
@@ -141,30 +152,33 @@ export default function Appointments() {
       toast.success("Avtale flyttet!");
       utils.appointments.list.invalidate();
     },
-    onError: (error) => {
+    onError: error => {
       toast.error("Kunne ikke flytte avtale: " + error.message);
     },
   });
 
-  const cancelWithRefundMutation = trpc.appointments.cancelWithRefund.useMutation({
-    onSuccess: (data) => {
-      if (data.refundProcessed) {
-        toast.success(`Avtale avbrutt! Refusjon på ${data.refundAmount.toFixed(2)} NOK behandlet.`);
-      } else if (data.refundAmount > 0 && data.error) {
-        toast.warning(`Avtale avbrutt, men refusjon feilet: ${data.error}`);
-      } else {
-        toast.success("Avtale avbrutt!");
-      }
-      setIsCancelDialogOpen(false);
-      setIsViewOpen(false);
-      setCancelReason("");
-      setRefundPreview(null);
-      utils.appointments.list.invalidate();
-    },
-    onError: (error) => {
-      toast.error("Kunne ikke avbryte avtale: " + error.message);
-    },
-  });
+  const cancelWithRefundMutation =
+    trpc.appointments.cancelWithRefund.useMutation({
+      onSuccess: data => {
+        if (data.refundProcessed) {
+          toast.success(
+            `Avtale avbrutt! Refusjon på ${data.refundAmount.toFixed(2)} NOK behandlet.`
+          );
+        } else if (data.refundAmount > 0 && data.error) {
+          toast.warning(`Avtale avbrutt, men refusjon feilet: ${data.error}`);
+        } else {
+          toast.success("Avtale avbrutt!");
+        }
+        setIsCancelDialogOpen(false);
+        setIsViewOpen(false);
+        setCancelReason("");
+        setRefundPreview(null);
+        utils.appointments.list.invalidate();
+      },
+      onError: error => {
+        toast.error("Kunne ikke avbryte avtale: " + error.message);
+      },
+    });
 
   const { data: refundCalc } = trpc.appointments.calculateRefund.useQuery(
     {
@@ -217,7 +231,13 @@ export default function Appointments() {
   };
 
   const handleCreate = () => {
-    if (!selectedCustomerId || !selectedServiceId || !selectedEmployeeId || !selectedDate || !selectedTime) {
+    if (
+      !selectedCustomerId ||
+      !selectedServiceId ||
+      !selectedEmployeeId ||
+      !selectedDate ||
+      !selectedTime
+    ) {
       toast.error("Vennligst fyll ut alle obligatoriske felt");
       return;
     }
@@ -226,7 +246,9 @@ export default function Appointments() {
     const selectedDateTime = new Date(`${selectedDate}T${selectedTime}`);
     const now = new Date();
     if (selectedDateTime < now) {
-      toast.error("Kan ikke opprette avtale i fortiden. Vennligst velg en fremtidig dato.");
+      toast.error(
+        "Kan ikke opprette avtale i fortiden. Vennligst velg en fremtidig dato."
+      );
       return;
     }
 
@@ -236,14 +258,19 @@ export default function Appointments() {
         toast.error("Vennligst velg sluttdato for gjentakende avtale");
         return;
       }
-      if (recurringEndType === "count" && (!recurringCount || parseInt(recurringCount) < 2)) {
+      if (
+        recurringEndType === "count" &&
+        (!recurringCount || parseInt(recurringCount) < 2)
+      ) {
         toast.error("Antall gjentagelser må være minst 2");
         return;
       }
 
       const startTime = new Date(`${selectedDate}T${selectedTime}`);
       const service = services.find(s => s.id === parseInt(selectedServiceId));
-      const endTime = new Date(startTime.getTime() + (service?.durationMinutes || 30) * 60000);
+      const endTime = new Date(
+        startTime.getTime() + (service?.durationMinutes || 30) * 60000
+      );
 
       createRecurringMutation.mutate({
         customerId: parseInt(selectedCustomerId),
@@ -254,20 +281,27 @@ export default function Appointments() {
         startDate: selectedDate,
         preferredTime: selectedTime,
         endDate: recurringEndType === "date" ? recurringEndDate : undefined,
-        maxOccurrences: recurringEndType === "count" ? parseInt(recurringCount) : undefined,
+        maxOccurrences:
+          recurringEndType === "count" ? parseInt(recurringCount) : undefined,
         notes: notes || undefined,
       });
     } else {
       const startTime = new Date(`${selectedDate}T${selectedTime}`);
       const service = services.find(s => s.id === parseInt(selectedServiceId));
-      const endTime = new Date(startTime.getTime() + (service?.durationMinutes || 30) * 60000);
+      const endTime = new Date(
+        startTime.getTime() + (service?.durationMinutes || 30) * 60000
+      );
 
       createMutation.mutate({
         customerId: parseInt(selectedCustomerId),
         employeeId: parseInt(selectedEmployeeId),
         appointmentDate: selectedDate,
         startTime: selectedTime,
-        endTime: endTime.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false }),
+        endTime: endTime.toLocaleTimeString("en-GB", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }),
         serviceIds: [parseInt(selectedServiceId)],
         notes: notes || undefined,
       });
@@ -293,8 +327,6 @@ export default function Appointments() {
 
   // Keep appointments as-is (startTime and endTime are already in correct format from DB)
   const transformedAppointments = appointments;
-  
-
 
   return (
     <DashboardLayout
@@ -306,12 +338,14 @@ export default function Appointments() {
       <div className="p-6 max-w-[1400px] mx-auto">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">Timebok</h1>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
+              Timebok
+            </h1>
             <p className="text-muted-foreground">Kalendervisning av avtaler</p>
           </div>
-          <Button 
+          <Button
             size="lg"
-            onClick={() => setIsCreateOpen(true)} 
+            onClick={() => setIsCreateOpen(true)}
             className="h-14 text-base bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-white shadow-lg"
           >
             <Plus className="h-5 w-5 mr-2" />
@@ -351,13 +385,19 @@ export default function Appointments() {
             <div className="space-y-4">
               <div>
                 <Label htmlFor="customer">Kunde *</Label>
-                <Select value={selectedCustomerId} onValueChange={setSelectedCustomerId}>
+                <Select
+                  value={selectedCustomerId}
+                  onValueChange={setSelectedCustomerId}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Velg kunde" />
                   </SelectTrigger>
                   <SelectContent>
-                    {customers.map((customer) => (
-                      <SelectItem key={customer.id} value={customer.id.toString()}>
+                    {customers.map(customer => (
+                      <SelectItem
+                        key={customer.id}
+                        value={customer.id.toString()}
+                      >
                         {customer.firstName} {customer.lastName}
                       </SelectItem>
                     ))}
@@ -367,13 +407,19 @@ export default function Appointments() {
 
               <div>
                 <Label htmlFor="service">Tjeneste *</Label>
-                <Select value={selectedServiceId} onValueChange={setSelectedServiceId}>
+                <Select
+                  value={selectedServiceId}
+                  onValueChange={setSelectedServiceId}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Velg tjeneste" />
                   </SelectTrigger>
                   <SelectContent>
-                    {services.map((service) => (
-                      <SelectItem key={service.id} value={service.id.toString()}>
+                    {services.map(service => (
+                      <SelectItem
+                        key={service.id}
+                        value={service.id.toString()}
+                      >
                         {service.name} ({service.durationMinutes} min)
                       </SelectItem>
                     ))}
@@ -383,13 +429,19 @@ export default function Appointments() {
 
               <div>
                 <Label htmlFor="employee">Behandler *</Label>
-                <Select value={selectedEmployeeId} onValueChange={setSelectedEmployeeId}>
+                <Select
+                  value={selectedEmployeeId}
+                  onValueChange={setSelectedEmployeeId}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Velg behandler" />
                   </SelectTrigger>
                   <SelectContent>
-                    {employees.map((employee) => (
-                      <SelectItem key={employee.id} value={employee.id.toString()}>
+                    {employees.map(employee => (
+                      <SelectItem
+                        key={employee.id}
+                        value={employee.id.toString()}
+                      >
                         {employee.name}
                       </SelectItem>
                     ))}
@@ -404,7 +456,7 @@ export default function Appointments() {
                     id="date"
                     type="date"
                     value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
+                    onChange={e => setSelectedDate(e.target.value)}
                   />
                 </div>
                 <div>
@@ -413,7 +465,7 @@ export default function Appointments() {
                     id="time"
                     type="time"
                     value={selectedTime}
-                    onChange={(e) => setSelectedTime(e.target.value)}
+                    onChange={e => setSelectedTime(e.target.value)}
                   />
                 </div>
               </div>
@@ -424,7 +476,7 @@ export default function Appointments() {
                   id="notes"
                   placeholder="Valgfrie notater..."
                   value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+                  onChange={e => setNotes(e.target.value)}
                 />
               </div>
 
@@ -435,10 +487,13 @@ export default function Appointments() {
                     type="checkbox"
                     id="isRecurring"
                     checked={isRecurring}
-                    onChange={(e) => setIsRecurring(e.target.checked)}
+                    onChange={e => setIsRecurring(e.target.checked)}
                     className="h-4 w-4 rounded border-gray-300"
                   />
-                  <Label htmlFor="isRecurring" className="flex items-center gap-2 cursor-pointer">
+                  <Label
+                    htmlFor="isRecurring"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <Repeat className="h-4 w-4" />
                     Gjentakende avtale
                   </Label>
@@ -448,7 +503,10 @@ export default function Appointments() {
                   <div className="space-y-3 pl-6 border-l-2 border-blue-200">
                     <div>
                       <Label htmlFor="frequency">Frekvens</Label>
-                      <Select value={recurringFrequency} onValueChange={(val: any) => setRecurringFrequency(val)}>
+                      <Select
+                        value={recurringFrequency}
+                        onValueChange={(val: any) => setRecurringFrequency(val)}
+                      >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -465,7 +523,9 @@ export default function Appointments() {
                       <div className="flex gap-2 mt-1">
                         <Button
                           type="button"
-                          variant={recurringEndType === "date" ? "default" : "outline"}
+                          variant={
+                            recurringEndType === "date" ? "default" : "outline"
+                          }
                           size="sm"
                           onClick={() => setRecurringEndType("date")}
                           className="flex-1"
@@ -474,7 +534,9 @@ export default function Appointments() {
                         </Button>
                         <Button
                           type="button"
-                          variant={recurringEndType === "count" ? "default" : "outline"}
+                          variant={
+                            recurringEndType === "count" ? "default" : "outline"
+                          }
                           size="sm"
                           onClick={() => setRecurringEndType("count")}
                           className="flex-1"
@@ -491,7 +553,7 @@ export default function Appointments() {
                           id="endDate"
                           type="date"
                           value={recurringEndDate}
-                          onChange={(e) => setRecurringEndDate(e.target.value)}
+                          onChange={e => setRecurringEndDate(e.target.value)}
                           min={selectedDate}
                         />
                       </div>
@@ -504,14 +566,17 @@ export default function Appointments() {
                           min="2"
                           max="52"
                           value={recurringCount}
-                          onChange={(e) => setRecurringCount(e.target.value)}
+                          onChange={e => setRecurringCount(e.target.value)}
                         />
                       </div>
                     )}
 
                     <div className="text-xs text-muted-foreground bg-blue-50 p-2 rounded">
                       {recurringEndType === "date" && recurringEndDate ? (
-                        <p>Avtaler vil opprettes fra {selectedDate} til {recurringEndDate}</p>
+                        <p>
+                          Avtaler vil opprettes fra {selectedDate} til{" "}
+                          {recurringEndDate}
+                        </p>
                       ) : recurringEndType === "count" && recurringCount ? (
                         <p>{recurringCount} avtaler vil bli opprettet</p>
                       ) : (
@@ -527,8 +592,17 @@ export default function Appointments() {
               <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
                 Avbryt
               </Button>
-              <Button onClick={handleCreate} disabled={createMutation.isPending || createRecurringMutation.isPending}>
-                {createMutation.isPending || createRecurringMutation.isPending ? "Oppretter..." : isRecurring ? "Opprett gjentakende avtaler" : "Opprett avtale"}
+              <Button
+                onClick={handleCreate}
+                disabled={
+                  createMutation.isPending || createRecurringMutation.isPending
+                }
+              >
+                {createMutation.isPending || createRecurringMutation.isPending
+                  ? "Oppretter..."
+                  : isRecurring
+                    ? "Opprett gjentakende avtaler"
+                    : "Opprett avtale"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -539,9 +613,7 @@ export default function Appointments() {
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Avtaledetaljer</DialogTitle>
-              <DialogDescription>
-                Informasjon om avtalen
-              </DialogDescription>
+              <DialogDescription>Informasjon om avtalen</DialogDescription>
             </DialogHeader>
 
             {viewingAppointment && (
@@ -549,44 +621,66 @@ export default function Appointments() {
                 {viewingAppointment.recurringRuleId && (
                   <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <Repeat className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm text-blue-700 font-medium">Del av gjentakende serie</span>
+                    <span className="text-sm text-blue-700 font-medium">
+                      Del av gjentakende serie
+                    </span>
                   </div>
                 )}
                 <div>
                   <Label>Kunde</Label>
                   <div className="text-sm">
-                    {customers.find(c => c.id === viewingAppointment.customerId)?.firstName}{" "}
-                    {customers.find(c => c.id === viewingAppointment.customerId)?.lastName}
+                    {
+                      customers.find(
+                        c => c.id === viewingAppointment.customerId
+                      )?.firstName
+                    }{" "}
+                    {
+                      customers.find(
+                        c => c.id === viewingAppointment.customerId
+                      )?.lastName
+                    }
                   </div>
                 </div>
 
                 <div>
                   <Label>Behandler</Label>
                   <div className="text-sm">
-                    {employees.find(e => e.id === viewingAppointment.employeeId)?.name}
+                    {
+                      employees.find(
+                        e => e.id === viewingAppointment.employeeId
+                      )?.name
+                    }
                   </div>
                 </div>
 
                 <div>
                   <Label>Dato og tid</Label>
                   <div className="text-sm">
-                    {new Date(viewingAppointment.startTime).toLocaleDateString("no-NO", {
-                      weekday: "long",
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}{" "}
+                    {new Date(viewingAppointment.startTime).toLocaleDateString(
+                      "no-NO",
+                      {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      }
+                    )}{" "}
                     kl.{" "}
-                    {new Date(viewingAppointment.startTime).toLocaleTimeString("no-NO", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {new Date(viewingAppointment.startTime).toLocaleTimeString(
+                      "no-NO",
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }
+                    )}
                   </div>
                 </div>
 
                 <div>
                   <Label>Status</Label>
-                  <div className="text-sm">{getStatusText(viewingAppointment.status)}</div>
+                  <div className="text-sm">
+                    {getStatusText(viewingAppointment.status)}
+                  </div>
                 </div>
 
                 {viewingAppointment.notes && (
@@ -625,17 +719,18 @@ export default function Appointments() {
                         Fullfør
                       </Button>
                     )}
-                    {viewingAppointment.status !== "canceled" && viewingAppointment.status !== "completed" && (
-                      <Button
-                        className="flex-1"
-                        variant="destructive"
-                        onClick={() => {
-                          setIsCancelDialogOpen(true);
-                        }}
-                      >
-                        Avbryt avtale
-                      </Button>
-                    )}
+                    {viewingAppointment.status !== "canceled" &&
+                      viewingAppointment.status !== "completed" && (
+                        <Button
+                          className="flex-1"
+                          variant="destructive"
+                          onClick={() => {
+                            setIsCancelDialogOpen(true);
+                          }}
+                        >
+                          Avbryt avtale
+                        </Button>
+                      )}
                   </div>
                   <Button
                     variant="outline"
@@ -653,12 +748,18 @@ export default function Appointments() {
                     className="w-full gap-2 bg-blue-50 hover:bg-blue-100 border-blue-200"
                     onClick={() => {
                       // Pre-fill form with existing appointment data
-                      setSelectedCustomerId(viewingAppointment.customerId.toString());
-                      setSelectedEmployeeId(viewingAppointment.employeeId.toString());
+                      setSelectedCustomerId(
+                        viewingAppointment.customerId.toString()
+                      );
+                      setSelectedEmployeeId(
+                        viewingAppointment.employeeId.toString()
+                      );
                       // Get service ID from appointment services (assuming first service)
                       const aptServices = (viewingAppointment as any).services;
                       if (aptServices && aptServices.length > 0) {
-                        setSelectedServiceId(aptServices[0].serviceId.toString());
+                        setSelectedServiceId(
+                          aptServices[0].serviceId.toString()
+                        );
                       }
                       setNotes(viewingAppointment.notes || "");
                       // Leave date and time empty for user to select new ones
@@ -699,17 +800,25 @@ export default function Appointments() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Opprinnelig beløp:</span>
-                    <span className="font-medium">{refundPreview.originalAmount.toFixed(2)} NOK</span>
+                    <span className="font-medium">
+                      {refundPreview.originalAmount.toFixed(2)} NOK
+                    </span>
                   </div>
                   {refundPreview.isLateCancellation && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Avbestillingsgebyr ({refundPreview.feePercent}%):</span>
-                      <span className="font-medium text-orange-600">-{refundPreview.feeAmount.toFixed(2)} NOK</span>
+                      <span className="text-gray-600">
+                        Avbestillingsgebyr ({refundPreview.feePercent}%):
+                      </span>
+                      <span className="font-medium text-orange-600">
+                        -{refundPreview.feeAmount.toFixed(2)} NOK
+                      </span>
                     </div>
                   )}
                   <div className="flex justify-between text-base font-bold border-t pt-2">
                     <span>Refusjon:</span>
-                    <span className="text-green-600">{refundPreview.refundAmount.toFixed(2)} NOK</span>
+                    <span className="text-green-600">
+                      {refundPreview.refundAmount.toFixed(2)} NOK
+                    </span>
                   </div>
                   {refundPreview.isLateCancellation && (
                     <div className="text-xs text-orange-600 mt-2">
@@ -730,7 +839,7 @@ export default function Appointments() {
                 <textarea
                   id="cancelReason"
                   value={cancelReason}
-                  onChange={(e) => setCancelReason(e.target.value)}
+                  onChange={e => setCancelReason(e.target.value)}
                   className="w-full min-h-[80px] px-3 py-2 border rounded-md"
                   placeholder="F.eks: Kunde ba om å avbestille, sykdom, etc."
                 />
@@ -738,11 +847,14 @@ export default function Appointments() {
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => {
-                setIsCancelDialogOpen(false);
-                setCancelReason("");
-                setRefundPreview(null);
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsCancelDialogOpen(false);
+                  setCancelReason("");
+                  setRefundPreview(null);
+                }}
+              >
                 Avbryt
               </Button>
               <Button
@@ -758,9 +870,13 @@ export default function Appointments() {
                     cancellationType: "staff",
                   });
                 }}
-                disabled={cancelWithRefundMutation.isPending || !cancelReason.trim()}
+                disabled={
+                  cancelWithRefundMutation.isPending || !cancelReason.trim()
+                }
               >
-                {cancelWithRefundMutation.isPending ? "Behandler..." : "Bekreft avbestilling"}
+                {cancelWithRefundMutation.isPending
+                  ? "Behandler..."
+                  : "Bekreft avbestilling"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -770,7 +886,9 @@ export default function Appointments() {
         <Dialog open={conflictDialogOpen} onOpenChange={setConflictDialogOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-orange-600">⚠️ Tidskonflikt oppdaget</DialogTitle>
+              <DialogTitle className="text-orange-600">
+                ⚠️ Tidskonflikt oppdaget
+              </DialogTitle>
               <DialogDescription>
                 Det finnes allerede en avtale på dette tidspunktet
               </DialogDescription>
@@ -783,19 +901,25 @@ export default function Appointments() {
                     Eksisterende avtale:
                   </div>
                   <div className="space-y-1 text-sm text-orange-800">
-                    <div><strong>Kunde:</strong> {conflictDetails.customerName}</div>
-                    <div><strong>Tid:</strong> {conflictDetails.startTime} - {conflictDetails.endTime}</div>
+                    <div>
+                      <strong>Kunde:</strong> {conflictDetails.customerName}
+                    </div>
+                    <div>
+                      <strong>Tid:</strong> {conflictDetails.startTime} -{" "}
+                      {conflictDetails.endTime}
+                    </div>
                   </div>
                 </div>
 
                 <div className="text-sm text-gray-600">
-                  Vennligst velg et annet tidspunkt eller en annen behandler for å unngå dobbeltbooking.
+                  Vennligst velg et annet tidspunkt eller en annen behandler for
+                  å unngå dobbeltbooking.
                 </div>
               </div>
             )}
 
             <DialogFooter>
-              <Button 
+              <Button
                 onClick={() => {
                   setConflictDialogOpen(false);
                   setConflictDetails(null);

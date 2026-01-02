@@ -3,7 +3,7 @@
  * Ensures all required environment variables are present before starting the server
  */
 
-import { logger, logError } from './logger';
+import { logger, logError } from "./logger";
 
 interface EnvValidationResult {
   valid: boolean;
@@ -15,32 +15,29 @@ interface EnvValidationResult {
  * List of required environment variables for the application to function
  */
 const REQUIRED_ENV_VARS = [
-  'DATABASE_URL',
-  'JWT_SECRET',
-  'VITE_APP_ID',
-  'OWNER_OPEN_ID',
-  'SUPABASE_URL',
-  'SUPABASE_ANON_KEY',
-  'SUPABASE_SERVICE_KEY',
+  "DATABASE_URL",
+  "JWT_SECRET",
+  "VITE_APP_ID",
+  "OWNER_OPEN_ID",
+  "SUPABASE_URL",
+  "SUPABASE_ANON_KEY",
+  "SUPABASE_SERVICE_KEY",
 ] as const;
 
 /**
  * List of recommended but not strictly required environment variables
  */
-const RECOMMENDED_ENV_VARS = [
-  'VITE_APP_TITLE',
-  'VITE_APP_LOGO',
-] as const;
+const RECOMMENDED_ENV_VARS = ["VITE_APP_TITLE", "VITE_APP_LOGO"] as const;
 
 /**
  * Optional environment variables for external integrations
  */
 const OPTIONAL_ENV_VARS = [
-  'OPENAI_API_KEY',           // For AI features (image generation, voice transcription)
-  'VITE_GOOGLE_MAPS_API_KEY', // For Google Maps integration
-  'SMTP_HOST',                // For email notifications
-  'AWS_ACCESS_KEY_ID',        // For S3 storage
-  'STRIPE_SECRET_KEY',        // For payment processing
+  "OPENAI_API_KEY", // For AI features (image generation, voice transcription)
+  "VITE_GOOGLE_MAPS_API_KEY", // For Google Maps integration
+  "SMTP_HOST", // For email notifications
+  "AWS_ACCESS_KEY_ID", // For S3 storage
+  "STRIPE_SECRET_KEY", // For payment processing
 ] as const;
 
 /**
@@ -76,33 +73,39 @@ export function validateEnvironment(): EnvValidationResult {
  * Should be called at application startup
  */
 export function validateEnvironmentOrExit(): void {
-  logger.info('Validating environment variables...');
+  logger.info("Validating environment variables...");
 
   const result = validateEnvironment();
 
   // Log warnings for missing recommended variables
   if (result.warnings.length > 0) {
-    logger.warn('Some recommended environment variables are missing:', {
+    logger.warn("Some recommended environment variables are missing:", {
       missing: result.warnings,
     });
   }
 
   // Exit if required variables are missing
   if (!result.valid) {
-    logError('Critical environment variables are missing. Cannot start server.', undefined, {
-      missing: result.missing,
-    });
-    
-    console.error('\n❌ MISSING REQUIRED ENVIRONMENT VARIABLES:');
+    logError(
+      "Critical environment variables are missing. Cannot start server.",
+      undefined,
+      {
+        missing: result.missing,
+      }
+    );
+
+    console.error("\n❌ MISSING REQUIRED ENVIRONMENT VARIABLES:");
     result.missing.forEach(varName => {
       console.error(`   - ${varName}`);
     });
-    console.error('\nPlease set these variables in your .env file or environment.\n');
-    
+    console.error(
+      "\nPlease set these variables in your .env file or environment.\n"
+    );
+
     process.exit(1);
   }
 
-  logger.info('✅ All required environment variables are present');
+  logger.info("✅ All required environment variables are present");
 
   // Log additional validation info
   validateDatabaseUrl();
@@ -118,24 +121,27 @@ function validateDatabaseUrl(): void {
 
   try {
     const url = new URL(dbUrl);
-    
-    if (!url.protocol.startsWith('mysql')) {
-      logger.warn('DATABASE_URL does not appear to be a MySQL connection string', {
-        protocol: url.protocol,
-      });
+
+    if (!url.protocol.startsWith("mysql")) {
+      logger.warn(
+        "DATABASE_URL does not appear to be a MySQL connection string",
+        {
+          protocol: url.protocol,
+        }
+      );
     }
 
     if (!url.hostname) {
-      logger.warn('DATABASE_URL is missing hostname');
+      logger.warn("DATABASE_URL is missing hostname");
     }
 
-    logger.info('Database URL validated', {
+    logger.info("Database URL validated", {
       protocol: url.protocol,
       host: url.hostname,
       database: url.pathname.slice(1),
     });
   } catch (error) {
-    logger.warn('DATABASE_URL format could not be parsed', {
+    logger.warn("DATABASE_URL format could not be parsed", {
       error: error instanceof Error ? error.message : String(error),
     });
   }
@@ -149,16 +155,25 @@ function validateJwtSecret(): void {
   if (!secret) return;
 
   if (secret.length < 32) {
-    logger.warn('JWT_SECRET is shorter than recommended (should be at least 32 characters)', {
-      length: secret.length,
-    });
+    logger.warn(
+      "JWT_SECRET is shorter than recommended (should be at least 32 characters)",
+      {
+        length: secret.length,
+      }
+    );
   }
 
-  if (secret === 'your-secret-key' || secret === 'change-me' || secret === 'secret') {
-    logger.error('JWT_SECRET is using a default/weak value. This is a CRITICAL security risk!');
+  if (
+    secret === "your-secret-key" ||
+    secret === "change-me" ||
+    secret === "secret"
+  ) {
+    logger.error(
+      "JWT_SECRET is using a default/weak value. This is a CRITICAL security risk!"
+    );
   }
 
-  logger.info('JWT_SECRET validated', {
+  logger.info("JWT_SECRET validated", {
     length: secret.length,
     strong: secret.length >= 32,
   });
@@ -169,13 +184,13 @@ function validateJwtSecret(): void {
  */
 export function getEnvironmentSummary(): Record<string, string> {
   return {
-    NODE_ENV: process.env.NODE_ENV || 'development',
-    DATABASE_CONFIGURED: process.env.DATABASE_URL ? 'Yes' : 'No',
-    JWT_CONFIGURED: process.env.JWT_SECRET ? 'Yes' : 'No',
-    OPENAI_CONFIGURED: process.env.OPENAI_API_KEY ? 'Yes' : 'No',
-    GOOGLE_MAPS_CONFIGURED: process.env.VITE_GOOGLE_MAPS_API_KEY ? 'Yes' : 'No',
-    STRIPE_CONFIGURED: process.env.STRIPE_SECRET_KEY ? 'Yes' : 'No',
-    APP_ID: process.env.VITE_APP_ID || 'Not set',
-    APP_TITLE: process.env.VITE_APP_TITLE || 'Not set',
+    NODE_ENV: process.env.NODE_ENV || "development",
+    DATABASE_CONFIGURED: process.env.DATABASE_URL ? "Yes" : "No",
+    JWT_CONFIGURED: process.env.JWT_SECRET ? "Yes" : "No",
+    OPENAI_CONFIGURED: process.env.OPENAI_API_KEY ? "Yes" : "No",
+    GOOGLE_MAPS_CONFIGURED: process.env.VITE_GOOGLE_MAPS_API_KEY ? "Yes" : "No",
+    STRIPE_CONFIGURED: process.env.STRIPE_SECRET_KEY ? "Yes" : "No",
+    APP_ID: process.env.VITE_APP_ID || "Not set",
+    APP_TITLE: process.env.VITE_APP_TITLE || "Not set",
   };
 }

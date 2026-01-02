@@ -228,9 +228,12 @@ class SDKServer {
       .sign(secretKey);
   }
 
-  async verifySession(
-    cookieValue: string | undefined | null
-  ): Promise<{ openId: string; appId: string; name: string; impersonatedTenantId?: string | null } | null> {
+  async verifySession(cookieValue: string | undefined | null): Promise<{
+    openId: string;
+    appId: string;
+    name: string;
+    impersonatedTenantId?: string | null;
+  } | null> {
     if (!cookieValue) {
       console.warn("[Auth] Missing session cookie");
       return null;
@@ -241,7 +244,10 @@ class SDKServer {
       const { payload } = await jwtVerify(cookieValue, secretKey, {
         algorithms: ["HS256"],
       });
-      const { openId, appId, name, impersonatedTenantId } = payload as Record<string, unknown>;
+      const { openId, appId, name, impersonatedTenantId } = payload as Record<
+        string,
+        unknown
+      >;
 
       if (
         !isNonEmptyString(openId) ||
@@ -256,7 +262,10 @@ class SDKServer {
         openId,
         appId,
         name,
-        impersonatedTenantId: typeof impersonatedTenantId === 'string' ? impersonatedTenantId : null,
+        impersonatedTenantId:
+          typeof impersonatedTenantId === "string"
+            ? impersonatedTenantId
+            : null,
       };
     } catch (error) {
       console.warn("[Auth] Session verification failed", String(error));
@@ -288,7 +297,9 @@ class SDKServer {
     } as GetUserInfoWithJwtResponse;
   }
 
-  async authenticateRequest(req: Request): Promise<{ user: User; impersonatedTenantId: string | null }> {
+  async authenticateRequest(
+    req: Request
+  ): Promise<{ user: User; impersonatedTenantId: string | null }> {
     // Regular authentication flow
     const cookies = this.parseCookies(req.headers.cookie);
     const sessionCookie = cookies.get(COOKIE_NAME);
@@ -316,8 +327,8 @@ class SDKServer {
         const userInfo = await this.getUserInfoWithJwt(sessionCookie ?? "");
         await db.upsertUser({
           openId: userInfo.openId,
-          tenantId: 'default-tenant',
-          role: userInfo.openId === ENV.ownerOpenId ? 'owner' : 'employee',
+          tenantId: "default-tenant",
+          role: userInfo.openId === ENV.ownerOpenId ? "owner" : "employee",
           name: userInfo.name || null,
           email: userInfo.email ?? null,
           loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
@@ -341,9 +352,9 @@ class SDKServer {
       lastSignedIn: signedInAt,
     });
 
-    return { 
-      user, 
-      impersonatedTenantId: session.impersonatedTenantId ?? null 
+    return {
+      user,
+      impersonatedTenantId: session.impersonatedTenantId ?? null,
     };
   }
 }

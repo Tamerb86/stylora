@@ -1,6 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ChevronLeft, ChevronRight, Repeat } from "lucide-react";
 import { useState } from "react";
 
@@ -45,19 +51,23 @@ interface CalendarProps {
   availableSlotsCount?: Record<string, number>;
   onTimeSlotClick: (date: Date, time: string) => void;
   onAppointmentClick: (appointment: Appointment) => void;
-  onAppointmentDrop?: (appointmentId: number, newDate: Date, newTime: string) => void;
+  onAppointmentDrop?: (
+    appointmentId: number,
+    newDate: Date,
+    newTime: string
+  ) => void;
 }
 
-export function Calendar({ 
-  appointments, 
+export function Calendar({
+  appointments,
   employees,
   services = [],
   leaves = [],
   holidays = [],
   availableSlotsCount = {},
-  onTimeSlotClick, 
+  onTimeSlotClick,
   onAppointmentClick,
-  onAppointmentDrop 
+  onAppointmentDrop,
 }: CalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarView>("week");
@@ -65,26 +75,30 @@ export function Calendar({
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedServiceId, setSelectedServiceId] = useState<string>("all");
   const [showAvailableOnly, setShowAvailableOnly] = useState<boolean>(false);
-  const [draggedAppointment, setDraggedAppointment] = useState<Appointment | null>(null);
-  const [dropTarget, setDropTarget] = useState<{ date: Date; time: string } | null>(null);
+  const [draggedAppointment, setDraggedAppointment] =
+    useState<Appointment | null>(null);
+  const [dropTarget, setDropTarget] = useState<{
+    date: Date;
+    time: string;
+  } | null>(null);
 
   // Apply all filters
   let filteredAppointments = appointments;
-  
+
   // Filter by employee
   if (selectedEmployeeId !== "all") {
     filteredAppointments = filteredAppointments.filter(
       apt => apt.employeeId === parseInt(selectedEmployeeId)
     );
   }
-  
+
   // Filter by status
   if (selectedStatus !== "all") {
     filteredAppointments = filteredAppointments.filter(
       apt => apt.status === selectedStatus
     );
   }
-  
+
   // Filter by service (requires serviceId in appointment data)
   if (selectedServiceId !== "all") {
     filteredAppointments = filteredAppointments.filter(
@@ -112,7 +126,7 @@ export function Calendar({
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    
+
     const days = [];
     const startDay = firstDay.getDay();
     const adjustedStart = startDay === 0 ? 6 : startDay - 1;
@@ -143,7 +157,7 @@ export function Calendar({
       slots.push(`${hour.toString().padStart(2, "0")}:00`);
       slots.push(`${hour.toString().padStart(2, "0")}:30`);
     }
-    
+
     // Filter out booked slots if "available only" is enabled
     if (showAvailableOnly && date) {
       return slots.filter(time => {
@@ -151,23 +165,29 @@ export function Calendar({
         return appointments.length === 0;
       });
     }
-    
+
     return slots;
   };
 
   const getAppointmentsForDateAndTime = (date: Date, time: string) => {
     const dateStr = date.toISOString().split("T")[0];
-    
+
     return filteredAppointments.filter(apt => {
       // Convert appointmentDate to YYYY-MM-DD format
       // Handle both string and Date formats from DB
-      const aptDateStr = typeof apt.appointmentDate === 'string' 
-        ? apt.appointmentDate.substring(0, 10) // Extract YYYY-MM-DD from string
-        : apt.appointmentDate.toISOString().substring(0, 10);
+      const aptDateStr =
+        typeof apt.appointmentDate === "string"
+          ? apt.appointmentDate.substring(0, 10) // Extract YYYY-MM-DD from string
+          : apt.appointmentDate.toISOString().substring(0, 10);
       // Extract time from apt.startTime (format: "HH:MM:SS")
-      const aptTime = typeof apt.startTime === 'string' 
-        ? apt.startTime.substring(0, 5) // Get "HH:MM" from "HH:MM:SS"
-        : new Date(apt.startTime).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
+      const aptTime =
+        typeof apt.startTime === "string"
+          ? apt.startTime.substring(0, 5) // Get "HH:MM" from "HH:MM:SS"
+          : new Date(apt.startTime).toLocaleTimeString("en-GB", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            });
       return aptDateStr === dateStr && aptTime === time;
     });
   };
@@ -177,9 +197,10 @@ export function Calendar({
     return filteredAppointments.filter(apt => {
       // Convert appointmentDate to YYYY-MM-DD format
       // Handle both string and Date formats from DB
-      const aptDateStr = typeof apt.appointmentDate === 'string' 
-        ? apt.appointmentDate.substring(0, 10) // Extract YYYY-MM-DD from string
-        : apt.appointmentDate.toISOString().substring(0, 10);
+      const aptDateStr =
+        typeof apt.appointmentDate === "string"
+          ? apt.appointmentDate.substring(0, 10) // Extract YYYY-MM-DD from string
+          : apt.appointmentDate.toISOString().substring(0, 10);
       return aptDateStr === dateStr;
     });
   };
@@ -258,7 +279,10 @@ export function Calendar({
       const end = weekDays[6];
       return `${start.getDate()} ${start.toLocaleDateString("no-NO", { month: "short" })} - ${end.getDate()} ${end.toLocaleDateString("no-NO", { month: "short", year: "numeric" })}`;
     } else {
-      return currentDate.toLocaleDateString("no-NO", { month: "long", year: "numeric" });
+      return currentDate.toLocaleDateString("no-NO", {
+        month: "long",
+        year: "numeric",
+      });
     }
   };
 
@@ -282,19 +306,21 @@ export function Calendar({
 
   const handleDragOver = (e: React.DragEvent, date: Date, time: string) => {
     e.preventDefault();
-    
+
     // Check if slot is available
     const dayIsHoliday = isHoliday(date);
-    const employeeOnLeave = draggedAppointment && selectedEmployeeId !== "all"
-      ? isEmployeeOnLeave(draggedAppointment.employeeId, date)
-      : false;
-    const hasAppointments = getAppointmentsForDateAndTime(date, time).length > 0;
-    
+    const employeeOnLeave =
+      draggedAppointment && selectedEmployeeId !== "all"
+        ? isEmployeeOnLeave(draggedAppointment.employeeId, date)
+        : false;
+    const hasAppointments =
+      getAppointmentsForDateAndTime(date, time).length > 0;
+
     if (dayIsHoliday || employeeOnLeave || hasAppointments) {
       e.dataTransfer.dropEffect = "none";
       return;
     }
-    
+
     e.dataTransfer.dropEffect = "move";
     setDropTarget({ date, time });
   };
@@ -306,25 +332,29 @@ export function Calendar({
   const handleDrop = (e: React.DragEvent, date: Date, time: string) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (!draggedAppointment || !onAppointmentDrop) {
       setDraggedAppointment(null);
       setDropTarget(null);
       return;
     }
-    
+
     // Validate drop target
     const dayIsHoliday = isHoliday(date);
-    const employeeOnLeave = isEmployeeOnLeave(draggedAppointment.employeeId, date);
-    const hasAppointments = getAppointmentsForDateAndTime(date, time).length > 0;
-    
+    const employeeOnLeave = isEmployeeOnLeave(
+      draggedAppointment.employeeId,
+      date
+    );
+    const hasAppointments =
+      getAppointmentsForDateAndTime(date, time).length > 0;
+
     if (dayIsHoliday || employeeOnLeave || hasAppointments) {
       // Show error - slot not available
       setDraggedAppointment(null);
       setDropTarget(null);
       return;
     }
-    
+
     // Check if appointment is confirmed and needs confirmation
     if (draggedAppointment.status === "confirmed") {
       // For now, allow move - confirmation can be added later
@@ -332,7 +362,7 @@ export function Calendar({
     } else {
       onAppointmentDrop(draggedAppointment.id, date, time);
     }
-    
+
     setDraggedAppointment(null);
     setDropTarget(null);
   };
@@ -391,7 +421,9 @@ export function Calendar({
           <span>🏖️ Helligdag (stengt)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-gray-100 border border-gray-300 rounded flex items-center justify-center">✈️</div>
+          <div className="w-4 h-4 bg-gray-100 border border-gray-300 rounded flex items-center justify-center">
+            ✈️
+          </div>
           <span>Ansatt på ferie</span>
         </div>
         <div className="flex items-center gap-2">
@@ -405,47 +437,98 @@ export function Calendar({
         <div className="flex items-center gap-3 flex-wrap">
           {/* Main navigation (week/month) */}
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={navigatePrevious} title={view === "day" ? "Forrige dag" : view === "week" ? "Forrige uke" : "Forrige måned"}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={navigatePrevious}
+              title={
+                view === "day"
+                  ? "Forrige dag"
+                  : view === "week"
+                    ? "Forrige uke"
+                    : "Forrige måned"
+              }
+            >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <Button variant="outline" size="sm" onClick={goToToday}>
               I dag
             </Button>
-            <Button variant="outline" size="sm" onClick={navigateNext} title={view === "day" ? "Neste dag" : view === "week" ? "Neste uke" : "Neste måned"}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={navigateNext}
+              title={
+                view === "day"
+                  ? "Neste dag"
+                  : view === "week"
+                    ? "Neste uke"
+                    : "Neste måned"
+              }
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
 
           {/* Quick navigation buttons */}
           <div className="flex items-center gap-2 border-l pl-3">
-            <Button variant="ghost" size="sm" onClick={navigatePreviousDay} title="1 dag tilbake" className="text-xs">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={navigatePreviousDay}
+              title="1 dag tilbake"
+              className="text-xs"
+            >
               ← 1 dag
             </Button>
-            <Button variant="ghost" size="sm" onClick={navigateNextDay} title="1 dag frem" className="text-xs">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={navigateNextDay}
+              title="1 dag frem"
+              className="text-xs"
+            >
               1 dag →
             </Button>
           </div>
 
           <div className="flex items-center gap-2 border-l pl-3">
-            <Button variant="ghost" size="sm" onClick={navigatePreviousMonth} title="1 måned tilbake" className="text-xs">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={navigatePreviousMonth}
+              title="1 måned tilbake"
+              className="text-xs"
+            >
               ← 1 måned
             </Button>
-            <Button variant="ghost" size="sm" onClick={navigateNextMonth} title="1 måned frem" className="text-xs">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={navigateNextMonth}
+              title="1 måned frem"
+              className="text-xs"
+            >
               1 måned →
             </Button>
           </div>
 
-          <h2 className="text-base md:text-lg font-semibold capitalize">{formatDateHeader()}</h2>
+          <h2 className="text-base md:text-lg font-semibold capitalize">
+            {formatDateHeader()}
+          </h2>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <Select value={selectedEmployeeId} onValueChange={setSelectedEmployeeId}>
+          <Select
+            value={selectedEmployeeId}
+            onValueChange={setSelectedEmployeeId}
+          >
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Alle ansatte" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Alle ansatte</SelectItem>
-              {employees.map((emp) => (
+              {employees.map(emp => (
                 <SelectItem key={emp.id} value={emp.id.toString()}>
                   {emp.name}
                 </SelectItem>
@@ -468,13 +551,16 @@ export function Calendar({
           </Select>
 
           {services.length > 0 && (
-            <Select value={selectedServiceId} onValueChange={setSelectedServiceId}>
+            <Select
+              value={selectedServiceId}
+              onValueChange={setSelectedServiceId}
+            >
               <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Alle tjenester" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Alle tjenester</SelectItem>
-                {services.map((service) => (
+                {services.map(service => (
                   <SelectItem key={service.id} value={service.id.toString()}>
                     {service.name}
                   </SelectItem>
@@ -483,7 +569,7 @@ export function Calendar({
             </Select>
           )}
 
-          <Select value={view} onValueChange={(v) => setView(v as CalendarView)}>
+          <Select value={view} onValueChange={v => setView(v as CalendarView)}>
             <SelectTrigger className="w-full sm:w-[120px]">
               <SelectValue />
             </SelectTrigger>
@@ -498,13 +584,16 @@ export function Calendar({
             <input
               type="checkbox"
               checked={showAvailableOnly}
-              onChange={(e) => setShowAvailableOnly(e.target.checked)}
+              onChange={e => setShowAvailableOnly(e.target.checked)}
               className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
             <span>Vis kun ledige</span>
           </label>
 
-          {(selectedEmployeeId !== "all" || selectedStatus !== "all" || selectedServiceId !== "all" || showAvailableOnly) && (
+          {(selectedEmployeeId !== "all" ||
+            selectedStatus !== "all" ||
+            selectedServiceId !== "all" ||
+            showAvailableOnly) && (
             <Button
               variant="outline"
               size="sm"
@@ -528,10 +617,18 @@ export function Calendar({
             <div className="overflow-x-auto">
               <div className="min-w-full">
                 {/* Day Header - All Employees */}
-                <div className="grid border-b" style={{ gridTemplateColumns: `80px repeat(${employees.length}, 1fr)` }}>
+                <div
+                  className="grid border-b"
+                  style={{
+                    gridTemplateColumns: `80px repeat(${employees.length}, 1fr)`,
+                  }}
+                >
                   <div className="p-2 border-r bg-muted"></div>
-                  {employees.map((emp) => {
-                    const employeeOnLeave = isEmployeeOnLeave(emp.id, currentDate);
+                  {employees.map(emp => {
+                    const employeeOnLeave = isEmployeeOnLeave(
+                      emp.id,
+                      currentDate
+                    );
                     return (
                       <div
                         key={emp.id}
@@ -551,18 +648,28 @@ export function Calendar({
 
                 {/* Time Slots */}
                 <div className="max-h-[600px] overflow-y-auto">
-                  {getTimeSlots(currentDate).map((time) => (
-                    <div key={time} className="grid border-b" style={{ gridTemplateColumns: `80px repeat(${employees.length}, 1fr)` }}>
+                  {getTimeSlots(currentDate).map(time => (
+                    <div
+                      key={time}
+                      className="grid border-b"
+                      style={{
+                        gridTemplateColumns: `80px repeat(${employees.length}, 1fr)`,
+                      }}
+                    >
                       <div className="p-2 border-r bg-muted text-sm font-medium text-muted-foreground">
                         {time}
                       </div>
-                      {employees.map((emp) => {
-                        const appointments = getAppointmentsForDateAndTime(currentDate, time).filter(
-                          (apt) => apt.employeeId === emp.id
-                        );
+                      {employees.map(emp => {
+                        const appointments = getAppointmentsForDateAndTime(
+                          currentDate,
+                          time
+                        ).filter(apt => apt.employeeId === emp.id);
                         const isTarget = isDropTarget(currentDate, time);
                         const dayIsHoliday = isHoliday(currentDate);
-                        const employeeOnLeave = isEmployeeOnLeave(emp.id, currentDate);
+                        const employeeOnLeave = isEmployeeOnLeave(
+                          emp.id,
+                          currentDate
+                        );
                         const isDisabled = dayIsHoliday || employeeOnLeave;
 
                         return (
@@ -572,21 +679,32 @@ export function Calendar({
                               isDisabled
                                 ? "bg-gray-100 cursor-not-allowed"
                                 : appointments.length > 0
-                                ? "bg-red-50 border-l-4 border-l-red-400"
-                                : "bg-green-50 hover:bg-green-100 cursor-pointer"
+                                  ? "bg-red-50 border-l-4 border-l-red-400"
+                                  : "bg-green-50 hover:bg-green-100 cursor-pointer"
                             } ${
-                              isTarget ? "bg-blue-100 border-2 border-blue-400" : ""
+                              isTarget
+                                ? "bg-blue-100 border-2 border-blue-400"
+                                : ""
                             }`}
-                            onClick={() => !isDisabled && appointments.length === 0 && onTimeSlotClick(currentDate, time)}
-                            onDragOver={(e) => !isDisabled && handleDragOver(e, currentDate, time)}
+                            onClick={() =>
+                              !isDisabled &&
+                              appointments.length === 0 &&
+                              onTimeSlotClick(currentDate, time)
+                            }
+                            onDragOver={e =>
+                              !isDisabled &&
+                              handleDragOver(e, currentDate, time)
+                            }
                             onDragLeave={handleDragLeave}
-                            onDrop={(e) => !isDisabled && handleDrop(e, currentDate, time)}
+                            onDrop={e =>
+                              !isDisabled && handleDrop(e, currentDate, time)
+                            }
                             title={
                               dayIsHoliday
                                 ? "Stengt (helligdag)"
                                 : employeeOnLeave
-                                ? `${emp.name} er på ferie`
-                                : ""
+                                  ? `${emp.name} er på ferie`
+                                  : ""
                             }
                           >
                             {isDisabled && (
@@ -594,16 +712,22 @@ export function Calendar({
                                 {dayIsHoliday ? "🏖️" : "✈️"}
                               </div>
                             )}
-                            {appointments.map((apt) => (
+                            {appointments.map(apt => (
                               <div
                                 key={apt.id}
-                                draggable={apt.status !== "completed" && apt.status !== "canceled"}
-                                onDragStart={(e) => handleDragStart(e, apt)}
+                                draggable={
+                                  apt.status !== "completed" &&
+                                  apt.status !== "canceled"
+                                }
+                                onDragStart={e => handleDragStart(e, apt)}
                                 onDragEnd={handleDragEnd}
                                 className={`text-sm p-2 rounded mb-2 text-white cursor-move ${getStatusColor(apt.status)} ${
-                                  apt.status === "completed" || apt.status === "canceled" ? "cursor-not-allowed opacity-70" : ""
+                                  apt.status === "completed" ||
+                                  apt.status === "canceled"
+                                    ? "cursor-not-allowed opacity-70"
+                                    : ""
                                 }`}
-                                onClick={(e) => {
+                                onClick={e => {
                                   e.stopPropagation();
                                   onAppointmentClick(apt);
                                 }}
@@ -637,7 +761,8 @@ export function Calendar({
                 <div className="grid grid-cols-8 border-b">
                   <div className="p-2 border-r bg-muted"></div>
                   {getWeekDays(currentDate).map((day, idx) => {
-                    const isToday = day.toDateString() === new Date().toDateString();
+                    const isToday =
+                      day.toDateString() === new Date().toDateString();
                     const holiday = getHolidayForDate(day);
                     const hasHoliday = !!holiday;
                     return (
@@ -649,15 +774,25 @@ export function Calendar({
                         title={hasHoliday ? `Helligdag: ${holiday.name}` : ""}
                       >
                         <div className="text-xs text-muted-foreground">
-                          {day.toLocaleDateString("no-NO", { weekday: "short" })}
+                          {day.toLocaleDateString("no-NO", {
+                            weekday: "short",
+                          })}
                         </div>
-                        <div className={`text-sm font-medium ${
-                          hasHoliday ? "text-red-600" : isToday ? "text-blue-600" : ""
-                        }`}>
+                        <div
+                          className={`text-sm font-medium ${
+                            hasHoliday
+                              ? "text-red-600"
+                              : isToday
+                                ? "text-blue-600"
+                                : ""
+                          }`}
+                        >
                           {day.getDate()}
                         </div>
                         {hasHoliday && (
-                          <div className="absolute top-1 right-1 text-xs">🏖️</div>
+                          <div className="absolute top-1 right-1 text-xs">
+                            🏖️
+                          </div>
                         )}
                       </div>
                     );
@@ -666,49 +801,70 @@ export function Calendar({
 
                 {/* Time Slots */}
                 <div className="max-h-[600px] overflow-y-auto">
-                  {getTimeSlots(getWeekDays(currentDate)[0]).map((time) => (
+                  {getTimeSlots(getWeekDays(currentDate)[0]).map(time => (
                     <div key={time} className="grid grid-cols-8 border-b">
                       <div className="p-2 border-r bg-muted text-sm font-medium text-muted-foreground">
                         {time}
                       </div>
                       {getWeekDays(currentDate).map((day, idx) => {
-                        const appointments = getAppointmentsForDateAndTime(day, time);
+                        const appointments = getAppointmentsForDateAndTime(
+                          day,
+                          time
+                        );
                         const isTarget = isDropTarget(day, time);
                         const dayIsHoliday = isHoliday(day);
                         const holiday = getHolidayForDate(day);
-                        
+
                         // Check if any employee is on leave (for "all employees" view)
-                        const employeeOnLeave = selectedEmployeeId !== "all" 
-                          ? isEmployeeOnLeave(parseInt(selectedEmployeeId), day)
-                          : false;
-                        const employeeLeave = selectedEmployeeId !== "all"
-                          ? getEmployeeLeave(parseInt(selectedEmployeeId), day)
-                          : null;
-                        
+                        const employeeOnLeave =
+                          selectedEmployeeId !== "all"
+                            ? isEmployeeOnLeave(
+                                parseInt(selectedEmployeeId),
+                                day
+                              )
+                            : false;
+                        const employeeLeave =
+                          selectedEmployeeId !== "all"
+                            ? getEmployeeLeave(
+                                parseInt(selectedEmployeeId),
+                                day
+                              )
+                            : null;
+
                         const isDisabled = dayIsHoliday || employeeOnLeave;
-                        
+
                         return (
                           <div
                             key={idx}
                             className={`p-1 border-r min-h-[80px] transition-colors relative ${
-                              isDisabled 
-                                ? "bg-gray-100 cursor-not-allowed" 
+                              isDisabled
+                                ? "bg-gray-100 cursor-not-allowed"
                                 : appointments.length > 0
-                                ? "bg-red-50 border-l-4 border-l-red-400"
-                                : "bg-green-50 hover:bg-green-100 cursor-pointer"
+                                  ? "bg-red-50 border-l-4 border-l-red-400"
+                                  : "bg-green-50 hover:bg-green-100 cursor-pointer"
                             } ${
-                              isTarget ? "bg-blue-100 border-2 border-blue-400" : ""
-                            }`}
-                            onClick={() => !isDisabled && appointments.length === 0 && onTimeSlotClick(day, time)}
-                            onDragOver={(e) => !isDisabled && handleDragOver(e, day, time)}
-                            onDragLeave={handleDragLeave}
-                            onDrop={(e) => !isDisabled && handleDrop(e, day, time)}
-                            title={
-                              dayIsHoliday 
-                                ? `Stengt: ${holiday?.name}` 
-                                : employeeOnLeave
-                                ? `${employeeLeave?.employeeName} er på ${employeeLeave?.leaveType} ferie`
+                              isTarget
+                                ? "bg-blue-100 border-2 border-blue-400"
                                 : ""
+                            }`}
+                            onClick={() =>
+                              !isDisabled &&
+                              appointments.length === 0 &&
+                              onTimeSlotClick(day, time)
+                            }
+                            onDragOver={e =>
+                              !isDisabled && handleDragOver(e, day, time)
+                            }
+                            onDragLeave={handleDragLeave}
+                            onDrop={e =>
+                              !isDisabled && handleDrop(e, day, time)
+                            }
+                            title={
+                              dayIsHoliday
+                                ? `Stengt: ${holiday?.name}`
+                                : employeeOnLeave
+                                  ? `${employeeLeave?.employeeName} er på ${employeeLeave?.leaveType} ferie`
+                                  : ""
                             }
                           >
                             {isDisabled && (
@@ -716,16 +872,22 @@ export function Calendar({
                                 {dayIsHoliday ? "🏖️" : "✈️"}
                               </div>
                             )}
-                            {appointments.map((apt) => (
+                            {appointments.map(apt => (
                               <div
                                 key={apt.id}
-                                draggable={apt.status !== "completed" && apt.status !== "canceled"}
-                                onDragStart={(e) => handleDragStart(e, apt)}
+                                draggable={
+                                  apt.status !== "completed" &&
+                                  apt.status !== "canceled"
+                                }
+                                onDragStart={e => handleDragStart(e, apt)}
                                 onDragEnd={handleDragEnd}
                                 className={`text-sm p-2 rounded mb-2 text-white cursor-move ${getStatusColor(apt.status)} ${
-                                  apt.status === "completed" || apt.status === "canceled" ? "cursor-not-allowed opacity-70" : ""
+                                  apt.status === "completed" ||
+                                  apt.status === "canceled"
+                                    ? "cursor-not-allowed opacity-70"
+                                    : ""
                                 }`}
-                                onClick={(e) => {
+                                onClick={e => {
                                   e.stopPropagation();
                                   onAppointmentClick(apt);
                                 }}
@@ -755,8 +917,11 @@ export function Calendar({
           <CardContent className="p-4">
             {/* Month Header */}
             <div className="grid grid-cols-7 gap-2 mb-2">
-              {["Man", "Tir", "Ons", "Tor", "Fre", "Lør", "Søn"].map((day) => (
-                <div key={day} className="text-center text-sm font-medium text-muted-foreground">
+              {["Man", "Tir", "Ons", "Tor", "Fre", "Lør", "Søn"].map(day => (
+                <div
+                  key={day}
+                  className="text-center text-sm font-medium text-muted-foreground"
+                >
                   {day}
                 </div>
               ))}
@@ -765,31 +930,46 @@ export function Calendar({
             {/* Month Days */}
             <div className="grid grid-cols-7 gap-2">
               {getMonthDays(currentDate).map((day, idx) => {
-                const isToday = day.date.toDateString() === new Date().toDateString();
+                const isToday =
+                  day.date.toDateString() === new Date().toDateString();
                 const dayAppointments = getAppointmentsForDate(day.date);
-                const dateStr = day.date.toISOString().split('T')[0];
+                const dateStr = day.date.toISOString().split("T")[0];
                 const availableSlots = availableSlotsCount[dateStr] || 0;
-                
+
                 // Check if date is in the past
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
                 const isPastDate = day.date < today;
-                
+
                 return (
                   <div
                     key={idx}
                     className={`min-h-[100px] p-2 border rounded-lg ${
-                      !day.isCurrentMonth ? "bg-muted/30" : isPastDate ? "bg-gray-100 cursor-not-allowed" : "bg-background"
+                      !day.isCurrentMonth
+                        ? "bg-muted/30"
+                        : isPastDate
+                          ? "bg-gray-100 cursor-not-allowed"
+                          : "bg-background"
                     } ${isToday ? "border-blue-500 border-2" : ""} ${
                       !isPastDate ? "hover:bg-muted/50 cursor-pointer" : ""
                     }`}
-                    onClick={() => !isPastDate && onTimeSlotClick(day.date, "09:00")}
-                    title={isPastDate ? "Kan ikke opprette avtale i fortiden" : ""}
+                    onClick={() =>
+                      !isPastDate && onTimeSlotClick(day.date, "09:00")
+                    }
+                    title={
+                      isPastDate ? "Kan ikke opprette avtale i fortiden" : ""
+                    }
                   >
                     <div className="flex justify-between items-start mb-1">
-                      <div className={`text-sm ${
-                        !day.isCurrentMonth ? "text-muted-foreground" : isPastDate ? "text-gray-400 line-through" : ""
-                      }`}>
+                      <div
+                        className={`text-sm ${
+                          !day.isCurrentMonth
+                            ? "text-muted-foreground"
+                            : isPastDate
+                              ? "text-gray-400 line-through"
+                              : ""
+                        }`}
+                      >
                         {day.date.getDate()}
                       </div>
                       {day.isCurrentMonth && availableSlots > 0 && (
@@ -799,16 +979,22 @@ export function Calendar({
                       )}
                     </div>
                     <div className="space-y-1">
-                      {dayAppointments.slice(0, 3).map((apt) => (
+                      {dayAppointments.slice(0, 3).map(apt => (
                         <div
                           key={apt.id}
-                          draggable={apt.status !== "completed" && apt.status !== "canceled"}
-                          onDragStart={(e) => handleDragStart(e, apt)}
+                          draggable={
+                            apt.status !== "completed" &&
+                            apt.status !== "canceled"
+                          }
+                          onDragStart={e => handleDragStart(e, apt)}
                           onDragEnd={handleDragEnd}
                           className={`text-xs p-1 rounded text-white cursor-move ${getStatusColor(apt.status)} ${
-                            apt.status === "completed" || apt.status === "canceled" ? "cursor-not-allowed opacity-70" : ""
+                            apt.status === "completed" ||
+                            apt.status === "canceled"
+                              ? "cursor-not-allowed opacity-70"
+                              : ""
                           }`}
-                          onClick={(e) => {
+                          onClick={e => {
                             e.stopPropagation();
                             onAppointmentClick(apt);
                           }}
@@ -818,10 +1004,13 @@ export function Calendar({
                               <Repeat className="h-3 w-3 flex-shrink-0" />
                             )}
                             <span className="truncate">
-                              {new Date(apt.startTime).toLocaleTimeString("no-NO", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
+                              {new Date(apt.startTime).toLocaleTimeString(
+                                "no-NO",
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
                             </span>
                           </div>
                         </div>

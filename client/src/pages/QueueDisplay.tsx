@@ -15,10 +15,14 @@ export default function QueueDisplay() {
   // Get locale for date formatting
   const getDateLocale = () => {
     switch (i18n.language) {
-      case "ar": return ar;
-      case "en": return enUS;
-      case "uk": return uk;
-      default: return nb;
+      case "ar":
+        return ar;
+      case "en":
+        return enUS;
+      case "uk":
+        return uk;
+      default:
+        return nb;
     }
   };
 
@@ -27,16 +31,22 @@ export default function QueueDisplay() {
     refetchInterval: 10000, // 10 seconds
   });
 
-  const { data: barberStats } = trpc.walkInQueue.getAvailableBarbers.useQuery(undefined, {
-    refetchInterval: 10000,
-  });
+  const { data: barberStats } = trpc.walkInQueue.getAvailableBarbers.useQuery(
+    undefined,
+    {
+      refetchInterval: 10000,
+    }
+  );
 
   const { data: services } = trpc.services.list.useQuery();
 
   // Fetch intelligent wait times
-  const { data: waitTimesData } = trpc.walkInQueue.calculateWaitTimes.useQuery(undefined, {
-    refetchInterval: 15000, // 15 seconds
-  });
+  const { data: waitTimesData } = trpc.walkInQueue.calculateWaitTimes.useQuery(
+    undefined,
+    {
+      refetchInterval: 15000, // 15 seconds
+    }
+  );
 
   // Update clock every second
   useEffect(() => {
@@ -49,7 +59,9 @@ export default function QueueDisplay() {
 
   // Get intelligent wait time from backend
   const getIntelligentWaitTime = (queueId: number) => {
-    const waitTimeInfo = waitTimesData?.waitTimes?.find((wt: any) => wt.queueId === queueId);
+    const waitTimeInfo = waitTimesData?.waitTimes?.find(
+      (wt: any) => wt.queueId === queueId
+    );
     if (waitTimeInfo) {
       return {
         estimated: waitTimeInfo.estimatedWaitMinutes,
@@ -101,14 +113,17 @@ export default function QueueDisplay() {
   // Sort queue by priority then position
   const sortedQueue = [...(queue || [])].sort((a, b) => {
     const priorityOrder = { vip: 0, urgent: 1, normal: 2 };
-    const aPriority = priorityOrder[a.priority as keyof typeof priorityOrder] ?? 2;
-    const bPriority = priorityOrder[b.priority as keyof typeof priorityOrder] ?? 2;
-    
+    const aPriority =
+      priorityOrder[a.priority as keyof typeof priorityOrder] ?? 2;
+    const bPriority =
+      priorityOrder[b.priority as keyof typeof priorityOrder] ?? 2;
+
     if (aPriority !== bPriority) return aPriority - bPriority;
     return a.position - b.position;
   });
 
-  const waitingCustomers = sortedQueue.filter((q: any) => q.status === "waiting") || [];
+  const waitingCustomers =
+    sortedQueue.filter((q: any) => q.status === "waiting") || [];
 
   // Track queue length changes for animation
   useEffect(() => {
@@ -123,7 +138,7 @@ export default function QueueDisplay() {
   };
 
   return (
-    <div 
+    <div
       className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-8"
       dir={i18n.language === "ar" ? "rtl" : "ltr"}
     >
@@ -138,11 +153,11 @@ export default function QueueDisplay() {
               Stylora
             </h1>
           </div>
-          
+
           <h2 className="text-4xl font-semibold text-gray-800 dark:text-gray-100">
             {t("walkInQueue.title")}
           </h2>
-          
+
           <div className="flex items-center justify-center gap-8 text-2xl text-gray-600 dark:text-gray-300">
             <div className="flex items-center gap-2">
               <Clock className="h-8 w-8" />
@@ -181,7 +196,9 @@ export default function QueueDisplay() {
         ) : (
           <div className="grid gap-6">
             {waitingCustomers.map((customer: any, index: number) => {
-              const service = services?.find((s: any) => s.id === customer.serviceId);
+              const service = services?.find(
+                (s: any) => s.id === customer.serviceId
+              );
               const waitTime = getIntelligentWaitTime(customer.id);
 
               return (
@@ -193,7 +210,9 @@ export default function QueueDisplay() {
                   <div className="flex items-center justify-between">
                     {/* Position Number */}
                     <div className="flex items-center gap-6">
-                      <div className={`h-24 w-24 rounded-2xl bg-gradient-to-br ${getWaitTimeGradient(waitTime.color)} flex items-center justify-center shadow-lg animate-scale-in`}>
+                      <div
+                        className={`h-24 w-24 rounded-2xl bg-gradient-to-br ${getWaitTimeGradient(waitTime.color)} flex items-center justify-center shadow-lg animate-scale-in`}
+                      >
                         <span className="text-5xl font-bold text-white">
                           {index + 1}
                         </span>
@@ -218,11 +237,15 @@ export default function QueueDisplay() {
                       <div className="text-2xl text-gray-500 dark:text-gray-400">
                         {t("walkInQueue.waitTime")}
                       </div>
-                      <div className={`text-6xl font-bold bg-gradient-to-r ${getWaitTimeGradient(waitTime.color)} bg-clip-text text-transparent animate-pulse-slow`}>
+                      <div
+                        className={`text-6xl font-bold bg-gradient-to-r ${getWaitTimeGradient(waitTime.color)} bg-clip-text text-transparent animate-pulse-slow`}
+                      >
                         ~{waitTime.estimated} {t("walkInQueue.minutes")}
                       </div>
                       <div className="text-xl text-gray-500 dark:text-gray-400">
-                        {t("walkInQueue.serviceDuration")}: {service?.durationMinutes || 30} {t("walkInQueue.minutes")}
+                        {t("walkInQueue.serviceDuration")}:{" "}
+                        {service?.durationMinutes || 30}{" "}
+                        {t("walkInQueue.minutes")}
                       </div>
                     </div>
                   </div>
