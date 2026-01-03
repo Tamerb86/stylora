@@ -51,8 +51,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTranslation } from "react-i18next";
 
 export function WalkInQueue() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editPriorityDialog, setEditPriorityDialog] = useState<{
@@ -108,7 +110,7 @@ export function WalkInQueue() {
 
   const addToQueue = trpc.walkInQueue.addToQueue.useMutation({
     onSuccess: () => {
-      toast.success("Kunde lagt til i kø");
+      toast.success(t("walkInQueue.successAdded"));
       setIsAddDialogOpen(false);
       setNewCustomer({
         customerName: "",
@@ -121,33 +123,33 @@ export function WalkInQueue() {
       refetch();
     },
     onError: (error: any) => {
-      toast.error(error.message || "Kunne ikke legge til kunde");
+      toast.error(error.message || t("walkInQueue.errorAdd"));
     },
   });
 
   const startService = trpc.walkInQueue.startService.useMutation({
     onSuccess: () => {
-      toast.success("Tjeneste startet");
+      toast.success(t("walkInQueue.successStarted"));
       refetch();
     },
     onError: (error: any) => {
-      toast.error(error.message || "Kunne ikke starte tjeneste");
+      toast.error(error.message || t("walkInQueue.errorStart"));
     },
   });
 
   const removeFromQueue = trpc.walkInQueue.removeFromQueue.useMutation({
     onSuccess: () => {
-      toast.success("Fjernet fra kø");
+      toast.success(t("walkInQueue.successRemoved"));
       refetch();
     },
     onError: (error: any) => {
-      toast.error(error.message || "Kunne ikke fjerne fra kø");
+      toast.error(error.message || t("walkInQueue.errorRemove"));
     },
   });
 
   const updatePriority = trpc.walkInQueue.updatePriority.useMutation({
     onSuccess: () => {
-      toast.success("Prioritet oppdatert");
+      toast.success(t("walkInQueue.successPriorityUpdated"));
       setEditPriorityDialog({
         open: false,
         queueId: null,
@@ -157,13 +159,13 @@ export function WalkInQueue() {
       refetch();
     },
     onError: (error: any) => {
-      toast.error(error.message || "Kunne ikke oppdatere prioritet");
+      toast.error(error.message || t("walkInQueue.errorPriority"));
     },
   });
 
   const completeService = trpc.walkInQueue.completeService.useMutation({
     onSuccess: (data: any) => {
-      toast.success("Tjeneste fullført - omdirigerer til kasse");
+      toast.success(t("walkInQueue.successCompleted"));
       refetch();
       // Navigate to POS with pre-selected service and customer info
       const service = services?.find((s: any) => s.id === data.serviceId);
@@ -183,18 +185,18 @@ export function WalkInQueue() {
       }
     },
     onError: (error: any) => {
-      toast.error(error.message || "Kunne ikke fullføre tjeneste");
+      toast.error(error.message || t("walkInQueue.errorComplete"));
     },
   });
 
   const handleAddToQueue = () => {
     if (!newCustomer.customerName || !newCustomer.customerPhone) {
-      toast.error("Vennligst fyll ut navn og telefon");
+      toast.error(t("walkInQueue.errorNamePhone"));
       return;
     }
 
     if (!newCustomer.serviceId) {
-      toast.error("Vennligst velg en tjeneste");
+      toast.error(t("walkInQueue.errorService"));
       return;
     }
 
@@ -202,7 +204,7 @@ export function WalkInQueue() {
       (newCustomer.priority === "urgent" || newCustomer.priority === "vip") &&
       !newCustomer.priorityReason
     ) {
-      toast.error("Vennligst oppgi grunn for prioritering");
+      toast.error(t("walkInQueue.errorPriorityReason"));
       return;
     }
 
@@ -220,14 +222,14 @@ export function WalkInQueue() {
 
   const handleStartService = (queueId: number) => {
     if (
-      confirm("Er du sikker på at du vil starte tjenesten for denne kunden?")
+      confirm(t("walkInQueue.confirmStart"))
     ) {
       startService.mutate({ queueId });
     }
   };
 
   const handleRemove = (queueId: number, customerName: string) => {
-    if (confirm(`Er du sikker på at du vil fjerne ${customerName} fra køen?`)) {
+    if (confirm(t("walkInQueue.confirmRemove", { name: customerName }))) {
       removeFromQueue.mutate({ queueId });
     }
   };
@@ -248,7 +250,7 @@ export function WalkInQueue() {
   const handleCompleteService = (queueId: number) => {
     if (
       confirm(
-        "Er du sikker på at tjenesten er fullført? Kunden vil bli sendt til kassen."
+        t("walkInQueue.confirmComplete")
       )
     ) {
       completeService.mutate({ queueId });
@@ -256,7 +258,7 @@ export function WalkInQueue() {
   };
 
   const handleNotify = (queueId: number) => {
-    toast.info("SMS-varsel funksjon kommer snart");
+    toast.info(t("walkInQueue.smsNotification"));
   };
 
   // Get intelligent wait time from backend calculation
@@ -281,19 +283,19 @@ export function WalkInQueue() {
     const badges = {
       vip: {
         icon: <Crown className="h-3 w-3" />,
-        label: "VIP",
+        label: t("walkInQueue.vip"),
         className:
           "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 border-purple-300",
       },
       urgent: {
         icon: <Zap className="h-3 w-3" />,
-        label: "Haster",
+        label: t("walkInQueue.urgent"),
         className:
           "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 border-orange-300",
       },
       normal: {
         icon: <Users className="h-3 w-3" />,
-        label: "Normal",
+        label: t("walkInQueue.normal"),
         className:
           "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-300",
       },
@@ -312,7 +314,7 @@ export function WalkInQueue() {
           </TooltipTrigger>
           {reason && (
             <TooltipContent>
-              <p className="text-sm">Grunn: {reason}</p>
+              <p className="text-sm">{t("walkInQueue.reason")}: {reason}</p>
             </TooltipContent>
           )}
         </Tooltip>
@@ -397,36 +399,36 @@ export function WalkInQueue() {
           <div>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              Walk-in Kø
+              {t("walkInQueue.title")}
             </CardTitle>
             <CardDescription>
-              Administrer kunder som venter uten avtale
+              {t("walkInQueue.description")}
             </CardDescription>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/queue-display" target="_blank">
               <Button size="lg" variant="outline" className="h-14 gap-2">
                 <Tv className="h-5 w-5" />
-                TV-modus
+                {t("walkInQueue.tvMode")}
               </Button>
             </Link>
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
                 <Button size="lg" className="h-14 gap-2">
                   <UserPlus className="h-5 w-5" />
-                  Legg til Kunde
+                  {t("walkInQueue.addCustomer")}
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
-                  <DialogTitle>Legg til kunde i kø</DialogTitle>
+                  <DialogTitle>{t("walkInQueue.addToQueue")}</DialogTitle>
                   <DialogDescription>
-                    Registrer kunde som venter på ledig time
+                    {t("walkInQueue.registerCustomer")}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="name">Kundens navn *</Label>
+                    <Label htmlFor="name">{t("walkInQueue.customerName")} *</Label>
                     <Input
                       id="name"
                       placeholder="Ola Nordmann"
@@ -441,7 +443,7 @@ export function WalkInQueue() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="phone">Telefonnummer *</Label>
+                    <Label htmlFor="phone">{t("walkInQueue.phoneNumber")} *</Label>
                     <Input
                       id="phone"
                       placeholder="+47 123 45 678"
@@ -456,7 +458,7 @@ export function WalkInQueue() {
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="service">Tjeneste *</Label>
+                    <Label htmlFor="service">{t("walkInQueue.service")} *</Label>
                     <Select
                       value={newCustomer.serviceId}
                       onValueChange={value =>
@@ -464,12 +466,12 @@ export function WalkInQueue() {
                       }
                     >
                       <SelectTrigger className="h-12">
-                        <SelectValue placeholder="Velg tjeneste" />
+                        <SelectValue placeholder={t("walkInQueue.selectService")} />
                       </SelectTrigger>
                       <SelectContent>
                         {services?.map((e: any) => (
                           <SelectItem key={e.id} value={String(e.id)}>
-                            {e.name} ({e.durationMinutes} min)
+                            {e.name} ({e.durationMinutes} {t("walkInQueue.minutes")})
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -477,7 +479,7 @@ export function WalkInQueue() {
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="employee">
-                      Foretrukket frisør (valgfritt)
+                      {t("walkInQueue.preferredBarber")}
                     </Label>
                     <Select
                       value={newCustomer.preferredEmployeeId}
@@ -489,7 +491,7 @@ export function WalkInQueue() {
                       }
                     >
                       <SelectTrigger className="h-12">
-                        <SelectValue placeholder="Velg frisør" />
+                        <SelectValue placeholder={t("walkInQueue.selectBarber")} />
                       </SelectTrigger>
                       <SelectContent>
                         {employees?.map((e: any) => (
@@ -501,7 +503,7 @@ export function WalkInQueue() {
                     </Select>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="priority">Prioritet *</Label>
+                    <Label htmlFor="priority">{t("walkInQueue.priority")} *</Label>
                     <Select
                       value={newCustomer.priority}
                       onValueChange={value =>
@@ -512,25 +514,25 @@ export function WalkInQueue() {
                       }
                     >
                       <SelectTrigger className="h-12">
-                        <SelectValue placeholder="Velg prioritet" />
+                        <SelectValue placeholder={t("walkInQueue.selectPriority")} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="normal">
                           <div className="flex items-center gap-2">
                             <Users className="h-4 w-4" />
-                            Normal
+                            {t("walkInQueue.normal")}
                           </div>
                         </SelectItem>
                         <SelectItem value="urgent">
                           <div className="flex items-center gap-2">
                             <Zap className="h-4 w-4 text-orange-500" />
-                            Haster
+                            {t("walkInQueue.urgent")}
                           </div>
                         </SelectItem>
                         <SelectItem value="vip">
                           <div className="flex items-center gap-2">
                             <Crown className="h-4 w-4 text-purple-500" />
-                            VIP
+                            {t("walkInQueue.vip")}
                           </div>
                         </SelectItem>
                       </SelectContent>
@@ -539,11 +541,11 @@ export function WalkInQueue() {
                       newCustomer.priority === "vip") && (
                       <div className="mt-2">
                         <Label htmlFor="priorityReason">
-                          Grunn for prioritering *
+                          {t("walkInQueue.priorityReasonRequired")}
                         </Label>
                         <Textarea
                           id="priorityReason"
-                          placeholder="F.eks: Stamkunde, spesiell anledning, etc."
+                          placeholder={t("walkInQueue.priorityReasonPlaceholder")}
                           value={newCustomer.priorityReason}
                           onChange={e =>
                             setNewCustomer({
@@ -564,14 +566,14 @@ export function WalkInQueue() {
                     onClick={() => setIsAddDialogOpen(false)}
                     className="h-12"
                   >
-                    Avbryt
+                    {t("common.cancel")}
                   </Button>
                   <Button
                     onClick={handleAddToQueue}
                     disabled={addToQueue.isPending}
                     className="h-12"
                   >
-                    {addToQueue.isPending ? "Legger til..." : "Legg til i kø"}
+                    {addToQueue.isPending ? t("walkInQueue.adding") : t("walkInQueue.addToQueue")}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -588,15 +590,15 @@ export function WalkInQueue() {
               <div className="text-2xl font-bold">
                 {waitingCustomers.length}
               </div>
-              <div className="text-sm text-muted-foreground">I kø</div>
+              <div className="text-sm text-muted-foreground">{t("walkInQueue.inQueue")}</div>
             </div>
           </div>
           <div className="flex items-center gap-3 p-4 rounded-lg bg-accent/50">
             <Clock className="h-8 w-8 text-primary" />
             <div>
-              <div className="text-2xl font-bold">{averageWaitTime} min</div>
+              <div className="text-2xl font-bold">{averageWaitTime} {t("walkInQueue.minutes")}</div>
               <div className="text-sm text-muted-foreground">
-                Gjennomsnittlig ventetid
+                {t("walkInQueue.averageWaitTime")}
               </div>
             </div>
           </div>
@@ -607,7 +609,7 @@ export function WalkInQueue() {
                 {barberStats?.available || 0}
               </div>
               <div className="text-sm text-muted-foreground">
-                Ledige frisører
+                {t("walkInQueue.availableBarbers")}
               </div>
             </div>
           </div>
@@ -615,7 +617,7 @@ export function WalkInQueue() {
             <Users className="h-8 w-8 text-orange-600" />
             <div>
               <div className="text-2xl font-bold">{barberStats?.busy || 0}</div>
-              <div className="text-sm text-muted-foreground">Opptatt</div>
+              <div className="text-sm text-muted-foreground">{t("walkInQueue.busy")}</div>
             </div>
           </div>
         </div>
@@ -624,9 +626,9 @@ export function WalkInQueue() {
         {waitingCustomers.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p className="text-lg">Ingen kunder i kø</p>
+            <p className="text-lg">{t("walkInQueue.noCustomers")}</p>
             <p className="text-sm mt-2">
-              Klikk "Legg til Kunde" for å registrere walk-in kunder
+              {t("walkInQueue.clickAddDescription")}
             </p>
           </div>
         ) : (
@@ -667,14 +669,14 @@ export function WalkInQueue() {
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-sm ml-13">
                       <div>
-                        <span className="text-muted-foreground">Tjeneste:</span>{" "}
+                        <span className="text-muted-foreground">{t("walkInQueue.service")}:</span>{" "}
                         <span className="font-medium">
-                          {service?.name || "Ukjent"}
+                          {service?.name || t("walkInQueue.noData")}
                         </span>
                       </div>
                       {employee && (
                         <div>
-                          <span className="text-muted-foreground">Frisør:</span>{" "}
+                          <span className="text-muted-foreground">{t("walkInQueue.barber")}:</span>{" "}
                           <span className="font-medium">{employee.name}</span>
                         </div>
                       )}
@@ -683,19 +685,19 @@ export function WalkInQueue() {
                       >
                         <Clock className="h-4 w-4" />
                         <span className="font-semibold">
-                          ~{waitTime.estimated} min
+                          ~{waitTime.estimated} {t("walkInQueue.minutes")}
                         </span>
                         <span className="text-xs text-muted-foreground">
                           ({waitTime.min}-{waitTime.max})
                         </span>
                       </div>
                       <div className="text-muted-foreground">
-                        Lagt til:{" "}
+                        {t("walkInQueue.addedAt")}:{" "}
                         {customer.addedAt
                           ? format(new Date(customer.addedAt), "HH:mm", {
                               locale: nb,
                             })
-                          : "Ukjent"}
+                          : t("walkInQueue.noData")}
                       </div>
                     </div>
                   </div>
@@ -718,7 +720,7 @@ export function WalkInQueue() {
                             <SkipForward className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Endre prioritet</TooltipContent>
+                        <TooltipContent>{t("walkInQueue.editPriority")}</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                     <TooltipProvider>
@@ -732,7 +734,7 @@ export function WalkInQueue() {
                             <Play className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Start tjeneste</TooltipContent>
+                        <TooltipContent>{t("walkInQueue.startService")}</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                     <TooltipProvider>
@@ -748,7 +750,7 @@ export function WalkInQueue() {
                             <X className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Fjern fra kø</TooltipContent>
+                        <TooltipContent>{t("walkInQueue.removeFromQueue")}</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </div>
@@ -765,10 +767,10 @@ export function WalkInQueue() {
           <div className="mb-4">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <Play className="h-5 w-5 text-blue-600" />
-              Tjeneste pågår ({inServiceCustomers.length})
+              {t("walkInQueue.inService")} ({inServiceCustomers.length})
             </h3>
             <p className="text-sm text-muted-foreground">
-              Kunder som får tjeneste nå
+              {t("walkInQueue.inService")}
             </p>
           </div>
           <div className="space-y-3">
@@ -813,30 +815,30 @@ export function WalkInQueue() {
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-sm ml-13">
                       <div>
-                        <span className="text-muted-foreground">Tjeneste:</span>{" "}
+                        <span className="text-muted-foreground">{t("walkInQueue.service")}:</span>{" "}
                         <span className="font-medium">
-                          {service?.name || "Ukjent"}
+                          {service?.name || t("walkInQueue.noData")}
                         </span>
                       </div>
                       {employee && (
                         <div>
-                          <span className="text-muted-foreground">Frisør:</span>{" "}
+                          <span className="text-muted-foreground">{t("walkInQueue.barber")}:</span>{" "}
                           <span className="font-medium">{employee.name}</span>
                         </div>
                       )}
                       <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
                         <Clock className="h-4 w-4" />
                         <span className="font-semibold">
-                          {startedMinutesAgo} min siden startet
+                          {startedMinutesAgo} {t("walkInQueue.minutes")} 
                         </span>
                       </div>
                       <div className="text-muted-foreground">
-                        Startet:{" "}
+                        {t("walkInQueue.startedAt")}:{" "}
                         {customer.startedAt
                           ? format(new Date(customer.startedAt), "HH:mm", {
                               locale: nb,
                             })
-                          : "Ukjent"}
+                          : t("walkInQueue.noData")}
                       </div>
                     </div>
                   </div>
@@ -850,11 +852,11 @@ export function WalkInQueue() {
                             className="bg-green-600 hover:bg-green-700"
                             onClick={() => handleCompleteService(customer.id)}
                           >
-                            <span className="mr-2">✓</span> Fullført & Betal
+                            <span className="mr-2">✓</span> {t("walkInQueue.completeAndPay")}
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          Marker som fullført og gå til kasse
+                          {t("walkInQueue.completeAndPay")}
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -871,7 +873,7 @@ export function WalkInQueue() {
                             <X className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>Avbryt tjeneste</TooltipContent>
+                        <TooltipContent>{t("walkInQueue.cancelService")}</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </div>
@@ -891,14 +893,14 @@ export function WalkInQueue() {
       >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Endre prioritet</DialogTitle>
+            <DialogTitle>{t("walkInQueue.editPriority")}</DialogTitle>
             <DialogDescription>
-              Oppdater kundens prioritet i køen
+              {t("walkInQueue.updatePriority")}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="edit-priority">Prioritet</Label>
+              <Label htmlFor="edit-priority">{t("walkInQueue.priority")}</Label>
               <Select
                 value={editPriorityDialog.currentPriority}
                 onValueChange={value =>
@@ -909,25 +911,25 @@ export function WalkInQueue() {
                 }
               >
                 <SelectTrigger className="h-12">
-                  <SelectValue placeholder="Velg prioritet" />
+                  <SelectValue placeholder={t("walkInQueue.selectPriority")} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="normal">
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4" />
-                      Normal
+                      {t("walkInQueue.normal")}
                     </div>
                   </SelectItem>
                   <SelectItem value="urgent">
                     <div className="flex items-center gap-2">
                       <Zap className="h-4 w-4 text-orange-500" />
-                      Haster
+                      {t("walkInQueue.urgent")}
                     </div>
                   </SelectItem>
                   <SelectItem value="vip">
                     <div className="flex items-center gap-2">
                       <Crown className="h-4 w-4 text-purple-500" />
-                      VIP
+                      {t("walkInQueue.vip")}
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -936,10 +938,10 @@ export function WalkInQueue() {
             {(editPriorityDialog.currentPriority === "urgent" ||
               editPriorityDialog.currentPriority === "vip") && (
               <div className="grid gap-2">
-                <Label htmlFor="edit-reason">Grunn for prioritering</Label>
+                <Label htmlFor="edit-reason">{t("walkInQueue.priorityReason")}</Label>
                 <Textarea
                   id="edit-reason"
-                  placeholder="F.eks: Stamkunde, spesiell anledning, etc."
+                  placeholder={t("walkInQueue.priorityReasonPlaceholder")}
                   value={editPriorityDialog.currentReason}
                   onChange={e =>
                     setEditPriorityDialog({
@@ -965,14 +967,14 @@ export function WalkInQueue() {
               }
               className="h-12"
             >
-              Avbryt
+              {t("common.cancel")}
             </Button>
             <Button
               onClick={handleUpdatePriority}
               disabled={updatePriority.isPending}
               className="h-12"
             >
-              {updatePriority.isPending ? "Oppdaterer..." : "Oppdater"}
+              {updatePriority.isPending ? t("walkInQueue.updating") : t("walkInQueue.updatePriority")}
             </Button>
           </DialogFooter>
         </DialogContent>
