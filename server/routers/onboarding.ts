@@ -20,7 +20,12 @@ const onboardingSchema = z.object({
     subdomain: z
       .string()
       .min(3)
-      .regex(/^[a-z0-9-]+$/),
+      .max(63)
+      .regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/)
+      .refine(
+        (val) => /[a-z]/.test(val),
+        "Subdomain must contain at least one letter (a-z)"
+      ),
     address: z.string().min(5),
     city: z.string().min(2),
     phone: z.string().min(8),
