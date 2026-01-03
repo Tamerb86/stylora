@@ -7,6 +7,8 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { StripeTerminalProvider } from "@/contexts/StripeTerminalContext";
 import { ThermalPrinterProvider } from "@/contexts/ThermalPrinterContext";
+import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Customers from "./pages/Customers";
@@ -202,6 +204,15 @@ function Router() {
 // - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
 
 function App() {
+  const { i18n } = useTranslation();
+  
+  // Set document direction based on language (RTL for Arabic)
+  useEffect(() => {
+    const direction = i18n.language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.dir = direction;
+    document.documentElement.lang = i18n.language;
+  }, [i18n.language]);
+  
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light" switchable>
