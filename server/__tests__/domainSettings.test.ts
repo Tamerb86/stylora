@@ -316,7 +316,7 @@ describe("Domain Settings", () => {
 
       const caller = appRouter.createCaller(ctx);
 
-      // Create a subdomain longer than 63 characters
+      // Create a subdomain with 64 characters (exceeds 63-character limit)
       const longSubdomain = "a" + "b".repeat(63);
 
       await expect(

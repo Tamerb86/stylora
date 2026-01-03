@@ -50,11 +50,11 @@ const createSchemas = (t: (key: string) => string) => {
     subdomain: z
       .string()
       .min(3, t("onboarding.salonInfo.subdomainRequired"))
-      .max(63, "Subdomain must be at most 63 characters")
+      .max(63, t("onboarding.salonInfo.subdomainMaxLength"))
       .regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/, t("onboarding.salonInfo.subdomainPattern"))
       .refine(
         (val) => /[a-z]/.test(val),
-        "Subdomain must contain at least one letter (a-z)"
+        t("onboarding.salonInfo.subdomainMustHaveLetter")
       ),
     address: z.string().min(5, t("onboarding.salonInfo.addressRequired")),
     city: z.string().min(2, t("onboarding.salonInfo.cityRequired")),
