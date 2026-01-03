@@ -63,6 +63,8 @@ type CartState = {
 };
 
 export default function POS() {
+  // Translation hook prepared for i18n migration - translations exist in pos.json namespace
+  // TODO: Replace hard-coded strings with t() calls
   const { t } = useTranslation();
   const { user } = useAuth();
   const [, setLocation] = useLocation();

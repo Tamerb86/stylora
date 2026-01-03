@@ -65,6 +65,7 @@
     "adding": "Adding...",
     "inQueue": "In Queue",
     "inService": "Customers Being Served",
+    "inServiceTitle": "Service in Progress",
     "noCustomers": "No customers in queue",
     "clickAdd": "Click",
     "toAddCustomer": "to add customer",

@@ -767,7 +767,7 @@ export function WalkInQueue() {
           <div className="mb-4">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <Play className="h-5 w-5 text-blue-600" />
-              {t("walkInQueue.inService")} ({inServiceCustomers.length})
+              {t("walkInQueue.inServiceTitle")} ({inServiceCustomers.length})
             </h3>
             <p className="text-sm text-muted-foreground">
               {t("walkInQueue.inService")}
@@ -829,7 +829,7 @@ export function WalkInQueue() {
                       <div className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
                         <Clock className="h-4 w-4" />
                         <span className="font-semibold">
-                          {startedMinutesAgo} {t("walkInQueue.minutes")} 
+                          {startedMinutesAgo} {t("walkInQueue.minutes")}
                         </span>
                       </div>
                       <div className="text-muted-foreground">

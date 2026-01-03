@@ -65,6 +65,7 @@
     "adding": "جاري الإضافة...",
     "inQueue": "في القائمة",
     "inService": "العملاء قيد الخدمة",
+    "inServiceTitle": "جاري تقديم الخدمة",
     "noCustomers": "لا يوجد عملاء في القائمة",
     "clickAdd": "اضغط",
     "toAddCustomer": "لإضافة عميل",

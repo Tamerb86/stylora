@@ -65,6 +65,7 @@
     "adding": "Додавання...",
     "inQueue": "У черзі",
     "inService": "Клієнти на обслуговуванні",
+    "inServiceTitle": "Послуга в процесі",
     "noCustomers": "Немає клієнтів у черзі",
     "clickAdd": "Натисніть",
     "toAddCustomer": "щоб додати клієнта",
