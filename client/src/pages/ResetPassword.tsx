@@ -7,8 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Lock, CheckCircle, ArrowLeft, AlertCircle } from "lucide-react";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 
 export default function ResetPassword() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const searchParams = useSearch();
   const [token, setToken] = useState("");
@@ -28,40 +30,40 @@ export default function ResetPassword() {
       setToken(tokenParam);
       setTokenValid(true);
     } else {
-      setError("Ugyldig eller manglende tilbakestillingslenke");
+      setError(t("auth.resetPassword.invalidLinkMessage"));
       setTokenValid(false);
     }
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   const validateForm = () => {
     if (!password) {
-      setError("Passord er påkrevd");
+      setError(t("auth.validation.passwordRequired"));
       return false;
     }
 
     if (password.length < 6) {
-      setError("Passordet må være minst 6 tegn");
+      setError(t("auth.validation.passwordMinLength"));
       return false;
     }
 
     if (password !== confirmPassword) {
-      setError("Passordene stemmer ikke overens");
+      setError(t("auth.validation.passwordMismatch"));
       return false;
     }
 
     // Additional password strength validation
     if (!/[A-Z]/.test(password)) {
-      setError("Passordet må inneholde minst én stor bokstav");
+      setError(t("auth.validation.passwordUppercase"));
       return false;
     }
 
     if (!/[a-z]/.test(password)) {
-      setError("Passordet må inneholde minst én liten bokstav");
+      setError(t("auth.validation.passwordLowercase"));
       return false;
     }
 
     if (!/[0-9]/.test(password)) {
-      setError("Passordet må inneholde minst ett tall");
+      setError(t("auth.validation.passwordNumber"));
       return false;
     }
 
@@ -77,7 +79,7 @@ export default function ResetPassword() {
     }
 
     if (!token) {
-      setError("Ugyldig tilbakestillingslenke");
+      setError(t("auth.errors.invalidToken"));
       return;
     }
 
@@ -94,11 +96,11 @@ export default function ResetPassword() {
 
       if (!response.ok) {
         if (response.status === 400) {
-          setError(data.error || "Ugyldig forespørsel");
+          setError(data.error || t("auth.errors.invalidRequest"));
         } else if (response.status === 401) {
-          setError("Tilbakestillingslenken er utløpt eller ugyldig");
+          setError(t("auth.errors.tokenExpired"));
         } else {
-          setError(data.error || "Kunne ikke tilbakestille passord");
+          setError(data.error || t("auth.errors.resetFailed"));
         }
         return;
       }
@@ -111,7 +113,7 @@ export default function ResetPassword() {
       }, 3000);
     } catch (err) {
       console.error("Reset password error:", err);
-      setError("Nettverksfeil. Sjekk internettforbindelsen din og prøv igjen.");
+      setError(t("auth.errors.networkErrorReset"));
     } finally {
       setIsLoading(false);
     }
@@ -128,24 +130,24 @@ export default function ResetPassword() {
                   <AlertCircle className="w-8 h-8 text-red-600" />
                 </div>
               </div>
-              <CardTitle className="text-2xl text-center">Ugyldig lenke</CardTitle>
+              <CardTitle className="text-2xl text-center">{t("auth.resetPassword.invalidLinkTitle")}</CardTitle>
               <CardDescription className="text-center">
-                Tilbakestillingslenken er ugyldig eller mangler
+                {t("auth.resetPassword.invalidLinkMessage")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-slate-600 text-center">
-                Vennligst be om en ny lenke for tilbakestilling av passord.
+                {t("auth.resetPassword.requestNewLink")}
               </p>
               <Link href="/forgot-password">
                 <Button variant="default" className="w-full">
-                  Be om ny lenke
+                  {t("auth.resetPassword.requestNewButton")}
                 </Button>
               </Link>
               <Link href="/login">
                 <Button variant="outline" className="w-full">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Tilbake til innlogging
+                  {t("auth.resetPassword.backToLogin")}
                 </Button>
               </Link>
             </CardContent>
@@ -166,18 +168,18 @@ export default function ResetPassword() {
                   <CheckCircle className="w-8 h-8 text-green-600" />
                 </div>
               </div>
-              <CardTitle className="text-2xl text-center">Passord tilbakestilt!</CardTitle>
+              <CardTitle className="text-2xl text-center">{t("auth.resetPassword.successTitle")}</CardTitle>
               <CardDescription className="text-center">
-                Passordet ditt har blitt oppdatert
+                {t("auth.resetPassword.successMessage")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-slate-600 text-center">
-                Du vil bli videresendt til innloggingssiden om litt...
+                {t("auth.resetPassword.redirectMessage")}
               </p>
               <Link href="/login">
                 <Button variant="default" className="w-full">
-                  Fortsett til innlogging
+                  {t("auth.resetPassword.continueToLogin")}
                 </Button>
               </Link>
             </CardContent>
@@ -193,17 +195,17 @@ export default function ResetPassword() {
         <div className="mb-8 text-center">
           <Link href="/login" className="inline-flex items-center text-sm text-slate-600 hover:text-slate-900 mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Tilbake til innlogging
+            {t("auth.resetPassword.backToLogin")}
           </Link>
-          <h1 className="text-3xl font-bold text-slate-900">Stylora</h1>
-          <p className="text-slate-600 mt-2">Tilbakestill passord</p>
+          <h1 className="text-3xl font-bold text-slate-900">{t("auth.resetPassword.heading")}</h1>
+          <p className="text-slate-600 mt-2">{t("auth.resetPassword.headingSubtitle")}</p>
         </div>
 
         <Card className="shadow-lg border-0">
           <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-2xl text-center">Nytt passord</CardTitle>
+            <CardTitle className="text-2xl text-center">{t("auth.resetPassword.title")}</CardTitle>
             <CardDescription className="text-center">
-              Skriv inn ditt nye passord nedenfor
+              {t("auth.resetPassword.subtitle")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -215,27 +217,27 @@ export default function ResetPassword() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="password">Nytt passord</Label>
+                <Label htmlFor="password">{t("auth.resetPassword.newPassword")}</Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="••••••••"
+                  placeholder={t("auth.resetPassword.newPasswordPlaceholder")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="new-password"
                 />
                 <p className="text-xs text-slate-500">
-                  Passordet må være minst 6 tegn og inneholde stor bokstav, liten bokstav og tall
+                  {t("auth.resetPassword.passwordHint")}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Bekreft passord</Label>
+                <Label htmlFor="confirmPassword">{t("auth.resetPassword.confirmPassword")}</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
-                  placeholder="••••••••"
+                  placeholder={t("auth.resetPassword.confirmPasswordPlaceholder")}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
@@ -251,12 +253,12 @@ export default function ResetPassword() {
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Tilbakestiller...
+                    {t("auth.resetPassword.resetting")}
                   </>
                 ) : (
                   <>
                     <Lock className="w-4 h-4 mr-2" />
-                    Tilbakestill passord
+                    {t("auth.resetPassword.resetButton")}
                   </>
                 )}
               </Button>
@@ -264,9 +266,9 @@ export default function ResetPassword() {
 
             <div className="mt-6 text-center text-sm">
               <p className="text-slate-600">
-                Husker du passordet?{" "}
+                {t("auth.resetPassword.rememberPassword")}{" "}
                 <Link href="/login" className="text-primary font-medium hover:underline">
-                  Logg inn
+                  {t("auth.resetPassword.loginLink")}
                 </Link>
               </p>
             </div>

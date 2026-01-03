@@ -12,8 +12,10 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, LogIn, ArrowLeft, Shield } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Login() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
 
   const [email, setEmail] = useState("");
@@ -33,15 +35,15 @@ export default function Login() {
     const errors: { email?: string; password?: string } = {};
 
     if (!email) {
-      errors.email = "E-post er påkrevd";
+      errors.email = t("auth.validation.emailRequired");
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = "Ugyldig e-postformat";
+      errors.email = t("auth.validation.emailInvalid");
     }
 
     if (!password) {
-      errors.password = "Passord er påkrevd";
+      errors.password = t("auth.validation.passwordRequired");
     } else if (password.length < 6) {
-      errors.password = "Passordet må være minst 6 tegn";
+      errors.password = t("auth.validation.passwordMinLength");
     }
 
     setFieldErrors(errors);
@@ -71,7 +73,7 @@ export default function Login() {
 
       if (!response.ok) {
         // Prefer backend message + hint if available
-        setError(data?.error || "Innlogging feilet");
+        setError(data?.error || t("auth.errors.loginFailed"));
         setErrorHint(data?.hint || "");
         return;
       }
@@ -79,7 +81,7 @@ export default function Login() {
       setLocation("/dashboard");
     } catch (err) {
       console.error("Login error:", err);
-      setError("Nettverksfeil. Prøv igjen.");
+      setError(t("auth.errors.networkError"));
       setErrorHint("");
     } finally {
       setIsLoading(false);
@@ -95,17 +97,17 @@ export default function Login() {
             className="inline-flex items-center text-sm text-slate-600 hover:text-slate-900 mb-6"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Tilbake til forsiden
+            {t("auth.login.backToHome")}
           </Link>
-          <h1 className="text-3xl font-bold text-slate-900">Stylora</h1>
-          <p className="text-slate-600 mt-2">Logg inn på din salong</p>
+          <h1 className="text-3xl font-bold text-slate-900">{t("auth.login.heading")}</h1>
+          <p className="text-slate-600 mt-2">{t("auth.login.headingSubtitle")}</p>
         </div>
 
         <Card className="shadow-lg border-0">
           <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-2xl text-center">Logg inn</CardTitle>
+            <CardTitle className="text-2xl text-center">{t("auth.login.title")}</CardTitle>
             <CardDescription className="text-center">
-              Skriv inn e-post og passord for å fortsette
+              {t("auth.login.subtitle")}
             </CardDescription>
           </CardHeader>
 
@@ -123,11 +125,11 @@ export default function Login() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">E-post</Label>
+                <Label htmlFor="email">{t("auth.login.email")}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="din@epost.no"
+                  placeholder={t("auth.login.emailPlaceholder")}
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
@@ -146,19 +148,19 @@ export default function Login() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password">Passord</Label>
+                  <Label htmlFor="password">{t("auth.login.password")}</Label>
                   <Link
                     href="/forgot-password"
                     className="text-sm text-primary hover:underline"
                   >
-                    Glemt passord?
+                    {t("auth.login.forgotPassword")}
                   </Link>
                 </div>
 
                 <Input
                   id="password"
                   type="password"
-                  placeholder="••••••••"
+                  placeholder={t("auth.login.passwordPlaceholder")}
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
@@ -179,12 +181,12 @@ export default function Login() {
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Logger inn...
+                    {t("auth.login.loggingIn")}
                   </>
                 ) : (
                   <>
                     <LogIn className="w-4 h-4 mr-2" />
-                    Logg inn
+                    {t("auth.login.loginButton")}
                   </>
                 )}
               </Button>
@@ -192,12 +194,12 @@ export default function Login() {
 
             <div className="mt-6 text-center text-sm">
               <p className="text-slate-600">
-                Har du ikke konto?{" "}
+                {t("auth.login.noAccount")}{" "}
                 <Link
                   href="/signup"
                   className="text-primary font-medium hover:underline"
                 >
-                  Registrer deg gratis
+                  {t("auth.login.signupLink")}
                 </Link>
               </p>
             </div>
@@ -207,13 +209,13 @@ export default function Login() {
                 <div className="w-full border-t border-slate-200"></div>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-slate-500">eller</span>
+                <span className="bg-white px-2 text-slate-500">{t("auth.login.or")}</span>
               </div>
             </div>
 
             <Link href="/demo">
               <Button variant="outline" className="w-full">
-                Prøv demo-konto
+                {t("auth.login.tryDemo")}
               </Button>
             </Link>
 
@@ -222,7 +224,7 @@ export default function Login() {
                 <div className="w-full border-t border-slate-200"></div>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-slate-500">Admin</span>
+                <span className="bg-white px-2 text-slate-500">{t("auth.login.admin")}</span>
               </div>
             </div>
 
@@ -232,20 +234,20 @@ export default function Login() {
                 className="w-full text-slate-500 hover:text-slate-700 hover:bg-slate-100"
               >
                 <Shield className="w-4 h-4 mr-2" />
-                SaaS Admin Panel
+                {t("auth.login.adminPanel")}
               </Button>
             </Link>
           </CardContent>
         </Card>
 
         <p className="text-center text-xs text-slate-500 mt-6">
-          Ved å logge inn godtar du våre{" "}
+          {t("auth.login.termsAgreement")}{" "}
           <a href="#" className="underline hover:text-slate-700">
-            vilkår
+            {t("auth.login.terms")}
           </a>{" "}
-          og{" "}
+          {t("auth.login.and")}{" "}
           <a href="#" className="underline hover:text-slate-700">
-            personvernregler
+            {t("auth.login.privacy")}
           </a>
         </p>
       </div>

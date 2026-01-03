@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 /**
  * SignUp page - redirects to the unified onboarding flow
@@ -9,6 +10,7 @@ import { Loader2 } from "lucide-react";
  * The /onboard page provides a comprehensive guided setup for new salons.
  */
 export default function SignUp() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   
   useEffect(() => {
@@ -21,7 +23,7 @@ export default function SignUp() {
       <div className="text-center space-y-4">
         <Loader2 className="w-12 h-12 animate-spin mx-auto text-primary" />
         <p className="text-lg text-muted-foreground">
-          Omdirigerer til registrering...
+          {t("auth.signup.redirecting")}
         </p>
       </div>
     </div>

@@ -51,8 +51,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { safeToFixed } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 function CustomerLoyaltyPoints({ customerId }: { customerId: number }) {
+  const { t } = useTranslation();
   const { data: loyaltyPoints } = trpc.loyalty.getPoints.useQuery({
     customerId,
   });
@@ -62,12 +64,13 @@ function CustomerLoyaltyPoints({ customerId }: { customerId: number }) {
   return (
     <div className="flex items-center gap-2 text-primary">
       <Gift className="h-3 w-3" />
-      {loyaltyPoints.currentPoints} lojalitetspoeng
+      {loyaltyPoints.currentPoints} {t("customers.loyaltyPoints")}
     </div>
   );
 }
 
 export default function Customers() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -108,17 +111,17 @@ export default function Customers() {
 
   const deleteCustomer = trpc.customers.delete.useMutation({
     onSuccess: () => {
-      toast.success("Kunde slettet!");
+      toast.success(t("toasts.success.customerDeleted"));
       refetch();
     },
     onError: error => {
-      toast.error(`Feil ved sletting: ${error.message}`);
+      toast.error(t("toasts.error.customerDeleteFailed") + `: ${error.message}`);
     },
   });
 
   const createCustomer = trpc.customers.create.useMutation({
     onSuccess: () => {
-      toast.success("Kunde opprettet!");
+      toast.success(t("toasts.success.customerCreated"));
       setIsDialogOpen(false);
       refetch();
       setFormData({
@@ -134,7 +137,7 @@ export default function Customers() {
       });
     },
     onError: error => {
-      toast.error(`Feil: ${error.message}`);
+      toast.error(t("toasts.error.generic", { message: error.message }));
     },
   });
 
@@ -146,18 +149,18 @@ export default function Customers() {
 
     try {
       await Promise.all(promises);
-      toast.success(`${bulkSelection.selectedCount} kunder slettet!`);
+      toast.success(t("toasts.success.customersDeleted", { count: bulkSelection.selectedCount }));
       bulkSelection.clearSelection();
       refetch();
     } catch (error) {
-      toast.error("Noen kunder kunne ikke slettes");
+      toast.error(t("toasts.error.someFailed", { items: t("customers.title").toLowerCase() }));
     }
   };
 
   const handleBulkSMS = () => {
     setShowSMSDialog(false);
     // TODO: Implement bulk SMS sending
-    toast.success(`SMS sendt til ${bulkSelection.selectedCount} kunder!`);
+    toast.success(t("toasts.success.smsSent", { count: bulkSelection.selectedCount }));
     bulkSelection.clearSelection();
   };
 
