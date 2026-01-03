@@ -23,9 +23,13 @@ const resources = {
 };
 
 // Check if user has previously selected a language
-const savedLanguage = typeof window !== "undefined" 
-  ? localStorage.getItem("i18nextLng") 
-  : null;
+let savedLanguage: string | null = null;
+try {
+  savedLanguage = localStorage.getItem("i18nextLng");
+} catch (e) {
+  // localStorage might be unavailable in some contexts (SSR, etc.)
+  console.warn("Failed to access localStorage:", e);
+}
 
 // Only use saved language if it's one of our supported languages
 const supportedLanguages = ["no", "ar", "en", "uk"];
@@ -46,8 +50,11 @@ i18n.use(initReactI18next).init({
 
 // Save language preference when it changes
 i18n.on("languageChanged", lng => {
-  if (typeof window !== "undefined") {
+  try {
     localStorage.setItem("i18nextLng", lng);
+  } catch (e) {
+    // localStorage might be unavailable in some contexts
+    console.warn("Failed to save language preference:", e);
   }
 });
 
