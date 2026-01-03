@@ -65,6 +65,7 @@
     "adding": "Legger til...",
     "inQueue": "I kø",
     "inService": "Kunder som får tjeneste nå",
+    "inServiceTitle": "Tjeneste pågår",
     "noCustomers": "Ingen kunder i kø",
     "clickAdd": "Klikk",
     "toAddCustomer": "for å legge til kunde",

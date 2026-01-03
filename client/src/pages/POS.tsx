@@ -40,6 +40,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { safeToFixed } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 // Cart item type
 type CartItem = {
@@ -62,6 +63,9 @@ type CartState = {
 };
 
 export default function POS() {
+  // Translation hook prepared for i18n migration - translations exist in pos.json namespace
+  // TODO: Replace hard-coded strings with t() calls
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const stripeTerminal = useStripeTerminal();
