@@ -40,6 +40,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { safeToFixed } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 // Cart item type
 type CartItem = {
@@ -62,6 +63,7 @@ type CartState = {
 };
 
 export default function POS() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [, setLocation] = useLocation();
   const stripeTerminal = useStripeTerminal();
