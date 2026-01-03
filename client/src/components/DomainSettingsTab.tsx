@@ -37,7 +37,6 @@ export function DomainSettingsTab() {
   const {
     data: domainInfo,
     isLoading,
-    refetch,
   } = trpc.salonSettings.getDomainInfo.useQuery();
 
   const { data: availabilityData, isLoading: isChecking } =
@@ -55,7 +54,8 @@ export function DomainSettingsTab() {
       onSuccess: () => {
         toast.success("Subdomain oppdatert!");
         setIsEditing(false);
-        refetch();
+        // Properly invalidate the query cache to refetch data
+        utils.salonSettings.getDomainInfo.invalidate();
       },
       onError: error => {
         toast.error(error.message || "Kunne ikke oppdatere subdomain");
