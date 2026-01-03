@@ -703,6 +703,7 @@ export const communicationSettings = mysqlTable("communicationSettings", {
   smsSenderName: varchar("smsSenderName", { length: 11 }), // Max 11 chars for SMS sender
   smsEnabled: boolean("smsEnabled").default(false).notNull(),
   // Email Settings
+  useSystemEmailDefaults: boolean("useSystemEmailDefaults").default(true).notNull(), // Use system-wide SMTP settings
   smtpHost: varchar("smtpHost", { length: 255 }),
   smtpPort: int("smtpPort"),
   smtpUser: varchar("smtpUser", { length: 255 }),
