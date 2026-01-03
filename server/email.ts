@@ -25,17 +25,26 @@ const transporter = nodemailer.createTransport({
 });
 
 /**
- * Send an email
+ * Send an email with optional tenant-specific SMTP settings
  *
- * @param options Email options (to, subject, html)
+ * @param options Email options (to, subject, html, tenantId)
  * @returns Promise that resolves when email is sent
  *
  * Note: Errors are logged but not thrown to prevent breaking main logic
+ * 
+ * If tenantId is provided:
+ * - Checks if tenant has custom SMTP configured (useSystemEmailDefaults = false)
+ * - Uses tenant's custom SMTP settings if available
+ * - Falls back to system defaults if tenant uses system defaults or settings not found
+ * 
+ * If tenantId is not provided:
+ * - Always uses system defaults (ENV variables)
  */
 export async function sendEmail(options: {
   to: string;
   subject: string;
   html: string;
+  tenantId?: string;
 }): Promise<void> {
   // Skip if no recipient
   if (!options.to) {
@@ -43,7 +52,78 @@ export async function sendEmail(options: {
     return;
   }
 
-  // Try AWS SES first if configured
+  let useCustomSmtp = false;
+  let customTransporter: any = null;
+  let customFromEmail: string | null = null;
+
+  // Check for tenant-specific SMTP settings if tenantId provided
+  if (options.tenantId) {
+    try {
+      const { getDb } = await import("./db");
+      const dbInstance = await getDb();
+      
+      if (dbInstance) {
+        const { communicationSettings } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        
+        const [settings] = await dbInstance
+          .select()
+          .from(communicationSettings)
+          .where(eq(communicationSettings.tenantId, options.tenantId))
+          .limit(1);
+        
+        // Use tenant's custom SMTP if configured and not using system defaults
+        if (
+          settings && 
+          !settings.useSystemEmailDefaults && 
+          settings.smtpHost && 
+          settings.smtpUser && 
+          settings.smtpPassword
+        ) {
+          useCustomSmtp = true;
+          customFromEmail = settings.emailFromAddress || settings.emailFromName ? 
+            `"${settings.emailFromName || 'Stylora'}" <${settings.emailFromAddress || ENV.smtpFromEmail}>` : 
+            ENV.smtpFromEmail;
+          
+          customTransporter = nodemailer.createTransport({
+            host: settings.smtpHost,
+            port: settings.smtpPort || 587,
+            secure: settings.smtpSecure !== false,
+            auth: {
+              user: settings.smtpUser,
+              pass: settings.smtpPassword,
+            },
+          });
+          
+          console.log("[Email] Using tenant-specific SMTP for tenant:", options.tenantId);
+        } else {
+          console.log("[Email] Using system defaults for tenant:", options.tenantId);
+        }
+      }
+    } catch (error) {
+      console.error("[Email] Error loading tenant SMTP settings, using system defaults:", error);
+      // Fall through to system defaults
+    }
+  }
+
+  // Try custom SMTP first if available
+  if (useCustomSmtp && customTransporter) {
+    try {
+      await customTransporter.sendMail({
+        from: customFromEmail || ENV.smtpFromEmail,
+        to: options.to,
+        subject: options.subject,
+        html: options.html,
+      });
+      console.log("[Email] Sent successfully via tenant SMTP to:", options.to);
+      return;
+    } catch (error) {
+      console.error("[Email] Tenant SMTP failed, falling back to system defaults:", error);
+      // Fall through to system defaults
+    }
+  }
+
+  // Try AWS SES if configured (system default)
   if (isAWSSESConfigured()) {
     try {
       await sendEmailViaSES({
@@ -59,7 +139,7 @@ export async function sendEmail(options: {
     }
   }
 
-  // Fallback to SMTP if AWS SES not configured or failed
+  // Fallback to system SMTP if AWS SES not configured or failed
   if (!ENV.smtpHost || !ENV.smtpUser || !ENV.smtpPass) {
     console.warn(
       "[Email] Neither AWS SES nor SMTP configured, skipping email to:",
@@ -76,7 +156,7 @@ export async function sendEmail(options: {
       html: options.html,
     });
 
-    console.log("[Email] Sent successfully via SMTP to:", options.to);
+    console.log("[Email] Sent successfully via system SMTP to:", options.to);
   } catch (error) {
     console.error("[Email] Failed to send to:", options.to, error);
     // Don't throw - email failure should not break main logic
