@@ -228,7 +228,10 @@ export function DomainSettingsTab() {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => window.open(domainInfo.bookingUrl, '_blank')}
+                onClick={() => {
+                  const newWindow = window.open(domainInfo.bookingUrl, '_blank');
+                  if (newWindow) newWindow.opener = null;
+                }}
                 className="shrink-0"
                 title="Åpne bookingside i ny fane"
               >
@@ -266,7 +269,10 @@ export function DomainSettingsTab() {
             <div className="grid grid-cols-2 gap-3">
               <Button
                 variant="outline"
-                onClick={() => window.open(domainInfo.bookingUrl, '_blank')}
+                onClick={() => {
+                  const newWindow = window.open(domainInfo.bookingUrl, '_blank');
+                  if (newWindow) newWindow.opener = null;
+                }}
                 className="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50"
               >
                 <ExternalLink className="w-4 h-4 mr-2" />

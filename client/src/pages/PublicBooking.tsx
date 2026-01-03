@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { Link } from "wouter";
 import {
   Card,
   CardContent,
@@ -377,12 +378,11 @@ export default function PublicBooking() {
               <p className="text-sm text-gray-500 mb-4">
                 Vennligst kontakt salongen direkte eller sjekk at URL-en er riktig.
               </p>
-              <button
-                onClick={() => window.location.href = '/'}
-                className="text-blue-600 hover:text-blue-700 underline text-sm"
-              >
-                Gå til hovedsiden
-              </button>
+              <Link href="/">
+                <a className="text-blue-600 hover:text-blue-700 underline text-sm">
+                  Gå til hovedsiden
+                </a>
+              </Link>
             </>
           )}
         </div>
