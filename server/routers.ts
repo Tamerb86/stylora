@@ -12763,6 +12763,7 @@ export const appRouter = router({
           smsApiSecret: z.string().optional(),
           smsSenderName: z.string().max(11).optional(),
           smsEnabled: z.boolean().optional(),
+          useSystemEmailDefaults: z.boolean().optional(),
           smtpHost: z.string().optional(),
           smtpPort: z.number().optional(),
           smtpUser: z.string().optional(),

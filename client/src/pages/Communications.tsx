@@ -74,6 +74,7 @@ export function Communications() {
   const [smsSenderName, setSmsSenderName] = useState("");
 
   const [emailEnabled, setEmailEnabled] = useState(false);
+  const [useSystemEmailDefaults, setUseSystemEmailDefaults] = useState(true);
   const [smtpHost, setSmtpHost] = useState("");
   const [smtpPort, setSmtpPort] = useState(587);
   const [smtpUser, setSmtpUser] = useState("");
@@ -102,6 +103,7 @@ export function Communications() {
       setSmsSenderName(settings.smsSenderName || "");
 
       setEmailEnabled(settings.emailEnabled || false);
+      setUseSystemEmailDefaults(settings.useSystemEmailDefaults !== false);
       setSmtpHost(settings.smtpHost || "");
       setSmtpPort(settings.smtpPort || 587);
       setSmtpUser(settings.smtpUser || "");
@@ -123,6 +125,7 @@ export function Communications() {
         smsApiKey,
         smsSenderName,
         emailEnabled,
+        useSystemEmailDefaults,
         smtpHost,
         smtpPort,
         smtpUser,
@@ -415,83 +418,100 @@ export function Communications() {
 
                 {emailEnabled && (
                   <>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="smtpHost">SMTP Server</Label>
-                        <Input
-                          id="smtpHost"
-                          value={smtpHost}
-                          onChange={e => setSmtpHost(e.target.value)}
-                          placeholder="smtp.gmail.com"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="smtpPort">Port</Label>
-                        <Input
-                          id="smtpPort"
-                          type="number"
-                          value={smtpPort}
-                          onChange={e => setSmtpPort(parseInt(e.target.value))}
-                          placeholder="587"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="smtpUser">SMTP Brukernavn</Label>
-                      <Input
-                        id="smtpUser"
-                        value={smtpUser}
-                        onChange={e => setSmtpUser(e.target.value)}
-                        placeholder="din@epost.no"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="smtpPassword">SMTP Passord</Label>
-                      <Input
-                        id="smtpPassword"
-                        type="password"
-                        value={smtpPassword}
-                        onChange={e => setSmtpPassword(e.target.value)}
-                        placeholder="••••••••"
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between border-t pt-4">
                       <div className="space-y-0.5">
-                        <Label>Bruk TLS/SSL</Label>
+                        <Label>Bruk systemets standard e-postserver</Label>
                         <p className="text-sm text-muted-foreground">
-                          Anbefalt for sikker tilkobling
+                          Bruk den globale SMTP-konfigurasjonen istedenfor egendefinert
                         </p>
                       </div>
                       <Switch
-                        checked={smtpSecure}
-                        onCheckedChange={setSmtpSecure}
+                        checked={useSystemEmailDefaults}
+                        onCheckedChange={setUseSystemEmailDefaults}
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="emailFromAddress">Avsender E-post</Label>
-                      <Input
-                        id="emailFromAddress"
-                        type="email"
-                        value={emailFromAddress}
-                        onChange={e => setEmailFromAddress(e.target.value)}
-                        placeholder="salong@eksempel.no"
-                      />
-                    </div>
+                    {!useSystemEmailDefaults && (
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="smtpHost">SMTP Server</Label>
+                            <Input
+                              id="smtpHost"
+                              value={smtpHost}
+                              onChange={e => setSmtpHost(e.target.value)}
+                              placeholder="smtp.gmail.com"
+                            />
+                          </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="emailFromName">Avsender Navn</Label>
-                      <Input
-                        id="emailFromName"
-                        value={emailFromName}
-                        onChange={e => setEmailFromName(e.target.value)}
-                        placeholder="Min Salong"
-                      />
-                    </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="smtpPort">Port</Label>
+                            <Input
+                              id="smtpPort"
+                              type="number"
+                              value={smtpPort}
+                              onChange={e => setSmtpPort(parseInt(e.target.value))}
+                              placeholder="587"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="smtpUser">SMTP Brukernavn</Label>
+                          <Input
+                            id="smtpUser"
+                            value={smtpUser}
+                            onChange={e => setSmtpUser(e.target.value)}
+                            placeholder="din@epost.no"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="smtpPassword">SMTP Passord</Label>
+                          <Input
+                            id="smtpPassword"
+                            type="password"
+                            value={smtpPassword}
+                            onChange={e => setSmtpPassword(e.target.value)}
+                            placeholder="••••••••"
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-0.5">
+                            <Label>Bruk TLS/SSL</Label>
+                            <p className="text-sm text-muted-foreground">
+                              Anbefalt for sikker tilkobling
+                            </p>
+                          </div>
+                          <Switch
+                            checked={smtpSecure}
+                            onCheckedChange={setSmtpSecure}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="emailFromAddress">Avsender E-post</Label>
+                          <Input
+                            id="emailFromAddress"
+                            type="email"
+                            value={emailFromAddress}
+                            onChange={e => setEmailFromAddress(e.target.value)}
+                            placeholder="salong@eksempel.no"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="emailFromName">Avsender Navn</Label>
+                          <Input
+                            id="emailFromName"
+                            value={emailFromName}
+                            onChange={e => setEmailFromName(e.target.value)}
+                            placeholder="Min Salong"
+                          />
+                        </div>
+                      </>
+                    )}
                   </>
                 )}
 
