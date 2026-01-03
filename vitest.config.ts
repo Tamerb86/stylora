@@ -13,7 +13,22 @@ export default defineConfig({
     },
   },
   test: {
+    globals: true,
+    include: [
+      "server/**/*.test.ts",
+      "server/**/*.spec.ts",
+      "client/src/i18n/**/*.test.ts",
+    ],
+    // Server tests use node environment by default
+    // Client tests override with happy-dom via inline config
     environment: "node",
-    include: ["server/**/*.test.ts", "server/**/*.spec.ts"],
+    environmentMatchGlobs: [
+      // Client tests use happy-dom for DOM APIs
+      ["client/**/*.test.ts", "happy-dom"],
+      ["client/**/*.spec.ts", "happy-dom"],
+      // Server tests use node environment
+      ["server/**/*.test.ts", "node"],
+      ["server/**/*.spec.ts", "node"],
+    ],
   },
 });
