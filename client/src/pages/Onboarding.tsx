@@ -50,7 +50,12 @@ const createSchemas = (t: (key: string) => string) => {
     subdomain: z
       .string()
       .min(3, t("onboarding.salonInfo.subdomainRequired"))
-      .regex(/^[a-z0-9-]+$/, t("onboarding.salonInfo.subdomainPattern")),
+      .max(63, t("onboarding.salonInfo.subdomainMaxLength"))
+      .regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/, t("onboarding.salonInfo.subdomainPattern"))
+      .refine(
+        (val) => /[a-z]/.test(val),
+        t("onboarding.salonInfo.subdomainMustHaveLetter")
+      ),
     address: z.string().min(5, t("onboarding.salonInfo.addressRequired")),
     city: z.string().min(2, t("onboarding.salonInfo.cityRequired")),
     phone: z.string().min(8, t("onboarding.salonInfo.phoneRequired")),

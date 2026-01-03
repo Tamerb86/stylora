@@ -1502,6 +1502,10 @@ export const appRouter = router({
             .regex(
               /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/,
               "Subdomain must contain only lowercase letters, numbers, and hyphens (not at start/end)"
+            )
+            .refine(
+              (val) => /[a-z]/.test(val),
+              "Subdomain must contain at least one letter (a-z)"
             ),
         })
       )
@@ -10617,7 +10621,18 @@ export const appRouter = router({
         z.object({
           // Basic info
           name: z.string().min(1),
-          subdomain: z.string().min(1),
+          subdomain: z
+            .string()
+            .min(3, "Subdomain must be at least 3 characters")
+            .max(63, "Subdomain must be at most 63 characters")
+            .regex(
+              /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/,
+              "Subdomain must contain only lowercase letters, numbers, and hyphens (not at start/end)"
+            )
+            .refine(
+              (val) => /[a-z]/.test(val),
+              "Subdomain must contain at least one letter (a-z)"
+            ),
           orgNumber: z.string().min(1),
           contactEmail: z.string().email(),
           contactPhone: z.string().min(1),

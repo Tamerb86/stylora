@@ -223,6 +223,20 @@ export default function SaasAdminTenantOnboarding() {
           toast.error("Subdomain må være minst 3 tegn");
           return false;
         }
+        if (formData.subdomain.length > 63) {
+          toast.error("Subdomain må være maks 63 tegn");
+          return false;
+        }
+        if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(formData.subdomain)) {
+          toast.error(
+            "Ugyldig subdomain format. Bruk kun små bokstaver, tall og bindestreker (ikke i start/slutt)"
+          );
+          return false;
+        }
+        if (!/[a-z]/.test(formData.subdomain)) {
+          toast.error("Subdomain må inneholde minst én bokstav (a-z)");
+          return false;
+        }
         if (formData.orgNumber.length !== 9) {
           toast.error("Organisasjonsnummer må være 9 siffer");
           return false;

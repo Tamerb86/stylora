@@ -97,10 +97,20 @@ export function DomainSettingsTab() {
       return;
     }
 
+    if (newSubdomain.length > 63) {
+      toast.error("Subdomain må være maks 63 tegn");
+      return;
+    }
+
     if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(newSubdomain)) {
       toast.error(
         "Ugyldig format. Bruk kun små bokstaver, tall og bindestreker (ikke i start/slutt)"
       );
+      return;
+    }
+
+    if (!/[a-z]/.test(newSubdomain)) {
+      toast.error("Subdomain må inneholde minst én bokstav (a-z)");
       return;
     }
 
@@ -137,9 +147,11 @@ export function DomainSettingsTab() {
   const isAvailable = availabilityData?.available ?? null;
   const canSave =
     newSubdomain.length >= 3 &&
+    newSubdomain.length <= 63 &&
     newSubdomain !== domainInfo.subdomain &&
     isAvailable === true &&
-    /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(newSubdomain);
+    /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(newSubdomain) &&
+    /[a-z]/.test(newSubdomain);
 
   return (
     <div className="space-y-6">
@@ -380,15 +392,19 @@ export function DomainSettingsTab() {
             </div>
             <div className="flex items-start gap-2">
               <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-              <span>Kun små bokstaver (a-z)</span>
+              <span>Må inneholde minst én bokstav (a-z)</span>
             </div>
             <div className="flex items-start gap-2">
               <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
-              <span>Tall (0-9) og bindestreker (-)</span>
+              <span>Tall (0-9) og bindestreker (-) er tillatt</span>
             </div>
             <div className="flex items-start gap-2">
               <XCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
               <span>Kan ikke starte eller slutte med bindestrek</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <XCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
+              <span>Kan ikke være kun tall (må ha minst én bokstav)</span>
             </div>
           </CardContent>
         </Card>
