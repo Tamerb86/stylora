@@ -22,6 +22,16 @@ const resources = {
   },
 };
 
+// Supported languages
+const supportedLanguages = ["no", "ar", "en", "uk"];
+
+// Function to normalize language codes (e.g., en-US -> en)
+function normalizeLanguage(lang: string): string {
+  if (!lang) return "no";
+  const normalized = lang.toLowerCase().split("-")[0];
+  return supportedLanguages.includes(normalized) ? normalized : "no";
+}
+
 // Check if user has previously selected a language
 let savedLanguage: string | null = null;
 try {
@@ -31,27 +41,37 @@ try {
   console.warn("Failed to access localStorage:", e);
 }
 
-// Only use saved language if it's one of our supported languages
-const supportedLanguages = ["no", "ar", "en", "uk"];
-const initialLanguage =
-  savedLanguage && supportedLanguages.includes(savedLanguage)
-    ? savedLanguage
-    : "no"; // Default to Norwegian
+// Normalize and validate saved language
+const initialLanguage = savedLanguage 
+  ? normalizeLanguage(savedLanguage)
+  : "no"; // Default to Norwegian
 
 i18n.use(initReactI18next).init({
   resources,
   lng: initialLanguage, // Use saved language or Norwegian as default
   fallbackLng: "no",
+  supportedLngs: supportedLanguages,
   debug: false,
   interpolation: {
     escapeValue: false, // React already escapes values
+  },
+  // Disable automatic language detection from browser
+  detection: {
+    order: ['localStorage'],
+    caches: ['localStorage'],
   },
 });
 
 // Save language preference when it changes
 i18n.on("languageChanged", lng => {
   try {
-    localStorage.setItem("i18nextLng", lng);
+    // Normalize and save language preference
+    const normalized = normalizeLanguage(lng);
+    localStorage.setItem("i18nextLng", normalized);
+    
+    // Set document direction and lang attribute for RTL support
+    document.documentElement.dir = normalized === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = normalized;
   } catch (e) {
     // localStorage might be unavailable in some contexts
     console.warn("Failed to save language preference:", e);

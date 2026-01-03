@@ -85,6 +85,7 @@ import {
 import { Link } from "wouter";
 import { EmailVerificationBanner } from "./EmailVerificationBanner";
 import { useUIMode } from "@/contexts/UIModeContext";
+import { useTranslation } from "react-i18next";
 
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -101,323 +102,323 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-// Daily Operations - Most frequently used
-const menuItems = [
+// Menu items factory functions
+const getMenuItems = (t: (key: string) => string) => [
   {
     icon: LayoutDashboard,
-    label: "Dashboard",
+    label: t("nav.dashboard"),
     path: "/dashboard",
-    tooltip: "Oversikt over dagens avtaler og nøkkeltall",
+    tooltip: t("nav.tooltip.dashboard"),
   },
   {
     icon: Calendar,
-    label: "Timebok",
+    label: t("nav.timebook"),
     path: "/appointments",
-    tooltip: "Administrer og bestill timer for kunder",
+    tooltip: t("nav.tooltip.timebook"),
   },
   {
     icon: UserCheck,
-    label: "Walk-in Kø",
+    label: t("nav.walkInQueue"),
     path: "/walk-in-queue",
-    tooltip: "Håndter walk-in kunder uten avtale",
+    tooltip: t("nav.tooltip.walkInQueue"),
   },
   {
     icon: ShoppingCart,
-    label: "Salgssted (POS)",
+    label: t("nav.pos"),
     path: "/pos",
-    tooltip: "Registrer salg og behandle betalinger",
+    tooltip: t("nav.tooltip.pos"),
   },
   {
     icon: Users,
-    label: "Kunder",
+    label: t("nav.customers"),
     path: "/customers",
-    tooltip: "Administrer kunderegisteret",
+    tooltip: t("nav.tooltip.customers"),
   },
   {
     icon: Scissors,
-    label: "Tjenester",
+    label: t("nav.services"),
     path: "/services",
-    tooltip: "Administrer tjenester og priser",
+    tooltip: t("nav.tooltip.services"),
   },
   {
     icon: UserCog,
-    label: "Ansatte",
+    label: t("nav.employees"),
     path: "/employees",
-    tooltip: "Administrer ansatte og deres tilganger",
+    tooltip: t("nav.tooltip.employees"),
   },
   {
     icon: Package,
-    label: "Produkter",
+    label: t("nav.products"),
     path: "/products",
     advancedOnly: true,
-    tooltip: "Administrer produkter for salg",
+    tooltip: t("nav.tooltip.products"),
   },
   {
     icon: Clock,
-    label: "Timeregistrering",
+    label: t("nav.timeRegistration"),
     path: "/timeclock",
-    tooltip: "Registrer arbeidstimer for ansatte",
+    tooltip: t("nav.tooltip.clockInTerminal"),
     submenu: [
       {
         icon: Clock,
-        label: "Innstemplingsterminal",
+        label: t("nav.clockInTerminal"),
         path: "/timeclock",
-        tooltip: "Stemple inn og ut",
+        tooltip: t("nav.tooltip.clockInTerminal"),
       },
       {
         icon: UserCog,
-        label: "Administrer vakter",
+        label: t("nav.manageShifts"),
         path: "/timeclock-admin",
         adminOnly: true,
-        tooltip: "Administrer og godkjenn arbeidstimer",
+        tooltip: t("nav.tooltip.manageShifts"),
       },
       {
         icon: BarChart3,
-        label: "Timer rapport",
+        label: t("nav.hoursReport"),
         path: "/work-hours-report",
         adminOnly: true,
-        tooltip: "Vis ukentlig/månedlig rapport over arbeidstimer",
+        tooltip: t("nav.tooltip.hoursReport"),
       },
     ],
   },
   {
     icon: Gift,
-    label: "Lojalitet",
+    label: t("nav.loyalty"),
     path: "/loyalty",
     advancedOnly: true,
-    tooltip: "Administrer lojalitetsprogram og belønninger",
+    tooltip: t("nav.tooltip.loyalty"),
   },
   {
     icon: MessageCircle,
-    label: "Kommunikasjon",
+    label: t("nav.communication"),
     path: "/communications",
     advancedOnly: true,
-    tooltip: "Send meldinger og varsler til kunder",
+    tooltip: t("nav.tooltip.communicationSettings"),
     submenu: [
       {
         icon: MessageCircle,
-        label: "Innstillinger",
+        label: t("nav.communicationSettings"),
         path: "/communications",
-        tooltip: "Konfigurer kommunikasjonsinnstillinger",
+        tooltip: t("nav.tooltip.communicationSettings"),
       },
       {
         icon: Send,
-        label: "Masseutsendelse",
+        label: t("nav.bulkMessaging"),
         path: "/bulk-messaging",
-        tooltip: "Send meldinger til flere kunder samtidig",
+        tooltip: t("nav.tooltip.bulkMessaging"),
       },
       {
         icon: TrendingUp,
-        label: "Kampanjeanalyse",
+        label: t("nav.campaignAnalytics"),
         path: "/campaign-analytics",
-        tooltip: "Analyser kampanjeresultater",
+        tooltip: t("nav.tooltip.campaignAnalytics"),
       },
       {
         icon: Mail,
-        label: "E-postmaler",
+        label: t("nav.emailTemplates"),
         path: "/email-templates",
-        tooltip: "Administrer e-postmaler",
+        tooltip: t("nav.tooltip.emailTemplates"),
       },
     ],
   },
   {
     icon: Bell,
-    label: "Varsler",
+    label: t("nav.notifications"),
     path: "/notifications",
     advancedOnly: true,
-    tooltip: "Administrer automatiske varsler",
+    tooltip: t("nav.tooltip.notifications"),
   },
 ];
 
 // Settings & Configuration - Grouped together
-const settingsMenuItems = [
+const getSettingsMenuItems = (t: (key: string) => string) => [
   {
     icon: SettingsIcon,
-    label: "Innstillinger",
+    label: t("nav.settings"),
     path: "/settings",
-    tooltip: "Konfigurer systeminnstillinger",
+    tooltip: t("nav.tooltip.settings"),
   },
   {
     icon: CreditCard,
-    label: "Betalingsterminaler",
+    label: t("nav.paymentTerminals"),
     path: "/payment-providers",
     adminOnly: true,
     advancedOnly: true,
-    tooltip: "Administrer betalingsterminaler",
+    tooltip: t("nav.tooltip.paymentTerminals"),
   },
   {
     icon: CreditCard,
-    label: "iZettle",
+    label: t("nav.izettle"),
     path: "/izettle",
     adminOnly: true,
     advancedOnly: true,
-    tooltip: "Koble til iZettle-konto",
+    tooltip: t("nav.tooltip.izettle"),
   },
   {
     icon: Building2,
-    label: "Regnskap",
+    label: t("nav.accounting"),
     path: "/accounting",
     adminOnly: true,
-    tooltip: "Integrasjoner med regnskapssystemer",
+    tooltip: t("nav.tooltip.allIntegrations"),
     submenu: [
       {
         icon: Building2,
-        label: "Alle integrasjoner",
+        label: t("nav.allIntegrations"),
         path: "/accounting",
-        tooltip: "Oversikt over regnskapsintegrasjoner",
+        tooltip: t("nav.tooltip.allIntegrations"),
       },
       {
         icon: Building2,
-        label: "Eksport til regnskapsfører",
+        label: t("nav.accountantExport"),
         path: "/accountant-export",
-        tooltip: "Eksporter data til regnskapsfører",
+        tooltip: t("nav.tooltip.accountantExport"),
       },
       {
         icon: Building2,
-        label: "Unimicro",
+        label: t("nav.unimicro"),
         path: "/unimicro",
-        tooltip: "Unimicro-integrasjon",
+        tooltip: t("nav.tooltip.unimicro"),
       },
       {
         icon: Building2,
-        label: "Fiken",
+        label: t("nav.fiken"),
         path: "/fiken",
-        tooltip: "Fiken-integrasjon",
+        tooltip: t("nav.tooltip.fiken"),
       },
     ],
   },
   {
     icon: Database,
-    label: "Sikkerhetskopier",
+    label: t("nav.backups"),
     path: "/backups",
     adminOnly: true,
     advancedOnly: true,
-    tooltip: "Administrer sikkerhetskopier",
+    tooltip: t("nav.tooltip.backups"),
   },
   {
     icon: FileText,
-    label: "Importer Data",
+    label: t("nav.importData"),
     path: "/import",
     adminOnly: true,
     advancedOnly: true,
-    tooltip: "Importer kunder, tjenester og produkter",
+    tooltip: t("nav.tooltip.importData"),
   },
   {
     icon: Activity,
-    label: "Systemovervåking",
+    label: t("nav.systemMonitoring"),
     path: "/monitoring",
     adminOnly: true,
     advancedOnly: true,
-    tooltip: "Overvåk systemytelse og integrasjoner",
+    tooltip: t("nav.tooltip.systemMonitoring"),
   },
 ];
 
-const paymentsMenuItems = [
+const getPaymentsMenuItems = (t: (key: string) => string) => [
   {
     icon: CreditCard,
-    label: "Kasse (Betaling)",
+    label: t("nav.posPayment"),
     path: "/pos-payment",
     advancedOnly: true,
-    tooltip: "Behandle betalinger ved kassen",
+    tooltip: t("nav.tooltip.posPayment"),
   },
   {
     icon: Receipt,
-    label: "Ordrehistorikk",
+    label: t("nav.orderHistory"),
     path: "/orders",
     advancedOnly: true,
-    tooltip: "Se alle tidligere ordrer",
+    tooltip: t("nav.tooltip.orderHistory"),
   },
   {
     icon: History,
-    label: "Betalingshistorikk",
+    label: t("nav.paymentHistory"),
     path: "/payment-history",
     advancedOnly: true,
-    tooltip: "Se alle betalingstransaksjoner",
+    tooltip: t("nav.tooltip.paymentHistory"),
   },
   {
     icon: RefreshCw,
-    label: "Refusjoner",
+    label: t("nav.refunds"),
     path: "/refunds",
     advancedOnly: true,
-    tooltip: "Administrer refusjoner",
+    tooltip: t("nav.tooltip.refunds"),
   },
   {
     icon: RefreshCw,
-    label: "Refusjonsstyring",
+    label: t("nav.refundManagement"),
     path: "/refund-management",
     advancedOnly: true,
-    tooltip: "Avansert refusjonsstyring",
+    tooltip: t("nav.tooltip.refundManagement"),
   },
 ];
 
-const reportsMenuItems = [
+const getReportsMenuItems = (t: (key: string) => string) => [
   {
     icon: BarChart3,
-    label: "Rapporter",
+    label: t("nav.reports"),
     path: "/reports",
     advancedOnly: true,
-    tooltip: "Se alle rapporter og statistikk",
+    tooltip: t("nav.tooltip.reports"),
   },
   {
     icon: BarChart3,
-    label: "Fremmøterapport",
+    label: t("nav.attendanceReport"),
     path: "/attendance",
     advancedOnly: true,
-    tooltip: "Rapport over kundefremmøte",
+    tooltip: t("nav.tooltip.attendanceReport"),
   },
   {
     icon: DollarSign,
-    label: "Økonomi",
+    label: t("nav.financial"),
     path: "/financial",
     advancedOnly: true,
-    tooltip: "Finansielle rapporter og økonomi",
+    tooltip: t("nav.tooltip.financial"),
   },
   {
     icon: TrendingUp,
-    label: "Analyse",
+    label: t("nav.analytics"),
     path: "/analytics",
     advancedOnly: true,
-    tooltip: "Analyser og innsikt",
+    tooltip: t("nav.tooltip.analytics"),
   },
   {
     icon: TrendingUp,
-    label: "Avanserte rapporter",
+    label: t("nav.advancedReports"),
     path: "/advanced-reports",
     advancedOnly: true,
-    tooltip: "Avanserte rapporter og statistikk",
+    tooltip: t("nav.tooltip.advancedReports"),
   },
   {
     icon: DollarSign,
-    label: "POS Rapporter",
+    label: t("nav.posReports"),
     path: "/pos-reports",
     advancedOnly: true,
-    tooltip: "Salgsrapporter fra POS",
+    tooltip: t("nav.tooltip.posReports"),
   },
 ];
 
-const vacationMenuItems = [
+const getVacationMenuItems = (t: (key: string) => string) => [
   {
     icon: Plane,
-    label: "Mine Ferier",
+    label: t("nav.myLeaves"),
     path: "/my-leaves",
     advancedOnly: true,
-    tooltip: "Administrer dine feriedager",
+    tooltip: t("nav.tooltip.myLeaves"),
   },
   {
     icon: CalendarCheck,
-    label: "Feriegodkjenninger",
+    label: t("nav.leaveApprovals"),
     path: "/leave-approvals",
     adminOnly: true,
     advancedOnly: true,
-    tooltip: "Godkjenn eller avslå feriesøknader",
+    tooltip: t("nav.tooltip.leaveApprovals"),
   },
   {
     icon: Calendar,
-    label: "Helligdager",
+    label: t("nav.salonHolidays"),
     path: "/holidays",
     adminOnly: true,
     advancedOnly: true,
-    tooltip: "Administrer helligdager og fridager",
+    tooltip: t("nav.tooltip.salonHolidays"),
   },
 ];
 
@@ -512,6 +513,17 @@ function DashboardLayoutContent({
 }: DashboardLayoutContentProps) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
+  const { i18n, t } = useTranslation();
+  
+  // Determine sidebar side based on language direction
+  const sidebarSide = i18n.language === 'ar' ? 'right' : 'left';
+  
+  // Get menu items with translations
+  const menuItems = getMenuItems(t);
+  const settingsMenuItems = getSettingsMenuItems(t);
+  const paymentsMenuItems = getPaymentsMenuItems(t);
+  const reportsMenuItems = getReportsMenuItems(t);
+  const vacationMenuItems = getVacationMenuItems(t);
 
   // Check email verification status
   const { data: tenant } = trpc.tenants.getCurrent.useQuery(undefined, {
@@ -652,6 +664,7 @@ function DashboardLayoutContent({
     <>
       <div className="relative" ref={sidebarRef}>
         <Sidebar
+          side={sidebarSide}
           collapsible="icon"
           className="border-r-0"
           disableTransition={isResizing}
@@ -749,17 +762,17 @@ function DashboardLayoutContent({
                 const popularPages = [
                   {
                     path: "/dashboard",
-                    label: "Dashboard",
+                    label: t("nav.dashboard"),
                     icon: LayoutDashboard,
                   },
-                  { path: "/appointments", label: "Timebok", icon: Calendar },
-                  { path: "/customers", label: "Kunder", icon: Users },
+                  { path: "/appointments", label: t("nav.timebook"), icon: Calendar },
+                  { path: "/customers", label: t("nav.customers"), icon: Users },
                   {
                     path: "/pos",
-                    label: "Salgssted (POS)",
+                    label: t("nav.pos"),
                     icon: ShoppingCart,
                   },
-                  { path: "/reports", label: "Rapporter", icon: BarChart3 },
+                  { path: "/reports", label: t("nav.reports"), icon: BarChart3 },
                 ];
 
                 // Show empty state if searching and no results
@@ -1191,7 +1204,7 @@ function DashboardLayoutContent({
                 htmlFor="ui-mode"
                 className="text-xs font-medium cursor-pointer"
               >
-                {isSimpleMode ? "Enkel modus" : "Avansert modus"}
+                {isSimpleMode ? t("common.simpleMode") : t("common.advancedMode")}
               </Label>
               <Switch
                 id="ui-mode"
@@ -1257,7 +1270,7 @@ function DashboardLayoutContent({
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-1">
                   <span className="tracking-tight text-foreground">
-                    {activeMenuItem?.label ?? "Menu"}
+                    {activeMenuItem?.label ?? t("common.menu")}
                   </span>
                 </div>
               </div>
