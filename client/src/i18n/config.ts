@@ -23,7 +23,9 @@ const resources = {
 };
 
 // Check if user has previously selected a language
-const savedLanguage = localStorage.getItem("i18nextLng");
+const savedLanguage = typeof window !== "undefined" 
+  ? localStorage.getItem("i18nextLng") 
+  : null;
 
 // Only use saved language if it's one of our supported languages
 const supportedLanguages = ["no", "ar", "en", "uk"];
@@ -44,7 +46,9 @@ i18n.use(initReactI18next).init({
 
 // Save language preference when it changes
 i18n.on("languageChanged", lng => {
-  localStorage.setItem("i18nextLng", lng);
+  if (typeof window !== "undefined") {
+    localStorage.setItem("i18nextLng", lng);
+  }
 });
 
 export default i18n;

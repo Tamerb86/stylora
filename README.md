@@ -300,6 +300,58 @@ PORT=3001
 
 ---
 
+## 🌍 Internationalization (i18n) - الترجمة متعددة اللغات
+
+Stylora supports multiple languages: Norwegian (default), English, Arabic, and Ukrainian.
+
+### Supported Languages:
+- 🇳🇴 Norwegian (no) - Default
+- 🇬🇧 English (en)
+- 🇸🇦 Arabic (ar) - with RTL support
+- 🇺🇦 Ukrainian (uk)
+
+### How to Add New Translations:
+
+1. **Locate translation files** in `client/src/i18n/locales/`:
+   - `no.json` - Norwegian
+   - `en.json` - English
+   - `ar.json` - Arabic
+   - `uk.json` - Ukrainian
+
+2. **Add your translation key** to all language files:
+
+```json
+{
+  "welcome": "Velkommen",
+  "your_new_key": "Your Norwegian translation"
+}
+```
+
+3. **Use in React components** with the `useTranslation` hook:
+
+```tsx
+import { useTranslation } from 'react-i18next';
+
+function MyComponent() {
+  const { t } = useTranslation();
+  
+  return (
+    <div>
+      <h1>{t('welcome')}</h1>
+      <p>{t('your_new_key')}</p>
+    </div>
+  );
+}
+```
+
+### Language Switcher:
+The language switcher is available in the dashboard layout. Users can switch languages dynamically, and the selection is persisted in localStorage.
+
+### RTL Support:
+Arabic language automatically switches the entire UI to RTL (Right-to-Left) layout using `document.documentElement.dir = "rtl"`.
+
+---
+
 ## 🧪 الاختبار - Testing
 
 ```bash

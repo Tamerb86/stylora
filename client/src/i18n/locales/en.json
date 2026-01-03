@@ -1,4 +1,7 @@
 {
+  "welcome": "Welcome",
+  "language_switch": "Switch Language",
+  "contact_us": "Contact Us",
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Welcome! Here's today's summary",

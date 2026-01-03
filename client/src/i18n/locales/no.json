@@ -1,4 +1,7 @@
 {
+  "welcome": "Velkommen",
+  "language_switch": "Bytt språk",
+  "contact_us": "Kontakt oss",
   "dashboard": {
     "title": "Dashbord",
     "welcome": "Velkommen! Her er dagens sammendrag",

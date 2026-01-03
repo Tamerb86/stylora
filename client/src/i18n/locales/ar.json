@@ -1,4 +1,7 @@
 {
+  "welcome": "مرحبًا",
+  "language_switch": "تغيير اللغة",
+  "contact_us": "اتصل بنا",
   "dashboard": {
     "title": "لوحة التحكم",
     "welcome": "مرحباً بك! إليك ملخص أعمال اليوم",

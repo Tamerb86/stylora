@@ -13,7 +13,12 @@ export default defineConfig({
     },
   },
   test: {
-    environment: "node",
-    include: ["server/**/*.test.ts", "server/**/*.spec.ts"],
+    environment: "happy-dom",
+    include: [
+      "server/**/*.test.ts",
+      "server/**/*.spec.ts",
+      "client/src/i18n/**/*.test.ts",
+    ],
+    globals: true,
   },
 });
