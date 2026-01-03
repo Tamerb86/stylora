@@ -53,7 +53,7 @@ export async function sendEmail(options: {
   }
 
   let useCustomSmtp = false;
-  let customTransporter: any = null;
+  let customTransporter: nodemailer.Transporter | null = null;
   let customFromEmail: string | null = null;
 
   // Check for tenant-specific SMTP settings if tenantId provided
@@ -81,9 +81,15 @@ export async function sendEmail(options: {
           settings.smtpPassword
         ) {
           useCustomSmtp = true;
-          customFromEmail = settings.emailFromAddress || settings.emailFromName ? 
-            `"${settings.emailFromName || 'Stylora'}" <${settings.emailFromAddress || ENV.smtpFromEmail}>` : 
-            ENV.smtpFromEmail;
+          
+          // Construct from email address with proper validation
+          if (settings.emailFromAddress) {
+            customFromEmail = settings.emailFromName ? 
+              `"${settings.emailFromName}" <${settings.emailFromAddress}>` : 
+              settings.emailFromAddress;
+          } else {
+            customFromEmail = ENV.smtpFromEmail;
+          }
           
           customTransporter = nodemailer.createTransport({
             host: settings.smtpHost,
