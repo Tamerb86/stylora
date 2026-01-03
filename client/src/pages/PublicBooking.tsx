@@ -378,10 +378,8 @@ export default function PublicBooking() {
               <p className="text-sm text-gray-500 mb-4">
                 Vennligst kontakt salongen direkte eller sjekk at URL-en er riktig.
               </p>
-              <Link href="/">
-                <a className="text-blue-600 hover:text-blue-700 underline text-sm">
-                  Gå til hovedsiden
-                </a>
+              <Link href="/" className="text-blue-600 hover:text-blue-700 underline text-sm">
+                Gå til hovedsiden
               </Link>
             </>
           )}
