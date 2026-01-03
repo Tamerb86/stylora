@@ -217,12 +217,25 @@ export function DomainSettingsTab() {
                 size="icon"
                 onClick={handleCopy}
                 className="shrink-0"
+                title="Kopier lenke"
               >
                 {copied ? (
                   <Check className="w-4 h-4 text-green-600" />
                 ) : (
                   <Copy className="w-4 h-4" />
                 )}
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  const newWindow = window.open(domainInfo.bookingUrl, '_blank');
+                  if (newWindow) newWindow.opener = null;
+                }}
+                className="shrink-0"
+                title="Åpne bookingside i ny fane"
+              >
+                <ExternalLink className="w-4 h-4" />
               </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
@@ -251,15 +264,28 @@ export function DomainSettingsTab() {
             </div>
           </div>
 
-          {/* Edit Button */}
+          {/* Action Buttons */}
           {!isEditing && (
-            <Button
-              onClick={handleEdit}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-            >
-              <Globe className="w-4 h-4 mr-2" />
-              Rediger subdomene
-            </Button>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const newWindow = window.open(domainInfo.bookingUrl, '_blank');
+                  if (newWindow) newWindow.opener = null;
+                }}
+                className="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50"
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Åpne bookingside
+              </Button>
+              <Button
+                onClick={handleEdit}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
+                <Globe className="w-4 h-4 mr-2" />
+                Rediger subdomene
+              </Button>
+            </div>
           )}
         </CardContent>
       </Card>
