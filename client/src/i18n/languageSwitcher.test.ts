@@ -1,10 +1,18 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import i18n from "./config";
+import { setupLocalStorageMock, cleanupLocalStorageMock } from "./testUtils";
 
 describe("LanguageSwitcher Integration", () => {
   beforeEach(async () => {
+    // Setup localStorage mock
+    setupLocalStorageMock();
     // Reset to default language and clear localStorage mock
     await i18n.changeLanguage("no");
+  });
+
+  afterEach(() => {
+    // Clean up localStorage mock
+    cleanupLocalStorageMock();
   });
 
   it("should support all required languages", () => {
@@ -52,23 +60,6 @@ describe("LanguageSwitcher Integration", () => {
   });
 
   it("should persist language selection", async () => {
-    // Mock localStorage for this test
-    const storage: Record<string, string> = {};
-    global.localStorage = {
-      getItem: (key: string) => storage[key] || null,
-      setItem: (key: string, value: string) => {
-        storage[key] = value;
-      },
-      removeItem: (key: string) => {
-        delete storage[key];
-      },
-      clear: () => {
-        Object.keys(storage).forEach(key => delete storage[key]);
-      },
-      length: Object.keys(storage).length,
-      key: (index: number) => Object.keys(storage)[index] || null,
-    } as Storage;
-
     // Change language
     await i18n.changeLanguage("en");
     

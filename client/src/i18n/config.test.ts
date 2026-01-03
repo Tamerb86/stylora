@@ -1,10 +1,18 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import i18n from "./config";
+import { setupLocalStorageMock, cleanupLocalStorageMock } from "./testUtils";
 
 describe("i18n Configuration", () => {
   beforeEach(async () => {
+    // Setup localStorage mock
+    setupLocalStorageMock();
     // Reset to default language before each test
     await i18n.changeLanguage("no");
+  });
+
+  afterEach(() => {
+    // Clean up localStorage mock
+    cleanupLocalStorageMock();
   });
 
   it("should load with Norwegian as default language", () => {
@@ -73,27 +81,14 @@ describe("i18n Configuration", () => {
   });
 
   it("should handle language change with persistence", async () => {
-    // Simulate localStorage
-    const mockStorage: Record<string, string> = {};
-    const localStorageMock = {
-      getItem: (key: string) => mockStorage[key] || null,
-      setItem: (key: string, value: string) => {
-        mockStorage[key] = value;
-      },
-      clear: () => {
-        Object.keys(mockStorage).forEach(key => delete mockStorage[key]);
-      },
-    };
-
-    // Mock localStorage
-    Object.defineProperty(window, "localStorage", {
-      value: localStorageMock,
-      writable: true,
-    });
-
+    // Change language
     await i18n.changeLanguage("en");
     
-    // Verify language was saved to localStorage
+    // Verify it was saved to localStorage
     expect(localStorage.getItem("i18nextLng")).toBe("en");
+    
+    // Change to another language
+    await i18n.changeLanguage("ar");
+    expect(localStorage.getItem("i18nextLng")).toBe("ar");
   });
 });
