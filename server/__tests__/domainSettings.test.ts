@@ -281,6 +281,97 @@ describe("Domain Settings", () => {
       ).rejects.toThrow();
     });
 
+    it("should reject subdomain with only numbers", async () => {
+      const ctx: Context = {
+        user: {
+          openId: testUserId,
+          name: "Domain Test Admin",
+          email: "test@example.com",
+          tenantId: testTenantId,
+          role: "admin",
+        },
+        req: {} as any,
+        res: {} as any,
+      };
+
+      const caller = appRouter.createCaller(ctx);
+
+      await expect(
+        caller.salonSettings.updateSubdomain({ subdomain: "12345" })
+      ).rejects.toThrow();
+    });
+
+    it("should reject subdomain that is too long", async () => {
+      const ctx: Context = {
+        user: {
+          openId: testUserId,
+          name: "Domain Test Admin",
+          email: "test@example.com",
+          tenantId: testTenantId,
+          role: "admin",
+        },
+        req: {} as any,
+        res: {} as any,
+      };
+
+      const caller = appRouter.createCaller(ctx);
+
+      // Create a subdomain longer than 63 characters
+      const longSubdomain = "a" + "b".repeat(63);
+
+      await expect(
+        caller.salonSettings.updateSubdomain({ subdomain: longSubdomain })
+      ).rejects.toThrow();
+    });
+
+    it("should accept subdomain with mix of letters and numbers", async () => {
+      const ctx: Context = {
+        user: {
+          openId: testUserId,
+          name: "Domain Test Admin",
+          email: "test@example.com",
+          tenantId: testTenantId,
+          role: "admin",
+        },
+        req: {} as any,
+        res: {} as any,
+      };
+
+      const caller = appRouter.createCaller(ctx);
+      const validSubdomain = `salon-${Date.now()}`;
+
+      const result = await caller.salonSettings.updateSubdomain({
+        subdomain: validSubdomain,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.subdomain).toBe(validSubdomain);
+    });
+
+    it("should accept subdomain with only letters", async () => {
+      const ctx: Context = {
+        user: {
+          openId: testUserId,
+          name: "Domain Test Admin",
+          email: "test@example.com",
+          tenantId: testTenantId,
+          role: "admin",
+        },
+        req: {} as any,
+        res: {} as any,
+      };
+
+      const caller = appRouter.createCaller(ctx);
+      const validSubdomain = `mysalon-${Date.now()}`;
+
+      const result = await caller.salonSettings.updateSubdomain({
+        subdomain: validSubdomain,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.subdomain).toBe(validSubdomain);
+    });
+
     it("should reject subdomain already taken by another tenant", async () => {
       const db = await getDb();
       if (!db) throw new Error("Database not available");
