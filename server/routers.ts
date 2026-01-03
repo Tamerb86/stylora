@@ -5686,6 +5686,8 @@ export const appRouter = router({
         const { tenants } = await import("../drizzle/schema");
         const { eq, or } = await import("drizzle-orm");
 
+        console.log("[PublicBooking] Looking up tenant with subdomain/id:", input.subdomain);
+
         // Search by subdomain OR by ID (to support both ?tenantId=xxx and subdomain.domain.com)
         const [tenant] = await dbInstance
           .select({
@@ -5701,6 +5703,16 @@ export const appRouter = router({
             )
           )
           .limit(1);
+
+        if (tenant) {
+          console.log("[PublicBooking] Tenant found:", {
+            id: tenant.id,
+            subdomain: tenant.subdomain,
+            name: tenant.name
+          });
+        } else {
+          console.warn("[PublicBooking] Tenant not found for subdomain/id:", input.subdomain);
+        }
 
         return tenant || null;
       }),

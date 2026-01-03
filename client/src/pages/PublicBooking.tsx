@@ -69,12 +69,20 @@ export default function PublicBooking() {
       return null; // Return null to show error message
     }
 
-    // Production: Extract subdomain from hostname (e.g., demo-stylora.stylora.no)
+    // Production: Extract subdomain from hostname (e.g., tamer.stylora.no)
     const parts = hostname.split(".");
+    console.log("[Booking] Hostname parts:", parts);
+    
     if (parts.length >= 3) {
       const extractedSubdomain = parts[0];
       console.log("[Booking] Extracted subdomain:", extractedSubdomain);
       return extractedSubdomain;
+    }
+
+    // Handle case where hostname has only 2 parts (e.g., stylora.no)
+    if (parts.length === 2) {
+      console.warn("[Booking] No subdomain found - accessing root domain");
+      return null;
     }
 
     console.warn("[Booking] Could not extract subdomain from hostname");
@@ -354,12 +362,27 @@ export default function PublicBooking() {
           ) : (
             <>
               <p className="text-gray-600 mb-4">
-                Vi kunne ikke finne salongen du leter etter. Vennligst sjekk
-                URL-en eller kontakt salongen direkte.
+                Vi kunne ikke finne salongen med subdomain: <strong>"{subdomain}"</strong>
               </p>
-              <p className="text-sm text-gray-500">
-                Subdomain: {subdomain || "ikke funnet"}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4 text-left">
+                <p className="text-sm text-gray-700 mb-2">
+                  <strong>Mulige årsaker:</strong>
+                </p>
+                <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
+                  <li>Subdomenet er ikke konfigurert riktig</li>
+                  <li>Salongen er ikke aktivert ennå</li>
+                  <li>Det er en skrivefeil i URL-en</li>
+                </ul>
+              </div>
+              <p className="text-sm text-gray-500 mb-4">
+                Vennligst kontakt salongen direkte eller sjekk at URL-en er riktig.
               </p>
+              <button
+                onClick={() => window.location.href = '/'}
+                className="text-blue-600 hover:text-blue-700 underline text-sm"
+              >
+                Gå til hovedsiden
+              </button>
             </>
           )}
         </div>
