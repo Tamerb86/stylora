@@ -738,7 +738,8 @@
       "confirmed": "Bekreftet",
       "completed": "Fullført",
       "cancelled": "Avbrutt",
-      "noShow": "Ikke møtt opp"
+      "noShow": "Ikke møtt opp",
+      "unknown": "Ukjent"
     },
     "dialog": {
       "createTitle": "Opprett ny avtale",
@@ -758,30 +759,56 @@
       "cancel": "Avbryt",
       "close": "Lukk",
       "cancelAppointment": "Avbryt avtale",
-      "duplicate": "Dupliser",
-      "repeatAppointment": "Repeter avtale"
+      "duplicate": "Dupliser avtale",
+      "repeatAppointment": "Repeter avtale",
+      "createDescription": "Opprett en ny avtale for en kunde"
     },
     "cancelDialog": {
       "title": "Avbryt avtale",
       "message": "Er du sikker på at du vil avbryte denne avtalen?",
-      "reason": "Årsak til avbryting",
-      "reasonPlaceholder": "Valgfritt: Skriv årsaken...",
+      "reason": "Grunn til avbestilling *",
+      "reasonPlaceholder": "F.eks: Kunde ba om å avbestille, sykdom, etc.",
       "refundInfo": "Refusjonsinformasjon",
       "refundAmount": "Refusjonsbeløp",
       "noRefund": "Ingen refusjon",
       "confirmButton": "Bekreft avbryting",
-      "cancelButton": "Avbryt"
+      "cancelButton": "Avbryt",
+      "description": "Bekreft avbestilling og refusjon",
+      "reasonRequired": "Vennligst oppgi en grunn for avbestillingen",
+      "originalAmount": "Opprinnelig beløp:",
+      "cancellationFee": "Avbestillingsgebyr ({percent}%):",
+      "refund": "Refusjon:",
+      "lateCancellationWarning": "⚠️ Sen avbestilling - gebyr påligger",
+      "noPayment": "Ingen betaling registrert for denne avtalen."
     },
     "conflictDialog": {
-      "title": "Tidskonflikt oppdaget",
+      "title": "⚠️ Tidskonflikt oppdaget",
       "message": "Det finnes allerede en avtale på dette tidspunktet:",
       "existingCustomer": "Eksisterende kunde",
       "existingService": "Eksisterende tjeneste",
       "existingEmployee": "Eksisterende ansatt",
       "existingTime": "Eksisterende tid",
-      "confirmButton": "Forstått",
-      "selectDifferentTime": "Vennligst velg et annet tidspunkt."
-    }
+      "confirmButton": "OK, jeg forstår",
+      "selectDifferentTime": "Vennligst velg et annet tidspunkt eller en annen behandler for å unngå dobbeltbooking.",
+      "existingAppointment": "Eksisterende avtale:"
+    },
+    "calendarView": "Kalendervisning av avtaler",
+    "notesPlaceholder": "Valgfrie notater...",
+    "endAfter": "Avslutt etter",
+    "occurrenceCount": "Antall",
+    "recurringPreviewDate": "Avtaler vil opprettes fra {start} til {end}",
+    "recurringPreviewCount": "{count} avtaler vil bli opprettet",
+    "selectEndOption": "Velg sluttdato eller antall gjentagelser",
+    "createRecurringButton": "Opprett gjentakende avtaler",
+    "recurringSeriesBadge": "Del av gjentakende serie",
+    "dateAndTime": "Dato og tid",
+    "confirmButton": "Bekreft",
+    "completeButton": "Fullfør",
+    "goToPOS": "Gå til salgssted (POS)",
+    "pastDateError": "Kan ikke opprette avtale i fortiden. Vennligst velg en fremtidig dato.",
+    "endDateRequired": "Vennligst velg sluttdato for gjentakende avtale",
+    "minOccurrencesError": "Antall gjentagelser må være minst 2",
+    "viewDescription": "Informasjon om avtalen"
   },
   "forms": {
     "required": "Påkrevd",

@@ -738,7 +738,8 @@
       "confirmed": "مؤكد",
       "completed": "مكتمل",
       "cancelled": "ملغى",
-      "noShow": "لم يحضر"
+      "noShow": "لم يحضر",
+      "unknown": "غير معروف"
     },
     "dialog": {
       "createTitle": "إنشاء موعد جديد",
@@ -758,30 +759,56 @@
       "cancel": "إلغاء",
       "close": "إغلاق",
       "cancelAppointment": "إلغاء الموعد",
-      "duplicate": "تكرار",
-      "repeatAppointment": "تكرار الموعد"
+      "duplicate": "تكرار الموعد",
+      "repeatAppointment": "تكرار الموعد",
+      "createDescription": "إنشاء موعد جديد لعميل"
     },
     "cancelDialog": {
       "title": "إلغاء الموعد",
       "message": "هل أنت متأكد من إلغاء هذا الموعد؟",
-      "reason": "سبب الإلغاء",
-      "reasonPlaceholder": "اختياري: أدخل السبب...",
+      "reason": "سبب الإلغاء *",
+      "reasonPlaceholder": "مثال: طلب العميل الإلغاء، المرض، إلخ.",
       "refundInfo": "معلومات الاسترداد",
       "refundAmount": "مبلغ الاسترداد",
       "noRefund": "لا يوجد استرداد",
       "confirmButton": "تأكيد الإلغاء",
-      "cancelButton": "إلغاء"
+      "cancelButton": "إلغاء",
+      "description": "تأكيد الإلغاء والاسترداد",
+      "reasonRequired": "يرجى تقديم سبب للإلغاء",
+      "originalAmount": "المبلغ الأصلي:",
+      "cancellationFee": "رسوم الإلغاء ({percent}%):",
+      "refund": "الاسترداد:",
+      "lateCancellationWarning": "⚠️ إلغاء متأخر - تطبق الرسوم",
+      "noPayment": "لم يتم تسجيل دفعة لهذا الموعد."
     },
     "conflictDialog": {
-      "title": "تم اكتشاف تعارض في الوقت",
+      "title": "⚠️ تم اكتشاف تعارض في الوقت",
       "message": "يوجد بالفعل موعد في هذا الوقت:",
       "existingCustomer": "العميل الحالي",
       "existingService": "الخدمة الحالية",
       "existingEmployee": "الموظف الحالي",
       "existingTime": "الوقت الحالي",
-      "confirmButton": "مفهوم",
-      "selectDifferentTime": "يرجى اختيار وقت مختلف."
-    }
+      "confirmButton": "حسنًا، فهمت",
+      "selectDifferentTime": "يرجى اختيار وقت أو موظف مختلف لتجنب الحجز المزدوج.",
+      "existingAppointment": "الموعد الموجود:"
+    },
+    "calendarView": "عرض التقويم للمواعيد",
+    "notesPlaceholder": "ملاحظات اختيارية...",
+    "endAfter": "الانتهاء بعد",
+    "occurrenceCount": "العدد",
+    "recurringPreviewDate": "سيتم إنشاء المواعيد من {start} إلى {end}",
+    "recurringPreviewCount": "سيتم إنشاء {count} موعد",
+    "selectEndOption": "حدد تاريخ الانتهاء أو عدد التكرارات",
+    "createRecurringButton": "إنشاء مواعيد متكررة",
+    "recurringSeriesBadge": "جزء من سلسلة متكررة",
+    "dateAndTime": "التاريخ والوقت",
+    "confirmButton": "تأكيد",
+    "completeButton": "إكمال",
+    "goToPOS": "انتقل إلى نقطة البيع (POS)",
+    "pastDateError": "لا يمكن إنشاء موعد في الماضي. يرجى اختيار تاريخ مستقبلي.",
+    "endDateRequired": "يرجى تحديد تاريخ الانتهاء للموعد المتكرر",
+    "minOccurrencesError": "يجب أن يكون عدد التكرارات 2 على الأقل",
+    "viewDescription": "معلومات عن الموعد"
   },
   "forms": {
     "required": "مطلوب",
