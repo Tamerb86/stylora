@@ -270,7 +270,7 @@
     "paymentInstructions": "Follow instructions on card reader",
     "insertCard": "Insert card",
     "removeCard": "Remove card",
-    "processing": "Processing payment..."
+    "processingPayment": "Processing payment..."
   },
   "common": {
     "loading": "Loading...",
@@ -678,7 +678,7 @@
     "price": "Price",
     "actions": "Actions",
     "minutes": "min",
-    "noServices": "No services found",
+    "noServicesFound": "No services found",
     "clickToAdd": "Click 'New Service' to add your first service",
     "edit": "Edit",
     "delete": "Delete",

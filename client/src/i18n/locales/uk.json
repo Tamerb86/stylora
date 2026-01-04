@@ -226,7 +226,8 @@
     "cashPayment": "Оплата готівкою",
     "cardPayment": "Оплата карткою",
     "completeSale": "Завершити продаж",
-    "processing": "Обробка оплати...",
+    "processing": "Обробка...",
+    "processingPayment": "Обробка оплати...",
     "clearCart": "Очистити кошик",
     "backToDashboard": "Повернутися до панелі",
     "customerSelected": "Клієнта вибрано: {name}",
@@ -677,6 +678,8 @@
     "price": "Ціна",
     "actions": "Дії",
     "minutes": "хв",
+    "noServicesFound": "Послуг не знайдено",
+    "clickToAdd": "Натисніть 'Нова послуга', щоб додати вашу першу послугу",
     "edit": "Редагувати",
     "delete": "Видалити",
     "dialog": {
