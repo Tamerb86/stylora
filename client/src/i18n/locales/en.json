@@ -933,5 +933,66 @@
     "warning": {
       "refundFailed": "Appointment cancelled, but refund failed: {error}"
     }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your salon settings",
+    "resetOnboarding": "🎯 Restart tour",
+    "resetOnboardingSuccess": "Tour restarted! Reload the page to see it.",
+    "tabs": {
+      "salon": "Salon",
+      "booking": "Booking",
+      "hours": "Business Hours",
+      "notifications": "Notifications",
+      "payment": "Payment",
+      "domain": "Domain",
+      "defaultData": "Default Data",
+      "branding": "Branding",
+      "print": "Print",
+      "sms": "SMS"
+    },
+    "salon": {
+      "title": "Salon Information",
+      "description": "Basic information about your salon",
+      "salonName": "Salon Name",
+      "salonNamePlaceholder": "Salon name",
+      "address": "Address",
+      "addressPlaceholder": "Street address, postal code, city",
+      "phone": "Phone",
+      "phonePlaceholder": "+47 123 45 678",
+      "email": "Email",
+      "emailPlaceholder": "mail@salon.com",
+      "description_field": "Description",
+      "descriptionPlaceholder": "Short description of the salon...",
+      "saving": "Saving...",
+      "saveChanges": "Save changes",
+      "saved": "Salon information saved!",
+      "saveFailed": "Could not save salon information"
+    },
+    "booking": {
+      "saved": "Booking settings saved!"
+    },
+    "notifications": {
+      "title": "Notification Settings",
+      "description": "Configure how customers receive notifications",
+      "emailNotifications": "Email Notifications",
+      "emailNotificationsDesc": "Send confirmations and reminders via email",
+      "smsNotifications": "SMS Notifications",
+      "smsNotificationsDesc": "Send reminders via SMS",
+      "reminderHours": "Reminder before appointment (hours)",
+      "reminderHoursPlaceholder": "24",
+      "reminderHoursDesc": "How many hours before the appointment should the reminder be sent",
+      "messageTemplates": "Message Templates",
+      "confirmationMessage": "Confirmation Message",
+      "confirmationPlaceholder": "Hi {name}, your appointment is confirmed for {date} at {time}.",
+      "reminderMessage": "Reminder Message",
+      "reminderPlaceholder": "Hi {name}, reminder about your appointment tomorrow at {time}.",
+      "saveNotifications": "Save notifications",
+      "saved": "Notification settings saved!"
+    },
+    "hours": {
+      "title": "Business Hours",
+      "description": "Manage when your salon is open for booking"
+    }
   }
 }
