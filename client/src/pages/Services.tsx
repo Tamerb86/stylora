@@ -42,6 +42,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { safeToFixed } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 type Service = {
   id: number;
@@ -52,6 +53,7 @@ type Service = {
 };
 
 export default function Services() {
+  const { t } = useTranslation();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -67,37 +69,37 @@ export default function Services() {
 
   const createService = trpc.services.create.useMutation({
     onSuccess: () => {
-      toast.success("Tjeneste opprettet!");
+      toast.success(t("toasts.success.serviceCreated"));
       setIsCreateDialogOpen(false);
       refetch();
       resetForm();
     },
     onError: error => {
-      toast.error(`Feil: ${error.message}`);
+      toast.error(t("toasts.error.generic", { message: error.message }));
     },
   });
 
   const updateService = trpc.services.update.useMutation({
     onSuccess: () => {
-      toast.success("Tjeneste oppdatert!");
+      toast.success(t("toasts.success.serviceUpdated"));
       setIsEditDialogOpen(false);
       refetch();
       setSelectedService(null);
     },
     onError: error => {
-      toast.error(`Feil: ${error.message}`);
+      toast.error(t("toasts.error.generic", { message: error.message }));
     },
   });
 
   const deleteService = trpc.services.delete.useMutation({
     onSuccess: () => {
-      toast.success("Tjeneste slettet!");
+      toast.success(t("toasts.success.serviceDeleted"));
       setIsDeleteDialogOpen(false);
       refetch();
       setSelectedService(null);
     },
     onError: error => {
-      toast.error(`Feil: ${error.message}`);
+      toast.error(t("toasts.error.generic", { message: error.message }));
     },
   });
 
@@ -167,8 +169,8 @@ export default function Services() {
   return (
     <DashboardLayout
       breadcrumbs={[
-        { label: "Dashboard", href: "/dashboard" },
-        { label: "Tjenester" },
+        { label: t("nav.dashboard"), href: "/dashboard" },
+        { label: t("services.title") },
       ]}
     >
       {/* Background gradient */}
@@ -179,10 +181,10 @@ export default function Services() {
         <div className="flex justify-between items-center animate-fade-in">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
-              Tjenester
+              {t("services.title")}
             </h1>
             <p className="text-muted-foreground mt-1">
-              Administrer behandlinger og priser
+              {t("services.subtitle")}
             </p>
           </div>
 
@@ -194,23 +196,23 @@ export default function Services() {
             <DialogTrigger asChild>
               <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                 <Plus className="mr-2 h-4 w-4" />
-                Ny tjeneste
+                {t("services.newService")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Opprett ny tjeneste</DialogTitle>
+                <DialogTitle>{t("services.dialog.createTitle")}</DialogTitle>
                 <DialogDescription>
-                  Legg til en ny behandling i systemet
+                  {t("services.dialog.createDescription")}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleCreate} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="create-name">Navn *</Label>
+                  <Label htmlFor="create-name">{t("services.dialog.name")} *</Label>
                   <Input
                     id="create-name"
                     required
-                    placeholder="F.eks. Herreklipp"
+                    placeholder={t("services.dialog.namePlaceholder")}
                     value={formData.name}
                     onChange={e =>
                       setFormData({ ...formData, name: e.target.value })
@@ -219,10 +221,10 @@ export default function Services() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="create-description">Beskrivelse</Label>
+                  <Label htmlFor="create-description">{t("services.dialog.description")}</Label>
                   <Textarea
                     id="create-description"
-                    placeholder="Kort beskrivelse av tjenesten"
+                    placeholder={t("services.dialog.descriptionPlaceholder")}
                     value={formData.description}
                     onChange={e =>
                       setFormData({ ...formData, description: e.target.value })
@@ -234,7 +236,7 @@ export default function Services() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="create-duration">
-                      Varighet (minutter) *
+                      {t("services.dialog.duration")} *
                     </Label>
                     <Input
                       id="create-duration"
@@ -252,14 +254,14 @@ export default function Services() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="create-price">Pris (NOK) *</Label>
+                    <Label htmlFor="create-price">{t("services.dialog.price")} *</Label>
                     <Input
                       id="create-price"
                       type="number"
                       required
                       min="0"
                       step="0.01"
-                      placeholder="299.00"
+                      placeholder={t("services.dialog.pricePlaceholder")}
                       value={formData.price}
                       onChange={e =>
                         setFormData({ ...formData, price: e.target.value })
@@ -274,12 +276,12 @@ export default function Services() {
                     variant="outline"
                     onClick={() => setIsCreateDialogOpen(false)}
                   >
-                    Avbryt
+                    {t("services.dialog.cancel")}
                   </Button>
                   <Button type="submit" disabled={createService.isPending}>
                     {createService.isPending
-                      ? "Oppretter..."
-                      : "Opprett tjeneste"}
+                      ? t("services.dialog.creating")
+                      : t("services.dialog.createButton")}
                   </Button>
                 </DialogFooter>
               </form>
@@ -297,7 +299,7 @@ export default function Services() {
             <CardHeader className="relative pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-white/90">
-                  Totalt tjenester
+                  {t("services.totalServices")}
                 </CardTitle>
                 <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
                   <Scissors className="h-4 w-4 text-white" />
@@ -308,7 +310,7 @@ export default function Services() {
               <div className="text-3xl font-bold text-white">
                 {totalServices}
               </div>
-              <p className="text-xs text-white/80 mt-1">Aktive tjenester</p>
+              <p className="text-xs text-white/80 mt-1">{t("services.activeServices")}</p>
             </CardContent>
           </Card>
 
@@ -317,7 +319,7 @@ export default function Services() {
             <CardHeader className="relative pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-white/90">
-                  Gjennomsnittspris
+                  {t("services.avgPrice")}
                 </CardTitle>
                 <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
                   <DollarSign className="h-4 w-4 text-white" />
@@ -328,7 +330,7 @@ export default function Services() {
               <div className="text-3xl font-bold text-white">
                 {safeToFixed(avgPrice, 0)} kr
               </div>
-              <p className="text-xs text-white/80 mt-1">Per tjeneste</p>
+              <p className="text-xs text-white/80 mt-1">{t("services.perService")}</p>
             </CardContent>
           </Card>
 
@@ -337,7 +339,7 @@ export default function Services() {
             <CardHeader className="relative pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-white/90">
-                  Snitt varighet
+                  {t("services.avgDuration")}
                 </CardTitle>
                 <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
                   <Clock className="h-4 w-4 text-white" />
@@ -346,9 +348,9 @@ export default function Services() {
             </CardHeader>
             <CardContent className="relative">
               <div className="text-3xl font-bold text-white">
-                {safeToFixed(avgDuration, 0)} min
+                {safeToFixed(avgDuration, 0)} {t("services.minutes")}
               </div>
-              <p className="text-xs text-white/80 mt-1">Gjennomsnittlig tid</p>
+              <p className="text-xs text-white/80 mt-1">{t("services.averageTime")}</p>
             </CardContent>
           </Card>
 
@@ -357,7 +359,7 @@ export default function Services() {
             <CardHeader className="relative pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-white/90">
-                  Totalt potensial
+                  {t("services.revenuePotential")}
                 </CardTitle>
                 <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
                   <TrendingUp className="h-4 w-4 text-white" />
@@ -368,7 +370,7 @@ export default function Services() {
               <div className="text-3xl font-bold text-white">
                 {safeToFixed(totalRevenuePotential, 0)} kr
               </div>
-              <p className="text-xs text-white/80 mt-1">Sum alle tjenester</p>
+              <p className="text-xs text-white/80 mt-1">{t("services.sumAllServices")}</p>
             </CardContent>
           </Card>
         </div>
@@ -377,18 +379,18 @@ export default function Services() {
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Rediger tjeneste</DialogTitle>
+              <DialogTitle>{t("services.dialog.editTitle")}</DialogTitle>
               <DialogDescription>
-                Oppdater informasjon om tjenesten
+                {t("services.dialog.editDescription")}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleUpdate} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-name">Navn *</Label>
+                <Label htmlFor="edit-name">{t("services.dialog.name")} *</Label>
                 <Input
                   id="edit-name"
                   required
-                  placeholder="F.eks. Herreklipp"
+                  placeholder={t("services.dialog.namePlaceholder")}
                   value={formData.name}
                   onChange={e =>
                     setFormData({ ...formData, name: e.target.value })
@@ -397,10 +399,10 @@ export default function Services() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="edit-description">Beskrivelse</Label>
+                <Label htmlFor="edit-description">{t("services.dialog.description")}</Label>
                 <Textarea
                   id="edit-description"
-                  placeholder="Kort beskrivelse av tjenesten"
+                  placeholder={t("services.dialog.descriptionPlaceholder")}
                   value={formData.description}
                   onChange={e =>
                     setFormData({ ...formData, description: e.target.value })
@@ -411,7 +413,7 @@ export default function Services() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-duration">Varighet (minutter) *</Label>
+                  <Label htmlFor="edit-duration">{t("services.dialog.duration")} *</Label>
                   <Input
                     id="edit-duration"
                     type="number"
@@ -428,14 +430,14 @@ export default function Services() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-price">Pris (NOK) *</Label>
+                  <Label htmlFor="edit-price">{t("services.dialog.price")} *</Label>
                   <Input
                     id="edit-price"
                     type="number"
                     required
                     min="0"
                     step="0.01"
-                    placeholder="299.00"
+                    placeholder={t("services.dialog.pricePlaceholder")}
                     value={formData.price}
                     onChange={e =>
                       setFormData({ ...formData, price: e.target.value })
@@ -450,10 +452,10 @@ export default function Services() {
                   variant="outline"
                   onClick={() => setIsEditDialogOpen(false)}
                 >
-                  Avbryt
+                  {t("services.dialog.cancel")}
                 </Button>
                 <Button type="submit" disabled={updateService.isPending}>
-                  {updateService.isPending ? "Lagrer..." : "Lagre endringer"}
+                  {updateService.isPending ? t("services.dialog.updating") : t("services.dialog.updateButton")}
                 </Button>
               </DialogFooter>
             </form>
@@ -467,19 +469,18 @@ export default function Services() {
         >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Er du sikker?</AlertDialogTitle>
+              <AlertDialogTitle>{t("services.deleteDialog.title")}</AlertDialogTitle>
               <AlertDialogDescription>
-                Dette vil permanent slette tjenesten "{selectedService?.name}".
-                Denne handlingen kan ikke angres.
+                {t("services.deleteDialog.message", { name: selectedService?.name })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogCancel>{t("services.deleteDialog.cancelButton")}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={confirmDelete}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
-                {deleteService.isPending ? "Sletter..." : "Slett tjeneste"}
+                {deleteService.isPending ? t("services.deleting") : t("services.deleteDialog.confirmButton")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -527,7 +528,7 @@ export default function Services() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Clock className="h-4 w-4" />
-                      {service.durationMinutes} min
+                      {service.durationMinutes} {t("services.minutes")}
                     </div>
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-100 to-green-100">
                       <span className="text-lg font-bold text-emerald-700">
@@ -543,7 +544,7 @@ export default function Services() {
                       onClick={() => handleEdit(service)}
                     >
                       <Pencil className="h-3 w-3 mr-1" />
-                      Rediger
+                      {t("services.edit")}
                     </Button>
                     <Button
                       size="sm"
@@ -552,7 +553,7 @@ export default function Services() {
                       onClick={() => handleDelete(service)}
                     >
                       <Trash2 className="h-3 w-3 mr-1" />
-                      Slett
+                      {t("services.delete")}
                     </Button>
                   </div>
                 </CardContent>
@@ -566,18 +567,17 @@ export default function Services() {
                 <Scissors className="h-12 w-12 text-purple-600" />
               </div>
               <h3 className="text-lg font-semibold mb-2">
-                Ingen tjenester ennå
+                {t("services.noServices")}
               </h3>
               <p className="text-muted-foreground mb-6 text-center max-w-md">
-                Legg til tjenester som du tilbyr (klipp, farge, styling, etc.)
-                for å kunne booke avtaler og selge i kassen.
+                {t("services.addServicesDescription")}
               </p>
               <Button
                 onClick={() => setIsCreateDialogOpen(true)}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Opprett første tjeneste
+                {t("services.createFirstService")}
               </Button>
             </CardContent>
           </Card>

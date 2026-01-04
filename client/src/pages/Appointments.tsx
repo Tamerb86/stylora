@@ -23,8 +23,10 @@ import { Plus, ShoppingCart, Copy, Repeat } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export default function Appointments() {
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
@@ -92,21 +94,21 @@ export default function Appointments() {
     {
       onSuccess: data => {
         toast.success(
-          `${data.appointmentIds.length} gjentakende avtaler opprettet!`
+          t("toasts.success.appointmentsCreated", { count: data.appointmentIds.length })
         );
         setIsCreateOpen(false);
         utils.appointments.list.invalidate();
         resetForm();
       },
       onError: (error: any) => {
-        toast.error(error.message || "Kunne ikke opprette gjentakende avtaler");
+        toast.error(t("toasts.error.recurringCreateFailed"));
       },
     }
   );
 
   const createMutation = trpc.appointments.create.useMutation({
     onSuccess: () => {
-      toast.success("Avtale opprettet!");
+      toast.success(t("toasts.success.appointmentCreated"));
       setIsCreateOpen(false);
       utils.appointments.list.invalidate();
       resetForm();
@@ -131,29 +133,29 @@ export default function Appointments() {
         setConflictDetails(conflictData);
         setConflictDialogOpen(true);
       } else {
-        toast.error("Kunne ikke opprette avtale: " + error.message);
+        toast.error(t("toasts.error.appointmentCreateFailed") + ": " + error.message);
       }
     },
   });
 
   const updateStatusMutation = trpc.appointments.updateStatus.useMutation({
     onSuccess: () => {
-      toast.success("Status oppdatert!");
+      toast.success(t("toasts.success.statusUpdated"));
       setIsViewOpen(false);
       utils.appointments.list.invalidate();
     },
     onError: error => {
-      toast.error("Kunne ikke oppdatere status: " + error.message);
+      toast.error(t("toasts.error.appointmentUpdateFailed") + ": " + error.message);
     },
   });
 
   const rescheduleMutation = trpc.appointments.reschedule.useMutation({
     onSuccess: () => {
-      toast.success("Avtale flyttet!");
+      toast.success(t("toasts.success.appointmentRescheduled"));
       utils.appointments.list.invalidate();
     },
     onError: error => {
-      toast.error("Kunne ikke flytte avtale: " + error.message);
+      toast.error(t("toasts.error.appointmentRescheduleFailed") + ": " + error.message);
     },
   });
 
@@ -162,12 +164,12 @@ export default function Appointments() {
       onSuccess: data => {
         if (data.refundProcessed) {
           toast.success(
-            `Avtale avbrutt! Refusjon på ${data.refundAmount.toFixed(2)} NOK behandlet.`
+            t("toasts.success.refundProcessed", { amount: data.refundAmount.toFixed(2) })
           );
         } else if (data.refundAmount > 0 && data.error) {
-          toast.warning(`Avtale avbrutt, men refusjon feilet: ${data.error}`);
+          toast.warning(t("toasts.warning.refundFailed", { error: data.error }));
         } else {
-          toast.success("Avtale avbrutt!");
+          toast.success(t("toasts.success.appointmentCancelled"));
         }
         setIsCancelDialogOpen(false);
         setIsViewOpen(false);
@@ -176,7 +178,7 @@ export default function Appointments() {
         utils.appointments.list.invalidate();
       },
       onError: error => {
-        toast.error("Kunne ikke avbryte avtale: " + error.message);
+        toast.error(t("toasts.error.appointmentCancelFailed") + ": " + error.message);
       },
     });
 
@@ -238,7 +240,7 @@ export default function Appointments() {
       !selectedDate ||
       !selectedTime
     ) {
-      toast.error("Vennligst fyll ut alle obligatoriske felt");
+      toast.error(t("errors.allFieldsRequired"));
       return;
     }
 
@@ -247,7 +249,7 @@ export default function Appointments() {
     const now = new Date();
     if (selectedDateTime < now) {
       toast.error(
-        "Kan ikke opprette avtale i fortiden. Vennligst velg en fremtidig dato."
+        t("appointments.pastDateError")
       );
       return;
     }
@@ -255,14 +257,14 @@ export default function Appointments() {
     if (isRecurring) {
       // Validate recurring fields
       if (recurringEndType === "date" && !recurringEndDate) {
-        toast.error("Vennligst velg sluttdato for gjentakende avtale");
+        toast.error(t("appointments.endDateRequired"));
         return;
       }
       if (
         recurringEndType === "count" &&
         (!recurringCount || parseInt(recurringCount) < 2)
       ) {
-        toast.error("Antall gjentagelser må være minst 2");
+        toast.error(t("appointments.minOccurrencesError"));
         return;
       }
 
@@ -311,17 +313,17 @@ export default function Appointments() {
   const getStatusText = (status: string | null) => {
     switch (status) {
       case "confirmed":
-        return "Bekreftet";
+        return t("appointments.statuses.confirmed");
       case "pending":
-        return "Venter";
+        return t("appointments.statuses.pending");
       case "canceled":
-        return "Avbrutt";
+        return t("appointments.statuses.cancelled");
       case "completed":
-        return "Fullført";
+        return t("appointments.statuses.completed");
       case "no_show":
-        return "Møtte ikke";
+        return t("appointments.statuses.noShow");
       default:
-        return status || "Ukjent";
+        return status || t("appointments.statuses.unknown");
     }
   };
 
@@ -331,17 +333,17 @@ export default function Appointments() {
   return (
     <DashboardLayout
       breadcrumbs={[
-        { label: "Dashboard", href: "/dashboard" },
-        { label: "Timebok" },
+        { label: t("nav.dashboard"), href: "/dashboard" },
+        { label: t("appointments.title") },
       ]}
     >
       <div className="p-6 max-w-[1400px] mx-auto">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
-              Timebok
+              {t("appointments.title")}
             </h1>
-            <p className="text-muted-foreground">Kalendervisning av avtaler</p>
+            <p className="text-muted-foreground">{t("appointments.calendarView")}</p>
           </div>
           <Button
             size="lg"
@@ -349,7 +351,7 @@ export default function Appointments() {
             className="h-14 text-base bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-white shadow-lg"
           >
             <Plus className="h-5 w-5 mr-2" />
-            Ny avtale
+            {t("appointments.newAppointment")}
           </Button>
         </div>
 
@@ -376,21 +378,21 @@ export default function Appointments() {
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Ny avtale</DialogTitle>
+              <DialogTitle>{t("appointments.dialog.createTitle")}</DialogTitle>
               <DialogDescription>
-                Opprett en ny avtale for en kunde
+                {t("appointments.dialog.createDescription")}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
               <div>
-                <Label htmlFor="customer">Kunde *</Label>
+                <Label htmlFor="customer">{t("appointments.customer")} *</Label>
                 <Select
                   value={selectedCustomerId}
                   onValueChange={setSelectedCustomerId}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg kunde" />
+                    <SelectValue placeholder={t("appointments.selectCustomer")} />
                   </SelectTrigger>
                   <SelectContent>
                     {customers.map(customer => (
@@ -406,13 +408,13 @@ export default function Appointments() {
               </div>
 
               <div>
-                <Label htmlFor="service">Tjeneste *</Label>
+                <Label htmlFor="service">{t("appointments.service")} *</Label>
                 <Select
                   value={selectedServiceId}
                   onValueChange={setSelectedServiceId}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg tjeneste" />
+                    <SelectValue placeholder={t("appointments.selectService")} />
                   </SelectTrigger>
                   <SelectContent>
                     {services.map(service => (
@@ -420,7 +422,7 @@ export default function Appointments() {
                         key={service.id}
                         value={service.id.toString()}
                       >
-                        {service.name} ({service.durationMinutes} min)
+                        {service.name} ({service.durationMinutes} {t("services.minutes")})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -428,13 +430,13 @@ export default function Appointments() {
               </div>
 
               <div>
-                <Label htmlFor="employee">Behandler *</Label>
+                <Label htmlFor="employee">{t("appointments.employee")} *</Label>
                 <Select
                   value={selectedEmployeeId}
                   onValueChange={setSelectedEmployeeId}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Velg behandler" />
+                    <SelectValue placeholder={t("appointments.selectEmployee")} />
                   </SelectTrigger>
                   <SelectContent>
                     {employees.map(employee => (
@@ -451,7 +453,7 @@ export default function Appointments() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="date">Dato *</Label>
+                  <Label htmlFor="date">{t("appointments.date")} *</Label>
                   <Input
                     id="date"
                     type="date"
@@ -460,7 +462,7 @@ export default function Appointments() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="time">Tid *</Label>
+                  <Label htmlFor="time">{t("appointments.time")} *</Label>
                   <Input
                     id="time"
                     type="time"
@@ -471,10 +473,10 @@ export default function Appointments() {
               </div>
 
               <div>
-                <Label htmlFor="notes">Notater</Label>
+                <Label htmlFor="notes">{t("appointments.notes")}</Label>
                 <Input
                   id="notes"
-                  placeholder="Valgfrie notater..."
+                  placeholder={t("appointments.notesPlaceholder")}
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
                 />
@@ -495,14 +497,14 @@ export default function Appointments() {
                     className="flex items-center gap-2 cursor-pointer"
                   >
                     <Repeat className="h-4 w-4" />
-                    Gjentakende avtale
+                    {t("appointments.recurring")}
                   </Label>
                 </div>
 
                 {isRecurring && (
                   <div className="space-y-3 pl-6 border-l-2 border-blue-200">
                     <div>
-                      <Label htmlFor="frequency">Frekvens</Label>
+                      <Label htmlFor="frequency">{t("appointments.recurringFrequency")}</Label>
                       <Select
                         value={recurringFrequency}
                         onValueChange={(val: any) => setRecurringFrequency(val)}
@@ -511,15 +513,15 @@ export default function Appointments() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="weekly">Ukentlig</SelectItem>
-                          <SelectItem value="biweekly">Hver 2. uke</SelectItem>
-                          <SelectItem value="monthly">Månedlig</SelectItem>
+                          <SelectItem value="weekly">{t("appointments.weekly")}</SelectItem>
+                          <SelectItem value="biweekly">{t("appointments.biweekly")}</SelectItem>
+                          <SelectItem value="monthly">{t("appointments.monthly")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div>
-                      <Label>Avslutt etter</Label>
+                      <Label>{t("appointments.endAfter")}</Label>
                       <div className="flex gap-2 mt-1">
                         <Button
                           type="button"
@@ -530,7 +532,7 @@ export default function Appointments() {
                           onClick={() => setRecurringEndType("date")}
                           className="flex-1"
                         >
-                          Dato
+                          {t("appointments.date")}
                         </Button>
                         <Button
                           type="button"
@@ -541,14 +543,14 @@ export default function Appointments() {
                           onClick={() => setRecurringEndType("count")}
                           className="flex-1"
                         >
-                          Antall
+                          {t("appointments.occurrenceCount")}
                         </Button>
                       </div>
                     </div>
 
                     {recurringEndType === "date" ? (
                       <div>
-                        <Label htmlFor="endDate">Sluttdato</Label>
+                        <Label htmlFor="endDate">{t("appointments.endDate")}</Label>
                         <Input
                           id="endDate"
                           type="date"
@@ -559,7 +561,7 @@ export default function Appointments() {
                       </div>
                     ) : (
                       <div>
-                        <Label htmlFor="count">Antall gjentagelser</Label>
+                        <Label htmlFor="count">{t("appointments.occurrences")}</Label>
                         <Input
                           id="count"
                           type="number"
@@ -574,13 +576,12 @@ export default function Appointments() {
                     <div className="text-xs text-muted-foreground bg-blue-50 p-2 rounded">
                       {recurringEndType === "date" && recurringEndDate ? (
                         <p>
-                          Avtaler vil opprettes fra {selectedDate} til{" "}
-                          {recurringEndDate}
+                          {t("appointments.recurringPreviewDate", { start: selectedDate, end: recurringEndDate })}
                         </p>
                       ) : recurringEndType === "count" && recurringCount ? (
-                        <p>{recurringCount} avtaler vil bli opprettet</p>
+                        <p>{t("appointments.recurringPreviewCount", { count: recurringCount })}</p>
                       ) : (
-                        <p>Velg sluttdato eller antall gjentagelser</p>
+                        <p>{t("appointments.selectEndOption")}</p>
                       )}
                     </div>
                   </div>
@@ -590,7 +591,7 @@ export default function Appointments() {
 
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
-                Avbryt
+                {t("common.cancel")}
               </Button>
               <Button
                 onClick={handleCreate}
@@ -599,10 +600,10 @@ export default function Appointments() {
                 }
               >
                 {createMutation.isPending || createRecurringMutation.isPending
-                  ? "Oppretter..."
+                  ? t("forms.creating")
                   : isRecurring
-                    ? "Opprett gjentakende avtaler"
-                    : "Opprett avtale"}
+                    ? t("appointments.createRecurringButton")
+                    : t("appointments.dialog.createButton")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -612,8 +613,8 @@ export default function Appointments() {
         <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Avtaledetaljer</DialogTitle>
-              <DialogDescription>Informasjon om avtalen</DialogDescription>
+              <DialogTitle>{t("appointments.dialog.viewTitle")}</DialogTitle>
+              <DialogDescription>{t("appointments.viewDescription")}</DialogDescription>
             </DialogHeader>
 
             {viewingAppointment && (
@@ -622,12 +623,12 @@ export default function Appointments() {
                   <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <Repeat className="h-4 w-4 text-blue-600" />
                     <span className="text-sm text-blue-700 font-medium">
-                      Del av gjentakende serie
+                      {t("appointments.recurringSeriesBadge")}
                     </span>
                   </div>
                 )}
                 <div>
-                  <Label>Kunde</Label>
+                  <Label>{t("appointments.customer")}</Label>
                   <div className="text-sm">
                     {
                       customers.find(
@@ -643,7 +644,7 @@ export default function Appointments() {
                 </div>
 
                 <div>
-                  <Label>Behandler</Label>
+                  <Label>{t("appointments.employee")}</Label>
                   <div className="text-sm">
                     {
                       employees.find(
@@ -654,7 +655,7 @@ export default function Appointments() {
                 </div>
 
                 <div>
-                  <Label>Dato og tid</Label>
+                  <Label>{t("appointments.dateAndTime")}</Label>
                   <div className="text-sm">
                     {new Date(viewingAppointment.startTime).toLocaleDateString(
                       "no-NO",
@@ -677,7 +678,7 @@ export default function Appointments() {
                 </div>
 
                 <div>
-                  <Label>Status</Label>
+                  <Label>{t("appointments.status")}</Label>
                   <div className="text-sm">
                     {getStatusText(viewingAppointment.status)}
                   </div>
@@ -685,7 +686,7 @@ export default function Appointments() {
 
                 {viewingAppointment.notes && (
                   <div>
-                    <Label>Notater</Label>
+                    <Label>{t("appointments.notes")}</Label>
                     <div className="text-sm">{viewingAppointment.notes}</div>
                   </div>
                 )}
@@ -702,7 +703,7 @@ export default function Appointments() {
                           })
                         }
                       >
-                        Bekreft
+                        {t("appointments.confirmButton")}
                       </Button>
                     )}
                     {viewingAppointment.status === "confirmed" && (
@@ -716,7 +717,7 @@ export default function Appointments() {
                           })
                         }
                       >
-                        Fullfør
+                        {t("appointments.completeButton")}
                       </Button>
                     )}
                     {viewingAppointment.status !== "canceled" &&
@@ -728,7 +729,7 @@ export default function Appointments() {
                             setIsCancelDialogOpen(true);
                           }}
                         >
-                          Avbryt avtale
+                          {t("appointments.dialog.cancelAppointment")}
                         </Button>
                       )}
                   </div>
@@ -741,7 +742,7 @@ export default function Appointments() {
                     }}
                   >
                     <ShoppingCart className="h-4 w-4" />
-                    Gå til salgssted (POS)
+                    {t("appointments.goToPOS")}
                   </Button>
                   <Button
                     variant="outline"
@@ -771,7 +772,7 @@ export default function Appointments() {
                     }}
                   >
                     <Copy className="h-4 w-4" />
-                    Dupliser avtale
+                    {t("appointments.dialog.duplicate")}
                   </Button>
                 </div>
               </div>
@@ -779,7 +780,7 @@ export default function Appointments() {
 
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsViewOpen(false)}>
-                Lukk
+                {t("common.close")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -789,9 +790,9 @@ export default function Appointments() {
         <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Avbryt avtale</DialogTitle>
+              <DialogTitle>{t("appointments.cancelDialog.title")}</DialogTitle>
               <DialogDescription>
-                Bekreft avbestilling og refusjon
+                {t("appointments.cancelDialog.description")}
               </DialogDescription>
             </DialogHeader>
 
@@ -799,7 +800,7 @@ export default function Appointments() {
               {refundPreview && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Opprinnelig beløp:</span>
+                    <span className="text-gray-600">{t("appointments.cancelDialog.originalAmount")}</span>
                     <span className="font-medium">
                       {refundPreview.originalAmount.toFixed(2)} NOK
                     </span>
@@ -807,7 +808,7 @@ export default function Appointments() {
                   {refundPreview.isLateCancellation && (
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">
-                        Avbestillingsgebyr ({refundPreview.feePercent}%):
+                        {t("appointments.cancelDialog.cancellationFee", { percent: refundPreview.feePercent })}
                       </span>
                       <span className="font-medium text-orange-600">
                         -{refundPreview.feeAmount.toFixed(2)} NOK
@@ -815,14 +816,14 @@ export default function Appointments() {
                     </div>
                   )}
                   <div className="flex justify-between text-base font-bold border-t pt-2">
-                    <span>Refusjon:</span>
+                    <span>{t("appointments.cancelDialog.refund")}</span>
                     <span className="text-green-600">
                       {refundPreview.refundAmount.toFixed(2)} NOK
                     </span>
                   </div>
                   {refundPreview.isLateCancellation && (
                     <div className="text-xs text-orange-600 mt-2">
-                      ⚠️ Sen avbestilling - gebyr påligger
+                      {t("appointments.cancelDialog.lateCancellationWarning")}
                     </div>
                   )}
                 </div>
@@ -830,18 +831,18 @@ export default function Appointments() {
 
               {!refundPreview?.originalAmount && (
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-600">
-                  Ingen betaling registrert for denne avtalen.
+                  {t("appointments.cancelDialog.noPayment")}
                 </div>
               )}
 
               <div>
-                <Label htmlFor="cancelReason">Grunn til avbestilling *</Label>
+                <Label htmlFor="cancelReason">{t("appointments.cancelDialog.reason")}</Label>
                 <textarea
                   id="cancelReason"
                   value={cancelReason}
                   onChange={e => setCancelReason(e.target.value)}
                   className="w-full min-h-[80px] px-3 py-2 border rounded-md"
-                  placeholder="F.eks: Kunde ba om å avbestille, sykdom, etc."
+                  placeholder={t("appointments.cancelDialog.reasonPlaceholder")}
                 />
               </div>
             </div>
@@ -855,13 +856,13 @@ export default function Appointments() {
                   setRefundPreview(null);
                 }}
               >
-                Avbryt
+                {t("common.cancel")}
               </Button>
               <Button
                 variant="destructive"
                 onClick={() => {
                   if (!cancelReason.trim()) {
-                    toast.error("Vennligst oppgi en grunn for avbestillingen");
+                    toast.error(t("appointments.cancelDialog.reasonRequired"));
                     return;
                   }
                   cancelWithRefundMutation.mutate({
@@ -875,8 +876,8 @@ export default function Appointments() {
                 }
               >
                 {cancelWithRefundMutation.isPending
-                  ? "Behandler..."
-                  : "Bekreft avbestilling"}
+                  ? t("forms.processing")
+                  : t("appointments.cancelDialog.confirmButton")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -887,10 +888,10 @@ export default function Appointments() {
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle className="text-orange-600">
-                ⚠️ Tidskonflikt oppdaget
+                {t("appointments.conflictDialog.title")}
               </DialogTitle>
               <DialogDescription>
-                Det finnes allerede en avtale på dette tidspunktet
+                {t("appointments.conflictDialog.message")}
               </DialogDescription>
             </DialogHeader>
 
@@ -898,22 +899,21 @@ export default function Appointments() {
               <div className="space-y-4">
                 <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                   <div className="text-sm font-medium text-orange-900 mb-2">
-                    Eksisterende avtale:
+                    {t("appointments.conflictDialog.existingAppointment")}
                   </div>
                   <div className="space-y-1 text-sm text-orange-800">
                     <div>
-                      <strong>Kunde:</strong> {conflictDetails.customerName}
+                      <strong>{t("appointments.customer")}:</strong> {conflictDetails.customerName}
                     </div>
                     <div>
-                      <strong>Tid:</strong> {conflictDetails.startTime} -{" "}
+                      <strong>{t("appointments.time")}:</strong> {conflictDetails.startTime} -{" "}
                       {conflictDetails.endTime}
                     </div>
                   </div>
                 </div>
 
                 <div className="text-sm text-gray-600">
-                  Vennligst velg et annet tidspunkt eller en annen behandler for
-                  å unngå dobbeltbooking.
+                  {t("appointments.conflictDialog.selectDifferentTime")}
                 </div>
               </div>
             )}
@@ -926,7 +926,7 @@ export default function Appointments() {
                 }}
                 className="w-full"
               >
-                OK, jeg forstår
+                {t("appointments.conflictDialog.confirmButton")}
               </Button>
             </DialogFooter>
           </DialogContent>

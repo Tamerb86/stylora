@@ -181,8 +181,8 @@ export default function Customers() {
   return (
     <DashboardLayout
       breadcrumbs={[
-        { label: "Dashboard", href: "/dashboard" },
-        { label: "Kunder" },
+        { label: t("nav.dashboard"), href: "/dashboard" },
+        { label: t("customers.title") },
       ]}
     >
       <BulkActionToolbar
@@ -201,30 +201,30 @@ export default function Customers() {
         <div className="flex justify-between items-center animate-fade-in">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-orange-500 bg-clip-text text-transparent">
-              Kunder
+              {t("customers.title")}
             </h1>
             <p className="text-muted-foreground mt-1">
-              Administrer kunderegisteret
+              {t("customers.subtitle")}
             </p>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                 <Plus className="mr-2 h-4 w-4" />
-                Ny kunde
+                {t("customers.newCustomer")}
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Opprett ny kunde</DialogTitle>
+                <DialogTitle>{t("customers.dialog.createTitle")}</DialogTitle>
                 <DialogDescription>
-                  Fyll inn kundeinformasjon. Felt merket med * er påkrevd.
+                  {t("customers.dialog.createDescription")}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName">Fornavn *</Label>
+                    <Label htmlFor="firstName">{t("customers.dialog.firstName")} *</Label>
                     <Input
                       id="firstName"
                       required
@@ -235,7 +235,7 @@ export default function Customers() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">Etternavn</Label>
+                    <Label htmlFor="lastName">{t("customers.dialog.lastName")}</Label>
                     <Input
                       id="lastName"
                       value={formData.lastName}
@@ -248,7 +248,7 @@ export default function Customers() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Telefon *</Label>
+                    <Label htmlFor="phone">{t("customers.dialog.phone")} *</Label>
                     <Input
                       id="phone"
                       type="tel"
@@ -260,7 +260,7 @@ export default function Customers() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">E-post</Label>
+                    <Label htmlFor="email">{t("customers.dialog.email")}</Label>
                     <Input
                       id="email"
                       type="email"
@@ -273,7 +273,7 @@ export default function Customers() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="dateOfBirth">Fødselsdato</Label>
+                  <Label htmlFor="dateOfBirth">{t("customers.dialog.dateOfBirth")}</Label>
                   <Input
                     id="dateOfBirth"
                     type="date"
@@ -285,7 +285,7 @@ export default function Customers() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="address">Adresse</Label>
+                  <Label htmlFor="address">{t("customers.dialog.address")}</Label>
                   <Input
                     id="address"
                     value={formData.address}
@@ -297,7 +297,7 @@ export default function Customers() {
 
                 <div className="space-y-2">
                   <Label htmlFor="notes">
-                    Notater (allergier, preferanser)
+                    {t("customers.dialog.notes")}
                   </Label>
                   <Textarea
                     id="notes"
@@ -310,7 +310,7 @@ export default function Customers() {
                 </div>
 
                 <div className="space-y-3">
-                  <Label>Markedsføringssamtykke</Label>
+                  <Label>{t("customers.dialog.marketingConsent")}</Label>
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="marketingSms"
@@ -323,7 +323,7 @@ export default function Customers() {
                       }
                     />
                     <label htmlFor="marketingSms" className="text-sm">
-                      Samtykke til markedsføring på SMS
+                      {t("customers.dialog.smsConsent")}
                     </label>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -338,7 +338,7 @@ export default function Customers() {
                       }
                     />
                     <label htmlFor="marketingEmail" className="text-sm">
-                      Samtykke til markedsføring på e-post
+                      {t("customers.dialog.emailConsent")}
                     </label>
                   </div>
                 </div>
@@ -349,12 +349,12 @@ export default function Customers() {
                     variant="outline"
                     onClick={() => setIsDialogOpen(false)}
                   >
-                    Avbryt
+                    {t("customers.dialog.cancel")}
                   </Button>
                   <Button type="submit" disabled={createCustomer.isPending}>
                     {createCustomer.isPending
-                      ? "Oppretter..."
-                      : "Opprett kunde"}
+                      ? t("customers.dialog.creating")
+                      : t("customers.dialog.createButton")}
                   </Button>
                 </DialogFooter>
               </form>
@@ -372,7 +372,7 @@ export default function Customers() {
             <CardHeader className="relative pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-white/90">
-                  Totalt kunder
+                  {t("customers.totalCustomers")}
                 </CardTitle>
                 <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
                   <Users className="h-4 w-4 text-white" />
@@ -383,7 +383,7 @@ export default function Customers() {
               <div className="text-3xl font-bold text-white">
                 {totalCustomers}
               </div>
-              <p className="text-xs text-white/80 mt-1">Registrerte kunder</p>
+              <p className="text-xs text-white/80 mt-1">{t("customers.registeredCustomers")}</p>
             </CardContent>
           </Card>
 
@@ -392,7 +392,7 @@ export default function Customers() {
             <CardHeader className="relative pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-white/90">
-                  Total omsetning
+                  {t("customers.totalRevenue")}
                 </CardTitle>
                 <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
                   <Receipt className="h-4 w-4 text-white" />
@@ -403,7 +403,7 @@ export default function Customers() {
               <div className="text-3xl font-bold text-white">
                 {safeToFixed(totalRevenue, 0)} kr
               </div>
-              <p className="text-xs text-white/80 mt-1">Fra alle kunder</p>
+              <p className="text-xs text-white/80 mt-1">{t("customers.fromAllCustomers")}</p>
             </CardContent>
           </Card>
 
@@ -412,7 +412,7 @@ export default function Customers() {
             <CardHeader className="relative pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-white/90">
-                  Totalt besøk
+                  {t("customers.totalVisits")}
                 </CardTitle>
                 <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
                   <CalendarPlus className="h-4 w-4 text-white" />
@@ -421,7 +421,7 @@ export default function Customers() {
             </CardHeader>
             <CardContent className="relative">
               <div className="text-3xl font-bold text-white">{totalVisits}</div>
-              <p className="text-xs text-white/80 mt-1">Fullførte avtaler</p>
+              <p className="text-xs text-white/80 mt-1">{t("customers.completedAppointments")}</p>
             </CardContent>
           </Card>
 
@@ -430,7 +430,7 @@ export default function Customers() {
             <CardHeader className="relative pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-white/90">
-                  Snitt per kunde
+                  {t("customers.avgRevenue")}
                 </CardTitle>
                 <div className="p-2 bg-white/20 backdrop-blur-sm rounded-lg">
                   <TrendingUp className="h-4 w-4 text-white" />
@@ -442,7 +442,7 @@ export default function Customers() {
                 {safeToFixed(avgRevenuePerCustomer, 0)} kr
               </div>
               <p className="text-xs text-white/80 mt-1">
-                Gjennomsnittlig verdi
+                {t("customers.averageValue")}
               </p>
             </CardContent>
           </Card>
@@ -456,7 +456,7 @@ export default function Customers() {
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Søk etter navn, telefon eller e-post..."
+              placeholder={t("customers.searchPlaceholder")}
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="pl-10 bg-white/80 backdrop-blur-sm border-gray-200 shadow-sm"
@@ -525,7 +525,7 @@ export default function Customers() {
                     <div className="text-right">
                       <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 text-sm font-semibold text-blue-700 mb-2">
                         <Users className="h-3 w-3" />
-                        {customer.totalVisits} besøk
+                        {customer.totalVisits} {t("customers.visits").toLowerCase()}
                       </div>
                       <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-100 to-green-100 text-sm font-semibold text-emerald-700">
                         <Receipt className="h-3 w-3" />
@@ -537,7 +537,7 @@ export default function Customers() {
                 <CardContent className="space-y-3">
                   {customer.notes && (
                     <p className="text-sm text-muted-foreground bg-gray-50 p-3 rounded-lg">
-                      <strong>Notater:</strong> {customer.notes}
+                      <strong>{t("customers.notesLabel")}</strong> {customer.notes}
                     </p>
                   )}
                   <div className="flex gap-2 pt-2 border-t">
@@ -548,7 +548,7 @@ export default function Customers() {
                       onClick={() => setLocation(`/customers/${customer.id}`)}
                     >
                       <Users className="h-4 w-4" />
-                      Se detaljer
+                      {t("customers.viewDetails")}
                     </Button>
                     <Button
                       size="sm"
@@ -556,7 +556,7 @@ export default function Customers() {
                       onClick={() => setLocation("/appointments")}
                     >
                       <CalendarPlus className="h-4 w-4" />
-                      Book avtale
+                      {t("customers.bookAppointment")}
                     </Button>
                   </div>
                 </CardContent>
@@ -572,20 +572,19 @@ export default function Customers() {
               {searchTerm ? (
                 <>
                   <h3 className="text-lg font-semibold mb-2">
-                    Ingen kunder funnet
+                    {t("customers.noCustomersFound")}
                   </h3>
                   <p className="text-muted-foreground mb-4">
-                    Prøv et annet søkeord
+                    {t("customers.tryDifferentSearch")}
                   </p>
                 </>
               ) : (
                 <>
                   <h3 className="text-lg font-semibold mb-2">
-                    Ingen kunder ennå
+                    {t("customers.noCustomersYet")}
                   </h3>
                   <p className="text-muted-foreground mb-6 text-center max-w-md">
-                    Legg til kunder for å booke avtaler, spore lojalitetspoeng
-                    og se kjøpshistorikk.
+                    {t("customers.addCustomersDescription")}
                   </p>
                   <div className="flex gap-3">
                     <Button
@@ -593,14 +592,14 @@ export default function Customers() {
                       className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                     >
                       <Plus className="h-4 w-4 mr-2" />
-                      Opprett første kunde
+                      {t("customers.createFirstCustomer")}
                     </Button>
                     <Button
                       variant="outline"
                       onClick={() => setLocation("/appointments")}
                     >
                       <CalendarPlus className="h-4 w-4 mr-2" />
-                      Se kalender
+                      {t("customers.viewCalendar")}
                     </Button>
                   </div>
                 </>
@@ -613,19 +612,18 @@ export default function Customers() {
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Bekreft sletting</AlertDialogTitle>
+              <AlertDialogTitle>{t("customers.deleteDialog.title")}</AlertDialogTitle>
               <AlertDialogDescription>
-                Er du sikker på at du vil slette {bulkSelection.selectedCount}{" "}
-                kunde(r)? Denne handlingen kan ikke angres.
+                {t("customers.deleteDialog.message", { count: bulkSelection.selectedCount })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogCancel>{t("customers.deleteDialog.cancelButton")}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleBulkDelete}
                 className="bg-destructive hover:bg-destructive/90"
               >
-                Slett
+                {t("customers.deleteDialog.confirmButton")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -636,27 +634,27 @@ export default function Customers() {
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>
-                Send SMS til {bulkSelection.selectedCount} kunde(r)
+                {t("customers.smsDialog.title")}
               </AlertDialogTitle>
               <AlertDialogDescription>
-                Skriv meldingen du vil sende til de valgte kundene.
+                {t("customers.smsDialog.message", { count: bulkSelection.selectedCount })}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div className="py-4">
               <Textarea
-                placeholder="Skriv melding her..."
+                placeholder={t("customers.smsDialog.messagePlaceholder")}
                 value={smsMessage}
                 onChange={e => setSmsMessage(e.target.value)}
                 rows={4}
               />
             </div>
             <AlertDialogFooter>
-              <AlertDialogCancel>Avbryt</AlertDialogCancel>
+              <AlertDialogCancel>{t("customers.smsDialog.cancelButton")}</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleBulkSMS}
                 disabled={!smsMessage.trim()}
               >
-                Send SMS
+                {t("customers.smsDialog.sendButton")}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
