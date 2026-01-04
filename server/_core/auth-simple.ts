@@ -167,14 +167,20 @@ export function registerAuthRoutes(app: Express) {
           "Missing credentials",
           clientIp
         );
-        res.status(400).json({ error: "E-post og passord er påkrevd" });
+        res.status(400).json({ 
+          error: "E-post og passord er påkrevd",
+          messageKey: "errors.missingCredentials"
+        });
         return;
       }
 
       const trimmedEmail = validateEmail(String(email));
       if (!trimmedEmail) {
         logAuth.loginFailed(String(email), "Invalid email format", clientIp);
-        res.status(400).json({ error: "Ugyldig e-postadresse" });
+        res.status(400).json({ 
+          error: "Ugyldig e-postadresse",
+          messageKey: "errors.invalidEmailFormat"
+        });
         return;
       }
 
@@ -187,7 +193,9 @@ export function registerAuthRoutes(app: Express) {
         logDb.error("login-db-connect", dbError as Error);
         res.status(500).json({
           error: "Tjenesten er midlertidig utilgjengelig",
+          messageKey: "errors.databaseUnavailable",
           hint: "Vi har problemer med å koble til databasen. Prøv igjen om litt.",
+          hintKey: "hints.databaseConnectionIssue"
         });
         return;
       }
@@ -204,7 +212,9 @@ export function registerAuthRoutes(app: Express) {
         logDb.error("login-user-lookup", queryError as Error);
         res.status(500).json({
           error: "En databasefeil oppstod",
+          messageKey: "errors.databaseError",
           hint: "Vennligst prøv igjen senere.",
+          hintKey: "hints.tryAgainLater"
         });
         return;
       }
@@ -218,7 +228,9 @@ export function registerAuthRoutes(app: Express) {
         );
         res.status(401).json({
           error: "Ugyldig e-post eller passord",
+          messageKey: "errors.invalidCredentials",
           hint: "Sjekk e-post og passord og prøv igjen.",
+          hintKey: "hints.checkEmailAndPassword"
         });
         return;
       }
@@ -235,7 +247,10 @@ export function registerAuthRoutes(app: Express) {
           email: trimmedEmail,
           ip: clientIp,
         });
-        res.status(500).json({ error: "Autentiseringsfeil. Prøv igjen." });
+        res.status(500).json({ 
+          error: "Autentiseringsfeil. Prøv igjen.",
+          messageKey: "errors.authenticationFailed"
+        });
         return;
       }
 
@@ -243,7 +258,9 @@ export function registerAuthRoutes(app: Express) {
         logAuth.loginFailed(trimmedEmail, "Invalid password", clientIp);
         res.status(401).json({
           error: "Ugyldig e-post eller passord",
+          messageKey: "errors.invalidCredentials",
           hint: "Sjekk e-post og passord og prøv igjen.",
+          hintKey: "hints.checkEmailAndPassword"
         });
         return;
       }
@@ -253,7 +270,9 @@ export function registerAuthRoutes(app: Express) {
         logAuth.loginFailed(trimmedEmail, "Account deactivated", clientIp);
         res.status(403).json({
           error: "Kontoen er deaktivert",
+          messageKey: "errors.accountDeactivated",
           hint: "Kontakt support for å aktivere kontoen.",
+          hintKey: "hints.contactSupport"
         });
         return;
       }
@@ -265,7 +284,9 @@ export function registerAuthRoutes(app: Express) {
           logDb.error("login-tenant-missing", new Error("Tenant not found"));
           res.status(500).json({
             error: "Kontokonfigurasjonsfeil",
+            messageKey: "errors.accountConfigError",
             hint: "Kontakt support for hjelp.",
+            hintKey: "hints.contactSupport"
           });
           return;
         }
@@ -277,7 +298,12 @@ export function registerAuthRoutes(app: Express) {
               tenant.status === "suspended"
                 ? "Abonnementet er suspendert"
                 : "Abonnementet er avsluttet",
+            messageKey:
+              tenant.status === "suspended"
+                ? "errors.tenantSuspended"
+                : "errors.tenantCanceled",
             hint: "Kontakt support for å reaktivere abonnementet.",
+            hintKey: "hints.reactivateSubscription"
           });
           return;
         }
@@ -285,7 +311,9 @@ export function registerAuthRoutes(app: Express) {
         logDb.error("login-tenant-fetch", tenantError as Error);
         res.status(500).json({
           error: "Kunne ikke hente kontoinformasjon",
+          messageKey: "errors.couldNotFetchAccount",
           hint: "Prøv igjen senere.",
+          hintKey: "hints.tryAgainLater"
         });
         return;
       }

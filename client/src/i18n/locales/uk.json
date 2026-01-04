@@ -853,7 +853,34 @@
     "maxLength": "Не може бути більше {max} символів",
     "minValue": "Має бути щонайменше {min}",
     "maxValue": "Не може бути більше {max}",
-    "allFieldsRequired": "Будь ласка, заповніть усі обов'язкові поля"
+    "allFieldsRequired": "Будь ласка, заповніть усі обов'язкові поля",
+    "noTenantAccess": "Немає доступу до орендаря",
+    "tenantNotFound": "Орендаря не знайдено",
+    "emailNotVerified": "Електронна пошта не підтверджена",
+    "accessDenied": "Доступ заборонено",
+    "invalidCredentials": "Недійсна адреса електронної пошти або пароль",
+    "accountDeactivated": "Обліковий запис деактивовано",
+    "tenantSuspended": "Підписку призупинено",
+    "tenantCanceled": "Підписку скасовано",
+    "databaseError": "Сталася помилка бази даних",
+    "databaseUnavailable": "Сервіс тимчасово недоступний",
+    "authenticationFailed": "Помилка автентифікації. Спробуйте ще раз.",
+    "missingCredentials": "Потрібна адреса електронної пошти та пароль",
+    "invalidEmailFormat": "Недійсна адреса електронної пошти",
+    "accountConfigError": "Помилка конфігурації облікового запису",
+    "couldNotFetchAccount": "Не вдалося отримати інформацію про обліковий запис",
+    "refreshTokenMissing": "Токен оновлення відсутній",
+    "invalidRefreshToken": "Недійсний або прострочений токен оновлення",
+    "tokenRefreshFailed": "Не вдалося оновити токен",
+    "logoutFailed": "Не вдалося вийти",
+    "notAuthenticated": "Не автентифіковано"
+  },
+  "hints": {
+    "checkEmailAndPassword": "Перевірте адресу електронної пошти та пароль і спробуйте ще раз.",
+    "contactSupport": "Зверніться до служби підтримки за допомогою.",
+    "tryAgainLater": "Будь ласка, спробуйте пізніше.",
+    "databaseConnectionIssue": "У нас проблеми з підключенням до бази даних. Спробуйте ще раз через хвилину.",
+    "reactivateSubscription": "Зверніться до служби підтримки, щоб відновити підписку."
   },
   "toasts": {
     "success": {

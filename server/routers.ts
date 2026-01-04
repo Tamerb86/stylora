@@ -39,7 +39,11 @@ import { ENV } from "./_core/env";
 // Middleware to ensure user has tenant access AND email is verified
 const tenantProcedure = protectedProcedure.use(async ({ ctx, next }) => {
   if (!ctx.user.tenantId) {
-    throw new TRPCError({ code: "FORBIDDEN", message: "No tenant access" });
+    throw new TRPCError({ 
+      code: "FORBIDDEN", 
+      message: "No tenant access",
+      data: { messageKey: "errors.noTenantAccess" }
+    });
   }
 
   // Check email verification
@@ -48,6 +52,7 @@ const tenantProcedure = protectedProcedure.use(async ({ ctx, next }) => {
     throw new TRPCError({
       code: "INTERNAL_SERVER_ERROR",
       message: "Database not available",
+      data: { messageKey: "errors.databaseUnavailable" }
     });
   }
 
@@ -61,13 +66,18 @@ const tenantProcedure = protectedProcedure.use(async ({ ctx, next }) => {
     .limit(1);
 
   if (!tenant) {
-    throw new TRPCError({ code: "NOT_FOUND", message: "Tenant not found" });
+    throw new TRPCError({ 
+      code: "NOT_FOUND", 
+      message: "Tenant not found",
+      data: { messageKey: "errors.tenantNotFound" }
+    });
   }
 
   if (!tenant.emailVerified) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "EMAIL_NOT_VERIFIED",
+      data: { messageKey: "errors.emailNotVerified" }
     });
   }
 
@@ -82,7 +92,11 @@ const tenantProcedure = protectedProcedure.use(async ({ ctx, next }) => {
 // Middleware for wizard - allows access without email verification
 const wizardProcedure = protectedProcedure.use(async ({ ctx, next }) => {
   if (!ctx.user.tenantId) {
-    throw new TRPCError({ code: "FORBIDDEN", message: "No tenant access" });
+    throw new TRPCError({ 
+      code: "FORBIDDEN", 
+      message: "No tenant access",
+      data: { messageKey: "errors.noTenantAccess" }
+    });
   }
 
   return next({
@@ -98,6 +112,10 @@ const adminProcedure = tenantProcedure.use(({ ctx, next }) => {
   if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
     throw new TRPCError({
       code: "FORBIDDEN",
+      message: "Admin access required",
+      data: { messageKey: "errors.accessDenied" }
+    });
+  }
       message: "Admin access required",
     });
   }

@@ -28,7 +28,10 @@ export function registerRefreshEndpoint(app: Express) {
       const refreshToken = cookies[REFRESH_TOKEN_COOKIE_NAME];
 
       if (!refreshToken) {
-        res.status(401).json({ error: "Refresh token mangler" });
+        res.status(401).json({ 
+          error: "Refresh token mangler",
+          messageKey: "errors.refreshTokenMissing"
+        });
         return;
       }
 
@@ -36,13 +39,19 @@ export function registerRefreshEndpoint(app: Express) {
       const user = await getUserFromRefreshToken(refreshToken);
 
       if (!user) {
-        res.status(401).json({ error: "Ugyldig eller utløpt refresh token" });
+        res.status(401).json({ 
+          error: "Ugyldig eller utløpt refresh token",
+          messageKey: "errors.invalidRefreshToken"
+        });
         return;
       }
 
       // Check if user is still active
       if (!user.isActive) {
-        res.status(403).json({ error: "Kontoen er deaktivert" });
+        res.status(403).json({ 
+          error: "Kontoen er deaktivert",
+          messageKey: "errors.accountDeactivated"
+        });
         return;
       }
 
@@ -86,7 +95,10 @@ export function registerRefreshEndpoint(app: Express) {
     } catch (error) {
       console.error("[Auth] Token refresh failed", error);
       logger.error("Token refresh failed", error as Error);
-      res.status(500).json({ error: "Token-oppdatering feilet" });
+      res.status(500).json({ 
+        error: "Token-oppdatering feilet",
+        messageKey: "errors.tokenRefreshFailed"
+      });
     }
   });
 
@@ -98,7 +110,10 @@ export function registerRefreshEndpoint(app: Express) {
       const result = await authenticateRequest(req);
 
       if (!result) {
-        res.status(401).json({ error: "Ikke autentisert" });
+        res.status(401).json({ 
+          error: "Ikke autentisert",
+          messageKey: "errors.notAuthenticated"
+        });
         return;
       }
 
@@ -128,7 +143,10 @@ export function registerRefreshEndpoint(app: Express) {
       });
     } catch (error) {
       console.error("[Auth] Logout all failed", error);
-      res.status(500).json({ error: "Utlogging feilet" });
+      res.status(500).json({ 
+        error: "Utlogging feilet",
+        messageKey: "errors.logoutFailed"
+      });
     }
   });
 }
