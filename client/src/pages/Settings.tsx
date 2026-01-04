@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { BookingSettingsSection } from "@/components/BookingSettingsSection";
 import { DomainSettingsTab } from "@/components/DomainSettingsTab";
 import { BrandingSettingsTab } from "@/components/BrandingSettingsTab";
@@ -37,11 +38,10 @@ import { trpc } from "@/lib/trpc";
 import { useUIMode } from "@/contexts/UIModeContext";
 
 function ResetOnboardingButton() {
+  const { t } = useTranslation();
   const resetMutation = trpc.auth.resetOnboarding.useMutation({
     onSuccess: () => {
-      toast.success(
-        "Omvisning startet på nytt! Last inn siden på nytt for å se den."
-      );
+      toast.success(t("settings.resetOnboardingSuccess"));
       setTimeout(() => window.location.reload(), 1500);
     },
   });
@@ -53,12 +53,13 @@ function ResetOnboardingButton() {
       onClick={() => resetMutation.mutate()}
       disabled={resetMutation.isPending}
     >
-      🎯 Start omvisning på nytt
+      {t("settings.resetOnboarding")}
     </Button>
   );
 }
 
 export default function Settings() {
+  const { t } = useTranslation();
   const { isSimpleMode } = useUIMode();
   const [salonName, setSalonName] = useState("");
   const [address, setAddress] = useState("");
@@ -80,10 +81,10 @@ export default function Settings() {
   const updateSalonInfoMutation =
     trpc.salonSettings.updateSalonInfo.useMutation({
       onSuccess: () => {
-        toast.success("Salonginformasjon lagret!");
+        toast.success(t("settings.salon.saved"));
       },
       onError: error => {
-        toast.error(error.message || "Kunne ikke lagre salonginformasjon");
+        toast.error(error.message || t("settings.salon.saveFailed"));
       },
     });
 
@@ -107,11 +108,11 @@ export default function Settings() {
   };
 
   const handleSaveBookingSettings = () => {
-    toast.success("Bookinginnstillinger lagret!");
+    toast.success(t("settings.booking.saved"));
   };
 
   const handleSaveNotifications = () => {
-    toast.success("Varslingsinnstillinger lagret!");
+    toast.success(t("settings.notifications.saved"));
   };
 
   return (
@@ -120,10 +121,10 @@ export default function Settings() {
         <div className="mb-6 flex items-start justify-between">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
-              Innstillinger
+              {t("settings.title")}
             </h1>
             <p className="text-muted-foreground">
-              Administrer salongens innstillinger
+              {t("settings.subtitle")}
             </p>
           </div>
           <ResetOnboardingButton />
@@ -135,45 +136,45 @@ export default function Settings() {
           >
             <TabsTrigger value="salon">
               <Building2 className="h-4 w-4 mr-2" />
-              Salong
+              {t("settings.tabs.salon")}
             </TabsTrigger>
             <TabsTrigger value="booking">
               <Clock className="h-4 w-4 mr-2" />
-              Booking
+              {t("settings.tabs.booking")}
             </TabsTrigger>
             <TabsTrigger value="hours">
               <Clock className="h-4 w-4 mr-2" />
-              Åpningstider
+              {t("settings.tabs.hours")}
             </TabsTrigger>
             <TabsTrigger value="notifications">
               <Bell className="h-4 w-4 mr-2" />
-              Varsler
+              {t("settings.tabs.notifications")}
             </TabsTrigger>
             <TabsTrigger value="payment">
               <CreditCard className="h-4 w-4 mr-2" />
-              Betaling
+              {t("settings.tabs.payment")}
             </TabsTrigger>
             <TabsTrigger value="domain">
               <Globe className="h-4 w-4 mr-2" />
-              Domene
+              {t("settings.tabs.domain")}
             </TabsTrigger>
             <TabsTrigger value="defaultdata">
               <Database className="h-4 w-4 mr-2" />
-              Startdata
+              {t("settings.tabs.defaultData")}
             </TabsTrigger>
             {!isSimpleMode && (
               <>
                 <TabsTrigger value="branding">
                   <Palette className="h-4 w-4 mr-2" />
-                  Branding
+                  {t("settings.tabs.branding")}
                 </TabsTrigger>
                 <TabsTrigger value="print">
                   <Printer className="h-4 w-4 mr-2" />
-                  Utskrift
+                  {t("settings.tabs.print")}
                 </TabsTrigger>
                 <TabsTrigger value="sms">
                   <MessageSquare className="h-4 w-4 mr-2" />
-                  SMS
+                  {t("settings.tabs.sms")}
                 </TabsTrigger>
               </>
             )}
@@ -183,61 +184,61 @@ export default function Settings() {
           <TabsContent value="salon">
             <Card>
               <CardHeader>
-                <CardTitle>Salonginformasjon</CardTitle>
+                <CardTitle>{t("settings.salon.title")}</CardTitle>
                 <CardDescription>
-                  Grunnleggende informasjon om salonen din
+                  {t("settings.salon.description")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label htmlFor="salonName">Salongnavn</Label>
+                  <Label htmlFor="salonName">{t("settings.salon.salonName")}</Label>
                   <Input
                     id="salonName"
                     value={salonName}
                     onChange={e => setSalonName(e.target.value)}
-                    placeholder="Navn på salonen"
+                    placeholder={t("settings.salon.salonNamePlaceholder")}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="address">Adresse</Label>
+                  <Label htmlFor="address">{t("settings.salon.address")}</Label>
                   <Input
                     id="address"
                     value={address}
                     onChange={e => setAddress(e.target.value)}
-                    placeholder="Gateadresse, postnummer, sted"
+                    placeholder={t("settings.salon.addressPlaceholder")}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="phone">Telefon</Label>
+                    <Label htmlFor="phone">{t("settings.salon.phone")}</Label>
                     <Input
                       id="phone"
                       value={phone}
                       onChange={e => setPhone(e.target.value)}
-                      placeholder="+47 123 45 678"
+                      placeholder={t("settings.salon.phonePlaceholder")}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="email">E-post</Label>
+                    <Label htmlFor="email">{t("settings.salon.email")}</Label>
                     <Input
                       id="email"
                       type="email"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
-                      placeholder="post@salong.no"
+                      placeholder={t("settings.salon.emailPlaceholder")}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="description">Beskrivelse</Label>
+                  <Label htmlFor="description">{t("settings.salon.description_field")}</Label>
                   <Textarea
                     id="description"
                     value={description}
                     onChange={e => setDescription(e.target.value)}
-                    placeholder="Kort beskrivelse av salonen..."
+                    placeholder={t("settings.salon.descriptionPlaceholder")}
                     rows={4}
                   />
                 </div>
@@ -247,8 +248,8 @@ export default function Settings() {
                   disabled={updateSalonInfoMutation.isPending || isLoading}
                 >
                   {updateSalonInfoMutation.isPending
-                    ? "Lagrer..."
-                    : "Lagre endringer"}
+                    ? t("settings.salon.saving")
+                    : t("settings.salon.saveChanges")}
                 </Button>
               </CardContent>
             </Card>
@@ -263,17 +264,17 @@ export default function Settings() {
           <TabsContent value="notifications">
             <Card>
               <CardHeader>
-                <CardTitle>Varslingsinnstillinger</CardTitle>
+                <CardTitle>{t("settings.notifications.title")}</CardTitle>
                 <CardDescription>
-                  Konfigurer hvordan kunder mottar varsler
+                  {t("settings.notifications.description")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>E-postvarsler</Label>
+                    <Label>{t("settings.notifications.emailNotifications")}</Label>
                     <p className="text-sm text-muted-foreground">
-                      Send bekreftelser og påminnelser via e-post
+                      {t("settings.notifications.emailNotificationsDesc")}
                     </p>
                   </div>
                   <Switch
@@ -284,9 +285,9 @@ export default function Settings() {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>SMS-varsler</Label>
+                    <Label>{t("settings.notifications.smsNotifications")}</Label>
                     <p className="text-sm text-muted-foreground">
-                      Send påminnelser via SMS
+                      {t("settings.notifications.smsNotificationsDesc")}
                     </p>
                   </div>
                   <Switch
@@ -297,45 +298,45 @@ export default function Settings() {
 
                 <div>
                   <Label htmlFor="reminderHours">
-                    Påminnelse før avtale (timer)
+                    {t("settings.notifications.reminderHours")}
                   </Label>
                   <Input
                     id="reminderHours"
                     type="number"
                     value={reminderHours}
                     onChange={e => setReminderHours(e.target.value)}
-                    placeholder="24"
+                    placeholder={t("settings.notifications.reminderHoursPlaceholder")}
                   />
                   <p className="text-sm text-muted-foreground mt-1">
-                    Hvor mange timer før avtalen skal påminnelse sendes
+                    {t("settings.notifications.reminderHoursDesc")}
                   </p>
                 </div>
 
                 <div className="space-y-3 pt-4 border-t">
-                  <h3 className="font-medium">Meldingsmaler</h3>
+                  <h3 className="font-medium">{t("settings.notifications.messageTemplates")}</h3>
 
                   <div>
                     <Label htmlFor="confirmationTemplate">
-                      Bekreftelsesmelding
+                      {t("settings.notifications.confirmationMessage")}
                     </Label>
                     <Textarea
                       id="confirmationTemplate"
-                      placeholder="Hei {navn}, din avtale er bekreftet for {dato} kl {tid}."
+                      placeholder={t("settings.notifications.confirmationPlaceholder")}
                       rows={3}
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="reminderTemplate">Påminnelsesmelding</Label>
+                    <Label htmlFor="reminderTemplate">{t("settings.notifications.reminderMessage")}</Label>
                     <Textarea
                       id="reminderTemplate"
-                      placeholder="Hei {navn}, påminnelse om din avtale i morgen kl {tid}."
+                      placeholder={t("settings.notifications.reminderPlaceholder")}
                       rows={3}
                     />
                   </div>
                 </div>
 
-                <Button onClick={handleSaveNotifications}>Lagre varsler</Button>
+                <Button onClick={handleSaveNotifications}>{t("settings.notifications.saveNotifications")}</Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -374,9 +375,9 @@ export default function Settings() {
           <TabsContent value="hours">
             <Card>
               <CardHeader>
-                <CardTitle>Åpningstider</CardTitle>
+                <CardTitle>{t("settings.hours.title")}</CardTitle>
                 <CardDescription>
-                  Administrer når salongen din er åpen for booking
+                  {t("settings.hours.description")}
                 </CardDescription>
               </CardHeader>
               <CardContent>

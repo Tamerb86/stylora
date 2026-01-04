@@ -933,5 +933,66 @@
     "warning": {
       "refundFailed": "Avtale avbrutt, men refusjon feilet: {error}"
     }
+  },
+  "settings": {
+    "title": "Innstillinger",
+    "subtitle": "Administrer salongens innstillinger",
+    "resetOnboarding": "🎯 Start omvisning på nytt",
+    "resetOnboardingSuccess": "Omvisning startet på nytt! Last inn siden på nytt for å se den.",
+    "tabs": {
+      "salon": "Salong",
+      "booking": "Booking",
+      "hours": "Åpningstider",
+      "notifications": "Varsler",
+      "payment": "Betaling",
+      "domain": "Domene",
+      "defaultData": "Startdata",
+      "branding": "Branding",
+      "print": "Utskrift",
+      "sms": "SMS"
+    },
+    "salon": {
+      "title": "Salonginformasjon",
+      "description": "Grunnleggende informasjon om salonen din",
+      "salonName": "Salongnavn",
+      "salonNamePlaceholder": "Navn på salonen",
+      "address": "Adresse",
+      "addressPlaceholder": "Gateadresse, postnummer, sted",
+      "phone": "Telefon",
+      "phonePlaceholder": "+47 123 45 678",
+      "email": "E-post",
+      "emailPlaceholder": "post@salong.no",
+      "description_field": "Beskrivelse",
+      "descriptionPlaceholder": "Kort beskrivelse av salonen...",
+      "saving": "Lagrer...",
+      "saveChanges": "Lagre endringer",
+      "saved": "Salonginformasjon lagret!",
+      "saveFailed": "Kunne ikke lagre salonginformasjon"
+    },
+    "booking": {
+      "saved": "Bookinginnstillinger lagret!"
+    },
+    "notifications": {
+      "title": "Varslingsinnstillinger",
+      "description": "Konfigurer hvordan kunder mottar varsler",
+      "emailNotifications": "E-postvarsler",
+      "emailNotificationsDesc": "Send bekreftelser og påminnelser via e-post",
+      "smsNotifications": "SMS-varsler",
+      "smsNotificationsDesc": "Send påminnelser via SMS",
+      "reminderHours": "Påminnelse før avtale (timer)",
+      "reminderHoursPlaceholder": "24",
+      "reminderHoursDesc": "Hvor mange timer før avtalen skal påminnelse sendes",
+      "messageTemplates": "Meldingsmaler",
+      "confirmationMessage": "Bekreftelsesmelding",
+      "confirmationPlaceholder": "Hei {navn}, din avtale er bekreftet for {dato} kl {tid}.",
+      "reminderMessage": "Påminnelsesmelding",
+      "reminderPlaceholder": "Hei {navn}, påminnelse om din avtale i morgen kl {tid}.",
+      "saveNotifications": "Lagre varsler",
+      "saved": "Varslingsinnstillinger lagret!"
+    },
+    "hours": {
+      "title": "Åpningstider",
+      "description": "Administrer når salongen din er åpen for booking"
+    }
   }
 }
