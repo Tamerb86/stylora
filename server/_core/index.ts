@@ -412,11 +412,17 @@ async function startServer() {
           authResult = await authenticateRequest(req);
         } catch (error) {
           console.error("[Storage Upload] Authentication error:", error);
-          return res.status(401).json({ error: "Authentication required" });
+          return res.status(401).json({ 
+            error: "Authentication required",
+            messageKey: "errors.notAuthenticated"
+          });
         }
 
         if (!authResult) {
-          return res.status(401).json({ error: "Authentication required" });
+          return res.status(401).json({ 
+            error: "Authentication required",
+            messageKey: "errors.notAuthenticated"
+          });
         }
 
         // Validate content type
@@ -424,12 +430,16 @@ async function startServer() {
         if (!ALLOWED_UPLOAD_TYPES.has(contentType)) {
           return res.status(415).json({
             error: "Unsupported file type. Allowed: JPEG, PNG, WEBP, PDF",
+            messageKey: "errors.invalidFileType"
           });
         }
 
         // Validate body
         if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
-          return res.status(400).json({ error: "Empty body" });
+          return res.status(400).json({ 
+            error: "Empty body",
+            messageKey: "errors.emptyFile"
+          });
         }
 
         const { storagePut } = await import("../storage");
@@ -454,7 +464,10 @@ async function startServer() {
         res.json({ url });
       } catch (error: any) {
         console.error("Storage upload error:", error);
-        res.status(500).json({ error: error?.message || "Upload failed" });
+        res.status(500).json({ 
+          error: error?.message || "Upload failed",
+          messageKey: "errors.uploadFailed"
+        });
       }
     }
   );

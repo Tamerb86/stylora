@@ -876,7 +876,10 @@
     "invalidRefreshToken": "Invalid or expired refresh token",
     "tokenRefreshFailed": "Token refresh failed",
     "logoutFailed": "Logout failed",
-    "notAuthenticated": "Not authenticated"
+    "notAuthenticated": "Not authenticated",
+    "invalidFileType": "Unsupported file type",
+    "emptyFile": "No file provided",
+    "uploadFailed": "File upload failed"
   },
   "hints": {
     "checkEmailAndPassword": "Check email and password and try again.",

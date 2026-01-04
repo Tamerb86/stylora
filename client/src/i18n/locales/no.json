@@ -873,7 +873,10 @@
     "invalidRefreshToken": "Ugyldig eller utløpt refresh token",
     "tokenRefreshFailed": "Token-oppdatering feilet",
     "logoutFailed": "Utlogging feilet",
-    "notAuthenticated": "Ikke autentisert"
+    "notAuthenticated": "Ikke autentisert",
+    "invalidFileType": "Filtypen støttes ikke",
+    "emptyFile": "Ingen fil oppgitt",
+    "uploadFailed": "Filopplasting feilet"
   },
   "hints": {
     "checkEmailAndPassword": "Sjekk e-post og passord og prøv igjen.",

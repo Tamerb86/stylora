@@ -69,6 +69,9 @@ describe("Backend i18n messageKey support", () => {
       "tokenRefreshFailed",
       "logoutFailed",
       "notAuthenticated",
+      "invalidFileType",
+      "emptyFile",
+      "uploadFailed",
     ];
 
     for (const key of requiredErrorKeys) {

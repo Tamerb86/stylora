@@ -873,7 +873,10 @@
     "invalidRefreshToken": "رمز التحديث غير صالح أو منتهي الصلاحية",
     "tokenRefreshFailed": "فشل تحديث الرمز",
     "logoutFailed": "فشل تسجيل الخروج",
-    "notAuthenticated": "غير مصادق عليه"
+    "notAuthenticated": "غير مصادق عليه",
+    "invalidFileType": "نوع الملف غير مدعوم",
+    "emptyFile": "لم يتم توفير ملف",
+    "uploadFailed": "فشل تحميل الملف"
   },
   "hints": {
     "checkEmailAndPassword": "تحقق من البريد الإلكتروني وكلمة المرور وحاول مرة أخرى.",

@@ -873,7 +873,10 @@
     "invalidRefreshToken": "Недійсний або прострочений токен оновлення",
     "tokenRefreshFailed": "Не вдалося оновити токен",
     "logoutFailed": "Не вдалося вийти",
-    "notAuthenticated": "Не автентифіковано"
+    "notAuthenticated": "Не автентифіковано",
+    "invalidFileType": "Тип файлу не підтримується",
+    "emptyFile": "Файл не надано",
+    "uploadFailed": "Не вдалося завантажити файл"
   },
   "hints": {
     "checkEmailAndPassword": "Перевірте адресу електронної пошти та пароль і спробуйте ще раз.",
