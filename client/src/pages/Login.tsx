@@ -72,9 +72,16 @@ export default function Login() {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        // Prefer backend message + hint if available
-        setError(data?.error || t("auth.errors.loginFailed"));
-        setErrorHint(data?.hint || "");
+        // Prefer messageKey for i18n, fallback to raw error message
+        const errorMessage = data?.messageKey 
+          ? t(data.messageKey) 
+          : (data?.error || t("auth.errors.loginFailed"));
+        const hintMessage = data?.hintKey 
+          ? t(data.hintKey) 
+          : (data?.hint || "");
+        
+        setError(errorMessage);
+        setErrorHint(hintMessage);
         return;
       }
 
