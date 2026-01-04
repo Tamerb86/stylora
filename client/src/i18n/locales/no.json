@@ -876,7 +876,8 @@
     "notAuthenticated": "Ikke autentisert",
     "invalidFileType": "Filtypen støttes ikke",
     "emptyFile": "Ingen fil oppgitt",
-    "uploadFailed": "Filopplasting feilet"
+    "uploadFailed": "Filopplasting feilet",
+    "fileExtensionError": "Kunne ikke bestemme filtype"
   },
   "hints": {
     "checkEmailAndPassword": "Sjekk e-post og passord og prøv igjen.",

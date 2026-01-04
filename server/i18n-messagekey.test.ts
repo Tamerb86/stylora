@@ -72,6 +72,7 @@ describe("Backend i18n messageKey support", () => {
       "invalidFileType",
       "emptyFile",
       "uploadFailed",
+      "fileExtensionError",
     ];
 
     for (const key of requiredErrorKeys) {

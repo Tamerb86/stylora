@@ -454,9 +454,10 @@ async function startServer() {
 
         const ext = extensionMap[contentType];
         if (!ext) {
-          return res
-            .status(500)
-            .json({ error: "Failed to determine file extension" });
+          return res.status(500).json({ 
+            error: "Failed to determine file extension",
+            messageKey: "errors.fileExtensionError"
+          });
         }
 
         const filename = `uploads/${nanoid()}.${ext}`;

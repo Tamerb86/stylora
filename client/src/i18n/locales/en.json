@@ -879,7 +879,8 @@
     "notAuthenticated": "Not authenticated",
     "invalidFileType": "Unsupported file type",
     "emptyFile": "No file provided",
-    "uploadFailed": "File upload failed"
+    "uploadFailed": "File upload failed",
+    "fileExtensionError": "Could not determine file type"
   },
   "hints": {
     "checkEmailAndPassword": "Check email and password and try again.",

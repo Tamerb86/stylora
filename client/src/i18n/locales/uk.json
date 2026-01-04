@@ -876,7 +876,8 @@
     "notAuthenticated": "Не автентифіковано",
     "invalidFileType": "Тип файлу не підтримується",
     "emptyFile": "Файл не надано",
-    "uploadFailed": "Не вдалося завантажити файл"
+    "uploadFailed": "Не вдалося завантажити файл",
+    "fileExtensionError": "Не вдалося визначити тип файлу"
   },
   "hints": {
     "checkEmailAndPassword": "Перевірте адресу електронної пошти та пароль і спробуйте ще раз.",

@@ -876,7 +876,8 @@
     "notAuthenticated": "غير مصادق عليه",
     "invalidFileType": "نوع الملف غير مدعوم",
     "emptyFile": "لم يتم توفير ملف",
-    "uploadFailed": "فشل تحميل الملف"
+    "uploadFailed": "فشل تحميل الملف",
+    "fileExtensionError": "تعذر تحديد نوع الملف"
   },
   "hints": {
     "checkEmailAndPassword": "تحقق من البريد الإلكتروني وكلمة المرور وحاول مرة أخرى.",
