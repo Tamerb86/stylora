@@ -130,6 +130,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check locale file integrity
+        run: npm run check:locales
+
       - name: Check code formatting
         run: pnpm format --check || echo "⚠️ Code formatting issues found"
         continue-on-error: true
