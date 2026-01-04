@@ -116,9 +116,6 @@ const adminProcedure = tenantProcedure.use(({ ctx, next }) => {
       data: { messageKey: "errors.accessDenied" }
     });
   }
-      message: "Admin access required",
-    });
-  }
   return next({ ctx });
 });
 

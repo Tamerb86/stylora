@@ -5,23 +5,26 @@
 
 import type { TFunction } from "i18next";
 import { toast } from "sonner";
+import i18n from "@/i18n/config";
 
 /**
  * Extract error message from API response, preferring messageKey
  */
 export function getErrorMessage(
   error: any,
-  t: TFunction,
+  t?: TFunction,
   fallbackKey: string = "errors.generic"
 ): string {
+  const translator = t || i18n.t.bind(i18n);
+
   // If error has messageKey, use translation
   if (error?.messageKey) {
-    return t(error.messageKey);
+    return translator(error.messageKey);
   }
 
   // If TRPCError with data.messageKey
   if (error?.data?.messageKey) {
-    return t(error.data.messageKey);
+    return translator(error.data.messageKey);
   }
 
   // Fallback to raw message if available
@@ -35,13 +38,13 @@ export function getErrorMessage(
   }
 
   // Final fallback to generic error
-  return t(fallbackKey);
+  return translator(fallbackKey);
 }
 
 /**
  * Show error toast with i18n support
  */
-export function showErrorToast(error: any, t: TFunction, fallbackKey?: string) {
+export function showErrorToast(error: any, t?: TFunction, fallbackKey?: string) {
   const message = getErrorMessage(error, t, fallbackKey);
   toast.error(message);
 }
@@ -51,21 +54,23 @@ export function showErrorToast(error: any, t: TFunction, fallbackKey?: string) {
  */
 export function showSuccessToast(
   response: any,
-  t: TFunction,
+  t?: TFunction,
   fallbackKey: string = "toasts.success.saved"
 ) {
+  const translator = t || i18n.t.bind(i18n);
   const message = response?.messageKey
-    ? t(response.messageKey)
-    : response?.message || t(fallbackKey);
+    ? translator(response.messageKey)
+    : response?.message || translator(fallbackKey);
   toast.success(message);
 }
 
 /**
  * Get hint message from API response
  */
-export function getHintMessage(response: any, t: TFunction): string {
+export function getHintMessage(response: any, t?: TFunction): string {
+  const translator = t || i18n.t.bind(i18n);
   if (response?.hintKey) {
-    return t(response.hintKey);
+    return translator(response.hintKey);
   }
   return response?.hint || "";
 }
