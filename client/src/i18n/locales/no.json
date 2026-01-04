@@ -226,7 +226,8 @@
     "cashPayment": "Kontantbetaling",
     "cardPayment": "Kortbetaling",
     "completeSale": "Fullfør salg",
-    "processing": "Behandler betaling...",
+    "processing": "Behandler...",
+    "processingPayment": "Behandler betaling...",
     "clearCart": "Tøm kurv",
     "backToDashboard": "Tilbake til dashbord",
     "customerSelected": "Kunde valgt: {name}",
@@ -677,6 +678,8 @@
     "price": "Pris",
     "actions": "Handlinger",
     "minutes": "min",
+    "noServicesFound": "Ingen tjenester funnet",
+    "clickToAdd": "Klikk 'Ny tjeneste' for å legge til din første tjeneste",
     "edit": "Rediger",
     "delete": "Slett",
     "dialog": {

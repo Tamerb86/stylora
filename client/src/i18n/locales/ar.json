@@ -226,7 +226,8 @@
     "cashPayment": "دفع نقدي",
     "cardPayment": "دفع بالبطاقة",
     "completeSale": "إتمام البيع",
-    "processing": "جاري معالجة الدفع...",
+    "processing": "جاري المعالجة...",
+    "processingPayment": "جاري معالجة الدفع...",
     "clearCart": "إفراغ السلة",
     "backToDashboard": "العودة إلى لوحة التحكم",
     "customerSelected": "تم اختيار العميل: {name}",
@@ -677,6 +678,8 @@
     "price": "السعر",
     "actions": "الإجراءات",
     "minutes": "د",
+    "noServicesFound": "لم يتم العثور على خدمات",
+    "clickToAdd": "انقر على 'خدمة جديدة' لإضافة خدمتك الأولى",
     "edit": "تعديل",
     "delete": "حذف",
     "dialog": {
