@@ -31,6 +31,7 @@ function findDuplicateKeys(filePath) {
     const closeBraces = (line.match(/\}/g) || []).length;
     
     // Extract key if this is a key-value line
+    // Note: This simple regex works for standard JSON keys without escaped quotes
     const keyMatch = line.match(/^\s*"([^"]+)"\s*:/);
     if (keyMatch) {
       const key = keyMatch[1];
@@ -51,14 +52,16 @@ function findDuplicateKeys(filePath) {
       }
     }
     
-    depth += openBraces - closeBraces;
-    
-    // Clear keys when closing a brace (going back up a level)
+    // Clear keys when closing a brace (before updating depth)
     if (closeBraces > 0) {
-      for (let i = depth + 1; i <= depth + closeBraces; i++) {
+      const oldDepth = depth;
+      for (let i = oldDepth; i > oldDepth - closeBraces; i--) {
         keysSeen.delete(`d${i}`);
       }
     }
+    
+    // Update depth after clearing keys
+    depth += openBraces - closeBraces;
   });
   
   return duplicates;
