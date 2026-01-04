@@ -9,7 +9,8 @@
     "migrate": "drizzle-kit generate && drizzle-kit migrate",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "NODE_OPTIONS='--max-old-space-size=4096' tsc --noEmit",
-    "check:i18n": "node scripts/check-i18n.cjs",
+    "check:locales": "node scripts/check-locales.cjs",
+    "check:i18n": "node scripts/check-locales.cjs && node scripts/check-i18n.cjs",
     "format": "prettier --write .",
     "test": "vitest run",
     "db:push": "drizzle-kit generate && drizzle-kit migrate"
